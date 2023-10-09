@@ -8,3 +8,5 @@ shared/shared.podspec
 # Project exclude paths
 /.gradle/
 /shared/build/
+AppSecrets.plist
+/iosApp/iosApp/AppSecrets.plist
