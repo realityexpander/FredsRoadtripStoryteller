@@ -100,14 +100,15 @@ actual fun GoogleMaps(
                         cameraPosition.target.longitude
                     ),
                     cameraPosition.zoom
-//                    cameraPositionState.position.zoom // allows users to zoom in and out while maintaining the same center, why does this work?
+                    // cameraPositionState.position.zoom // allows users to zoom in and out while maintaining the same center, why does this work?
                 )
             )
         }
 
+        // Follow the camera position
         snapshotFlow { cameraPositionState.position }
             .collect { position ->
-//                println("position = ${position.target.latitude}, ${position.target.longitude}")
+                // println("position = ${position.target.latitude}, ${position.target.longitude}")
             }
     }
 
@@ -245,7 +246,7 @@ actual fun GoogleMaps(
                 )
             }
 
-            // render the user's location "talk" circle
+            // Render the user's location "talk" circle
             myLocation?.let { myLocation ->
                 Circle(
                     center = LatLng(myLocation.latitude, myLocation.longitude),

@@ -25,6 +25,9 @@ pluginManagement {
         id("com.android.library").version(agpVersion)
         id("org.jetbrains.compose").version(composeVersion)
 
+         //For Kotlinx Serialization
+        id("org.jetbrains.kotlin.plugin.serialization").version(kotlinVersion)
+
         // For Google Maps Secrets Gradle Plugin
         id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin").version(googleMapsSecretsPluginVersion)
     }

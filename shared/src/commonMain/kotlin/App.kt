@@ -2,8 +2,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -13,41 +15,73 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import org.jetbrains.compose.resources.ExperimentalResourceApi
+import com.russhwolf.settings.Settings
+import com.russhwolf.settings.set
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.Json
 
-@OptIn(ExperimentalResourceApi::class)
+private val json = Json {
+    prettyPrint = true
+    isLenient = true
+    ignoreUnknownKeys = true
+}
+
+// Define LatLong for kotlinx serialization
+@Serializable
+@SerialName("LatLong")
+private class LatLongSurrogate(val lat: Double, val long: Double) {
+    init {
+        require(
+            lat in -90.0..90.0
+            && long in -180.0..180.0
+        )
+    }
+}
+object LatLongSerializer: KSerializer<LatLong> {
+    override val descriptor: SerialDescriptor
+        get() = LatLongSurrogate.serializer().descriptor
+
+    override fun serialize(encoder: Encoder, value: LatLong) {
+        val surrogate = LatLongSurrogate(value.latitude, value.longitude)
+        encoder.encodeSerializableValue(LatLongSurrogate.serializer(), surrogate)
+    }
+
+    override fun deserialize(decoder: Decoder): LatLong {
+        val surrogate = decoder.decodeSerializableValue(LatLongSurrogate.serializer())
+        return LatLong(surrogate.lat, surrogate.long)
+    }
+}
+
 @Composable
 fun App() {
-//    MaterialTheme {
-//        var greetingText by remember { mutableStateOf("Hello, World!") }
-//        var showImage by remember { mutableStateOf(false) }
-//        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-//            Button(onClick = {
-//                greetingText = "Hello, ${getPlatformName()}"
-//                showImage = !showImage
-//            }) {
-//                Text(greetingText)
-//            }
-//            AnimatedVisibility(showImage) {
-//                Image(
-//                    painterResource("compose-multiplatform.xml"),
-//                    null
-//                )
-//            }
-//        }
-//    }
 
     MaterialTheme {
+        val coroutineScope = rememberCoroutineScope()
+
         var greetingText by remember { mutableStateOf("Hello, World!") }
         var showImage by remember { mutableStateOf(false) }
 
+        val locationService by remember { mutableStateOf(LocationService()) }
         var myLocation by remember {
             mutableStateOf(
                 Location(0.0, 0.0)
             )
         }
-        val locationService by remember { mutableStateOf(LocationService()) }
-        val coroutineScope = rememberCoroutineScope()
+
+        val settings = remember {
+            Settings().apply {
+                set("key2", json.encodeToString(LatLongSerializer, LatLong(1.0, 3.0)))
+            }
+        }
+
+        SideEffect {
+            println("Settings keys: ${settings.keys}")
+        }
 
         var markersData = loadMarkersFromHtml()
         var markers = remember(markersData.value.isFinished) {
@@ -254,6 +288,9 @@ fun App() {
 
 //            Text("Location: ${myLocation.latitude}, ${myLocation.longitude}")
 
+            Text(json.decodeFromString<LatLong>(LatLongSerializer, settings.getString("key2", "not set")).toString() )
+//            Text(json.decodeFromString(LatLongSerializer, settings.getString("key2", "not set")).toString() )
+
             if (markersData.value.isFinished) {
                 GoogleMaps(
                     modifier = Modifier.fillMaxSize(),
@@ -294,3 +331,24 @@ fun App() {
 }
 
 expect fun getPlatformName(): String
+
+
+
+//    MaterialTheme {
+//        var greetingText by remember { mutableStateOf("Hello, World!") }
+//        var showImage by remember { mutableStateOf(false) }
+//        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+//            Button(onClick = {
+//                greetingText = "Hello, ${getPlatformName()}"
+//                showImage = !showImage
+//            }) {
+//                Text(greetingText)
+//            }
+//            AnimatedVisibility(showImage) {
+//                Image(
+//                    painterResource("compose-multiplatform.xml"),
+//                    null
+//                )
+//            }
+//        }
+//    }

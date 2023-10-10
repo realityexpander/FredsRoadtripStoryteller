@@ -2,7 +2,7 @@
 
 
 10/8/23
-Google Maps for Compose KMP
+Google Maps for Compose KMP experimental app
 
 Source:
 https://github.com/JetBrains/compose-multiplatform/tree/master/examples/cocoapods-ios-example
@@ -76,9 +76,13 @@ https://github.com/JetBrains/compose-multiplatform/tree/master/examples/cocoapod
 - KMM Location services example app
   - https://medium.com/rapido-labs/building-a-kotlin-multiplatform-mobile-sdk-for-location-related-services-488a2855ab23
 
+- Kotlin Swift - Jetpack Compose iOS, ComposeUIViewController, UIViewControllerRepresentable, UIKitView...
+  - https://appkickstarter.com/blog/kotlin-swift
 
 
-# [Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform) iOS CocoaPods example
+# Original Readme:
+
+## [Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform) iOS CocoaPods example
 
 This example showcases using Kotlin Multiplatform shared module in Swift as a CocoaPods framework.
 

@@ -3,7 +3,8 @@
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
-class LatLong(val latitude: Double = 0.0, val longitude: Double = 0.0)
+data class LatLong(val latitude: Double = 0.0, val longitude: Double = 0.0)
+
 class MapMarker(
     val key: String = "",
     val position: LatLong = LatLong(0.0, 0.0),

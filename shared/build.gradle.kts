@@ -5,6 +5,7 @@ plugins {
     kotlin("native.cocoapods")
     id("com.android.library")
     id("org.jetbrains.compose")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 kotlin {
@@ -51,6 +52,9 @@ kotlin {
                 implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
                 implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
 
+                // For kotlinx serialization
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+
                 // For coroutines
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 
@@ -61,6 +65,11 @@ kotlin {
                 implementation("com.mohamedrejeb.ksoup:ksoup-html:$ksoupVersion")
                 // Only for encoding and decoding HTML entities
                 implementation("com.mohamedrejeb.ksoup:ksoup-entites:$ksoupVersion")
+
+                // Settings
+                implementation("com.russhwolf:multiplatform-settings:1.1.0")
+                implementation("com.russhwolf:multiplatform-settings-no-arg:1.1.0")
+                implementation("com.russhwolf:multiplatform-settings-test:1.1.0")
             }
         }
         val androidMain by getting {

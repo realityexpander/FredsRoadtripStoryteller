@@ -19,10 +19,6 @@ import sampleData.fullHtmlSamplePage1
 import sampleData.fullHtmlSamplePage2
 import sampleData.fullHtmlSamplePage3
 
-//val request = Request.Builder()
-//    .url("https://www.hmdb.org/results.asp?Search=Coord&Latitude=37.422160&Longitude=-122.084270&Miles=10&MilesType=1&HistMark=Y&WarMem=Y&FilterNOT=&FilterTown=&FilterCounty=&FilterState=&FilterCountry=&FilterCategory=0&Page=1")
-//    .build()
-
 
 @Composable
 fun loadMarkersFromHtml(): MutableState<ParseDataResult> {
@@ -34,25 +30,25 @@ fun loadMarkersFromHtml(): MutableState<ParseDataResult> {
     val parsedState = remember { mutableStateOf(ParseDataResult()) }
     val coroutineScope = rememberCoroutineScope()
 
-    when (val state = loadingState) {
-        is LoadingState.Loading -> {
-            Text("Loading...")
-        }
-        is LoadingState.Loaded<String> -> {
-            Text(
-                fontSize = 11.sp,
-                text = "Loaded: ${parsedState.value.markerToInfoStrings.size} / ${parsedState.value.totalEntriesCount} entries\n" +
-                        "Data: ${state.data.length} chars"
-            )
-
-//            SideEffect {  // test
-//                parsedState.value = parseHtml(state.data)
-//            }
-        }
-        is LoadingState.Error -> {
-            Text("Error: ${state.message}")
-        }
-    }
+//    when (val state = loadingState) {
+//        is LoadingState.Loading -> {
+//            Text("Loading...")
+//        }
+//        is LoadingState.Loaded<String> -> {
+//            Text(
+//                fontSize = 11.sp,
+//                text = "Loaded: ${parsedState.value.markerToInfoStrings.size} / ${parsedState.value.totalEntriesCount} entries\n" +
+//                        "Data: ${state.data.length} chars"
+//            )
+//
+////            SideEffect {  // test
+////                parsedState.value = parseHtml(state.data)
+////            }
+//        }
+//        is LoadingState.Error -> {
+//            Text("Error: ${state.message}")
+//        }
+//    }
 
     LaunchedEffect(loadingState) {
         if (loadingState !is LoadingState.Loaded<String>)
