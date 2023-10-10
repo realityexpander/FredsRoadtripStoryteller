@@ -1,5 +1,3 @@
-import org.jetbrains.compose.ComposeBuildConfig.composeVersion
-
 plugins {
     kotlin("multiplatform")
     kotlin("native.cocoapods")
@@ -35,9 +33,12 @@ kotlin {
     }
 
     sourceSets {
-        val ktorVersion = "2.2.4"
+        val ktorClientVersion = "2.2.4"
+        val ktorClientCoreVersion = "2.3.5"
         val ksoupVersion = "0.2.1"
         val mapsComposeVersion = "3.1.0"
+        @Suppress("SpellCheckingInspection") // the library is spelled like this
+        val kMutliplatformSettingsVersion = "1.1.0"
 
         val commonMain by getting {
             dependencies {
@@ -48,15 +49,15 @@ kotlin {
                 implementation(compose.components.resources)
 
                 // For HTTP requests
-                implementation("io.ktor:ktor-client-core:$ktorVersion")
-                implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-                implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+                implementation("io.ktor:ktor-client-core:$ktorClientCoreVersion")
+                implementation("io.ktor:ktor-client-content-negotiation:$ktorClientVersion")
+                implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorClientVersion")
 
                 // For kotlinx serialization
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 
                 // For coroutines
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 
                 // For image loading
                 implementation("media.kamel:kamel-image:0.5.1")
@@ -66,17 +67,17 @@ kotlin {
                 // Only for encoding and decoding HTML entities
                 implementation("com.mohamedrejeb.ksoup:ksoup-entites:$ksoupVersion")
 
-                // Settings
-                implementation("com.russhwolf:multiplatform-settings:1.1.0")
-                implementation("com.russhwolf:multiplatform-settings-no-arg:1.1.0")
-                implementation("com.russhwolf:multiplatform-settings-test:1.1.0")
+                // Settings persistence
+                implementation("com.russhwolf:multiplatform-settings:$kMutliplatformSettingsVersion")
+                implementation("com.russhwolf:multiplatform-settings-no-arg:$kMutliplatformSettingsVersion")
+                implementation("com.russhwolf:multiplatform-settings-test:$kMutliplatformSettingsVersion")
             }
         }
         val androidMain by getting {
             dependencies {
-                api("androidx.activity:activity-compose:1.7.2")
+                api("androidx.activity:activity-compose:1.8.0")
                 api("androidx.appcompat:appcompat:1.6.1")
-                api("androidx.core:core-ktx:1.10.1")
+                api("androidx.core:core-ktx:1.12.0")
 
                 // Google maps for Compose
                 api("com.google.android.gms:play-services-location:21.0.1")
@@ -86,7 +87,7 @@ kotlin {
                 implementation("com.google.maps.android:maps-compose-utils:$mapsComposeVersion")
 
                 // Ktor Client
-                implementation("io.ktor:ktor-client-android:$ktorVersion")
+                implementation("io.ktor:ktor-client-android:$ktorClientVersion")
             }
         }
     }

@@ -52,42 +52,42 @@ actual fun GoogleMaps(
     var isMapSetupCompleted by remember { mutableStateOf(false) }
 
     var isTrackingEnabled by remember { mutableStateOf(false) }
-    var isMyLocationButtonUpdated by remember { mutableStateOf(false) }
+    var didMyLocationButtonVisiblityChange by remember { mutableStateOf(false) }
 
     var gsmMapViewType by remember { mutableStateOf(kGMSTypeNormal) }
-    var isMapTypeUpdated by remember { mutableStateOf(false) }
+    var didMapTypeChange by remember { mutableStateOf(false) }
 
-    var isCameraPositionLatLongBoundsUpdated by remember { mutableStateOf(false) }
-    var isCameraPositionUpdated by remember { mutableStateOf(false) }
-    var isCameraLocationLatLongUpdated by remember { mutableStateOf(false) }
-    var isRedrawMapTriggered by remember { mutableStateOf(false) }
+    var didCameraPositionLatLongBoundsChange by remember { mutableStateOf(false) }
+    var didCameraPositionChange by remember { mutableStateOf(false) }
+    var didCameraLocationLatLongChange by remember { mutableStateOf(false) }
+    var isMapRedrawTriggered by remember { mutableStateOf(false) }
 
     var showSomething = remember { false } // leave for testing purposes
 
     LaunchedEffect(myLocation, markers) {
         if (myLocation != null) {
-            isRedrawMapTriggered = true
+            isMapRedrawTriggered = true
         }
         if (markers != null) {
-            isRedrawMapTriggered = true
+            isMapRedrawTriggered = true
         }
     }
 
     LaunchedEffect(cameraLocationBounds) {
         if (cameraLocationBounds != null) {
-            isCameraPositionLatLongBoundsUpdated = true
+            didCameraPositionLatLongBoundsChange = true
         }
     }
 
     LaunchedEffect(cameraPosition) {
         if (cameraPosition != null) {
-            isCameraPositionUpdated = true
+            didCameraPositionChange = true
         }
     }
 
     LaunchedEffect(cameraLocationLatLong) {
         if (cameraLocationLatLong != null) {
-            isCameraLocationLatLongUpdated = true
+            didCameraLocationLatLongChange = true
         }
     }
 
@@ -163,18 +163,18 @@ actual fun GoogleMaps(
                     isMapSetupCompleted = true
                 }
 
-                if(isMapTypeUpdated) {
-                    isMapTypeUpdated = false
+                if(didMapTypeChange) {
+                    didMapTypeChange = false
                     view.mapType = gsmMapViewType
                 }
 
-                if(isMyLocationButtonUpdated) {
-                    isMyLocationButtonUpdated = false
+                if(didMyLocationButtonVisiblityChange) {
+                    didMyLocationButtonVisiblityChange = false
                     view.settings.myLocationButton = !isTrackingEnabled
                 }
 
-                if(isCameraPositionUpdated) {
-                    isCameraPositionUpdated = false
+                if(didCameraPositionChange) {
+                    didCameraPositionChange = false
                     cameraPosition?.let { cameraPosition ->
                         view.setCamera(
                             GMSCameraPosition.cameraWithLatitude(
@@ -186,8 +186,8 @@ actual fun GoogleMaps(
                     }
                 }
 
-                if(isCameraLocationLatLongUpdated) {
-                    isCameraLocationLatLongUpdated = false
+                if(didCameraLocationLatLongChange) {
+                    didCameraLocationLatLongChange = false
                     cameraLocationLatLong?.let { cameraLocation ->
                         view.animateWithCameraUpdate(
                             GMSCameraUpdate.setTarget(
@@ -200,8 +200,8 @@ actual fun GoogleMaps(
                     }
                 }
 
-                if (isCameraPositionLatLongBoundsUpdated) {
-                    isCameraPositionLatLongBoundsUpdated = false
+                if (didCameraPositionLatLongBoundsChange) {
+                    didCameraPositionLatLongBoundsChange = false
                     cameraLocationBounds?.let { cameraPositionLatLongBounds ->
                         var bounds = GMSCoordinateBounds()
 
@@ -222,7 +222,7 @@ actual fun GoogleMaps(
                     }
                 }
 
-                if(isRedrawMapTriggered) {
+                if(isMapRedrawTriggered) {
                     // reset the markers & polylines, selected marker, etc.
                     val oldSelectedMarker = view.selectedMarker
                     var curSelectedMarker: GMSMarker? = null
@@ -284,7 +284,7 @@ actual fun GoogleMaps(
                         view.selectedMarker = curSelectedMarker
                     }
 
-                    isRedrawMapTriggered = false
+                    isMapRedrawTriggered = false
                 }
             },
         )
@@ -311,14 +311,14 @@ actual fun GoogleMaps(
                     darkOnLightTextColor = gsmMapViewType == kGMSTypeSatellite
                 ) {
                     isTrackingEnabled = !isTrackingEnabled
-                    isMyLocationButtonUpdated = true
+                    didMyLocationButtonVisiblityChange = true
                 }
                 SwitchWithLabel(
                     label = "Satellite",
                     state = gsmMapViewType == kGMSTypeSatellite,
                     darkOnLightTextColor = gsmMapViewType == kGMSTypeSatellite
                 ) { shouldUseSatellite ->
-                    isMapTypeUpdated = true
+                    didMapTypeChange = true
                     gsmMapViewType = if (shouldUseSatellite) kGMSTypeSatellite else kGMSTypeNormal
                 }
             }

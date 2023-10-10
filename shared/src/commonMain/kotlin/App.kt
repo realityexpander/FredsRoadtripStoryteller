@@ -75,12 +75,9 @@ fun App() {
 
         val settings = remember {
             Settings().apply {
+                clear()
                 set("key2", json.encodeToString(LatLongSerializer, LatLong(1.0, 3.0)))
             }
-        }
-
-        SideEffect {
-            println("Settings keys: ${settings.keys}")
         }
 
         var markersData = loadMarkersFromHtml()
