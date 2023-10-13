@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
-
+import co.touchlab.kermit.Logger as Log
 
 // Implement the LocationService in Android
 actual class LocationService  {
@@ -86,7 +86,7 @@ actual class LocationService  {
 
             override fun onLocationAvailability(availability: LocationAvailability) {
                 super.onLocationAvailability(availability)
-                println("onLocationAvailability: ${availability.isLocationAvailable}")
+                Log.i( "onLocationAvailability: ${availability.isLocationAvailable}" )
             }
         }
 

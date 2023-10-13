@@ -13,6 +13,9 @@ kotlin {
         val androidMain by getting {
             dependencies {
                 implementation(project(":shared"))
+
+                // For Logger todo (why doesn't this automatically put this in shared android module?)
+                implementation("co.touchlab:kermit:2.0.1")
             }
         }
     }

@@ -14,7 +14,7 @@ import platform.darwin.NSObject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
-
+import co.touchlab.kermit.Logger as Log
 // Implement the LocationService in iOS
 actual class LocationService  {
 
@@ -51,21 +51,21 @@ actual class LocationService  {
         }
 
         override fun locationManager(manager: CLLocationManager, didFailWithError: NSError) {
-            println("Error: ${didFailWithError.localizedFailureReason} ${didFailWithError.localizedDescription}, ${didFailWithError.localizedRecoverySuggestion}")
-            println("Error: ${didFailWithError.userInfo["timestamp"]}")
+            Log.i { "Error: ${didFailWithError.localizedFailureReason} ${didFailWithError.localizedDescription}, ${didFailWithError.localizedRecoverySuggestion}" }
+            Log.i { "Error: ${didFailWithError.userInfo["timestamp"]}" }
             onLocationUpdate?.invoke(null)
         }
 
         override fun locationManager(manager: CLLocationManager, didChangeAuthorizationStatus: Int) {
-            println("Authorization status changed to: $didChangeAuthorizationStatus")
+            Log.i { "Authorization status changed to: $didChangeAuthorizationStatus" }
         }
 
         override fun locationManagerDidPauseLocationUpdates(manager: CLLocationManager) {
-            println("locationManagerDidPauseLocationUpdates")
+            Log.i { "locationManagerDidPauseLocationUpdates" }
         }
 
         override fun locationManagerDidResumeLocationUpdates(manager: CLLocationManager) {
-            println("locationManagerDidResumeLocationUpdates")
+            Log.i { "locationManagerDidResumeLocationUpdates" }
         }
 
     }
@@ -88,9 +88,9 @@ actual class LocationService  {
     actual suspend fun currentHeading(callback: (Heading?) -> Unit) {
         locationManager.requestWhenInUseAuthorization()
         if(locationManager.headingAvailable) {
-            println("headingAvailable")
+            Log.i { "headingAvailable" }
         } else {
-            println("headingUnavailable")
+            Log.i { "headingUnavailable" }
         }
 
         locationDelegate.onHeadingUpdate = callback

@@ -5,13 +5,16 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.media.session.PlaybackState.ACTION_STOP
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat.stopForeground
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import co.touchlab.kermit.Logger as Log
 
 class LocationForegroundService: Service() {
 
@@ -68,7 +71,7 @@ class LocationForegroundService: Service() {
         serviceScope.launch {
             locationClient.currentLocation(
                 errorCallback = { error ->
-                    println("Error: $error")
+                    Log.i("LocationForegroundService, Error: $error" )
                 }
             ) { location ->
                 location?.run {

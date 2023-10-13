@@ -37,7 +37,7 @@ kotlin {
         val ktorClientCoreVersion = "2.3.5"
         val ksoupVersion = "0.2.1"
         val mapsComposeVersion = "3.1.0"
-        @Suppress("SpellCheckingInspection") // the library is spelled like this
+        @Suppress("SpellCheckingInspection") // the library is spelled like this(!)
         val kMutliplatformSettingsVersion = "1.1.0"
 
         val commonMain by getting {
@@ -48,21 +48,21 @@ kotlin {
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.components.resources)
 
-                // For HTTP requests
+                // Ktor client for HTTP requests
                 implementation("io.ktor:ktor-client-core:$ktorClientCoreVersion")
                 implementation("io.ktor:ktor-client-content-negotiation:$ktorClientVersion")
                 implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorClientVersion")
 
-                // For kotlinx serialization
+                // kotlinx serialization
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 
-                // For coroutines
+                // coroutines
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 
-                // For image loading
+                // image loading
                 implementation("media.kamel:kamel-image:0.5.1")
 
-                // For scraping & parsing HTML
+                // scraping & parsing HTML
                 implementation("com.mohamedrejeb.ksoup:ksoup-html:$ksoupVersion")
                 // Only for encoding and decoding HTML entities
                 implementation("com.mohamedrejeb.ksoup:ksoup-entites:$ksoupVersion")
@@ -71,6 +71,13 @@ kotlin {
                 implementation("com.russhwolf:multiplatform-settings:$kMutliplatformSettingsVersion")
                 implementation("com.russhwolf:multiplatform-settings-no-arg:$kMutliplatformSettingsVersion")
                 implementation("com.russhwolf:multiplatform-settings-test:$kMutliplatformSettingsVersion")
+
+                // Logging
+                implementation("co.touchlab:kermit:2.0.1")
+                implementation("org.slf4j:slf4j-nop:2.0.9") // removes this warning: https://www.slf4j.org/codes.html#StaticLoggerBinder
+
+                // Date-time
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
             }
         }
         val androidMain by getting {
@@ -79,14 +86,14 @@ kotlin {
                 api("androidx.appcompat:appcompat:1.6.1")
                 api("androidx.core:core-ktx:1.12.0")
 
-                // Google maps for Compose
+                // Google maps for Compose for Android
                 api("com.google.android.gms:play-services-location:21.0.1")
                 api("com.google.android.gms:play-services-maps:18.1.0")
                 implementation("com.google.maps.android:maps-compose:$mapsComposeVersion")
-                // For clustering
+                // clustering
                 implementation("com.google.maps.android:maps-compose-utils:$mapsComposeVersion")
 
-                // Ktor Client
+                // Ktor Client for Android
                 implementation("io.ktor:ktor-client-android:$ktorClientVersion")
             }
         }

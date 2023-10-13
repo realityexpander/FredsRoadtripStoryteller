@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
-import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.clustering.ClusterItem
 import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.GoogleMap
@@ -39,9 +38,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberTileOverlayState
 import com.google.maps.android.heatmaps.HeatmapTileProvider
 import com.google.maps.android.heatmaps.WeightedLatLng
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
+import co.touchlab.kermit.Logger as Log
 
 @OptIn(MapsComposeExperimentalApi::class)
 @Composable
@@ -92,7 +89,7 @@ actual fun GoogleMaps(
     // Usually used to setup the initial camera position (not tracking due to forcing zoom level)
     LaunchedEffect(cameraPosition) {
         cameraPosition?.let { cameraPosition ->
-            println("cameraPosition = ${cameraPosition.target.latitude}, ${cameraPosition.target.longitude}")
+            Log.i { "cameraPosition = ${cameraPosition.target.latitude}, ${cameraPosition.target.longitude}" }
             cameraPositionState.move(
                 CameraUpdateFactory.newLatLngZoom(
                     LatLng(
@@ -108,13 +105,13 @@ actual fun GoogleMaps(
         // Follow the camera position
         snapshotFlow { cameraPositionState.position }
             .collect { position ->
-                // println("position = ${position.target.latitude}, ${position.target.longitude}")
+                // Log.i { "position = ${position.target.latitude}, ${position.target.longitude}" }
             }
     }
 
     LaunchedEffect(cameraLocationBounds) {
         cameraLocationBounds?.let { cameraPositionBounds ->
-            println("cameraLocationBounds = ${cameraPositionBounds.coordinates}")
+            Log.i { "cameraLocationBounds = ${cameraPositionBounds.coordinates}"  }
             // Build the bounding box
             val latLngBounds = LatLngBounds.builder().apply {
                 cameraPositionBounds.coordinates.forEach { latLong ->
@@ -130,7 +127,7 @@ actual fun GoogleMaps(
 
     LaunchedEffect(cameraLocationLatLong) {
         cameraLocationLatLong?.let { cameraLocationLatLong ->
-            println("cameraLocationLatLong = ${cameraLocationLatLong.latitude}, ${cameraLocationLatLong.longitude}")
+            Log.i { "cameraLocationLatLong = ${cameraLocationLatLong.latitude}, ${cameraLocationLatLong.longitude}" }
             cameraPositionState.animate(
                 CameraUpdateFactory.newLatLng(
                     LatLng(
@@ -203,7 +200,7 @@ actual fun GoogleMaps(
 
             // Raw markers (not clustered)
 //            markers?.forEach { marker ->
-////                println("marker = ${marker.key}: ${marker.position.latitude}, ${marker.position.longitude}")
+////                Log.i { "marker = ${marker.key}: ${marker.position.latitude}, ${marker.position.longitude}" }
 //                Marker(
 ////                    state = rememberMarkerState(
 ////                        key = marker.key,
@@ -305,11 +302,11 @@ actual fun GoogleMaps(
                     } ?: listOf<ClusterItem>()
                 },
                 onClusterClick = { cluster ->
-                    println("cluster clicked")
+                    Log.i { "cluster clicked" }
                     true
                 },
 //                onClusterItemClick = { clusterItem ->
-//                    println("cluster item clicked")
+//                    Log.i { "cluster item clicked" }
 ////                    coroutineScope.launch {
 ////                        myMarkers.value = myMarkers.value + MapMarker(
 ////                            key = clusterItem.position.toString(),
@@ -324,7 +321,7 @@ actual fun GoogleMaps(
 //                    true
 //                },
 //                clusterContent = { cluster ->
-//                    println("clusterContent")
+//                    Log.i { "clusterContent" }
 //                    Marker(
 //                        state = MarkerState(
 //                            position = LatLng(cluster.position.latitude, cluster.position.longitude)
