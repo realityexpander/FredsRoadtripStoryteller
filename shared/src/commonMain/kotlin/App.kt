@@ -155,7 +155,7 @@ fun App() {
 //            }
             }
 
-            println("Updating markers, markersData.markerInfos.size: ${markersData.markerInfos.size}")
+            Log.d("Updating markers, markersData.markerInfos.size: ${markersData.markerInfos.size}")
             val markers =
                 markersData.markerInfos.map { marker ->
                     MapMarker(
@@ -179,7 +179,7 @@ fun App() {
                 coroutineScope.launch {
                     shouldUpdateMapMarkers = true
                 }
-                Log.i { "Final applied marker count = ${snapShot.size}" }
+                Log.i { "Final map-applied marker count = ${snapShot.size}" }
             }
         }
         val mapBounds by remember(markers) {

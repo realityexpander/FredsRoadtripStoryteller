@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.TileProvider
 import com.google.maps.android.clustering.ClusterItem
 import com.google.maps.android.compose.Circle
@@ -76,9 +77,9 @@ actual fun GoogleMaps(
                 isMyLocationEnabled = true,  // always show the dot
                 minZoomPreference = 1f,
                 maxZoomPreference = 20f,
-//                mapStyleOptions = MapStyleOptions(
-//                    mapStyle()
-//                )
+                mapStyleOptions = MapStyleOptions(
+                    mapStyle()  // Dark green map style
+                )
             )
         )
     }
@@ -179,7 +180,7 @@ actual fun GoogleMaps(
 
         val myMarkers = remember { mutableStateOf(listOf<MapMarker>()) }
         val coroutineScope = rememberCoroutineScope()
-        var cachedMarkers = remember { mutableStateListOf<ClusterItem>() }
+        val cachedMarkers = remember { mutableStateListOf<ClusterItem>() }
         var cachedTileProvider by remember {
             mutableStateOf(
                 HeatmapTileProvider.Builder()
@@ -238,21 +239,13 @@ actual fun GoogleMaps(
                             Log.d { "Using cached heatmap items, cachedHeatmap = $cachedTileProvider" }
                             return@remember cachedTileProvider
                         } else {
-//                            // check if the markers are different than the cached markers
-//                            if(markers.size == cachedMarkers.size) {
-//                                var isDifferent = false
-//                                markers.forEachIndexed { index, marker ->
-//                                    if(marker.position.latitude != cachedMarkers[index].position.latitude ||
-//                                        marker.position.longitude != cachedMarkers[index].position.longitude) {
-//                                        isDifferent = true
-//                                    }
-//                                }
-//                                if(!isDifferent) {
-//                                    Log.d { "Using cached heatmap items because list of markers has not changed, cachedHeatmap = $cachedTileProvider" }
-//                                    return@remember cachedTileProvider
-//                                }
-//                            }
+                            // check if the markers are different than the cached markers
+                            if(markers.size == cachedMarkers.size) {
+                                Log.d { "Using cached heatmap items because list of markers has not changed, cachedHeatmap = $cachedTileProvider" }
+                                return@remember cachedTileProvider
+                            }
 
+                            // Calculate the heatmap
                             val result = HeatmapTileProvider.Builder()
                                 .weightedData(
                                     if(markers.isNotEmpty()) {
@@ -344,27 +337,18 @@ actual fun GoogleMaps(
             }
 
             Clustering(
-//                items = remember(markers) {
                 items = remember(shouldUpdateMapMarkers, markers) {
                     if(!shouldUpdateMapMarkers) {
                         Log.d { "Using cached cluster items, cachedMarkers.size = ${cachedMarkers.size}" }
                         return@remember cachedMarkers
                     } else {
-//                        // check if the markers are different than the cached markers
-//                        if(markers?.size == cachedMarkers.size) {
-//                            var isDifferent = false
-//                            markers.forEachIndexed { index, marker ->
-//                                if(marker.position.latitude != cachedMarkers[index].position.latitude ||
-//                                    marker.position.longitude != cachedMarkers[index].position.longitude) {
-//                                    isDifferent = true
-//                                }
-//                            }
-//                            if(!isDifferent) {
-//                                Log.d { "Using cached cluster items because list of markers has not changed, cachedMarkers.size = ${cachedMarkers.size}" }
-//                                return@remember cachedMarkers
-//                            }
-//                        }
+                        // check if the markers are different than the cached markers
+                        if(markers?.size == cachedMarkers.size) {
+                            Log.d { "Using cached cluster items because list of markers has not changed, cachedMarkers.size = ${cachedMarkers.size}" }
+                            return@remember cachedMarkers
+                        }
 
+                        // Calculate the cluster items
                         val result = markers?.map { marker ->
                             object : ClusterItem {
                                 override fun getTitle(): String = marker.title
