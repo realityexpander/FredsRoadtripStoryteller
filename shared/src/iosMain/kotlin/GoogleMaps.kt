@@ -41,11 +41,12 @@ actual fun GoogleMaps(
     onMapClick: ((LatLong) -> Unit)?,
     onMapLongClick: ((LatLong) -> Unit)?,
     markers: List<MapMarker>?,
-    cameraLocationLatLong: LatLong?,  // best for tracking user location
-    cameraLocationBounds: CameraLocationBounds?,  // best for showing a bunch of markers
-    cameraPosition: CameraPosition?, // usually only used for initial camera position bc zoom level is forced
-    polyLine: List<LatLong>?,
-    myLocation: LatLong?  // shows the user's location with a 100m radius circle
+    shouldUpdateMapMarkers: Boolean,  // best for tracking user location
+    cameraLocationLatLong: LatLong?,  // best for showing a bunch of markers
+    cameraLocationBounds: CameraLocationBounds?, // usually only used for initial camera position bc zoom level is forced
+    cameraPosition: CameraPosition?,
+    polyLine: List<LatLong>?,  // shows the user's location with a 100m radius circle
+    myLocation: LatLong?
 ) {
     val googleMapView = remember { GMSMapView() }
 

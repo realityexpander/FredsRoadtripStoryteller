@@ -9,11 +9,13 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.TileProvider
 import com.google.maps.android.clustering.ClusterItem
 import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.GoogleMap
@@ -38,6 +41,8 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberTileOverlayState
 import com.google.maps.android.heatmaps.HeatmapTileProvider
 import com.google.maps.android.heatmaps.WeightedLatLng
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 import co.touchlab.kermit.Logger as Log
 
 @OptIn(MapsComposeExperimentalApi::class)
@@ -49,9 +54,10 @@ actual fun GoogleMaps(
     onMapClick: ((LatLong) -> Unit)?,
     onMapLongClick: ((LatLong) -> Unit)?,
     markers: List<MapMarker>?,
-    cameraLocationLatLong: LatLong?, // best for tracking user location
-    cameraLocationBounds: CameraLocationBounds?, // best for showing a bunch of markers
-    cameraPosition: CameraPosition?, // usually only used for initial camera position bc zoom level is forced
+    shouldUpdateMapMarkers: Boolean, // best for tracking user location
+    cameraLocationLatLong: LatLong?, // best for showing a bunch of markers
+    cameraLocationBounds: CameraLocationBounds?, // usually only used for initial camera position bc zoom level is forced
+    cameraPosition: CameraPosition?,
     polyLine: List<LatLong>?,
     myLocation: LatLong?
 ) {
@@ -173,6 +179,16 @@ actual fun GoogleMaps(
 
         val myMarkers = remember { mutableStateOf(listOf<MapMarker>()) }
         val coroutineScope = rememberCoroutineScope()
+        var cachedMarkers = remember { mutableStateListOf<ClusterItem>() }
+        var cachedTileProvider by remember {
+            mutableStateOf(
+                HeatmapTileProvider.Builder()
+                    .weightedData(listOf(
+                        WeightedLatLng(LatLng(0.0, 0.0), 0.0)  // default cache value (heatmap must have at least 1 item, and this wont be visible)
+                    ))
+                    .build()
+            )
+        }
 
         GoogleMap(
             cameraPositionState = cameraPositionState,
@@ -200,7 +216,7 @@ actual fun GoogleMaps(
 
             // Raw markers (not clustered)
 //            markers?.forEach { marker ->
-////                Log.i { "marker = ${marker.key}: ${marker.position.latitude}, ${marker.position.longitude}" }
+////                Log.d { "marker = ${marker.key}: ${marker.position.latitude}, ${marker.position.longitude}" }
 //                Marker(
 ////                    state = rememberMarkerState(
 ////                        key = marker.key,
@@ -215,22 +231,62 @@ actual fun GoogleMaps(
 //            }
 
             // Heat Map Overlay
-            TileOverlay(
-                tileProvider = remember {
-                    HeatmapTileProvider.Builder()
-                        .weightedData(markers?.map { marker ->
-                            WeightedLatLng(
-                                LatLng(marker.position.latitude, marker.position.longitude),
-                                1.0
-                            )
-                        } ?: listOf())
-                        .build()
-                },
-                state = rememberTileOverlayState(),
-                visible = true,
-                fadeIn = true,
-                transparency = 0.1f
-            )
+            if(markers != null) {
+                TileOverlay(
+                    tileProvider = remember(shouldUpdateMapMarkers, markers) {
+                        if(!shouldUpdateMapMarkers) {
+                            Log.d { "Using cached heatmap items, cachedHeatmap = $cachedTileProvider" }
+                            return@remember cachedTileProvider
+                        } else {
+//                            // check if the markers are different than the cached markers
+//                            if(markers.size == cachedMarkers.size) {
+//                                var isDifferent = false
+//                                markers.forEachIndexed { index, marker ->
+//                                    if(marker.position.latitude != cachedMarkers[index].position.latitude ||
+//                                        marker.position.longitude != cachedMarkers[index].position.longitude) {
+//                                        isDifferent = true
+//                                    }
+//                                }
+//                                if(!isDifferent) {
+//                                    Log.d { "Using cached heatmap items because list of markers has not changed, cachedHeatmap = $cachedTileProvider" }
+//                                    return@remember cachedTileProvider
+//                                }
+//                            }
+
+                            val result = HeatmapTileProvider.Builder()
+                                .weightedData(
+                                    if(markers.isNotEmpty()) {
+                                        println("markers.isNotEmpty()")
+                                        markers.map { marker ->
+                                            WeightedLatLng(
+                                                LatLng(
+                                                    marker.position.latitude,
+                                                    marker.position.longitude
+                                                ),
+                                                2.0
+                                            )
+                                        }
+                                    } else {
+                                        println("markers.isEmpty()")
+                                        listOf( // default cache value (heatmap must have at least 1 item, and this wont be visible)
+                                            WeightedLatLng(
+                                                LatLng(0.0, 0.0), 0.0
+                                            )
+                                        )
+                                })
+                                .radius(25) // convolution filter size in pixels
+                                .build()
+                            Log.d("Recalculating heatmap items, markers.size= ${markers.size}, HeatmapTileProvider= $result")
+                            cachedTileProvider = result
+                            return@remember result
+                        }
+                    },
+                    state = rememberTileOverlayState(),
+                    visible = true,
+                    fadeIn = true,
+                    transparency = 0.0f
+                )
+            }
 
             // temporary markers
             myMarkers.value.forEach { marker ->
@@ -287,19 +343,43 @@ actual fun GoogleMaps(
                 )
             }
 
-
             Clustering(
-                items = remember {
-                    markers?.map { marker ->
-                        object : ClusterItem {
-                            override fun getTitle(): String = marker.title
-                            override fun getSnippet(): String = marker.subtitle
-                            override fun getPosition(): LatLng =
-                                LatLng(marker.position.latitude, marker.position.longitude)
+//                items = remember(markers) {
+                items = remember(shouldUpdateMapMarkers, markers) {
+                    if(!shouldUpdateMapMarkers) {
+                        Log.d { "Using cached cluster items, cachedMarkers.size = ${cachedMarkers.size}" }
+                        return@remember cachedMarkers
+                    } else {
+//                        // check if the markers are different than the cached markers
+//                        if(markers?.size == cachedMarkers.size) {
+//                            var isDifferent = false
+//                            markers.forEachIndexed { index, marker ->
+//                                if(marker.position.latitude != cachedMarkers[index].position.latitude ||
+//                                    marker.position.longitude != cachedMarkers[index].position.longitude) {
+//                                    isDifferent = true
+//                                }
+//                            }
+//                            if(!isDifferent) {
+//                                Log.d { "Using cached cluster items because list of markers has not changed, cachedMarkers.size = ${cachedMarkers.size}" }
+//                                return@remember cachedMarkers
+//                            }
+//                        }
 
-                            override fun getZIndex(): Float = 1.0f
-                        }
-                    } ?: listOf<ClusterItem>()
+                        val result = markers?.map { marker ->
+                            object : ClusterItem {
+                                override fun getTitle(): String = marker.title
+                                override fun getSnippet(): String = marker.subtitle
+                                override fun getPosition(): LatLng =
+                                    LatLng(marker.position.latitude, marker.position.longitude)
+
+                                override fun getZIndex(): Float = 1.0f
+                            }
+                        } ?: listOf<ClusterItem>()
+                        Log.d { "Recalculating cluster items, markers.size= ${markers?.size}, result.size= ${result.size}" }
+                        cachedMarkers.clear()
+                        cachedMarkers.addAll(result)
+                        return@remember result
+                    }
                 },
                 onClusterClick = { cluster ->
                     Log.i { "cluster clicked" }

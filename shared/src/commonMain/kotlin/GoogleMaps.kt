@@ -30,6 +30,7 @@ expect fun GoogleMaps(
     onMapClick: ((LatLong) -> Unit)? = {},
     onMapLongClick: ((LatLong) -> Unit)? = {},
     markers: List<MapMarker>? = null,
+    shouldUpdateMapMarkers: Boolean = false,
     cameraLocationLatLong: LatLong? = null,
     cameraLocationBounds: CameraLocationBounds? = null,
     cameraPosition: CameraPosition? = null,

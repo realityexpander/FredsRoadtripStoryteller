@@ -85,79 +85,77 @@ fun loadMarkers(
 
     val coroutineScope = rememberCoroutineScope()
 
-    var parseResultState by remember { mutableStateOf(ParsedMarkersResult()) }
+//    var parsedMarkersResultState by remember { mutableStateOf(ParsedMarkersResult()) } // todo load the settings kCachedParsedMarkersResult instead of the parsedResult
+    var parsedMarkersResultState by remember {
+        mutableStateOf(
+            json.decodeFromString<ParsedMarkersResult>(settings.getString(kCachedParsedMarkersResult, "{}"))
+        ) } // todo load the settings kCachedParsedMarkersResult instead of the parsedResult - test
     var didCacheUpdateFromNetwork by remember { mutableStateOf(false) }
     var cacheResultState by remember(myLocation) {
 
-        println("cacheResultState: myLocation: $myLocation")
+        // Log.i("myLocation: $myLocation")
+
+        // If currently loading/parsing markers, return the current parseResultState upon location change
+        if(!parsedMarkersResultState.isFinished) return@remember mutableStateOf(parsedMarkersResultState)
 
         // Step 1 - Check for a cached result in the Settings
-        if (settings.hasKey("cachedMarkers")) {
-            Log.i(tag = "cachedResultState") { "Found cached markers in Settings" }
+        if (settings.hasKey(kCachedParsedMarkersResult)) {
             val cachedMarkers =
                 json.decodeFromString<ParsedMarkersResult>(
-                    settings.getString("cachedMarkers", "")
+                    settings.getString(kCachedParsedMarkersResult, "")
                 ).copy(isFinished = true)
-            parseResultState = cachedMarkers.copy(isFinished = true)
+            // Log.i("Found cached markers in Settings, count: ${cachedParsedMarkersResult.markerInfos.size}")
+            parsedMarkersResultState = cachedMarkers.copy(isFinished = true)
 
             // Check if the cache is expired
-            if(settings.hasKey("cachedMarkersLastUpdatedEpochSeconds")) {
+            if(settings.hasKey(kCachedMarkersLastUpdatedEpochSeconds)) {
                 val cacheLastUpdatedEpochSeconds =
-                    settings.getLong("cachedMarkersLastUpdatedEpochSeconds", 0)
-                val daysSinceLastCacheUpdate =
-                    (Clock.System.now().epochSeconds - cacheLastUpdatedEpochSeconds) / (60 * 60 * 24)
-                Log.i("Days since last cache update: $daysSinceLastCacheUpdate")
+                    settings.getLong(kCachedMarkersLastUpdatedEpochSeconds, 0)
+                // Log.i("Days since last cache update: $(Clock.System.now().epochSeconds - cacheLastUpdatedEpochSeconds) / (60 * 60 * 24)")
 
-                // if(true) { // tests cache expiry
+                // if(true) { // test cache expiry
                 if(Clock.System.now().epochSeconds > cacheLastUpdatedEpochSeconds + kMarkerCacheMaxAgeSeconds) {
-                    Log.i("Cached markers are expired, attempting load from network..." )
+                    Log.d("Cached markers are expired, attempting load from network..." )
 
                     // return current cached result, and also trigger network load, which will refresh the cache.
-                    parseResultState = cachedMarkers.copy(isFinished = false)
-                    return@remember mutableStateOf(
-                        parseResultState.copy(isFinished = false)
-                    )
+                    parsedMarkersResultState = cachedMarkers.copy(isFinished = false)
                 }
             }
 
-            // Check if the user is still within the max re-load radius
-            if (settings.hasKey("cachedMarkersLastLocationLatLong")) {
+            // Check if the user is outside the reload radius
+            if (settings.hasKey(kCachedMarkersLastLocationLatLong)) {
                 val cachedMarkersLastLocationLatLong =
                     json.decodeFromString<Location>(
-                        settings.getString("cachedMarkersLastLocationLatLong", "{latitude:0.0, longitude:0.0}")
+                        settings.getString(kCachedMarkersLastLocationLatLong, "{latitude:0.0, longitude:0.0}")
                     )
-                println("cachedMarkersLastLocationLatLong: $cachedMarkersLastLocationLatLong")
-                println("myLocation: $myLocation")
+                //Log.i("cachedMarkersLastLocationLatLong: $cachedMarkersLastLocationLatLong")
                 val userDistanceFromCachedLastLocationMiles = distanceBetween(
                     myLocation.latitude,
                     myLocation.longitude,
                     cachedMarkersLastLocationLatLong.latitude,
                     cachedMarkersLastLocationLatLong.longitude)
 
-                if (userDistanceFromCachedLastLocationMiles > maxReloadDistanceMiles) {
-                    Log.i("User is outside the max re-load radius, attempting load from network..." )
+                Log.i("userDistanceFromCachedLastLocationMiles: $userDistanceFromCachedLastLocationMiles")
+                if (userDistanceFromCachedLastLocationMiles > maxReloadDistanceMiles && parsedMarkersResultState.isFinished) {
+                    Log.d("User is outside the max re-load radius, attempting load from network..." )
 
                     // return current cached result, and also trigger network load, which will refresh the cache.
-                    parseResultState = cachedMarkers.copy(isFinished = false)
-                    return@remember mutableStateOf(
-                        parseResultState.copy(isFinished = false)
-                    )
+                    parsedMarkersResultState = cachedMarkers.copy(isFinished = false)
                 }
-                println("userDistanceFromCachedLastLocationMiles: $userDistanceFromCachedLastLocationMiles")
             }
 
-            mutableStateOf(parseResultState) // return the cached result
+            mutableStateOf(parsedMarkersResultState) // return the cached result
         } else {
-            Log.i { "No cached markers found. Attempting load from network..." }
+            Log.d { "No cached markers found. Attempting load from network..." }
             mutableStateOf(ParsedMarkersResult())// return empty result, trigger network load
         }
     }
 
     var curMarkerHtmlPageNum by remember { mutableStateOf(1) }
     var assetUrl by remember { mutableStateOf<String?>(null) }
-    var loadingState by remember(parseResultState.isFinished, curMarkerHtmlPageNum) {
+    var loadingState by remember(parsedMarkersResultState.isFinished, curMarkerHtmlPageNum) {
         // Step 2 - Load a page of marker HTML from the network
-        if (!parseResultState.isFinished) {
+        if (!parsedMarkersResultState.isFinished) {
             Log.i("Loading page $curMarkerHtmlPageNum")
 
             if(useFakeDataSetId > 0) {
@@ -181,7 +179,7 @@ fun loadMarkers(
             }
         } else {
             // Step 4 - Finished loading pages, now Save result to cache
-            cacheResultState = parseResultState.copy(
+            cacheResultState = parsedMarkersResultState.copy(
                 markerIdToRawMarkerInfoStrings = mutableMapOf(), // don't need the strings anymore, so remove it to save memory
             )
 
@@ -189,15 +187,15 @@ fun loadMarkers(
             if (didCacheUpdateFromNetwork) {
                 coroutineScope.launch {
                     settings.putString(
-                        "cachedMarkers",
+                        kCachedParsedMarkersResult,
                         json.encodeToString(ParsedMarkersResult.serializer(), cacheResultState)
                     )
                     settings.putLong(
-                        "cachedMarkersLastUpdatedEpochSeconds",
+                        kCachedMarkersLastUpdatedEpochSeconds,
                         Clock.System.now().epochSeconds
                     )
                     settings.putString(
-                        "cachedMarkersLastLocationLatLong",
+                        kCachedMarkersLastLocationLatLong,
                         json.encodeToString(myLocation)
                     )
                     Log.i("Saved markers to cache, total count: ${cacheResultState.markerInfos.size}")
@@ -214,11 +212,13 @@ fun loadMarkers(
         // 3(real) - Perform the load from network
         assetUrl?.let { assetUrl ->
             loadingState = try {
-                Log.i("Loading $assetUrl")
+                Log.d("Loading $assetUrl")
                 val response = httpClient.get(assetUrl)
                 val data: String = response.body()
                 LoadingState.Loaded(data)
             } catch (e: Exception) {
+                // Set "isFinished" to true here? // todo test this
+                parsedMarkersResultState = parsedMarkersResultState.copy(isFinished = true)
                 LoadingState.Error(e.cause?.message ?: "error")
             }
         }
@@ -237,12 +237,16 @@ fun loadMarkers(
                 loadingState = LoadingState.Error("Blank data for page $curMarkerHtmlPageNum, location: $myLocation")
                 return@withContext
             }
+            Log.i("Parsing HTML...Current markers count: ${parsedMarkersResultState.markerInfos.size}")
 
             // Parse the raw HTML into a list of `markerToInfoStrings` and a list
             //   of `markerInfos` without lat/long values & descriptions.
-            val parseResult = parseHtml(data)
-            if (parseResult.rawMarkerCountFromFirstHtmlPage == 0) {
+            val parsedMarkersResult = parseHtml(data)
+            if (parsedMarkersResult.rawMarkerCountFromFirstHtmlPage == 0) {
                 Log.w("No entries found for page: $curMarkerHtmlPageNum, location: $myLocation")
+                // set loading to finished
+                // loadingState = LoadingState.Idle // needed?
+                parsedMarkersResultState = parsedMarkersResultState.copy(isFinished = true)
                 return@withContext
             }
 
@@ -250,34 +254,35 @@ fun loadMarkers(
             if (curMarkerHtmlPageNum == 1) { // preserves cached results
 //                parseResultState = parseResult
 //                println("Parsed result state: ${parseResultState.markerInfos.size}") // todo: remove this
-                Log.i("Parsed result state: ${parseResultState.markerInfos.size}")
-                parseResultState = parseResult.copy(
-                    rawMarkerCountFromFirstHtmlPage = parseResult.rawMarkerCountFromFirstHtmlPage,
+                Log.i("parseResultState.markerInfos.size: ${parsedMarkersResultState.markerInfos.size}")
+                parsedMarkersResultState = parsedMarkersResult.copy(
+                    rawMarkerCountFromFirstHtmlPage = parsedMarkersResult.rawMarkerCountFromFirstHtmlPage,
 //                    isFinished = parseResult.isFinished,
-                    markerIdToRawMarkerInfoStrings = (parseResultState.markerIdToRawMarkerInfoStrings + parseResult.markerIdToRawMarkerInfoStrings).toMutableMap(),
-                    markerInfos = (parseResultState.markerInfos + parseResult.markerInfos).toMap(),
+                    markerIdToRawMarkerInfoStrings = (parsedMarkersResultState.markerIdToRawMarkerInfoStrings + parsedMarkersResult.markerIdToRawMarkerInfoStrings).toMutableMap(),
+                    markerInfos = (parsedMarkersResultState.markerInfos + parsedMarkersResult.markerInfos).toMap(),
                 )
             } else {
-                parseResultState = parseResultState.copy(
-                    markerIdToRawMarkerInfoStrings = (parseResultState.markerIdToRawMarkerInfoStrings + parseResult.markerIdToRawMarkerInfoStrings).toMutableMap(),
-                    markerInfos = (parseResultState.markerInfos + parseResult.markerInfos).toMap(),
+                parsedMarkersResultState = parsedMarkersResultState.copy(
+                    markerIdToRawMarkerInfoStrings = (parsedMarkersResultState.markerIdToRawMarkerInfoStrings + parsedMarkersResult.markerIdToRawMarkerInfoStrings).toMutableMap(),
+                    markerInfos = (parsedMarkersResultState.markerInfos + parsedMarkersResult.markerInfos).toMap(),
                 )
             }
-            Log.i("Drivable Map Location (markerInfos) entries count: ${parseResultState.markerInfos.size}, Parsed markerToInfoStrings count: ${parseResultState.markerIdToRawMarkerInfoStrings.size}")
+            Log.i("Found Drivable Map Location (markerInfos) entries count: ${parsedMarkersResultState.markerInfos.size}, Parsed markerIdToRawMarkerInfoStrings count: ${parsedMarkersResultState.markerIdToRawMarkerInfoStrings.size}")
 
             // Load more pages, if needed.
             // - Marker list size comparison is based on the number of `markerIdToRawMarkerInfoStrings`, not the parsed
             //   `markerInfos` because some of the markers from the page may have been rejected, and we just want
             //   to know when the raw html is completely loaded, not how many markers were parsed.
-            if (parseResultState.markerIdToRawMarkerInfoStrings.size < parseResultState.rawMarkerCountFromFirstHtmlPage) {
-                loadingState = LoadingState.Loading()
+            if (parsedMarkersResultState.markerIdToRawMarkerInfoStrings.size < parsedMarkersResultState.rawMarkerCountFromFirstHtmlPage) {
+                Log.i("Loading next page..., markerIdToRawMarkerInfoStrings.size: ${parsedMarkersResultState.markerIdToRawMarkerInfoStrings.size}, rawMarkerCountFromFirstHtmlPage: ${parsedMarkersResultState.rawMarkerCountFromFirstHtmlPage}")
+                //loadingState = LoadingState.Loading() // todo necessary?
                 curMarkerHtmlPageNum++  // trigger the next page load
             } else {
                 // Finish loading all pages
-                parseResultState = parseResultState.copy(isFinished = true)
+                parsedMarkersResultState = parsedMarkersResultState.copy(isFinished = true)
 
-                // Save the cachedResultState
-                cacheResultState = parseResultState.copy()
+                // Save the parsed results to the cache
+                cacheResultState = parsedMarkersResultState.copy()
             }
         }
     }
@@ -299,8 +304,8 @@ fun loadMarkers(
                 is LoadingState.Loaded<String> -> {
                     Text(
                         fontSize = 18.sp,
-                        text = "Loaded: ${parseResultState.markerIdToRawMarkerInfoStrings.size} / ${parseResultState.rawMarkerCountFromFirstHtmlPage} entries\n" +
-                                "Parsed: ${parseResultState.markerInfos.size}\n" +
+                        text = "Loaded: ${parsedMarkersResultState.markerIdToRawMarkerInfoStrings.size} / ${parsedMarkersResultState.rawMarkerCountFromFirstHtmlPage} entries\n" +
+                                "Parsed: ${parsedMarkersResultState.markerInfos.size}\n" +
                                 "Data size: ${state.data.length} chars"
                     )
                 }
@@ -316,7 +321,7 @@ fun loadMarkers(
         }
     }
 
-    return parseResultState // todo: return the cachedResult instead of the parsedResult
+    return parsedMarkersResultState // todo: return the cachedResult instead of the parsedResult
 }
 
 // from https://dzone.com/articles/distance-calculation-using-3

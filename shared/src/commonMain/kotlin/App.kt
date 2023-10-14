@@ -14,8 +14,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import co.touchlab.kermit.Severity
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.contains
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import co.touchlab.kermit.Logger as Log
 
@@ -28,6 +30,12 @@ val json = Json {
 
 const val kMaxReloadDistanceMiles = 2
 
+// Settings Keys
+const val kCachedParsedMarkersResult = "cachedParsedMarkersResult"
+const val kCachedMarkersLastUpdatedEpochSeconds = "cachedMarkersLastUpdatedEpochSeconds"
+const val kCachedMarkersLastLocationLatLong = "cachedMarkersLastLocationLatLong"
+const val kLastKnownUserLocation = "LastKnownUserLocation"
+
 @Composable
 fun App() {
 
@@ -39,14 +47,19 @@ fun App() {
 
         val settings = remember {
             Settings().apply {
-                clear()  // Force cache refresh // todo test location cache from start.
-//                Log.setMinSeverity(Severity.Warn)
-                Log.d { "keys from settings: $keys" }
+//                clear()  // Force cache refresh // todo test location cache from start.
+                // Log.setMinSeverity(Severity.Warn)
 
                 // Show current settings
-                // Log.d(getString("cachedMarkers", "[]"))
-                Log.d(getLong("cachedMarkersLastUpdatedEpochSeconds", 0L).toString())
-                Log.d(getString("cachedMarkersLastLocationLatLong", "{latitude:0.0, longitude:0.0}"))
+                Log.d { "keys from settings: $keys" }
+                Log.d("Settings: cachedParsedMarkersResult markerInfos.size= " +
+                        json.decodeFromString<ParsedMarkersResult>(getString(kCachedParsedMarkersResult, "{}")).markerInfos.size.toString())
+                Log.d("Settings: cachedMarkersLastUpdatedEpochSeconds= " +
+                        getLong(kCachedMarkersLastUpdatedEpochSeconds, 0L).toString())
+                Log.d("Settings: cachedMarkersLastLocationLatLong= " +
+                        getString(kCachedMarkersLastLocationLatLong, "{latitude:0.0, longitude:0.0}"))
+                Log.d("Settings: LastKnownUserLocation= " +
+                        getString(kLastKnownUserLocation, "{latitude:0.0, longitude:0.0}"))
             }
         }
 
@@ -54,9 +67,9 @@ fun App() {
         var myLocation: Location by remember {
             mutableStateOf(
                 // Load last known location
-                if(settings.contains("LastKnownUserLocation")) {
+                if(settings.contains(kLastKnownUserLocation)) {
                     val latLong = json.decodeFromString<Location>(
-                        settings.getString("LastKnownUserLocation",
+                        settings.getString(kLastKnownUserLocation,
                             "{latitude:0.0, longitude:0.0}")
                     )
                     Location(latLong.latitude, latLong.longitude)
@@ -67,35 +80,27 @@ fun App() {
             )
         }
 
-
         val markersData = loadMarkers(
             settings,
             myLocation = myLocation,
             maxReloadDistanceMiles = kMaxReloadDistanceMiles,
-            showLoadingState = true,
+            showLoadingState = false,
             useFakeDataSetId = 0  // 0 = real data, 1 = Googleplex, 2 = Tepoztlan,
         )
 
-//        // Load markers
-//        val markersData = remember(myLocation) {
-//            mutableStateOf(
-//                loadMarkers(
-//                    settings,
-//                    myLocationLatLong = LatLong(myLocation.latitude, myLocation.longitude),
-//                    maxReloadDistanceMiles = kMaxReloadDistanceMiles,
-//                    showLoadingState = true,
-//                    useFakeDataSetId = 1  // 0 = real data, 1 = Googleplex, 2 = Tepoztlan,
-//                )
-//            )
-//        }
-
-        var markerLoad = remember {
+        var markerLoad = remember {  // todo needed?
             derivedStateOf { markersData.isFinished }
+        }
+        val cachedMapMarkers = remember { // prevents flicker when loading new markers
+            mutableStateListOf<MapMarker>()
+        }
+        var shouldUpdateMapMarkers by remember {
+            mutableStateOf(true)
         }
         val markers = remember(markersData.isFinished) {
 
-            if (!markersData.isFinished) {
-                return@remember listOf()
+            if (!markersData.isFinished) { // While loading new markers, use the cached markers to prevent flicker
+                return@remember cachedMapMarkers
             }
 
             if (false) {
@@ -150,6 +155,7 @@ fun App() {
 //            }
             }
 
+            println("Updating markers, markersData.markerInfos.size: ${markersData.markerInfos.size}")
             val markers =
                 markersData.markerInfos.map { marker ->
                     MapMarker(
@@ -164,9 +170,16 @@ fun App() {
                 }
 
             mutableStateListOf<MapMarker>().also { snapShot ->
+                Log.i("pre-snapshot markersData.markerInfos.size: ${markersData.markerInfos.size}")
                 snapShot.clear()
                 snapShot.addAll(markers)
-                Log.i { "marker count = ${snapShot.size}" }
+                cachedMapMarkers.clear()
+                cachedMapMarkers.addAll(markers)
+                println("Should update markers = true")
+                coroutineScope.launch {
+                    shouldUpdateMapMarkers = true
+                }
+                Log.i { "Final applied marker count = ${snapShot.size}" }
             }
         }
         val mapBounds by remember(markers) {
@@ -220,35 +233,6 @@ fun App() {
                     Log.i { "Error: Unable to get current location" }
                     return@run myLocation // just return the most recent location
                 }
-
-//                // Update the last known location & load new markers if needed
-//                coroutineScope.launch {
-//                    settings["LastKnownUserLocation"] =
-//                        json.encodeToString(LatLongSerializer, LatLong(myLocation.latitude, myLocation.longitude))
-//
-//                    // check if outside the MaxReloadDistanceMiles to load new markers
-//                    val cachedMarkersLastLocationLatLong =
-//                        json.decodeFromString<Location>(
-//                            settings.getString("cachedMarkersLastLocationLatLong", "{lat:0.0, long:0.0}")
-//                        )
-//                    println("cachedMarkersLastLocationLatLong: $cachedMarkersLastLocationLatLong")
-//                    val distance = distanceBetween(
-//                        myLocation.latitude,
-//                        myLocation.longitude,
-//                        cachedMarkersLastLocationLatLong.latitude,
-//                        cachedMarkersLastLocationLatLong.longitude
-//                    )
-//                    println("distanceBetween myLocation and cachedMarkersLastLocationLatLong: $distance")
-//                    if(distance > kMaxReloadDistanceMiles) {
-//                        println("distance > MaxReloadDistanceMiles")
-//                        settings["cachedMarkersLastLocationLatLong"] =
-//                            json.encodeToString(Location(myLocation.latitude, myLocation.longitude))
-//                        settings["cachedMarkersLastUpdatedEpochSeconds"] = Clock.System.now().epochSeconds
-//
-//                        markersData = markersData.copy(isFinished = false) // trigger reload
-//                    }
-//
-//                }
             }
 
             snapshotFlow { myLocation }
@@ -267,22 +251,6 @@ fun App() {
 //                            title = "Another"
 //                        )
 //                    )
-
-//                    markers = markers.map { marker ->
-//                        if (marker.key == "marker4") {
-//                            Log.i { "marker4, myLocation = ${myLocation.latitude}, ${myLocation.longitude}" }
-//                            MapMarker(
-//                                position = LatLong(
-//                                    myLocation.latitude,
-//                                    myLocation.longitude
-//                                ),
-//                                key = marker.key,
-//                                title = marker.title
-//                            )
-//                        } else {
-//                            marker
-//                        }
-//                    }.toMutableList()
                 }
 
 //            coroutineScope.launch {
@@ -312,34 +280,20 @@ fun App() {
 //            }
         }
 
-//        LaunchedEffect(myLocation) {
-//            // Update the marker position
-//            markers = markers.toMutableList().map { marker ->
-//                if (marker.key == "marker4") {
-//                    Log.i { "marker4, myLocation = ${myLocation.latitude}, ${myLocation.longitude}" }
-//                    MapMarker(
-//                        position = LatLong(
-//                            myLocation.latitude,
-//                            myLocation.longitude
-//                        ),
-//                        key = marker.key,
-//                        title = marker.title
-//                    )
-//                } else {
-//                    marker
-//                }
-//            }
-//        }
-
+        var shouldUpdateMap by remember { mutableStateOf(false) }
+        var isFirstUpdate by remember { mutableStateOf(true) }
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
 
 //            Text("Location: ${myLocation.latitude}, ${myLocation.longitude}")
-//            Text(json.decodeFromString<Location>(settings.getString("LastKnownUserLocation", "{latitude:0.0, longitude:0.0}")).toString() )
+//            Text(json.decodeFromString<Location>(settings.getString(kLastKnownUserLocation, "{latitude:0.0, longitude:0.0}")).toString() )
 
-            if (markersData.isFinished) {
+            if(markersData.isFinished) shouldUpdateMap = true
+
+            if(shouldUpdateMap || !isFirstUpdate) {
                 GoogleMaps(
                     modifier = Modifier.fillMaxSize(),
-                    markers = markers,
+                    markers = markers.ifEmpty { null },
+                    shouldUpdateMapMarkers = shouldUpdateMapMarkers,
                     cameraPosition = remember { CameraPosition(
                         target = LatLong(
                             37.422160,
@@ -366,6 +320,10 @@ fun App() {
                         myLocation.longitude
                     ),
                 )
+
+                shouldUpdateMap = false
+                isFirstUpdate = false
+                shouldUpdateMapMarkers = false
             }
         }
     }
