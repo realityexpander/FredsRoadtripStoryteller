@@ -1,9 +1,11 @@
+package loadMarkers
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import httpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 

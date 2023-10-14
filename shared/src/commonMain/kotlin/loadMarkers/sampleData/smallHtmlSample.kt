@@ -1,4 +1,4 @@
-package sampleData
+package loadMarkers.sampleData
 
 val smallHtmlSample = """
     <html>

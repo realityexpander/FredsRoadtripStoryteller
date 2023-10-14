@@ -86,7 +86,7 @@ actual class LocationService  {
 
             override fun onLocationAvailability(availability: LocationAvailability) {
                 super.onLocationAvailability(availability)
-                Log.i( "onLocationAvailability: ${availability.isLocationAvailable}" )
+                Log.d( "onLocationAvailability: ${availability.isLocationAvailable}" )
             }
         }
 

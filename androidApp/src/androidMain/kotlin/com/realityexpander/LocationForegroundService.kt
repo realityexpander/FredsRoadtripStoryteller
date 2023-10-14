@@ -71,7 +71,7 @@ class LocationForegroundService: Service() {
         serviceScope.launch {
             locationClient.currentLocation(
                 errorCallback = { error ->
-                    Log.i("LocationForegroundService, Error: $error" )
+                    Log.w("LocationForegroundService, Error: $error" )
                 }
             ) { location ->
                 location?.run {

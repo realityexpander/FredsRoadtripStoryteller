@@ -51,21 +51,21 @@ actual class LocationService  {
         }
 
         override fun locationManager(manager: CLLocationManager, didFailWithError: NSError) {
-            Log.i { "Error: ${didFailWithError.localizedFailureReason} ${didFailWithError.localizedDescription}, ${didFailWithError.localizedRecoverySuggestion}" }
-            Log.i { "Error: ${didFailWithError.userInfo["timestamp"]}" }
+            Log.w { "Error: ${didFailWithError.localizedFailureReason} ${didFailWithError.localizedDescription}, ${didFailWithError.localizedRecoverySuggestion}" }
+            Log.w { "Error: ${didFailWithError.userInfo["timestamp"]}" }
             onLocationUpdate?.invoke(null)
         }
 
         override fun locationManager(manager: CLLocationManager, didChangeAuthorizationStatus: Int) {
-            Log.i { "Authorization status changed to: $didChangeAuthorizationStatus" }
+            Log.w { "Authorization status changed to: $didChangeAuthorizationStatus" }
         }
 
         override fun locationManagerDidPauseLocationUpdates(manager: CLLocationManager) {
-            Log.i { "locationManagerDidPauseLocationUpdates" }
+            Log.d { "locationManagerDidPauseLocationUpdates" }
         }
 
         override fun locationManagerDidResumeLocationUpdates(manager: CLLocationManager) {
-            Log.i { "locationManagerDidResumeLocationUpdates" }
+            Log.d { "locationManagerDidResumeLocationUpdates" }
         }
 
     }
@@ -88,9 +88,9 @@ actual class LocationService  {
     actual suspend fun currentHeading(callback: (Heading?) -> Unit) {
         locationManager.requestWhenInUseAuthorization()
         if(locationManager.headingAvailable) {
-            Log.i { "headingAvailable" }
+            Log.d { "headingAvailable" }
         } else {
-            Log.i { "headingUnavailable" }
+            Log.d { "headingUnavailable" }
         }
 
         locationDelegate.onHeadingUpdate = callback

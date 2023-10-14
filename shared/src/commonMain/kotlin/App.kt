@@ -14,11 +14,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import co.touchlab.kermit.Severity
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.contains
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+import loadMarkers.MarkersResult
+import loadMarkers.loadMarkers
 import co.touchlab.kermit.Logger as Log
 
 val json = Json {
@@ -29,9 +30,10 @@ val json = Json {
 
 
 const val kMaxReloadDistanceMiles = 2
+const val kMaxMarkerCacheAgeSeconds = 60 * 60 * 24 * 30  // 30 days
 
 // Settings Keys
-const val kCachedParsedMarkersResult = "cachedParsedMarkersResult"
+const val kCachedParsedMarkersResult = "cachedMarkersResult"
 const val kCachedMarkersLastUpdatedEpochSeconds = "cachedMarkersLastUpdatedEpochSeconds"
 const val kCachedMarkersLastLocationLatLong = "cachedMarkersLastLocationLatLong"
 const val kLastKnownUserLocation = "LastKnownUserLocation"
@@ -52,8 +54,8 @@ fun App() {
 
                 // Show current settings
                 Log.d { "keys from settings: $keys" }
-                Log.d("Settings: cachedParsedMarkersResult markerInfos.size= " +
-                        json.decodeFromString<ParsedMarkersResult>(getString(kCachedParsedMarkersResult, "{}")).markerInfos.size.toString())
+                Log.d("Settings: cachedMarkersResult markerInfos.size= " +
+                        json.decodeFromString<MarkersResult>(getString(kCachedParsedMarkersResult, "{}")).markerInfos.size.toString())
                 Log.d("Settings: cachedMarkersLastUpdatedEpochSeconds= " +
                         getLong(kCachedMarkersLastUpdatedEpochSeconds, 0L).toString())
                 Log.d("Settings: cachedMarkersLastLocationLatLong= " +
@@ -82,7 +84,7 @@ fun App() {
 
         val markersData = loadMarkers(
             settings,
-            myLocation = myLocation,
+            userLocation = myLocation,
             maxReloadDistanceMiles = kMaxReloadDistanceMiles,
             showLoadingState = false,
             useFakeDataSetId = 0  // 0 = real data, 1 = Googleplex, 2 = Tepoztlan,
@@ -104,7 +106,7 @@ fun App() {
             }
 
             if (false) {
-//                Log.i { "marker count = ${markersData.value.markerInfos.size}")
+//                Log.d { "marker count = ${markersData.value.markerInfos.size}")
 //                mutableStateListOf(
 ////                    MapMarker(
 ////                        key = "marker4",
@@ -170,7 +172,7 @@ fun App() {
                 }
 
             mutableStateListOf<MapMarker>().also { snapShot ->
-                Log.i("pre-snapshot markersData.markerInfos.size: ${markersData.markerInfos.size}")
+                Log.d("pre-snapshot markersData.markerInfos.size: ${markersData.markerInfos.size}")
                 snapShot.clear()
                 snapShot.addAll(markers)
                 cachedMapMarkers.clear()
@@ -179,7 +181,7 @@ fun App() {
                 coroutineScope.launch {
                     shouldUpdateMapMarkers = true
                 }
-                Log.i { "Final map-applied marker count = ${snapShot.size}" }
+                Log.d { "Final map-applied marker count = ${snapShot.size}" }
             }
         }
         val mapBounds by remember(markers) {
@@ -201,7 +203,7 @@ fun App() {
 //                        // Update the marker position
 //                        markers = markers.map { marker ->
 //                            if (marker.key == "marker4") {
-//                                Log.i { "marker4, myLocation = ${myLocation.latitude}, ${myLocation.longitude}" }
+//                                Log.d { "marker4, myLocation = ${myLocation.latitude}, ${myLocation.longitude}" }
 //                                MapMarker(
 //                                    position = LatLong(
 //                                        myLocation.latitude,
@@ -216,7 +218,7 @@ fun App() {
 //                        }.toMutableList()
 //                    }
 //                } catch (e: Exception) {
-//                    Log.i { "Error: ${e.message}" }
+//                    Log.d { "Error: ${e.message}" }
 //                }
             }
 
@@ -230,14 +232,14 @@ fun App() {
 //                )
 //                myLocation = locationTemp ?: run { // use defined location
                 myLocation = location ?: run { // use live location
-                    Log.i { "Error: Unable to get current location" }
+                    Log.w { "Error: Unable to get current location" }
                     return@run myLocation // just return the most recent location
                 }
             }
 
             snapshotFlow { myLocation }
                 .collect { location ->
-//                    Log.i { "location = ${location.latitude}, ${location.longitude}" }
+//                    Log.d { "location = ${location.latitude}, ${location.longitude}" }
 
                     // location track marker
 //                    markers.clear()
@@ -257,7 +259,7 @@ fun App() {
 //                // Update the marker position
 //                markers = markers.toMutableList().map { marker ->
 //                    if (marker.key == "marker4") {
-//                        Log.i { "marker4, myLocation = ${myLocation.latitude}, ${myLocation.longitude}" }
+//                        Log.d { "marker4, myLocation = ${myLocation.latitude}, ${myLocation.longitude}" }
 //                        MapMarker(
 //                            position = LatLong(
 //                                myLocation.latitude,
@@ -275,7 +277,7 @@ fun App() {
 //            // Get heading updates
 //            locationService.currentHeading { heading ->
 //                heading?.let {
-//                    Log.i { "heading = ${it.trueHeading}, ${it.magneticHeading}" }
+//                    Log.d { "heading = ${it.trueHeading}, ${it.magneticHeading}" }
 //                }
 //            }
         }

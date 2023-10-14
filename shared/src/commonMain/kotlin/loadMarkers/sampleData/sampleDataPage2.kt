@@ -1,4 +1,4 @@
-package sampleData
+package loadMarkers.sampleData
 
 fun fullHtmlSamplePage2() = """
 <!DOCTYPE html>

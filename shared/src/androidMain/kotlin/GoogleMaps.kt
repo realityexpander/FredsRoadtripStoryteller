@@ -96,7 +96,7 @@ actual fun GoogleMaps(
     // Usually used to setup the initial camera position (not tracking due to forcing zoom level)
     LaunchedEffect(cameraPosition) {
         cameraPosition?.let { cameraPosition ->
-            Log.i { "cameraPosition = ${cameraPosition.target.latitude}, ${cameraPosition.target.longitude}" }
+            Log.d { "cameraPosition = ${cameraPosition.target.latitude}, ${cameraPosition.target.longitude}" }
             cameraPositionState.move(
                 CameraUpdateFactory.newLatLngZoom(
                     LatLng(
@@ -112,13 +112,13 @@ actual fun GoogleMaps(
         // Follow the camera position
         snapshotFlow { cameraPositionState.position }
             .collect { position ->
-                // Log.i { "position = ${position.target.latitude}, ${position.target.longitude}" }
+                // Log.d { "position = ${position.target.latitude}, ${position.target.longitude}" }
             }
     }
 
     LaunchedEffect(cameraLocationBounds) {
         cameraLocationBounds?.let { cameraPositionBounds ->
-            Log.i { "cameraLocationBounds = ${cameraPositionBounds.coordinates}"  }
+            Log.d { "cameraLocationBounds = ${cameraPositionBounds.coordinates}"  }
             // Build the bounding box
             val latLngBounds = LatLngBounds.builder().apply {
                 cameraPositionBounds.coordinates.forEach { latLong ->
@@ -134,7 +134,7 @@ actual fun GoogleMaps(
 
     LaunchedEffect(cameraLocationLatLong) {
         cameraLocationLatLong?.let { cameraLocationLatLong ->
-            Log.i { "cameraLocationLatLong = ${cameraLocationLatLong.latitude}, ${cameraLocationLatLong.longitude}" }
+            Log.d { "cameraLocationLatLong = ${cameraLocationLatLong.latitude}, ${cameraLocationLatLong.longitude}" }
             cameraPositionState.animate(
                 CameraUpdateFactory.newLatLng(
                     LatLng(
@@ -366,11 +366,11 @@ actual fun GoogleMaps(
                     }
                 },
                 onClusterClick = { cluster ->
-                    Log.i { "cluster clicked" }
+                    Log.d { "cluster clicked" }
                     true
                 },
 //                onClusterItemClick = { clusterItem ->
-//                    Log.i { "cluster item clicked" }
+//                    Log.d { "cluster item clicked" }
 ////                    coroutineScope.launch {
 ////                        myMarkers.value = myMarkers.value + MapMarker(
 ////                            key = clusterItem.position.toString(),
@@ -385,7 +385,7 @@ actual fun GoogleMaps(
 //                    true
 //                },
 //                clusterContent = { cluster ->
-//                    Log.i { "clusterContent" }
+//                    Log.d { "clusterContent" }
 //                    Marker(
 //                        state = MarkerState(
 //                            position = LatLng(cluster.position.latitude, cluster.position.longitude)
