@@ -2,6 +2,7 @@ package loadMarkers
 
 import com.mohamedrejeb.ksoup.entities.KsoupEntities
 import com.mohamedrejeb.ksoup.html.parser.KsoupHtmlHandler
+import com.mohamedrejeb.ksoup.html.parser.KsoupHtmlHandler.Default.onOpenTag
 import com.mohamedrejeb.ksoup.html.parser.KsoupHtmlParser
 import co.touchlab.kermit.Logger as Log
 
@@ -23,15 +24,16 @@ suspend fun parseMarkerPageHtml(htmlResponse: String): MarkersResult {
 
     // Simple scraper that checks if a page is only a single-marker page
     // - If it has a "span" with class "sectionhead", then it's a single-marker page.
-    val singleItemForPageChecker = KsoupHtmlHandler
-        .Builder()
-        .onOpenTag { tagName, attributes, _ ->
-            if (tagName == "span" && attributes["class"] == "sectionhead") {
-                isSingleMarkerPage = true
+    fun singleItemForPageChecker():  KsoupHtmlHandler {
+        return KsoupHtmlHandler.Builder()
+            .onOpenTag { tagName, attributes, _ ->
+                if (tagName == "span" && attributes["class"] == "sectionhead") {
+                    isSingleMarkerPage = true
+                }
             }
-        }
-        .build()
-    val singleItemForPageCheckerKsoupHtmlParser = KsoupHtmlParser(handler = singleItemForPageChecker)
+            .build()
+    }
+    val singleItemForPageCheckerKsoupHtmlParser = KsoupHtmlParser(handler = singleItemForPageChecker())
     singleItemForPageCheckerKsoupHtmlParser.write(htmlResponse)
     singleItemForPageCheckerKsoupHtmlParser.end()
 

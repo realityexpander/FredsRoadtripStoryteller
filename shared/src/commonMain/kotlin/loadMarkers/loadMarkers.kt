@@ -300,7 +300,6 @@ fun loadMarkers(
                     // - Marker list size comparison is based on the number of `markerIdToRawMarkerInfoStrings`, not the parsed
                     //   `markerInfos` because some of the markers from the page may have been rejected, and we just want
                     //   to know when the raw html is completely loaded, not how many markers were parsed.
-                    println("markersResultState.markerIdToRawMarkerInfoStrings.size: ${markersResultState.markerIdToRawMarkerInfoStrings.size}, rawMarkerCountFromFirstHtmlPage: ${markersResultState.rawMarkerCountFromFirstPageHtmlOfMultiPageResult}")
                     if (markersResultState.markerIdToRawMarkerInfoStrings.size < markersResultState.rawMarkerCountFromFirstPageHtmlOfMultiPageResult) {
                         Log.d("Loading next page..., markerIdToRawMarkerInfoStrings.size: ${markersResultState.markerIdToRawMarkerInfoStrings.size}, rawMarkerCountFromFirstHtmlPage: ${markersResultState.rawMarkerCountFromFirstPageHtmlOfMultiPageResult}")
                         curHtmlPageNum++  // trigger the next page load
