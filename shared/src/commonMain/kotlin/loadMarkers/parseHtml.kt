@@ -5,7 +5,7 @@ import com.mohamedrejeb.ksoup.html.parser.KsoupHtmlHandler
 import com.mohamedrejeb.ksoup.html.parser.KsoupHtmlParser
 import co.touchlab.kermit.Logger as Log
 
-suspend fun parseHtml(htmlResponse: String): MarkersResult {
+suspend fun parseMarkerPageHtml(htmlResponse: String): MarkersResult {
     if (htmlResponse.isBlank()) {
         Log.w { "htmlResponse is Blank" }
         return MarkersResult()

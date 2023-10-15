@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -64,9 +63,8 @@ fun App() {
                         getString(kLastKnownUserLocation, "{latitude:0.0, longitude:0.0}"))
             }
         }
-
         val locationService by remember { mutableStateOf(LocationService()) }
-        var myLocation: Location by remember {
+        var userLocation: Location by remember {
             mutableStateOf(
                 // Load last known location
                 if(settings.contains(kLastKnownUserLocation)) {
@@ -81,27 +79,22 @@ fun App() {
                 }
             )
         }
-
-        val markersData = loadMarkers(
+        val markersLoadResult = loadMarkers(
             settings,
-            userLocation = myLocation,
+            userLocation = userLocation,
             maxReloadDistanceMiles = kMaxReloadDistanceMiles,
             showLoadingState = false,
             useFakeDataSetId = 0  // 0 = real data, 1 = Googleplex, 2 = Tepoztlan,
         )
-
-        var markerLoad = remember {  // todo needed?
-            derivedStateOf { markersData.isFinished }
-        }
         val cachedMapMarkers = remember { // prevents flicker when loading new markers
             mutableStateListOf<MapMarker>()
         }
         var shouldUpdateMapMarkers by remember {
             mutableStateOf(true)
         }
-        val markers = remember(markersData.isFinished) {
+        val mapMarkers = remember(markersLoadResult.isFinished) {
 
-            if (!markersData.isFinished) { // While loading new markers, use the cached markers to prevent flicker
+            if (!markersLoadResult.isFinished) { // While loading new markers, use the cached markers to prevent flicker
                 return@remember cachedMapMarkers
             }
 
@@ -157,9 +150,9 @@ fun App() {
 //            }
             }
 
-            Log.d("Updating markers, markersData.markerInfos.size: ${markersData.markerInfos.size}")
+            // Log.d("Updating markers, markersData.markerInfos.size: ${markersLoadResult.markerInfos.size}")
             val markers =
-                markersData.markerInfos.map { marker ->
+                markersLoadResult.markerInfos.map { marker ->
                     MapMarker(
                         key = marker.key,
                         position = LatLong(
@@ -172,26 +165,28 @@ fun App() {
                 }
 
             mutableStateListOf<MapMarker>().also { snapShot ->
-                Log.d("pre-snapshot markersData.markerInfos.size: ${markersData.markerInfos.size}")
+                // Log.d("pre-snapshot markersData.markerInfos.size: ${markersLoadResult.markerInfos.size}")
                 snapShot.clear()
                 snapShot.addAll(markers)
                 cachedMapMarkers.clear()
                 cachedMapMarkers.addAll(markers)
-                println("Should update markers = true")
+
                 coroutineScope.launch {
                     shouldUpdateMapMarkers = true
                 }
+
                 Log.d { "Final map-applied marker count = ${snapShot.size}" }
             }
         }
-        val mapBounds by remember(markers) {
+        val mapBounds by remember(mapMarkers) {
             mutableStateOf(
-                markers.map {
+                mapMarkers.map {
                     it.position
                 }.toList()
             )
         }
 
+        // Update user location
         LaunchedEffect(Unit) {
 
             if (false) {
@@ -231,13 +226,13 @@ fun App() {
 //                    -99.095387 // Tepoztlan
 //                )
 //                myLocation = locationTemp ?: run { // use defined location
-                myLocation = location ?: run { // use live location
+                userLocation = location ?: run { // use live location
                     Log.w { "Error: Unable to get current location" }
-                    return@run myLocation // just return the most recent location
+                    return@run userLocation // just return the most recent location
                 }
             }
 
-            snapshotFlow { myLocation }
+            snapshotFlow { userLocation }
                 .collect { location ->
 //                    Log.d { "location = ${location.latitude}, ${location.longitude}" }
 
@@ -282,26 +277,23 @@ fun App() {
 //            }
         }
 
-        var shouldUpdateMap by remember { mutableStateOf(false) }
         var isFirstUpdate by remember { mutableStateOf(true) }
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
 
 //            Text("Location: ${myLocation.latitude}, ${myLocation.longitude}")
 //            Text(json.decodeFromString<Location>(settings.getString(kLastKnownUserLocation, "{latitude:0.0, longitude:0.0}")).toString() )
 
-            if(markersData.isFinished) shouldUpdateMap = true
-
-            if(shouldUpdateMap || !isFirstUpdate) {
+            if(markersLoadResult.isFinished || !isFirstUpdate) {
                 GoogleMaps(
                     modifier = Modifier.fillMaxSize(),
-                    markers = markers.ifEmpty { null },
+                    markers = mapMarkers.ifEmpty { null },
                     shouldUpdateMapMarkers = shouldUpdateMapMarkers,
                     cameraPosition = remember { CameraPosition(
                         target = LatLong(
                             37.422160,
                             -122.084270  // googleplex
 //                            myLocation.latitude, // only sets the initial position, not tracked. Use `myLocation` for tracking.
-//                            myLocation.longitude
+//                            myLocation.longitude // Todo test that this is coming from the settings intially.
                         ),
                         zoom = 12f  // note: forced zoom level
                     )},
@@ -318,12 +310,11 @@ fun App() {
 //                        )
 //                    },
                     myLocation = LatLong(
-                        myLocation.latitude,
-                        myLocation.longitude
+                        userLocation.latitude,
+                        userLocation.longitude
                     ),
                 )
 
-                shouldUpdateMap = false
                 isFirstUpdate = false
                 shouldUpdateMapMarkers = false
             }

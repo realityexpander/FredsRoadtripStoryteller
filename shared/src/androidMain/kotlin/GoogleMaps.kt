@@ -96,7 +96,7 @@ actual fun GoogleMaps(
     // Usually used to setup the initial camera position (not tracking due to forcing zoom level)
     LaunchedEffect(cameraPosition) {
         cameraPosition?.let { cameraPosition ->
-            Log.d { "cameraPosition = ${cameraPosition.target.latitude}, ${cameraPosition.target.longitude}" }
+            // Log.d { "cameraPosition = ${cameraPosition.target.latitude}, ${cameraPosition.target.longitude}" }
             cameraPositionState.move(
                 CameraUpdateFactory.newLatLngZoom(
                     LatLng(
@@ -118,7 +118,7 @@ actual fun GoogleMaps(
 
     LaunchedEffect(cameraLocationBounds) {
         cameraLocationBounds?.let { cameraPositionBounds ->
-            Log.d { "cameraLocationBounds = ${cameraPositionBounds.coordinates}"  }
+            // Log.d { "cameraLocationBounds = ${cameraPositionBounds.coordinates}"  }
             // Build the bounding box
             val latLngBounds = LatLngBounds.builder().apply {
                 cameraPositionBounds.coordinates.forEach { latLong ->
@@ -134,7 +134,7 @@ actual fun GoogleMaps(
 
     LaunchedEffect(cameraLocationLatLong) {
         cameraLocationLatLong?.let { cameraLocationLatLong ->
-            Log.d { "cameraLocationLatLong = ${cameraLocationLatLong.latitude}, ${cameraLocationLatLong.longitude}" }
+            // Log.d { "cameraLocationLatLong = ${cameraLocationLatLong.latitude}, ${cameraLocationLatLong.longitude}" }
             cameraPositionState.animate(
                 CameraUpdateFactory.newLatLng(
                     LatLng(
@@ -236,12 +236,12 @@ actual fun GoogleMaps(
                 TileOverlay(
                     tileProvider = remember(shouldUpdateMapMarkers, markers) {
                         if(!shouldUpdateMapMarkers) {
-                            Log.d { "Using cached heatmap items, cachedHeatmap = $cachedTileProvider" }
+                            // Log.d { "Using cached heatmap items, cachedHeatmap = $cachedTileProvider" }
                             return@remember cachedTileProvider
                         } else {
                             // check if the markers are different than the cached markers
                             if(markers.size == cachedMarkers.size) {
-                                Log.d { "Using cached heatmap items because list of markers has not changed, cachedHeatmap = $cachedTileProvider" }
+                                // Log.d { "Using cached heatmap items because list of markers has not changed, cachedHeatmap = $cachedTileProvider" }
                                 return@remember cachedTileProvider
                             }
 
@@ -249,7 +249,6 @@ actual fun GoogleMaps(
                             val result = HeatmapTileProvider.Builder()
                                 .weightedData(
                                     if(markers.isNotEmpty()) {
-                                        println("markers.isNotEmpty()")
                                         markers.map { marker ->
                                             WeightedLatLng(
                                                 LatLng(
@@ -260,7 +259,6 @@ actual fun GoogleMaps(
                                             )
                                         }
                                     } else {
-                                        println("markers.isEmpty()")
                                         listOf( // default cache value (heatmap must have at least 1 item, and this wont be visible)
                                             WeightedLatLng(
                                                 LatLng(0.0, 0.0), 0.0
@@ -269,7 +267,7 @@ actual fun GoogleMaps(
                                 })
                                 .radius(25) // convolution filter size in pixels
                                 .build()
-                            Log.d("Recalculating heatmap items, markers.size= ${markers.size}, HeatmapTileProvider= $result")
+                            // Log.d("Recalculating heatmap items, markers.size= ${markers.size}, HeatmapTileProvider= $result")
                             cachedTileProvider = result
                             return@remember result
                         }
@@ -339,12 +337,12 @@ actual fun GoogleMaps(
             Clustering(
                 items = remember(shouldUpdateMapMarkers, markers) {
                     if(!shouldUpdateMapMarkers) {
-                        Log.d { "Using cached cluster items, cachedMarkers.size = ${cachedMarkers.size}" }
+                        // Log.d { "Using cached cluster items, cachedMarkers.size = ${cachedMarkers.size}" }
                         return@remember cachedMarkers
                     } else {
                         // check if the markers are different than the cached markers
                         if(markers?.size == cachedMarkers.size) {
-                            Log.d { "Using cached cluster items because list of markers has not changed, cachedMarkers.size = ${cachedMarkers.size}" }
+                            // Log.d { "Using cached cluster items because list of markers has not changed, cachedMarkers.size = ${cachedMarkers.size}" }
                             return@remember cachedMarkers
                         }
 
@@ -359,7 +357,7 @@ actual fun GoogleMaps(
                                 override fun getZIndex(): Float = 1.0f
                             }
                         } ?: listOf<ClusterItem>()
-                        Log.d { "Recalculating cluster items, markers.size= ${markers?.size}, result.size= ${result.size}" }
+                        // Log.d { "Recalculating cluster items, markers.size= ${markers?.size}, result.size= ${result.size}" }
                         cachedMarkers.clear()
                         cachedMarkers.addAll(result)
                         return@remember result

@@ -64,14 +64,13 @@ data class MarkersResult(
 // 2 - Initiate Load from network
 // 3 - Perform Load & Error checking
 // 4 - Parse the HTML
-//   4.1 - Parse first page of HTML (to get the total number of entries & link to next page)
-//       - Extract the MarkerInfo objects from the parsed HTML
-//   4.2 - Load more pages, if needed.
-// 5 - Save the MarkerInfo objects to cache (if they were updated from the network)
+//   4.1 - Parse the raw page HTML into a list of `MarkerInfo` objects & metadata about the scraped data
+//   4.2 - Load more pages, if needed (goto step 2)
+// 5 - Save the MarkerInfo objects to cache & settings (if they were updated from the network)
 // 6 - PROCESS COMPLETE
 //
-// Note: yes! this code is goofy looking... this is good because to avoid using a viewModel
-//       this works as a composable function. 
+// Note: yes! this code is goofy looking & hops around a lot... this is because to I'm avoid using
+//       a viewModel as this works as a pure composable function.
 //       I'm Experimenting with a pure compose architecture with no android idiom remnants.
 @Composable
 fun loadMarkers(
@@ -91,7 +90,7 @@ fun loadMarkers(
 
     val coroutineScope = rememberCoroutineScope()
 
-    // Holds the current state of the parsed markers
+    // Holds the current processing state of the parsed markers
     var markersResultState by remember {
         // Load the cached result from persistent storage (Settings) as the initial state
         mutableStateOf(
@@ -102,7 +101,7 @@ fun loadMarkers(
 
     var markersLoadingState: LoadingState<String> by remember { mutableStateOf(LoadingState.Idle) }
     var cachedMarkersResultState by remember(userLocation) {
-         Log.d("myLocation update, currentlyLoadingState: $markersLoadingState, location: $userLocation")
+         // Log.d("userLocation update, currentlyLoadingState: $markersLoadingState, location: $userLocation")
 
         // If currently loading/parsing markers, return the current parseResultState upon location change
         if(!markersResultState.isFinished) return@remember mutableStateOf(markersResultState)
@@ -161,13 +160,13 @@ fun loadMarkers(
         }
     }
 
+    var markerHtmlPageUrl by remember { mutableStateOf<String?>(null) }
     var curHtmlPageNum by remember { mutableStateOf(1) }
-    var htmlPageUrl by remember { mutableStateOf<String?>(null) }
     var shouldUpdateCache by remember { mutableStateOf(false) }
     var networkLoadingState by remember(markersResultState.isFinished, curHtmlPageNum) {
         // Step 2 - Initiate Load a page of raw marker HTML from the network
         if (!markersResultState.isFinished) {
-            Log.d("Loading page $curHtmlPageNum")
+            // Log.d("Loading page $curHtmlPageNum")
             markersLoadingState = LoadingState.Loading()
             shouldUpdateCache = true
 
@@ -176,15 +175,15 @@ fun loadMarkers(
                 mutableStateOf(generateSampleMarkerPageHtml(curHtmlPageNum, useFakeDataSetId)) // use fake data
             } else {
                 // Initiate real loading from network
-                htmlPageUrl = "https://www.hmdb.org/results.asp?Search=Coord" +
-//                    "&Latitude=37.422160" +
-//                    "&Longitude=-122.084270" +  // Sunnyvale, CA
-//                    "&Miles=10" +
-                        "&Latitude=" + userLocation.latitude +
-                        "&Longitude=" + userLocation.longitude +
-                        "&Miles=" + maxReloadDistanceMiles +
-                        "&MilesType=1&HistMark=Y&WarMem=Y&FilterNOT=&FilterTown=&FilterCounty=&FilterState=&FilterCountry=&FilterCategory=0" +
-                        "&Page=$curHtmlPageNum"
+                markerHtmlPageUrl = "https://www.hmdb.org/results.asp?Search=Coord" +
+                    // "&Latitude=37.422160" +
+                    // "&Longitude=-122.084270" +  // Sunnyvale, CA
+                    // "&Miles=10" +
+                    "&Latitude=" + userLocation.latitude +
+                    "&Longitude=" + userLocation.longitude +
+                    "&Miles=" + maxReloadDistanceMiles +
+                    "&MilesType=1&HistMark=Y&WarMem=Y&FilterNOT=&FilterTown=&FilterCounty=&FilterState=&FilterCountry=&FilterCategory=0" +
+                    "&Page=$curHtmlPageNum"
 
                 mutableStateOf<LoadingState<String>>(LoadingState.Loading())// triggers network load
             }
@@ -220,19 +219,21 @@ fun loadMarkers(
         }
     }
 
-    // Load the data from the network when `assetUrl` is updated
-    LaunchedEffect(htmlPageUrl) {
+    // Load the data from the network when `markerHtmlPageUrl` is changed
+    LaunchedEffect(markerHtmlPageUrl) {
         // Log.d("LaunchedEffect(assetUrl): loadingState = $networkLoadingState")
 
         // Step 3 (real network) - Perform the load from network
-        htmlPageUrl?.let { assetUrl ->
+        markerHtmlPageUrl?.let { assetUrl ->
             networkLoadingState = LoadingState.Loading()
             networkLoadingState = try {
                 Log.d("Loading... $assetUrl")
                 val response = httpClient.get(assetUrl)
                 val data: String = response.body()
-                Log.d("Loaded page successfully, data length: ${data.length}, coordinates: ${userLocation.latitude}, ${userLocation.longitude}")
-                
+                // Log.d("Loaded page successfully, data length: ${data.length}, coordinates: ${userLocation.latitude}, ${userLocation.longitude}")
+
+                // todo parse here?
+
                 LoadingState.Loaded(data) // continue to the next step of parsing the HTML
             } catch (e: Exception) {
                 shouldUpdateCache = false
@@ -246,11 +247,12 @@ fun loadMarkers(
 
     // After the marker HTML data is loaded, parse it to extract the MarkerInfo's
     LaunchedEffect(networkLoadingState) {
-        if (networkLoadingState !is LoadingState.Loaded<String>) // only run when the network data loading is complete.
+        if (networkLoadingState !is LoadingState.Loaded<String>) // Guard to only run when network data loading is complete.
             return@LaunchedEffect
 
         // Step 4 - Parse the HTML to extract the marker info
         withContext(Dispatchers.Default) {
+            Log.i("Before parsing raw HTML, markersResultState.markerInfos.size: ${markersResultState.markerInfos.size}, markerIdToRawMarkerInfoStrings.size: ${markersResultState.markerIdToRawMarkerInfoStrings.size}")
 
             // Get the raw HTML string from the network loading state
             val rawHtmlString = (networkLoadingState as LoadingState.Loaded<String>).data
@@ -260,9 +262,9 @@ fun loadMarkers(
                 return@withContext
             }
 
-            // 4.1 - Parse the raw page HTML into a list of markerInfo
-            // Log.d("Parsing HTML...Current markers in cache count: ${parsedMarkersResultState.markerInfos.size}")
-            val parsedMarkersResult = parseHtml(rawHtmlString)
+            // 4.1 - Parse the raw page HTML into a list of `MarkerInfo` objects & metadata about the scraped data
+            // Log.d("Parsing HTML.. Current markers in cache (before parsing) count: ${parsedMarkersResultState.markerInfos.size}")
+            val parsedMarkersResult = parseMarkerPageHtml(rawHtmlString)
 
             // Check for no entries found
             if (parsedMarkersResult.rawMarkerCountFromFirstHtmlPage == 0) {
@@ -291,32 +293,7 @@ fun loadMarkers(
                         parsedMarkersResult.rawMarkerCountFromFirstHtmlPage
                 )
             }
-//            if (curHtmlPageNum == 1) {
-//                markersResultState = markersResultState.copy(
-//                    rawMarkerCountFromFirstHtmlPage =
-//                    parsedMarkersResult.rawMarkerCountFromFirstHtmlPage
-//                    markerIdToRawMarkerInfoStrings = (
-//                            markersResultState.markerIdToRawMarkerInfoStrings +
-//                            parsedMarkersResult.markerIdToRawMarkerInfoStrings
-//                        ).toMutableMap(),
-//                    markerInfos = (
-//                            markersResultState.markerInfos +
-//                            parsedMarkersResult.markerInfos
-//                        ).toMap(),
-//                )
-//            } else {
-//                markersResultState = markersResultState.copy(
-//                    markerIdToRawMarkerInfoStrings = (
-//                            markersResultState.markerIdToRawMarkerInfoStrings +
-//                            parsedMarkersResult.markerIdToRawMarkerInfoStrings
-//                        ).toMutableMap(),
-//                    markerInfos = (
-//                            markersResultState.markerInfos +
-//                            parsedMarkersResult.markerInfos
-//                        ).toMap(),
-//                )
-//            }
-            Log.d("Found Drivable entries (markerInfos) count: ${markersResultState.markerInfos.size}, Parsed markerIdToRawMarkerInfoStrings count: ${markersResultState.markerIdToRawMarkerInfoStrings.size}")
+            Log.d("Total drivable markerInfos after parse: ${markersResultState.markerInfos.size}, Parsed markerIdToRawMarkerInfoStrings count: ${markersResultState.markerIdToRawMarkerInfoStrings.size}")
 
             // 4.2 - Load more pages, if needed.
             // - Marker list size comparison is based on the number of `markerIdToRawMarkerInfoStrings`, not the parsed
@@ -326,7 +303,7 @@ fun loadMarkers(
                 Log.d("Loading next page..., markerIdToRawMarkerInfoStrings.size: ${markersResultState.markerIdToRawMarkerInfoStrings.size}, rawMarkerCountFromFirstHtmlPage: ${markersResultState.rawMarkerCountFromFirstHtmlPage}")
                 curHtmlPageNum++  // trigger the next page load
             } else {
-                Log.d("Finished loading all pages, total markers: ${markersResultState.markerInfos.size}")
+                //Log.d("Finished loading all pages, total markers: ${markersResultState.markerInfos.size}")
                 markersResultState = markersResultState.copy(isFinished = true)
 
                 // Save the parsed results to the cache
@@ -370,6 +347,6 @@ fun loadMarkers(
         }
     }
 
-    return markersResultState // todo: return the cachedResult instead of the parsedResult
+    return markersResultState
 }
 
