@@ -256,7 +256,7 @@ fun loadMarkers(
 
                 // Step 4 - Parse the HTML to extract the marker info
                 withContext(Dispatchers.Default) {
-                    Log.d("Before parsing raw HTML, markersResultState.markerInfos.size: ${markersResultState.markerInfos.size}, markerIdToRawMarkerInfoStrings.size: ${markersResultState.markerIdToRawMarkerInfoStrings.size}")
+                    Log.d("Before parsing raw HTML, markerInfos.size: ${markersResultState.markerInfos.size}, markerIdToRawMarkerInfoStrings.size: ${markersResultState.markerIdToRawMarkerInfoStrings.size}")
 
                     // Guard against blank data
                     if (rawHtmlString.isBlank()) {
@@ -281,13 +281,13 @@ fun loadMarkers(
                     // Note: preserves cached results
                     markersResultState = markersResultState.copy(
                         markerIdToRawMarkerInfoStrings = (
-                                markersResultState.markerIdToRawMarkerInfoStrings +
-                                        parsedMarkersResult.markerIdToRawMarkerInfoStrings
-                                ).toMutableMap(),
+                            markersResultState.markerIdToRawMarkerInfoStrings +
+                                parsedMarkersResult.markerIdToRawMarkerInfoStrings
+                            ).toMutableMap(),
                         markerInfos = (
-                                markersResultState.markerInfos +
-                                        parsedMarkersResult.markerInfos
-                                ).toMap(),
+                            markersResultState.markerInfos +
+                                parsedMarkersResult.markerInfos
+                            ).toMap(),
                     )
                     if (curHtmlPageNum == 1) {
                         markersResultState = markersResultState.copy(
@@ -295,7 +295,7 @@ fun loadMarkers(
                                 parsedMarkersResult.rawMarkerCountFromFirstPageHtmlOfMultiPageResult
                         )
                     }
-                    Log.d("Total drivable markerInfos after parse: ${markersResultState.markerInfos.size}, Parsed markerIdToRawMarkerInfoStrings count: ${markersResultState.markerIdToRawMarkerInfoStrings.size}")
+                    Log.d("Total drivable markerInfos.size after parse: ${markersResultState.markerInfos.size}, Parsed markerIdToRawMarkerInfoStrings count: ${markersResultState.markerIdToRawMarkerInfoStrings.size}")
 
                     // 4.2 - Load more pages, if needed.
                     // - Marker list size comparison is based on the number of `markerIdToRawMarkerInfoStrings`, not the parsed
