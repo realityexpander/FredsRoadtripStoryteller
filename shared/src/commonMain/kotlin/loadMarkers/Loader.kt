@@ -11,7 +11,7 @@ import io.ktor.client.request.get
 
 @Composable
 inline fun <reified T> load(assetUrl: String): State<LoadingState<T>> {
-    val loadingState = remember { mutableStateOf<LoadingState<T>>(LoadingState.Loading()) }
+    val loadingState = remember { mutableStateOf<LoadingState<T>>(LoadingState.Loading) }
 
     LaunchedEffect(assetUrl) {
         try {

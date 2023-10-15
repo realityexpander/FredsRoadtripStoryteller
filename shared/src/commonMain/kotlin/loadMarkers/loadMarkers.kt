@@ -182,7 +182,7 @@ fun loadMarkers(
         // Step 2 - Initiate Load a page of raw marker HTML from the network
         if (!markersResultState.isMarkerPageParseFinished) {
             // Log.d("Loading page $curHtmlPageNum")
-            markersLoadingState = LoadingState.Loading()
+            markersLoadingState = LoadingState.Loading
             shouldUpdateCache = true
 
             // Define URL to load from network
@@ -198,7 +198,7 @@ fun loadMarkers(
                 "&MilesType=1&HistMark=Y&WarMem=Y&FilterNOT=&FilterTown=&FilterCounty=&FilterState=&FilterCountry=&FilterCategory=0" +
                 "&Page=$curHtmlPageNum"
 
-            mutableStateOf<LoadingState<String>>(LoadingState.Loading())// triggers network load
+            mutableStateOf<LoadingState<String>>(LoadingState.Loading)// triggers network load
         } else {
             // Step 5 - Finished loading pages, now Save result to cache
             cachedMarkersResultState = markersResultState.copy(
@@ -236,7 +236,7 @@ fun loadMarkers(
 
         // Step 3 (real network) - Perform the load from network
         markerHtmlPageUrl?.let { assetUrl ->
-            networkLoadingState = LoadingState.Loading()
+            networkLoadingState = LoadingState.Loading
             yield() // allow the UI to update before loading the network data
 
             networkLoadingState = try {
