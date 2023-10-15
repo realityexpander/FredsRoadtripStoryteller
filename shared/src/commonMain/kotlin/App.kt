@@ -49,7 +49,7 @@ fun App() {
 
         val settings = remember {
             Settings().apply {
-//                clear()  // Force cache refresh // todo test location cache from start.
+                clear()  // Force cache refresh // todo test location cache from start.
                 // Log.setMinSeverity(Severity.Warn)
 
                 // Show current settings

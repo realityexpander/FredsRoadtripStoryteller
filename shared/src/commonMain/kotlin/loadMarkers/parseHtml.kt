@@ -19,7 +19,6 @@ suspend fun parseMarkerPageHtml(htmlResponse: String): MarkersResult {
     val markerIdToRawMarkerInfoStringsMap = mutableMapOf<String, String>()
     var rawMarkerCountFromFirstPageHtmlOfMultiPageResult = 0
     var foundMarkerCount = 0
-    var totalMarkersAtLocation = 0
     val markerInfos = mutableMapOf<String, MarkerInfo>()
 
     // Simple scraper that checks if a page is only a single-marker page
@@ -48,8 +47,8 @@ suspend fun parseMarkerPageHtml(htmlResponse: String): MarkersResult {
                     curCaptureMarkerId = "M$id"
                     foundMarkerCount++ // should be max 1
 
-                    if(foundMarkerCount > 1 || totalMarkersAtLocation > 1)
-                        Log.e { "Found more than one marker on a single marker page. Found: $foundMarkerCount, Total: $totalMarkersAtLocation" }
+                    if(foundMarkerCount > 1)
+                        Log.e { "Found more than one marker on a single marker page. Found marker: $curCaptureMarkerId, count= $foundMarkerCount" }
 
                     // initialize the marker info for this marker
                     markerInfos[curCaptureMarkerId] = markerInfos[curCaptureMarkerId]?.copy(
@@ -302,10 +301,11 @@ suspend fun parseMarkerPageHtml(htmlResponse: String): MarkersResult {
     }
 
     // How many markers are there at this location?
-    if(foundMarkerCount > 0 && rawMarkerCountFromFirstPageHtmlOfMultiPageResult == 0)
-        totalMarkersAtLocation = foundMarkerCount  // only one page of markers.
-    else
-        totalMarkersAtLocation = rawMarkerCountFromFirstPageHtmlOfMultiPageResult // more than one page of markers.
+    val totalMarkersAtLocation =
+        if(foundMarkerCount > 0 && rawMarkerCountFromFirstPageHtmlOfMultiPageResult == 0)
+            foundMarkerCount  // only one page of markers.
+        else
+            rawMarkerCountFromFirstPageHtmlOfMultiPageResult // more than one page of markers.
 
     return MarkersResult(
         markerIdToRawMarkerInfoStringsMap, // used for multi-page processing.

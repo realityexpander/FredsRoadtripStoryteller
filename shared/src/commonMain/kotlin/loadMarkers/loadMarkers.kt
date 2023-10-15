@@ -237,11 +237,12 @@ fun loadMarkers(
         // Step 3 (real network) - Perform the load from network
         markerHtmlPageUrl?.let { assetUrl ->
             networkLoadingState = LoadingState.Loading
-            yield() // allow the UI to update before loading the network data
+            yield() // allow the UI to update before loading the network data // todo necessary? test UI
 
             networkLoadingState = try {
                 Log.d("Loading... $assetUrl")
 
+                // Step 3 - Load the raw HTML from the network (or fake data)
                 val rawHtmlString =
                     if(useFakeDataSetId == kUseRealNetwork) {
                         val response = httpClient.get(assetUrl)
