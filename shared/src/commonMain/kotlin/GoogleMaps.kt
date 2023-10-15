@@ -33,9 +33,9 @@ expect fun GoogleMaps(
     shouldUpdateMapMarkers: Boolean = false,
     cameraLocationLatLong: LatLong? = null,
     cameraLocationBounds: CameraLocationBounds? = null,
-    cameraPosition: CameraPosition? = null,
+    initialCameraPosition: CameraPosition? = null,
     polyLine: List<LatLong>? = null,
-    myLocation: LatLong? = null,
+    userLocation: LatLong? = null,
 )
 
 

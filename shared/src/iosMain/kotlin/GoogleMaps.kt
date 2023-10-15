@@ -44,9 +44,9 @@ actual fun GoogleMaps(
     shouldUpdateMapMarkers: Boolean,  // best for tracking user location
     cameraLocationLatLong: LatLong?,  // best for showing a bunch of markers
     cameraLocationBounds: CameraLocationBounds?, // usually only used for initial camera position bc zoom level is forced
-    cameraPosition: CameraPosition?,
+    initialCameraPosition: CameraPosition?,
     polyLine: List<LatLong>?,  // shows the user's location with a 100m radius circle
-    myLocation: LatLong?
+    userLocation: LatLong?
 ) {
     val googleMapView = remember { GMSMapView() }
 
@@ -65,8 +65,8 @@ actual fun GoogleMaps(
 
     var showSomething = remember { false } // leave for testing purposes
 
-    LaunchedEffect(myLocation, markers) {
-        if (myLocation != null) {
+    LaunchedEffect(userLocation, markers) {
+        if (userLocation != null) {
             isMapRedrawTriggered = true
         }
         if (markers != null) {
@@ -80,8 +80,8 @@ actual fun GoogleMaps(
         }
     }
 
-    LaunchedEffect(cameraPosition) {
-        if (cameraPosition != null) {
+    LaunchedEffect(initialCameraPosition) {
+        if (initialCameraPosition != null) {
             didCameraPositionChange = true
         }
     }
@@ -127,7 +127,7 @@ actual fun GoogleMaps(
             },
             update = { view ->
                 if(isTrackingEnabled) {
-                    myLocation?.let { myLocation ->
+                    userLocation?.let { myLocation ->
                         view.animateWithCameraUpdate(
                             GMSCameraUpdate.setTarget(
                                 CLLocationCoordinate2DMake(
@@ -139,7 +139,7 @@ actual fun GoogleMaps(
                     }
                 } else {
                     if(!isMapSetupCompleted) { // Sets the camera once during setup, this allows the user to move the map around
-                        cameraPosition?.let { cameraPosition ->
+                        initialCameraPosition?.let { cameraPosition ->
                             view.animateWithCameraUpdate(
                                 GMSCameraUpdate.setTarget(
                                     CLLocationCoordinate2DMake(
@@ -176,7 +176,7 @@ actual fun GoogleMaps(
 
                 if(didCameraPositionChange) {
                     didCameraPositionChange = false
-                    cameraPosition?.let { cameraPosition ->
+                    initialCameraPosition?.let { cameraPosition ->
                         view.setCamera(
                             GMSCameraPosition.cameraWithLatitude(
                                 cameraPosition.target.latitude,
@@ -231,11 +231,11 @@ actual fun GoogleMaps(
                     view.clear()
 
                     // render the user's location "talk" circle
-                    myLocation?.let {
+                    userLocation?.let {
                         GMSCircle().apply {
                             position = CLLocationCoordinate2DMake(
-                                myLocation.latitude,
-                                myLocation.longitude
+                                userLocation.latitude,
+                                userLocation.longitude
                             )
                             radius = 1000.0
                             fillColor = UIColor.blueColor().colorWithAlphaComponent(0.2)

@@ -15,7 +15,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,7 +24,6 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.android.gms.maps.model.TileProvider
 import com.google.maps.android.clustering.ClusterItem
 import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.GoogleMap
@@ -42,8 +40,6 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberTileOverlayState
 import com.google.maps.android.heatmaps.HeatmapTileProvider
 import com.google.maps.android.heatmaps.WeightedLatLng
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
 import co.touchlab.kermit.Logger as Log
 
 @OptIn(MapsComposeExperimentalApi::class)
@@ -58,9 +54,9 @@ actual fun GoogleMaps(
     shouldUpdateMapMarkers: Boolean, // best for tracking user location
     cameraLocationLatLong: LatLong?, // best for showing a bunch of markers
     cameraLocationBounds: CameraLocationBounds?, // usually only used for initial camera position bc zoom level is forced
-    cameraPosition: CameraPosition?,
+    initialCameraPosition: CameraPosition?,
     polyLine: List<LatLong>?,
-    myLocation: LatLong?
+    userLocation: LatLong?
 ) {
 
     val cameraPositionState = rememberCameraPositionState()
@@ -93,9 +89,9 @@ actual fun GoogleMaps(
         isUpdating = true
     }
 
-    // Usually used to setup the initial camera position (not tracking due to forcing zoom level)
-    LaunchedEffect(cameraPosition) {
-        cameraPosition?.let { cameraPosition ->
+    // Usually used to setup the initial camera position (doesn't support tracking due to forcing zoom level)
+    LaunchedEffect(initialCameraPosition) {
+        initialCameraPosition?.let { cameraPosition ->
             // Log.d { "cameraPosition = ${cameraPosition.target.latitude}, ${cameraPosition.target.longitude}" }
             cameraPositionState.move(
                 CameraUpdateFactory.newLatLngZoom(
@@ -116,6 +112,7 @@ actual fun GoogleMaps(
             }
     }
 
+    // Set Camera to Bounds (zoom level is forced)
     LaunchedEffect(cameraLocationBounds) {
         cameraLocationBounds?.let { cameraPositionBounds ->
             // Log.d { "cameraLocationBounds = ${cameraPositionBounds.coordinates}"  }
@@ -132,6 +129,7 @@ actual fun GoogleMaps(
         }
     }
 
+    // Set Camera to LatLong position (doesn't change zoom level)
     LaunchedEffect(cameraLocationLatLong) {
         cameraLocationLatLong?.let { cameraLocationLatLong ->
             // Log.d { "cameraLocationLatLong = ${cameraLocationLatLong.latitude}, ${cameraLocationLatLong.longitude}" }
@@ -146,23 +144,9 @@ actual fun GoogleMaps(
         }
     }
 
-    LaunchedEffect(isTrackingEnabled) {
-        if(isTrackingEnabled) {
-            myLocation?.let { myLocation ->
-                cameraPositionState.animate(
-                    CameraUpdateFactory.newLatLng(
-                        LatLng(
-                            myLocation.latitude,
-                            myLocation.longitude
-                        )
-                    )
-                )
-            }
-        }
-    }
-
-    LaunchedEffect(myLocation) {
-        myLocation?.let { myLocation ->
+    // Set Camera to User Location (doesn't change zoom level)
+    LaunchedEffect(userLocation) {
+        userLocation?.let { myLocation ->
             if(isTrackingEnabled) {
                 cameraPositionState.animate(
                     CameraUpdateFactory.newLatLng(
@@ -201,7 +185,7 @@ actual fun GoogleMaps(
                          nativeFun(LatLong(latLng.latitude, latLng.longitude))
                      }
                 },
-//            googleMapOptionsFactory = {
+//            googleMapOptionsFactory = {  // leave for reference
 //                GoogleMapOptions().apply {
 ////                    mapType(1) // -1 = unspecified, 0 = normal, 1 = satellite, 2 = terrain, 3 = hybrid
 ////                    compassEnabled(false)
@@ -214,22 +198,6 @@ actual fun GoogleMaps(
 //                }
 //            }
         ) {
-
-            // Raw markers (not clustered)
-//            markers?.forEach { marker ->
-////                Log.d { "marker = ${marker.key}: ${marker.position.latitude}, ${marker.position.longitude}" }
-//                Marker(
-////                    state = rememberMarkerState(
-////                        key = marker.key,
-////                        position = LatLng(marker.position.latitude, marker.position.longitude)
-////                    ),
-//                    state = MarkerState(
-//                        position = LatLng(marker.position.latitude, marker.position.longitude)
-//                    ),
-//                    alpha = marker.alpha,
-//                    title = marker.title
-//                )
-//            }
 
             // Heat Map Overlay
             if(markers != null) {
@@ -291,7 +259,7 @@ actual fun GoogleMaps(
             }
 
             // Render the user's location "talk" circle
-            myLocation?.let { myLocation ->
+            userLocation?.let { myLocation ->
                 Circle(
                     center = LatLng(myLocation.latitude, myLocation.longitude),
                     radius = 1000.0,
@@ -409,6 +377,23 @@ actual fun GoogleMaps(
 //                }
             )
 
+            // LEAVE FOR REFERENCE
+            // Raw markers (not clustered)
+//            markers?.forEach { marker ->
+////                Log.d { "marker = ${marker.key}: ${marker.position.latitude}, ${marker.position.longitude}" }
+//                Marker(
+////                    state = rememberMarkerState(
+////                        key = marker.key,
+////                        position = LatLng(marker.position.latitude, marker.position.longitude)
+////                    ),
+//                    state = MarkerState(
+//                        position = LatLng(marker.position.latitude, marker.position.longitude)
+//                    ),
+//                    alpha = marker.alpha,
+//                    title = marker.title
+//                )
+//            }
+
 
         }
 
@@ -430,18 +415,15 @@ actual fun GoogleMaps(
                 SwitchWithLabel(
                     label = "Track My location",
                     state = !uiSettings.myLocationButtonEnabled,
-                    darkOnLightTextColor = properties.mapType == MapType.SATELLITE
+                    darkOnLightTextColor = true //properties.mapType == MapType.SATELLITE
                 ) {
-                    uiSettings =
-                        uiSettings.copy(myLocationButtonEnabled = !uiSettings.myLocationButtonEnabled)
-//                    properties =
-//                        properties.copy(isMyLocationEnabled = !properties.isMyLocationEnabled)
+                    uiSettings = uiSettings.copy(myLocationButtonEnabled = !uiSettings.myLocationButtonEnabled)
                     isTrackingEnabled = !isTrackingEnabled
                 }
                 SwitchWithLabel(
                     label = "Satellite",
                     state = properties.mapType == MapType.SATELLITE,
-                    darkOnLightTextColor = properties.mapType == MapType.SATELLITE
+                    darkOnLightTextColor = true //properties.mapType == MapType.SATELLITE
                 ) {
                     properties = properties.copy(
                         mapType = if (properties.mapType == MapType.SATELLITE)

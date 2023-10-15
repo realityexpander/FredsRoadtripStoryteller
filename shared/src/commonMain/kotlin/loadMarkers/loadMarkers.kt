@@ -22,9 +22,6 @@ import httpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import json
-import kCachedMarkersLastLocationLatLong
-import kCachedMarkersLastUpdatedEpochSeconds
-import kCachedParsedMarkersResult
 import kMaxMarkerCacheAgeSeconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,7 +29,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import loadMarkers.sampleData.generateFakeMarkerPageHtml
 import loadMarkers.sampleData.kUseRealNetwork
 import co.touchlab.kermit.Logger as Log
@@ -47,6 +43,7 @@ data class MarkerInfo(
     val long: Double = 0.0,
     val infoPageUrl: String = "",
     val imageUrl: String = "",
+    val lastUpdatedEpochSeconds: Long = 0, // for cache expiry // todo add to code
 )
 
 @Serializable
@@ -99,7 +96,7 @@ fun loadMarkers(
         // Load the cached result from persistent storage (Settings) as the initial state
         mutableStateOf(
             json.decodeFromString<MarkersResult>(
-                settings.getString(kCachedParsedMarkersResult, "{}")
+                settings.getString(kCachedMarkersResult, "{}")
         ) ) 
     }
 
@@ -107,16 +104,15 @@ fun loadMarkers(
     var cachedMarkersResultState by remember(userLocation) {
          // Log.d("userLocation update, currentlyLoadingState: $markersLoadingState, location: $userLocation")
 
-        // If currently loading/parsing markers, return the current parseResultState upon location change
+        // Guard - If currently loading/parsing markers, return the current parseResultState upon location change
         if(!markersResultState.isMarkerPageParseFinished) return@remember mutableStateOf(markersResultState)
         if(markersLoadingState !is LoadingState.Idle) return@remember mutableStateOf(markersResultState)
 
         // Step 1 - Check for a cached result in the Settings
-        if (settings.hasKey(kCachedParsedMarkersResult)) {
-            val cachedMarkers =
-                json.decodeFromString<MarkersResult>(
-                    settings.getString(kCachedParsedMarkersResult, "")
-                ).copy(isMarkerPageParseFinished = true)
+        if (settings.hasKey(kCachedMarkersResult)) {
+            val cachedMarkers = settings.cachedMarkersResult()
+                    .copy(isMarkerPageParseFinished = true) // ensure the cached result is marked as finished // todo needed?
+
             // Log.d("Found cached markers in Settings, count: ${cachedMarkersResult.markerInfos.size}")
             markersResultState = cachedMarkers.copy(isMarkerPageParseFinished = true)
 
@@ -128,14 +124,14 @@ fun loadMarkers(
 
                 // if(true) { // test cache expiry
                 if(Clock.System.now().epochSeconds > cacheLastUpdatedEpochSeconds + kMaxMarkerCacheAgeSeconds) {
-                    Log.d("Cached markers are expired, dumping entire cache, attempting load from network..." )
+                    Log.d("Cached markers are expired, dumping entire cache, attempting load from network..." ) // todo make this more sophisticated
 
                     // return current cached result, and also trigger network load, which will refresh the cache.
                     markersResultState = MarkersResult(isMarkerPageParseFinished = false)
 
                     // Clear the cache in the settings
                     coroutineScope.launch {
-                        settings.remove(kCachedParsedMarkersResult)
+                        settings.remove(kCachedMarkersResult)
                         // Update the cache expiry time
                         settings.putLong(
                             kCachedMarkersLastUpdatedEpochSeconds,
@@ -147,11 +143,8 @@ fun loadMarkers(
             }
 
             // Step 1.2 - Check if the user is outside the reload radius
-            if (settings.hasKey(kCachedMarkersLastLocationLatLong)) {
-                val cachedMarkersLastLocationLatLong =
-                    json.decodeFromString<Location>(
-                        settings.getString(kCachedMarkersLastLocationLatLong, "{latitude:0.0, longitude:0.0}")
-                    )
+            if (settings.hasKey(kCachedMarkersLastLocation)) {
+                val cachedMarkersLastLocationLatLong = settings.cachedMarkersLastLocation()
                 val userDistanceFromCachedLastLocationMiles = distanceBetween(
                     userLocation.latitude,
                     userLocation.longitude,
@@ -208,18 +201,9 @@ fun loadMarkers(
             // Save the cachedResultState to persistent storage (Settings) (if it was updated from the network)
             if (shouldUpdateCache) {
                 coroutineScope.launch {
-                    settings.putString(
-                        kCachedParsedMarkersResult,
-                        json.encodeToString(MarkersResult.serializer(), cachedMarkersResultState)
-                    )
-                    settings.putLong(
-                        kCachedMarkersLastUpdatedEpochSeconds,
-                        Clock.System.now().epochSeconds
-                    )
-                    settings.putString(
-                        kCachedMarkersLastLocationLatLong,
-                        json.encodeToString(userLocation)
-                    )
+                    settings.setCachedMarkersResult(cachedMarkersResultState)
+                    settings.setCachedMarkersLastUpdatedEpochSeconds(Clock.System.now().epochSeconds)
+                    settings.setCachedMarkersLastLocation(userLocation)
                     // Log.d("Saved markers to Settings, total count: ${cachedMarkersResultState.markerInfos.size}")
                 }
             }
