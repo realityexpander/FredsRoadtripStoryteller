@@ -1,6 +1,6 @@
 package loadMarkers.sampleData
 
-fun fullHtmlSamplePage2() = """
+fun sunnyvaleFakeMarkerHtmlPage2() = """
 <!DOCTYPE html>
 <html lang="en">
 <head>

@@ -19,6 +19,10 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import loadMarkers.MarkersResult
 import loadMarkers.loadMarkers
+import loadMarkers.sampleData.kSingleItemPageFakeDataset
+import loadMarkers.sampleData.kSunnyvaleFakeDataset
+import loadMarkers.sampleData.kTepoztlanFakeDataset
+import loadMarkers.sampleData.kUseRealNetwork
 import co.touchlab.kermit.Logger as Log
 
 val json = Json {
@@ -42,9 +46,6 @@ fun App() {
 
     MaterialTheme {
         val coroutineScope = rememberCoroutineScope()
-
-        var greetingText by remember { mutableStateOf("Hello, World!") }
-        var showImage by remember { mutableStateOf(false) }
 
         val settings = remember {
             Settings().apply {
@@ -84,17 +85,17 @@ fun App() {
             userLocation = userLocation,
             maxReloadDistanceMiles = kMaxReloadDistanceMiles,
             showLoadingState = false,
-            useFakeDataSetId = 0  // 0 = real data, 1 = Googleplex, 2 = Tepoztlan,
+            useFakeDataSetId =
+                kUseRealNetwork,
+//                kSunnyvaleFakeDataset,
+//                kTepoztlanFakeDataset,
+//                kSingleItemPageFakeDataset
         )
-        val cachedMapMarkers = remember { // prevents flicker when loading new markers
-            mutableStateListOf<MapMarker>()
-        }
-        var shouldUpdateMapMarkers by remember {
-            mutableStateOf(true)
-        }
-        val mapMarkers = remember(markersLoadResult.isFinished) {
+        val cachedMapMarkers = remember { mutableStateListOf<MapMarker>() } // prevents flicker when loading new markers
+        var shouldUpdateMapMarkers by remember { mutableStateOf(true) }
+        val mapMarkers = remember(markersLoadResult.isMarkerPageParseFinished) {
 
-            if (!markersLoadResult.isFinished) { // While loading new markers, use the cached markers to prevent flicker
+            if (!markersLoadResult.isMarkerPageParseFinished) { // While loading new markers, use the cached markers to prevent flicker
                 return@remember cachedMapMarkers
             }
 
@@ -283,7 +284,7 @@ fun App() {
 //            Text("Location: ${myLocation.latitude}, ${myLocation.longitude}")
 //            Text(json.decodeFromString<Location>(settings.getString(kLastKnownUserLocation, "{latitude:0.0, longitude:0.0}")).toString() )
 
-            if(markersLoadResult.isFinished || !isFirstUpdate) {
+            if(markersLoadResult.isMarkerPageParseFinished || !isFirstUpdate) {
                 GoogleMaps(
                     modifier = Modifier.fillMaxSize(),
                     markers = mapMarkers.ifEmpty { null },
@@ -323,7 +324,6 @@ fun App() {
 }
 
 expect fun getPlatformName(): String
-
 
 
 //    MaterialTheme {

@@ -1,6 +1,8 @@
 package loadMarkers.sampleData
 
-fun fullHtmlSamplePage1a() = """
+// This is a sample of the HTML that is returned from the HMdb.org website.
+// This page represents the results of a one-page of a search for markers near a Tepoztlan, Mexico.
+fun tepoztlanFakeDatasetPage1() = """
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -579,4 +581,5 @@ fun fullHtmlSamplePage1a() = """
 
     </body>
     </html>
+
 """.trimIndent()
