@@ -1,8 +1,10 @@
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomSheetScaffold
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -10,10 +12,11 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddRoad
-import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.material.rememberScaffoldState
@@ -37,7 +40,6 @@ import kotlinx.serialization.json.Json
 import loadMarkers.printAppSettings
 import loadMarkers.lastKnownUserLocation
 import loadMarkers.loadMarkers
-import loadMarkers.sampleData.kSunnyvaleFakeDataset
 import loadMarkers.sampleData.kUseRealNetwork
 import loadMarkers.setLastKnownUserLocation
 import co.touchlab.kermit.Logger as Log
@@ -60,6 +62,9 @@ fun App() {
 
         val bottomSheetState = rememberBottomSheetScaffoldState()
         val scaffoldState = rememberScaffoldState()
+
+        var isTrackingEnabled by remember { mutableStateOf(false) }
+        var findMeCameraLocation by remember { mutableStateOf<Location?>(null) } // used to center map on user
 
         val settings = remember {
             Settings().apply {
@@ -205,18 +210,35 @@ fun App() {
                         }
                     )
                 },
-                /*
                 floatingActionButton = {
-                    FloatingActionButton(
-                        onClick = { viewModel.onEvent(MapEvent.ToggleCustomMap) }) {
-                        Icon(
-                            imageVector = if (viewModel.uiState.isCustomMap)
-                                Icons.Default.ToggleOff else Icons.Default.ToggleOn,
-                            contentDescription = "Toggle Custom View"
-                        )
+                    Column {
+                        FloatingActionButton(
+                            modifier = Modifier
+                                .padding(16.dp),
+                            onClick = {
+                                isTrackingEnabled = !isTrackingEnabled
+                        }) {
+                            Icon(
+                                imageVector = if (isTrackingEnabled) Icons.Default.Pause
+                                    else Icons.Default.PlayArrow,
+                                contentDescription = "Toggle track your location"
+                            )
+                        }
+
+                        FloatingActionButton(
+                            modifier = Modifier
+                                .padding(16.dp),
+                            onClick = {
+                                // center on location
+                                findMeCameraLocation = userLocation.copy()
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.MyLocation,
+                                contentDescription = "Center on your location"
+                            )
+                        }
                     }
                 }
-                 */
             ) {
                 val didMapMarkersUpdate =
                     MapContent(
@@ -224,8 +246,10 @@ fun App() {
                         initialUserLocation = settings.lastKnownUserLocation(),
                         userLocation = userLocation,
                         mapMarkers = mapMarkers,
-                        mapBounds = null,  // todo - implement?
-                        shouldUpdateMapMarkers = shouldUpdateMapMarkers,
+                        mapBounds = null,
+                        shouldUpdateMapMarkers = shouldUpdateMapMarkers,  // todo - implement?
+                        isTrackingEnabled = isTrackingEnabled,
+                        centerOnUserCameraLocation = findMeCameraLocation
                     )
                 if (didMapMarkersUpdate) {
                     shouldUpdateMapMarkers = false
@@ -243,6 +267,8 @@ fun MapContent(
     mapMarkers: List<MapMarker>,
     mapBounds: List<LatLong>? = null,
     shouldUpdateMapMarkers: Boolean,
+    isTrackingEnabled: Boolean = false,
+    centerOnUserCameraLocation: Location? = null,
 ): Boolean {
     var didMapMarkersUpdate by remember(shouldUpdateMapMarkers) { mutableStateOf(true) }
     var isFirstUpdate by remember { mutableStateOf(true) } // force map to update at least once
@@ -251,9 +277,26 @@ fun MapContent(
         if(isFinishedLoadingMarkerData || !isFirstUpdate) {
             GoogleMaps(
                 modifier = Modifier.fillMaxSize(),
+                isTrackingEnabled = isTrackingEnabled,
+                userLocation = LatLong( // passed to map to track location
+                    userLocation.latitude,
+                    userLocation.longitude
+                ),
                 markers = mapMarkers.ifEmpty { null },
+                cameraLocationLatLong = remember(centerOnUserCameraLocation) {
+                    // 37.422160,
+                    // -122.084270  // googleplex
+                    centerOnUserCameraLocation?.let {
+                        LatLong(
+                            centerOnUserCameraLocation.latitude,
+                            centerOnUserCameraLocation.longitude
+                        )
+                    } ?: run {
+                        null
+                    }
+                },
                 shouldUpdateMapMarkers = shouldUpdateMapMarkers,
-                initialCameraPosition = remember { CameraPosition(
+                cameraOnetimePosition = remember { CameraPosition(
                     target = LatLong(
 //                            37.422160,
 //                            -122.084270  // googleplex
@@ -262,12 +305,6 @@ fun MapContent(
                     ),
                     zoom = 12f  // note: forced zoom level
                 )},
-//                    cameraLocationLatLong = remember(myLocation) { LatLong( // track camera to location w/o zoom
-////                        37.422160,
-////                        -122.084270  // googleplex
-//                        userLocation.latitude,
-//                        userLocation.longitude
-//                    )},
                 cameraLocationBounds = remember {  // Center around bound of markers
                     mapBounds?.let {
                         CameraLocationBounds(
@@ -278,10 +315,6 @@ fun MapContent(
                         null // won't center around bounds
                     }
                 },
-                userLocation = LatLong( // passed to map to track location
-                    userLocation.latitude,
-                    userLocation.longitude
-                ),
             )
 
             isFirstUpdate = false

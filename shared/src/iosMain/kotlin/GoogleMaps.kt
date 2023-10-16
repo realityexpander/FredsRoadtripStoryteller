@@ -37,16 +37,17 @@ import platform.UIKit.UIColor
 actual fun GoogleMaps(
     modifier: Modifier,
     isControlsVisible: Boolean,
-    onMarkerClick: ((MapMarker) -> Unit)?,
-    onMapClick: ((LatLong) -> Unit)?,
-    onMapLongClick: ((LatLong) -> Unit)?,
+    isTrackingEnabled: Boolean,
+    userLocation: LatLong?,
     markers: List<MapMarker>?,
-    shouldUpdateMapMarkers: Boolean,  // best for tracking user location
+    shouldUpdateMapMarkers: Boolean,
+    cameraOnetimePosition: CameraPosition?,  // best for tracking user location
     cameraLocationLatLong: LatLong?,  // best for showing a bunch of markers
     cameraLocationBounds: CameraLocationBounds?, // usually only used for initial camera position bc zoom level is forced
-    initialCameraPosition: CameraPosition?,
-    polyLine: List<LatLong>?,  // shows the user's location with a 100m radius circle
-    userLocation: LatLong?
+    polyLine: List<LatLong>?,
+    onMapClick: ((LatLong) -> Unit)?,  // shows the user's location with a 100m radius circle
+    onMapLongClick: ((LatLong) -> Unit)?,
+    onMarkerClick: ((MapMarker) -> Unit)?
 ) {
     val googleMapView = remember { GMSMapView() }
 
@@ -80,8 +81,8 @@ actual fun GoogleMaps(
         }
     }
 
-    LaunchedEffect(initialCameraPosition) {
-        if (initialCameraPosition != null) {
+    LaunchedEffect(cameraOnetimePosition) {
+        if (cameraOnetimePosition != null) {
             didCameraPositionChange = true
         }
     }
@@ -139,7 +140,7 @@ actual fun GoogleMaps(
                     }
                 } else {
                     if(!isMapSetupCompleted) { // Sets the camera once during setup, this allows the user to move the map around
-                        initialCameraPosition?.let { cameraPosition ->
+                        cameraOnetimePosition?.let { cameraPosition ->
                             view.animateWithCameraUpdate(
                                 GMSCameraUpdate.setTarget(
                                     CLLocationCoordinate2DMake(
@@ -176,7 +177,7 @@ actual fun GoogleMaps(
 
                 if(didCameraPositionChange) {
                     didCameraPositionChange = false
-                    initialCameraPosition?.let { cameraPosition ->
+                    cameraOnetimePosition?.let { cameraPosition ->
                         view.setCamera(
                             GMSCameraPosition.cameraWithLatitude(
                                 cameraPosition.target.latitude,

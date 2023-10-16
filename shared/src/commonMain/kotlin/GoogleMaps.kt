@@ -26,16 +26,17 @@ class CameraPosition(
 expect fun GoogleMaps(
     modifier: Modifier,
     isControlsVisible: Boolean = true,
-    onMarkerClick: ((MapMarker) -> Unit)? = {},
-    onMapClick: ((LatLong) -> Unit)? = {},
-    onMapLongClick: ((LatLong) -> Unit)? = {},
+    isTrackingEnabled: Boolean = false,
+    userLocation: LatLong? = null,
     markers: List<MapMarker>? = null,
     shouldUpdateMapMarkers: Boolean = false,
+    cameraOnetimePosition: CameraPosition? = null,
     cameraLocationLatLong: LatLong? = null,
     cameraLocationBounds: CameraLocationBounds? = null,
-    initialCameraPosition: CameraPosition? = null,
     polyLine: List<LatLong>? = null,
-    userLocation: LatLong? = null,
+    onMapClick: ((LatLong) -> Unit)? = {},
+    onMapLongClick: ((LatLong) -> Unit)? = {},
+    onMarkerClick: ((MapMarker) -> Unit)? = {},
 )
 
 

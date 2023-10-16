@@ -47,26 +47,28 @@ import co.touchlab.kermit.Logger as Log
 actual fun GoogleMaps(
     modifier: Modifier,
     isControlsVisible: Boolean,
-    onMarkerClick: ((MapMarker) -> Unit)?,
+    isTrackingEnabled: Boolean,
+    userLocation: LatLong?,
+    markers: List<MapMarker>?,
+    shouldUpdateMapMarkers: Boolean,
+    cameraOnetimePosition: CameraPosition?, // Best for setting initial camera position bc zoom level is forced
+    cameraLocationLatLong: LatLong?, // Best for tracking user location
+    cameraLocationBounds: CameraLocationBounds?, // Best for showing a bunch of markers
+    polyLine: List<LatLong>?,
     onMapClick: ((LatLong) -> Unit)?,
     onMapLongClick: ((LatLong) -> Unit)?,
-    markers: List<MapMarker>?,
-    shouldUpdateMapMarkers: Boolean, // best for tracking user location
-    cameraLocationLatLong: LatLong?, // best for showing a bunch of markers
-    cameraLocationBounds: CameraLocationBounds?, // usually only used for initial camera position bc zoom level is forced
-    initialCameraPosition: CameraPosition?,
-    polyLine: List<LatLong>?,
-    userLocation: LatLong?
+    onMarkerClick: ((MapMarker) -> Unit)?
 ) {
 
     val cameraPositionState = rememberCameraPositionState()
     var uiSettings by remember {
         mutableStateOf(MapUiSettings(
-            myLocationButtonEnabled = true,
+            myLocationButtonEnabled = false, //!isTrackingEnabled,
             compassEnabled = false,
-            mapToolbarEnabled = false,
-            zoomControlsEnabled = true,
-            scrollGesturesEnabled = true
+             mapToolbarEnabled = false,
+            zoomControlsEnabled = false,  // the +/- buttons (obscures the FAB)
+            zoomGesturesEnabled = true,
+            scrollGesturesEnabled = true,
         )) }
     var properties by remember {
         mutableStateOf(MapProperties(
@@ -80,18 +82,22 @@ actual fun GoogleMaps(
         )
     }
 
-    var isTrackingEnabled by remember { mutableStateOf(false) }
+//    //var isTrackingEnabled by remember { mutableStateOf(false) }
+//    LaunchedEffect(isTrackingEnabled) {
+//        // uiSettings = uiSettings.copy(myLocationButtonEnabled = !isTrackingEnabled)
+//    }
+
     var isUpdating by remember { mutableStateOf(false) }
 
-    var showSomething = remember { false } // leave for testing purposes
+    var showSomething = remember { false } // LEAVE FOR TESTING PURPOSES
 
     LaunchedEffect(Unit) {
         isUpdating = true
     }
 
     // Usually used to setup the initial camera position (doesn't support tracking due to forcing zoom level)
-    LaunchedEffect(initialCameraPosition) {
-        initialCameraPosition?.let { cameraPosition ->
+    LaunchedEffect(cameraOnetimePosition) {
+        cameraOnetimePosition?.let { cameraPosition ->
             // Log.d { "cameraPosition = ${cameraPosition.target.latitude}, ${cameraPosition.target.longitude}" }
             cameraPositionState.move(
                 CameraUpdateFactory.newLatLngZoom(
@@ -130,8 +136,19 @@ actual fun GoogleMaps(
     }
 
     // Set Camera to LatLong position (doesn't change zoom level)
+    // Note: only allowed to change the camera position once per change in cameraLocationLatLong.
+    //       This is to prevent the screen from locking the location. By only allowing the camera
+    //       to change once, the user can pan around the map without the camera jumping back to
+    //       the cameraLocationLatLong position.
+    var previousCameraLocationLatLong by remember { mutableStateOf<LatLong?>(null) }
     LaunchedEffect(cameraLocationLatLong) {
         cameraLocationLatLong?.let { cameraLocationLatLong ->
+            if(previousCameraLocationLatLong == cameraLocationLatLong) {
+                // Log.d { "cameraLocationLatLong = ${cameraLocationLatLong.latitude}, ${cameraLocationLatLong.longitude} is the same as previousCameraLocationLatLong, skipping" }
+                return@LaunchedEffect
+            }
+
+            previousCameraLocationLatLong = cameraLocationLatLong
             // Log.d { "cameraLocationLatLong = ${cameraLocationLatLong.latitude}, ${cameraLocationLatLong.longitude}" }
             cameraPositionState.animate(
                 CameraUpdateFactory.newLatLng(
@@ -144,7 +161,7 @@ actual fun GoogleMaps(
         }
     }
 
-    // Set Camera to User Location (doesn't change zoom level)
+    // Set Camera to User Location (Tracking) (doesn't change zoom level)
     LaunchedEffect(userLocation) {
         userLocation?.let { myLocation ->
             if(isTrackingEnabled) {
@@ -412,14 +429,14 @@ actual fun GoogleMaps(
                     )
                 }
 
-                SwitchWithLabel(
-                    label = "Track My location",
-                    state = !uiSettings.myLocationButtonEnabled,
-                    darkOnLightTextColor = true //properties.mapType == MapType.SATELLITE
-                ) {
-                    uiSettings = uiSettings.copy(myLocationButtonEnabled = !uiSettings.myLocationButtonEnabled)
-                    isTrackingEnabled = !isTrackingEnabled
-                }
+//                SwitchWithLabel(
+//                    label = "Track My location",
+//                    state = !uiSettings.myLocationButtonEnabled,
+//                    darkOnLightTextColor = true //properties.mapType == MapType.SATELLITE
+//                ) {
+//                    uiSettings = uiSettings.copy(myLocationButtonEnabled = !uiSettings.myLocationButtonEnabled)
+//                    isTrackingEnabled = !isTrackingEnabled
+//                }
                 SwitchWithLabel(
                     label = "Satellite",
                     state = properties.mapType == MapType.SATELLITE,
