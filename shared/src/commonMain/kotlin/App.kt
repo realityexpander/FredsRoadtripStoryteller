@@ -12,7 +12,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Pause
@@ -37,9 +37,9 @@ import androidx.compose.ui.unit.dp
 import com.russhwolf.settings.Settings
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
-import loadMarkers.printAppSettings
 import loadMarkers.lastKnownUserLocation
 import loadMarkers.loadMarkers
+import loadMarkers.printAppSettings
 import loadMarkers.sampleData.kUseRealNetwork
 import loadMarkers.setLastKnownUserLocation
 import co.touchlab.kermit.Logger as Log
@@ -68,7 +68,7 @@ fun App() {
 
         val settings = remember {
             Settings().apply {
-                clear()  // Force clear all settings
+//                clear()  // Force clear all settings
                 // Log.setMinSeverity(Severity.Warn)
                 printAppSettings()
             }
@@ -178,7 +178,9 @@ fun App() {
                         navigationIcon = {
                             IconButton(onClick = {
                                 coroutineScope.launch {
-                                    bottomSheetState.bottomSheetState.apply { if (isCollapsed) expand() else collapse() }
+                                    bottomSheetState.bottomSheetState.apply {
+                                        if (isCollapsed) expand() else collapse()
+                                    }
                                 }
                             }) {
                                 Icon(
@@ -195,15 +197,15 @@ fun App() {
                             )
                         },
                         actions = {
-                            IconButton(onClick = {}) {// viewModel.onEvent(MapEvent.OnClickDrawRoute) }) {
+                            IconButton(onClick = {}) { // show settings page
                                 Icon(
                                     imageVector = Icons.Default.Settings,
                                     contentDescription = "Settings"
                                 )
                             }
-                            IconButton(onClick = {}) {//  viewModel.onEvent(MapEvent.OnResetMap) }) {
+                            IconButton(onClick = {}) { // show marker history panel
                                 Icon(
-                                    imageVector = Icons.Default.Info,
+                                    imageVector = Icons.Default.History,
                                     contentDescription = "Hide/Show Marker List"
                                 )
                             }

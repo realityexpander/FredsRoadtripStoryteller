@@ -21,7 +21,8 @@ val httpClient = HttpClient {
     }
 
     Charsets {
-        // marker site uses "windows-1252" encoding (aka "ISO-8859-1") for the marker page html
+        // Marker page html response uses "windows-1252" encoding (aka "ISO-8859-1")
+        // - This responseCharsetFallback is required for iOS (Android doesn't care)
         responseCharsetFallback = Charsets.ISO_8859_1
         sendCharset = Charsets.ISO_8859_1
     }
