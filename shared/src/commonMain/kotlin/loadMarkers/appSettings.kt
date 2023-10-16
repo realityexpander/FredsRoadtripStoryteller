@@ -13,7 +13,7 @@ const val kCachedMarkersLastUpdatedEpochSeconds = "cachedMarkersLastUpdatedEpoch
 const val kCachedMarkersLastLocation = "cachedMarkersLastLocation"
 const val kLastKnownUserLocation = "lastKnownUserLocation"
 
-fun Settings.dump() {
+fun Settings.printAppSettings() {
     // Show current settings
     Log.d { "keys from settings: $keys" }
     Log.d("Settings: cachedMarkersResult markerInfos.size= " +

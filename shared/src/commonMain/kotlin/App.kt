@@ -16,10 +16,9 @@ import androidx.compose.ui.Modifier
 import com.russhwolf.settings.Settings
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
-import loadMarkers.dump
+import loadMarkers.printAppSettings
 import loadMarkers.lastKnownUserLocation
 import loadMarkers.loadMarkers
-import loadMarkers.sampleData.kSunnyvaleFakeDataset
 import loadMarkers.sampleData.kUseRealNetwork
 import loadMarkers.setLastKnownUserLocation
 import co.touchlab.kermit.Logger as Log
@@ -41,9 +40,9 @@ fun App() {
 
         val settings = remember {
             Settings().apply {
-//                clear()  // Force cache refresh
+//                clear()  // Force clear all settings
                 // Log.setMinSeverity(Severity.Warn)
-                dump()
+                printAppSettings()
             }
         }
         val locationService by remember { mutableStateOf(LocationService()) }
