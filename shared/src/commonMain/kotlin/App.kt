@@ -19,6 +19,7 @@ import kotlinx.serialization.json.Json
 import loadMarkers.dump
 import loadMarkers.lastKnownUserLocation
 import loadMarkers.loadMarkers
+import loadMarkers.sampleData.kSunnyvaleFakeDataset
 import loadMarkers.sampleData.kUseRealNetwork
 import loadMarkers.setLastKnownUserLocation
 import co.touchlab.kermit.Logger as Log
@@ -56,7 +57,7 @@ fun App() {
             showLoadingState = false,
             useFakeDataSetId =
                 kUseRealNetwork,
-            //    kSunnyvaleFakeDataset,
+//                kSunnyvaleFakeDataset,
             //    kTepoztlanFakeDataset,
             //    kSingleItemPageFakeDataset
         )
@@ -96,13 +97,14 @@ fun App() {
                 Log.d { "Final map-applied marker count = ${snapShot.size}" }
             }
         }
-        val mapBounds by remember(mapMarkers) {
-            mutableStateOf(
-                mapMarkers.map {
-                    it.position
-                }.toList()
-            )
-        }
+        // LEAVE FOR REFERENCE
+        //val mapBounds by remember(mapMarkers) {
+        //    mutableStateOf(
+        //        mapMarkers.map {
+        //            it.position
+        //        }.toList()
+        //    )
+        //}
 
         // Update user location
         LaunchedEffect(Unit) {

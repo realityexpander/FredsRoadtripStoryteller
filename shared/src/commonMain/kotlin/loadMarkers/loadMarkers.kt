@@ -20,7 +20,13 @@ import androidx.compose.ui.unit.sp
 import com.russhwolf.settings.Settings
 import httpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.accept
 import io.ktor.client.request.get
+import io.ktor.http.ContentType
+import io.ktor.http.charset
+import io.ktor.http.withCharset
+import io.ktor.utils.io.charsets.Charsets
+import io.ktor.utils.io.core.String
 import json
 import kMaxMarkerCacheAgeSeconds
 import kotlinx.coroutines.Dispatchers

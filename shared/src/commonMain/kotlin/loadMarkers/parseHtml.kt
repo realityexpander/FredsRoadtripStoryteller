@@ -37,7 +37,7 @@ suspend fun parseMarkerPageHtml(rawPageHtml: String): MarkersResult {
 
     fun singleMarkerPageHandler(): KsoupHtmlHandler {
         return KsoupHtmlHandler.Builder()
-            .onOpenTag { tagName, attributes, isSelfClosing ->
+            .onOpenTag { tagName, attributes, _ ->
 
                 // Get the marker id
                 if (tagName == "meta" && attributes["property"] == "og:url") {
@@ -209,7 +209,7 @@ suspend fun parseMarkerPageHtml(rawPageHtml: String): MarkersResult {
                     }
                 }
             }
-            .onCloseTag { tagName, isSelfClosing ->
+            .onCloseTag { tagName, _ ->
                 if (tagName == "td" && isListItselfFound) {
                     capturePhase++
                     if (capturePhase == 2) {
@@ -220,18 +220,18 @@ suspend fun parseMarkerPageHtml(rawPageHtml: String): MarkersResult {
                     }
                 }
             }
-            .onAttribute { tagName, attributeName, attributeValue ->
+            .onAttribute { tagName, attributeName, _ ->
                 if (tagName == "id" && attributeName == "TheListItself") {
                     isListItselfFound = true
                 }
 
                 // Found a marker
                 if (tagName == "id" && isListItselfFound) {
-                    if (attributeName.startsWith("M")) {
-                        attributeName.substring(1).toIntOrNull()?.let { markerId ->
-                            // Log.d { "Found Marker id: $markerId")  }
-                        }
-                    }
+                    //if (attributeName.startsWith("M")) {
+                    //    attributeName.substring(1).toIntOrNull()?.let { markerId ->
+                    //        // Log.d { "Found Marker id: $markerId")  }
+                    //    }
+                    //}
                 }
             }
             .build()
