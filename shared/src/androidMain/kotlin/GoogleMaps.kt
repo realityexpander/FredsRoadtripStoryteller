@@ -65,7 +65,7 @@ actual fun GoogleMaps(
         mutableStateOf(MapUiSettings(
             myLocationButtonEnabled = false, //!isTrackingEnabled,
             compassEnabled = false,
-             mapToolbarEnabled = false,
+            mapToolbarEnabled = false,
             zoomControlsEnabled = false,  // the +/- buttons (obscures the FAB)
             zoomGesturesEnabled = true,
             scrollGesturesEnabled = true,
@@ -82,18 +82,10 @@ actual fun GoogleMaps(
         )
     }
 
-//    //var isTrackingEnabled by remember { mutableStateOf(false) }
-//    LaunchedEffect(isTrackingEnabled) {
-//        // uiSettings = uiSettings.copy(myLocationButtonEnabled = !isTrackingEnabled)
-//    }
-
-    var isUpdating by remember { mutableStateOf(false) }
-
-    var showSomething = remember { false } // LEAVE FOR TESTING PURPOSES
-
-    LaunchedEffect(Unit) {
-        isUpdating = true
-    }
+    // Local UI state
+    var isMarkersEnabled by remember { mutableStateOf(true) }
+    var isHeatMapEnabled by remember { mutableStateOf(false) }
+    var showSomething by remember { mutableStateOf(false) } // LEAVE FOR TESTING PURPOSES
 
     // Usually used to setup the initial camera position (doesn't support tracking due to forcing zoom level)
     LaunchedEffect(cameraOnetimePosition) {
@@ -202,67 +194,56 @@ actual fun GoogleMaps(
                          nativeFun(LatLong(latLng.latitude, latLng.longitude))
                      }
                 },
-//            googleMapOptionsFactory = {  // leave for reference
-//                GoogleMapOptions().apply {
-////                    mapType(1) // -1 = unspecified, 0 = normal, 1 = satellite, 2 = terrain, 3 = hybrid
-////                    compassEnabled(false)
-////                    zoomControlsEnabled(true)
-////                    rotateGesturesEnabled(false)
-////                    tiltGesturesEnabled(false)
-////                    scrollGesturesEnabled(true)
-////                    zoomGesturesEnabled(true)
-//                    ambientEnabled(true)
-//                }
-//            }
         ) {
 
             // Heat Map Overlay
-            if(markers != null) {
-                TileOverlay(
-                    tileProvider = remember(shouldUpdateMapMarkers, markers) {
-                        if(!shouldUpdateMapMarkers) {
-                            // Log.d { "Using cached heatmap items, cachedHeatmap = $cachedTileProvider" }
-                            return@remember cachedTileProvider
-                        } else {
-                            // check if the markers are different than the cached markers
-                            if(markers.size == cachedMarkers.size) {
-                                // Log.d { "Using cached heatmap items because list of markers has not changed, cachedHeatmap = $cachedTileProvider" }
+            if (markers != null) {
+                    TileOverlay(
+                        tileProvider = remember(shouldUpdateMapMarkers, markers) {
+                            if (!shouldUpdateMapMarkers) {
+                                // Log.d { "Using cached heatmap items, cachedHeatmap = $cachedTileProvider" }
                                 return@remember cachedTileProvider
-                            }
+                            } else {
+                                // check if the markers are different than the cached markers
+                                if (markers.size == cachedMarkers.size) {
+                                    // Log.d { "Using cached heatmap items because list of markers has not changed, cachedHeatmap = $cachedTileProvider" }
+                                    return@remember cachedTileProvider
+                                }
 
-                            // Calculate the heatmap
-                            val result = HeatmapTileProvider.Builder()
-                                .weightedData(
-                                    if(markers.isNotEmpty()) {
-                                        markers.map { marker ->
-                                            WeightedLatLng(
-                                                LatLng(
-                                                    marker.position.latitude,
-                                                    marker.position.longitude
-                                                ),
-                                                2.0
+                                // Calculate the heatmap
+                                val result = HeatmapTileProvider.Builder()
+                                    .weightedData(
+                                        if (markers.isNotEmpty()) {
+                                            markers.map { marker ->
+                                                WeightedLatLng(
+                                                    LatLng(
+                                                        marker.position.latitude,
+                                                        marker.position.longitude
+                                                    ),
+                                                    2.0
+                                                )
+                                            }
+                                        } else {
+                                            listOf( // default cache value (heatmap must have at least 1 item, and this wont be visible)
+                                                WeightedLatLng(
+                                                    LatLng(0.0, 0.0), 0.0
+                                                )
                                             )
-                                        }
-                                    } else {
-                                        listOf( // default cache value (heatmap must have at least 1 item, and this wont be visible)
-                                            WeightedLatLng(
-                                                LatLng(0.0, 0.0), 0.0
-                                            )
-                                        )
-                                })
-                                .radius(25) // convolution filter size in pixels
-                                .build()
-                            // Log.d("Recalculating heatmap items, markers.size= ${markers.size}, HeatmapTileProvider= $result")
-                            cachedTileProvider = result
-                            return@remember result
-                        }
-                    },
-                    state = rememberTileOverlayState(),
-                    visible = true,
-                    fadeIn = true,
-                    transparency = 0.0f
-                )
-            }
+                                        })
+                                    .radius(25) // convolution filter size in pixels
+                                    .build()
+                                // Log.d("Recalculating heatmap items, markers.size= ${markers.size}, HeatmapTileProvider= $result")
+                                cachedTileProvider = result
+                                return@remember result
+                            }
+                        },
+                        state = rememberTileOverlayState(),
+                        visible = isHeatMapEnabled,
+                        fadeIn = true,
+                        transparency = 0.0f
+                    )
+                }
+
 
             // temporary markers
             myMarkers.value.forEach { marker ->
@@ -300,6 +281,7 @@ actual fun GoogleMaps(
 //                }
             }
 
+            // Render the polyline
             polyLine?.let { polyLine ->
                 Polyline(
                     points = List(polyLine.size) {
@@ -320,13 +302,18 @@ actual fun GoogleMaps(
             }
 
             Clustering(
-                items = remember(shouldUpdateMapMarkers, markers) {
-                    if(!shouldUpdateMapMarkers) {
+                items = remember(shouldUpdateMapMarkers, markers, isMarkersEnabled) {
+                    if (!isMarkersEnabled) {
+                        // Log.d { "Using empty cluster items" }
+                        return@remember listOf<ClusterItem>()
+                    }
+
+                    if (!shouldUpdateMapMarkers) {
                         // Log.d { "Using cached cluster items, cachedMarkers.size = ${cachedMarkers.size}" }
                         return@remember cachedMarkers
                     } else {
                         // check if the markers are different than the cached markers
-                        if(markers?.size == cachedMarkers.size) {
+                        if (markers?.size == cachedMarkers.size) {
                             // Log.d { "Using cached cluster items because list of markers has not changed, cachedMarkers.size = ${cachedMarkers.size}" }
                             return@remember cachedMarkers
                         }
@@ -394,6 +381,7 @@ actual fun GoogleMaps(
 //                }
             )
 
+
             // LEAVE FOR REFERENCE
             // Raw markers (not clustered)
 //            markers?.forEach { marker ->
@@ -414,6 +402,7 @@ actual fun GoogleMaps(
 
         }
 
+        // Local Map Controls
         if(isControlsVisible) {
             Column(
                 modifier = Modifier
@@ -421,22 +410,20 @@ actual fun GoogleMaps(
                     .align(Alignment.BottomStart),
                 horizontalAlignment = Alignment.Start
             ) {
-                if (showSomething) {  // leave for testing purposes
-                    Text(
-                        "SOMETHING",
-                        modifier = Modifier
-                            .background(color = Color.Red)
-                    )
+                SwitchWithLabel(
+                    label = "Markers",
+                    state = isMarkersEnabled,
+                    darkOnLightTextColor = true //properties.mapType == MapType.SATELLITE
+                ) {
+                    isMarkersEnabled = !isMarkersEnabled
                 }
-
-//                SwitchWithLabel(
-//                    label = "Track My location",
-//                    state = !uiSettings.myLocationButtonEnabled,
-//                    darkOnLightTextColor = true //properties.mapType == MapType.SATELLITE
-//                ) {
-//                    uiSettings = uiSettings.copy(myLocationButtonEnabled = !uiSettings.myLocationButtonEnabled)
-//                    isTrackingEnabled = !isTrackingEnabled
-//                }
+                SwitchWithLabel(
+                    label = "Heat Map",
+                    state = isHeatMapEnabled,
+                    darkOnLightTextColor = true //properties.mapType == MapType.SATELLITE
+                ) {
+                    isHeatMapEnabled = !isHeatMapEnabled
+                }
                 SwitchWithLabel(
                     label = "Satellite",
                     state = properties.mapType == MapType.SATELLITE,
@@ -447,6 +434,14 @@ actual fun GoogleMaps(
                             MapType.NORMAL
                         else
                             MapType.SATELLITE,
+                    )
+                }
+
+                if (showSomething) {  // leave for testing purposes
+                    Text(
+                        "SOMETHING",
+                        modifier = Modifier
+                            .background(color = Color.Red)
                     )
                 }
             }

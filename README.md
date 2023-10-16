@@ -70,6 +70,9 @@ https://github.com/JetBrains/compose-multiplatform/tree/master/examples/cocoapod
 - Continuous updates
   - https://developer.apple.com/forums/thread/124048
 
+- How to convert iOS UIImage to Compose ImageBitmap in Compose Multiplatform?
+  - https://slack-chats.kotlinlang.org/t/12086405/hi-all-how-to-convert-ios-uiimage-to-compose-imagebitmap-in-
+
 ### Dev notes
 - Why mutableStateList
   - https://stackoverflow.com/questions/67252538/jetpack-compose-update-composable-when-list-changes

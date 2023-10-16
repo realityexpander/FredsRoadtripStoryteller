@@ -3,6 +3,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,8 +29,11 @@ import cocoapods.GoogleMaps.animateWithCameraUpdate
 import cocoapods.GoogleMaps.kGMSTypeNormal
 import cocoapods.GoogleMaps.kGMSTypeSatellite
 import kotlinx.cinterop.ExperimentalForeignApi
+import org.jetbrains.compose.resources.painterResource
 import platform.CoreLocation.CLLocationCoordinate2DMake
 import platform.UIKit.UIColor
+import platform.UIKit.UIImage
+import platform.UIKit.UIImageRenderingMode
 
 
 @OptIn(ExperimentalForeignApi::class)
@@ -53,8 +57,7 @@ actual fun GoogleMaps(
 
     var isMapSetupCompleted by remember { mutableStateOf(false) }
 
-    var isTrackingEnabled by remember { mutableStateOf(false) }
-    var didMyLocationButtonVisiblityChange by remember { mutableStateOf(false) }
+//    var didMyLocationButtonVisiblityChange by remember { mutableStateOf(false) }
 
     var gsmMapViewType by remember { mutableStateOf(kGMSTypeNormal) }
     var didMapTypeChange by remember { mutableStateOf(false) }
@@ -64,6 +67,9 @@ actual fun GoogleMaps(
     var didCameraLocationLatLongChange by remember { mutableStateOf(false) }
     var isMapRedrawTriggered by remember { mutableStateOf(false) }
 
+    // Local UI state
+    var isMarkersEnabled by remember { mutableStateOf(true) }
+    // var isHeatMapEnabled by remember { mutableStateOf(false) }  // reserved for future use
     var showSomething = remember { false } // leave for testing purposes
 
     LaunchedEffect(userLocation, markers) {
@@ -158,10 +164,11 @@ actual fun GoogleMaps(
                     view.settings.setAllGesturesEnabled(true)
                     view.settings.setScrollGestures(true)
                     view.settings.setZoomGestures(true)
-                    view.settings.setCompassButton(true)
+                    view.settings.setCompassButton(false)
 
-                    view.myLocationEnabled = true
-                    view.settings.myLocationButton = true
+                    view.myLocationEnabled = true // show the users dot
+                    view.settings.myLocationButton = false // we use our own location circle
+
                     isMapSetupCompleted = true
                 }
 
@@ -170,10 +177,10 @@ actual fun GoogleMaps(
                     view.mapType = gsmMapViewType
                 }
 
-                if(didMyLocationButtonVisiblityChange) {
-                    didMyLocationButtonVisiblityChange = false
-                    view.settings.myLocationButton = !isTrackingEnabled
-                }
+//                if(didMyLocationButtonVisiblityChange) {
+//                    didMyLocationButtonVisiblityChange = false
+//                    view.settings.myLocationButton = !isTrackingEnabled
+//                }
 
                 if(didCameraPositionChange) {
                     didCameraPositionChange = false
@@ -202,7 +209,7 @@ actual fun GoogleMaps(
                     }
                 }
 
-                if (didCameraPositionLatLongBoundsChange) {
+                if(didCameraPositionLatLongBoundsChange) {
                     didCameraPositionLatLongBoundsChange = false
                     cameraLocationBounds?.let { cameraPositionLatLongBounds ->
                         var bounds = GMSCoordinateBounds()
@@ -247,20 +254,22 @@ actual fun GoogleMaps(
                     }
 
                     // render the markers
-                    markers?.forEach { marker ->
-                        val tempMarker = GMSMarker().apply {
-                            position = CLLocationCoordinate2DMake(
-                                marker.position.latitude,
-                                marker.position.longitude
-                            )
-                            title = marker.title
-                            userData = marker.key
-                            map = view
-                            icon = markerImageWithColor(UIColor.blueColor())
-                        }
+                    if(isMarkersEnabled) {
+                        markers?.forEach { marker ->
+                            val tempMarker = GMSMarker().apply {
+                                position = CLLocationCoordinate2DMake(
+                                    marker.position.latitude,
+                                    marker.position.longitude
+                                )
+                                title = marker.title
+                                userData = marker.key
+                                map = view
+                                icon = markerImageWithColor(UIColor.blueColor())
+                            }
 
-                        if(tempMarker.userData as String == curSelectedMarkerId) {
-                            curSelectedMarker = tempMarker
+                            if (tempMarker.userData as String == curSelectedMarkerId) {
+                                curSelectedMarker = tempMarker
+                            }
                         }
                     }
 
@@ -291,30 +300,30 @@ actual fun GoogleMaps(
             },
         )
 
-        // Map Controls
-        if (isControlsVisible) {
+        // Local Map Controls
+        if(isControlsVisible) {
             Column(
                 modifier = Modifier
                     .padding(16.dp)
                     .align(Alignment.BottomStart),
                 horizontalAlignment = Alignment.Start
             ) {
-                if (showSomething) {  // leave for testing purposes
-                    Text(
-                        "SOMETHING",
-                        modifier = Modifier
-                            .background(color = Color.Red)
-                    )
-                }
-
                 SwitchWithLabel(
-                    label = "Track My location",
-                    state = isTrackingEnabled,
+                    label = "Markers",
+                    state = isMarkersEnabled,
                     darkOnLightTextColor = gsmMapViewType == kGMSTypeSatellite
                 ) {
-                    isTrackingEnabled = !isTrackingEnabled
-                    didMyLocationButtonVisiblityChange = true
+                    isMarkersEnabled = !isMarkersEnabled
+                    isMapRedrawTriggered = true
                 }
+                // LEAVE FOR FUTURE USE
+//                SwitchWithLabel(
+//                    label = "Heat Map",
+//                    state = isHeatMapEnabled,
+//                    darkOnLightTextColor = true //smMapViewType == kGMSTypeSatellite
+//                ) {
+//                    isHeatMapEnabled = !isHeatMapEnabled
+//                }
                 SwitchWithLabel(
                     label = "Satellite",
                     state = gsmMapViewType == kGMSTypeSatellite,
@@ -322,6 +331,14 @@ actual fun GoogleMaps(
                 ) { shouldUseSatellite ->
                     didMapTypeChange = true
                     gsmMapViewType = if (shouldUseSatellite) kGMSTypeSatellite else kGMSTypeNormal
+                }
+
+                if (showSomething) {  // leave for testing purposes
+                    Text(
+                        "SOMETHING",
+                        modifier = Modifier
+                            .background(color = Color.Red)
+                    )
                 }
             }
         }

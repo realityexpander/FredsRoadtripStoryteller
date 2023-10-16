@@ -68,7 +68,7 @@ fun App() {
 
         val settings = remember {
             Settings().apply {
-//                clear()  // Force clear all settings
+                clear()  // Force clear all settings
                 // Log.setMinSeverity(Severity.Warn)
                 printAppSettings()
             }
