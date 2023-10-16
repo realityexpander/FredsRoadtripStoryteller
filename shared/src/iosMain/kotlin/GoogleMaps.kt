@@ -3,7 +3,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,11 +28,8 @@ import cocoapods.GoogleMaps.animateWithCameraUpdate
 import cocoapods.GoogleMaps.kGMSTypeNormal
 import cocoapods.GoogleMaps.kGMSTypeSatellite
 import kotlinx.cinterop.ExperimentalForeignApi
-import org.jetbrains.compose.resources.painterResource
 import platform.CoreLocation.CLLocationCoordinate2DMake
 import platform.UIKit.UIColor
-import platform.UIKit.UIImage
-import platform.UIKit.UIImageRenderingMode
 
 
 @OptIn(ExperimentalForeignApi::class)
@@ -57,9 +53,7 @@ actual fun GoogleMaps(
 
     var isMapSetupCompleted by remember { mutableStateOf(false) }
 
-//    var didMyLocationButtonVisiblityChange by remember { mutableStateOf(false) }
-
-    var gsmMapViewType by remember { mutableStateOf(kGMSTypeNormal) }
+    var gmsMapViewType by remember { mutableStateOf(kGMSTypeNormal) }
     var didMapTypeChange by remember { mutableStateOf(false) }
 
     var didCameraPositionLatLongBoundsChange by remember { mutableStateOf(false) }
@@ -99,11 +93,13 @@ actual fun GoogleMaps(
         }
     }
 
-    // Note: `GoogleMaps` using UIKit is a bit of a hack, it's not a real Composable, so we have to
-    //       trigger independent updates of the map parts, and sometimes re-render the
-    //       map elements. That's why theres all these `is` variables, and the `isRedrawMapTriggered`
-    //       variable.
-    //       If its not done like this, the UI for the map will not allow the user to move around.
+    // Note: Why there so many `did_____Change` variables, and the `isRedrawMapTriggered` variable?
+    // Implementing the `GoogleMaps` using UIKit inside a composable is a bit of a hack, as it's
+    //       not really meant to be used inside a Composable. To work with this limitation we have to
+    //       trigger independent updates of the map "parts" (ie: markers, heatmaps), and sometimes
+    //       re-render the map elements.
+    // If it's not done like this, the UI for the map will not allow the user to move around
+    //       using gestures.
     Box(Modifier.fillMaxSize()) {
         // Google Maps
         UIKitView(
@@ -174,7 +170,7 @@ actual fun GoogleMaps(
 
                 if(didMapTypeChange) {
                     didMapTypeChange = false
-                    view.mapType = gsmMapViewType
+                    view.mapType = gmsMapViewType
                 }
 
 //                if(didMyLocationButtonVisiblityChange) {
@@ -311,7 +307,7 @@ actual fun GoogleMaps(
                 SwitchWithLabel(
                     label = "Markers",
                     state = isMarkersEnabled,
-                    darkOnLightTextColor = gsmMapViewType == kGMSTypeSatellite
+                    darkOnLightTextColor = gmsMapViewType == kGMSTypeSatellite
                 ) {
                     isMarkersEnabled = !isMarkersEnabled
                     isMapRedrawTriggered = true
@@ -326,11 +322,11 @@ actual fun GoogleMaps(
 //                }
                 SwitchWithLabel(
                     label = "Satellite",
-                    state = gsmMapViewType == kGMSTypeSatellite,
-                    darkOnLightTextColor = gsmMapViewType == kGMSTypeSatellite
+                    state = gmsMapViewType == kGMSTypeSatellite,
+                    darkOnLightTextColor = gmsMapViewType == kGMSTypeSatellite
                 ) { shouldUseSatellite ->
                     didMapTypeChange = true
-                    gsmMapViewType = if (shouldUseSatellite) kGMSTypeSatellite else kGMSTypeNormal
+                    gmsMapViewType = if (shouldUseSatellite) kGMSTypeSatellite else kGMSTypeNormal
                 }
 
                 if (showSomething) {  // leave for testing purposes
