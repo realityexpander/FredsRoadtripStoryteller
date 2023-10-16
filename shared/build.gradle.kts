@@ -47,6 +47,7 @@ kotlin {
                 implementation(compose.material)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.components.resources)
+                implementation(compose.materialIconsExtended)
 
                 // Ktor client for HTTP requests
                 implementation("io.ktor:ktor-client-core:$ktorClientCoreVersion")
