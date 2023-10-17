@@ -93,6 +93,7 @@ actual fun GoogleMaps(
         }
     }
 
+
     // Note: Why there so many `did_____Change` variables, and the `isRedrawMapTriggered` variable?
     // Implementing the `GoogleMaps` using UIKit inside a composable is a bit of a hack, as it's
     //       not really meant to be used inside a Composable. To work with this limitation we have to
@@ -107,24 +108,23 @@ actual fun GoogleMaps(
             interactive = true,
             factory = {
                 // Does not work yet... :(
-                //            googleMapView.delegate = object : NSObject(), GMSMapViewDelegateProtocol {
-                //                override fun mapView(mapView: GMSMapView, willMove: Boolean) {
-                //                    showSomething = true
-                //                    //myLocation = "lat: ${location.useContents { this.latitude }} long: ${location.useContents { this.longitude }}"
-                //                }
+                //    googleMapView.delegate = object : NSObject(), GMSMapViewDelegateProtocol {
+                //        override fun mapView(
+                //            mapView: GMSMapView,
+                //            didTapAtCoordinate: CValue<CLLocationCoordinate2D>
+                //        ) {
                 //
-                //                override fun didTapMyLocationButtonForMapView(mapView: GMSMapView): Boolean {
-                //                    showSomething = true
+                //        }
                 //
-                //                    return true
-                //                }
-                //
-                //                override fun mapView(mapView: GMSMapView, didTapMarker: GMSMarker): Boolean {
-                //                    showSomething = true
-                //
-                //                    return true
-                //                }
-                //            }
+                //        override fun mapView(
+                //            mapView: GMSMapView,
+                //            didTapMarker: GMSMarker
+                //        ): Boolean {
+                //            val userData = didTapMarker.userData()
+                //            println("map marker click ${userData}")
+                //            return true
+                //        }
+                //    }
 
                 googleMapView
             },
