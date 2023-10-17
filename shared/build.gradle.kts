@@ -24,12 +24,20 @@ kotlin {
         framework {
             baseName = "shared"
             isStatic = true
+            transitiveExport = true
         }
 
-        // Must define the pods that are in the Podfile (unknown why?)
+        // Must define the pods that are in the Podfile (Is this just the way it works?)
         pod("GoogleMaps") {
             version = "8.2.0"
+            //    version = "7.4.0" // for GoogleMapsUtils 4.2.2 (doesnt build for some unknown reason)
         }
+
+        //    pod("Google-Maps-iOS-Utils") {
+        //        version = "4.2.2" // waiting for 5.0.0 to be released!
+        //        //  source = path(project.file("../GoogleMapsUtils"))
+        //        //  packageName = "Google_Maps_iOS_Utils"
+        //    }
     }
 
     sourceSets {
