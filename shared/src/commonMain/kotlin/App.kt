@@ -73,7 +73,7 @@ fun App() {
                 printAppSettings()
             }
         }
-        val locationService by remember { mutableStateOf(LocationService()) }
+        val gpsLocationService by remember { mutableStateOf(GPSLocationService()) }
         var userLocation: Location by remember {
             mutableStateOf(settings.lastKnownUserLocation())
         }
@@ -136,7 +136,11 @@ fun App() {
         // Update user location
         LaunchedEffect(Unit) {
             // Set the last known location to the current location
-            locationService.currentLocation { location ->
+            gpsLocationService.onUpdatedGPSLocation(
+                errorCallback = { error ->
+                    Log.w("Error: $error")
+                }
+            ) { location ->
                 //    val locationTemp = Location(
                 //        37.422160,
                 //        -122.084270 // googleplex
@@ -219,10 +223,18 @@ fun App() {
                                 .padding(16.dp),
                             onClick = {
                                 isTrackingEnabled = !isTrackingEnabled
+                                coroutineScope.launch {
+                                    if (isTrackingEnabled) {
+                                        gpsLocationService.startBackgroundUpdates()
+                                    } else {
+                                        gpsLocationService.stopBackgroundUpdates()
+                                    }
+                                }
                         }) {
                             Icon(
-                                imageVector = if (isTrackingEnabled) Icons.Default.Pause
-                                    else Icons.Default.PlayArrow,
+                                imageVector = if (isTrackingEnabled)
+                                    Icons.Default.Pause
+                                        else Icons.Default.PlayArrow,
                                 contentDescription = "Toggle track your location"
                             )
                         }

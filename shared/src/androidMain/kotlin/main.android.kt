@@ -1,8 +1,17 @@
 import android.content.Context
+import android.content.Intent
 import androidx.compose.runtime.Composable
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 
 actual fun getPlatformName(): String = "Android"
 
 @Composable fun MainView() = App()
 
 lateinit var appContext: Context // Android specific context
+
+// Android specific intent flow
+@Suppress("ObjectPropertyName")
+var _intentFlow: MutableSharedFlow<Intent> = MutableSharedFlow()
+val intentFlow: SharedFlow<Intent> = _intentFlow  // read-only shared flow
+

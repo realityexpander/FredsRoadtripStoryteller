@@ -42,7 +42,7 @@
 
         <!-- important to set the foreground service type to location -->
         <service
-            android:name=".LocationForegroundService"
+            android:name=".GPSLocationForegroundNotificationService"
             android:foregroundServiceType="location" />
 
     </application>

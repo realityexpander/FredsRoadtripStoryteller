@@ -96,6 +96,9 @@ kotlin {
 
                 // Ktor Client for Android
                 implementation("io.ktor:ktor-client-android:$ktorClientVersion")
+
+                // For Logger in Android todo (why doesn't this automatically put this in shared android module?)
+                api("co.touchlab:kermit:2.0.1")
             }
         }
     }

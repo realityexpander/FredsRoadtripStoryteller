@@ -40,7 +40,7 @@ suspend fun parseMarkerPageHtml(rawPageHtml: String): MarkersResult {
             .onOpenTag { tagName, attributes, _ ->
 
                 // Get the marker id
-                if (tagName == "meta" && attributes["property"] == "og:url") {
+                if(tagName == "meta" && attributes["property"] == "og:url") {
                     val url = attributes["content"] ?: ""
                     val id = url.substringAfter("m=").toIntOrNull() ?: 0
                     curCapturingMarkerId = "M$id"
@@ -60,7 +60,7 @@ suspend fun parseMarkerPageHtml(rawPageHtml: String): MarkersResult {
                 }
 
                 // Get the title
-                if (tagName == "meta" && attributes["property"] == "og:title") {
+                if(tagName == "meta" && attributes["property"] == "og:title") {
                     val title = attributes["content"] ?: ""
 
                     markerInfos[curCapturingMarkerId] = markerInfos[curCapturingMarkerId]?.copy(
@@ -74,7 +74,7 @@ suspend fun parseMarkerPageHtml(rawPageHtml: String): MarkersResult {
                 }
 
                 // Get the description
-                if (tagName == "meta" && attributes["name"] == "description") {
+                if(tagName == "meta" && attributes["name"] == "description") {
                     val description = attributes["content"] ?: ""
 
                     markerInfos[curCapturingMarkerId] = markerInfos[curCapturingMarkerId]?.copy(
@@ -86,7 +86,7 @@ suspend fun parseMarkerPageHtml(rawPageHtml: String): MarkersResult {
                 }
 
                 // Get the image url
-                if (tagName == "meta" && attributes["name"] == "twitter:image") {
+                if(tagName == "meta" && attributes["name"] == "twitter:image") {
                     val imageUrl = attributes["content"] ?: ""
 
                     markerInfos[curCapturingMarkerId] = markerInfos[curCapturingMarkerId]?.copy(
@@ -98,7 +98,7 @@ suspend fun parseMarkerPageHtml(rawPageHtml: String): MarkersResult {
                 }
 
                 // Get the lat/long
-                if (tagName == "a" && attributes["href"]?.contains(
+                if(tagName == "a" && attributes["href"]?.contains(
                         "https://www.google.com/maps/dir/?api=1&destination="
                     ) == true
                 ) {
@@ -139,7 +139,7 @@ suspend fun parseMarkerPageHtml(rawPageHtml: String): MarkersResult {
 
         return KsoupHtmlHandler.Builder()
             .onText { text ->
-                if (isCapturingMarkerText) {
+                if(isCapturingMarkerText) {
                     val strippedBlankLines = text.trim()
 
                     if (strippedBlankLines.isNotEmpty())
@@ -152,7 +152,7 @@ suspend fun parseMarkerPageHtml(rawPageHtml: String): MarkersResult {
 
                 // First page only
                 // Check for the entry count (239 entries matched your criteria. The first 100 are listed above.)
-                if (text.contains("entries matched your criteria.", ignoreCase = true)) {
+                if(text.contains("entries matched your criteria.", ignoreCase = true)) {
                     rawMarkerCountFromFirstPageHtmlOfMultiPageResult =
                         text.substringBefore("entries").trim().toIntOrNull() ?: 0
                     // Log.d { "Entry count: $entryCount" }
@@ -161,13 +161,13 @@ suspend fun parseMarkerPageHtml(rawPageHtml: String): MarkersResult {
             .onOpenTag { tagName, attributes, _ ->
 
                 // Find the "TheListItself" div, which contains the list of markers
-                if (tagName == "div" && attributes["id"] == "TheListItself") {
+                if(tagName == "div" && attributes["id"] == "TheListItself") {
                     isListItselfFound = true
                 }
-                if (!isListItselfFound) return@onOpenTag
+                if(!isListItselfFound) return@onOpenTag
 
                 // Found a marker
-                if (tagName == "table") {
+                if(tagName == "table") {
                     if (attributes["id"]?.startsWith("M") == true) {
                         // Log.d { "Found a marker ${attributes["id"]}" }
                         curCapturingMarkerId = attributes["id"]!!
@@ -175,11 +175,11 @@ suspend fun parseMarkerPageHtml(rawPageHtml: String): MarkersResult {
                     }
                 }
 
-                if (tagName == "td") {
+                if(tagName == "td") {
                     isCapturingMarkerText = true
                 }
 
-                if (tagName == "a" && isCapturingMarkerText) {
+                if(tagName == "a" && isCapturingMarkerText) {
                     if (attributes["href"]?.contains("https://www.google.com/maps/dir/?api=1&destination=") == true
                     ) {
                         val lat = attributes["href"]
@@ -210,7 +210,7 @@ suspend fun parseMarkerPageHtml(rawPageHtml: String): MarkersResult {
                 }
             }
             .onCloseTag { tagName, _ ->
-                if (tagName == "td" && isListItselfFound) {
+                if(tagName == "td" && isListItselfFound) {
                     capturePhase++
                     if (capturePhase == 2) {
                         capturePhase = 0
@@ -221,12 +221,12 @@ suspend fun parseMarkerPageHtml(rawPageHtml: String): MarkersResult {
                 }
             }
             .onAttribute { tagName, attributeName, _ ->
-                if (tagName == "id" && attributeName == "TheListItself") {
+                if(tagName == "id" && attributeName == "TheListItself") {
                     isListItselfFound = true
                 }
 
                 // Found a marker
-                if (tagName == "id" && isListItselfFound) {
+                if(tagName == "id" && isListItselfFound) {
                     //if (attributeName.startsWith("M")) {
                     //    attributeName.substring(1).toIntOrNull()?.let { markerId ->
                     //        // Log.d { "Found Marker id: $markerId")  }

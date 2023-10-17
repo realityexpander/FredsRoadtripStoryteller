@@ -9,7 +9,12 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import appContext
 import com.google.android.gms.maps.MapsInitializer
+import intentFlow
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -22,13 +27,12 @@ class MainActivity : AppCompatActivity() {
         permissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) {
-            // After we have permissions, we can get start the service and show notifications
-            // viewModel.loadWeatherInfo()
-
-            Intent(applicationContext, LocationForegroundService::class.java).apply {
-                action = LocationForegroundService.ACTION_START
-                startService(this) // sends command to start service
-            }
+            // Default to background location updates off for now
+            //    // After we have permissions, we can get start the foreground service and show notification
+            //    Intent(applicationContext, GPSLocationForegroundNotificationService::class.java).apply {
+            //        action = GPSLocationForegroundNotificationService.ACTION_START
+            //        startService(this) // sends command to start service
+            //    }
         }
 
         // Get permissions to access location (opens dialog)
@@ -41,7 +45,23 @@ class MainActivity : AppCompatActivity() {
         // See https://issuetracker.google.com/issues/228091313
         MapsInitializer.initialize(this, MapsInitializer.Renderer.LATEST) {
             Log.d("TAG", "onMapsSdkInitialized: initialized Google Maps SDK, version: ${it.name}")
-        };
+        }
+
+
+        // Collects the intent flow from the common module Android specific code
+        // note: for some reason, this doesn't work in the common module, so we must collect assert(true)
+        //       flow from the Android specific code, and then emit the intent from this MainActivity.
+        val scope = CoroutineScope(Dispatchers.Main)
+        scope.launch {
+            intentFlow.collect { intent ->
+                if(intent.action == GPSLocationService.ACTION_STOP_BACKGROUND_UPDATES) {
+                    stopBackgroundUpdates()
+                }
+                if(intent.action == GPSLocationService.ACTION_START_BACKGROUND_UPDATES) {
+                    startBackgroundUpdates()
+                }
+            }
+        }
 
         setContent {
             MainView()
@@ -50,9 +70,28 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        Intent(applicationContext, LocationForegroundService::class.java).apply {
-            action = LocationForegroundService.ACTION_STOP
-            startService(this) // sends command to stop service
+        stopBackgroundUpdates()
+    }
+
+    private fun stopBackgroundUpdates() {
+        Intent(applicationContext, GPSLocationForegroundNotificationService::class.java).apply {
+            action = GPSLocationForegroundNotificationService.ACTION_STOP_NOTIFICATION_SERVICE
+            appContext.startService(this) // sends command to stop service
+        }
+    }
+
+    private fun startBackgroundUpdates() {
+        Intent(applicationContext, GPSLocationForegroundNotificationService::class.java).apply {
+            action = GPSLocationForegroundNotificationService.ACTION_START_NOTIFICATION_SERVICE
+            appContext.startService(this) // sends command to start service
+        }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+
+        if(intent?.action == GPSLocationForegroundNotificationService.ACTION_STOP_NOTIFICATION_SERVICE) {
+            stopBackgroundUpdates()
         }
     }
 }

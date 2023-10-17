@@ -16,7 +16,7 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 import co.touchlab.kermit.Logger as Log
 // Implement the LocationService in iOS
-actual class LocationService  {
+actual class GPSLocationService  {
 
     // Define a native CLLocationManager object
     private val locationManager = CLLocationManager()
@@ -70,7 +70,7 @@ actual class LocationService  {
 
     }
 
-    actual suspend fun currentLocation(
+    actual suspend fun onUpdatedGPSLocation(
         errorCallback: (String) -> Unit,
         locationCallback: (Location?) -> Unit
     ) {
@@ -101,7 +101,7 @@ actual class LocationService  {
     }
 
     // Get the current location only one time (not a stream)
-    actual suspend fun getCurrentLocation(): Location = suspendCoroutine { continuation ->
+    actual suspend fun getCurrentGPSLocation(): Location = suspendCoroutine { continuation ->
         oneTimeLocationManager.requestWhenInUseAuthorization()
         oneTimeLocationManager.desiredAccuracy = kCLLocationAccuracyBest
 
@@ -122,7 +122,7 @@ actual class LocationService  {
         oneTimeLocationManager.delegate = locationDelegate
     }
 
-    actual suspend fun getLatestLocation(): Location? {
+    actual suspend fun getLatestGPSLocation(): Location? {
         return latestLocation.get()
     }
 }
