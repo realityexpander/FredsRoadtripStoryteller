@@ -15,6 +15,6 @@ expect class GPSLocationService() {
    suspend fun currentHeading(callback: (Heading?) -> Unit)
    suspend fun getLatestGPSLocation(): Location?
 
-   suspend fun startBackgroundUpdates(): Unit
-   suspend fun stopBackgroundUpdates(): Unit
+   fun allowBackgroundLocationUpdates()
+   fun preventBackgroundLocationUpdates()
 }

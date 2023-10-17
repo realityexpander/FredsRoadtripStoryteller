@@ -74,7 +74,7 @@ actual class GPSLocationService  {
         errorCallback: (String) -> Unit,
         locationCallback: (Location?) -> Unit
     ) {
-        locationManager.requestWhenInUseAuthorization()
+        locationManager.requestWhenInUseAuthorization()  // for background location updates
         locationDelegate.onLocationUpdate = locationCallback
         locationManager.delegate = locationDelegate
 
@@ -124,5 +124,13 @@ actual class GPSLocationService  {
 
     actual suspend fun getLatestGPSLocation(): Location? {
         return latestLocation.get()
+    }
+
+    actual fun allowBackgroundLocationUpdates() {
+        locationManager.allowsBackgroundLocationUpdates = true
+    }
+
+    actual fun preventBackgroundLocationUpdates() {
+        locationManager.allowsBackgroundLocationUpdates = false
     }
 }

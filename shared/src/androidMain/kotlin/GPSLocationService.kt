@@ -12,6 +12,10 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -140,8 +144,10 @@ actual class GPSLocationService  {
         return latestLocation.get()
     }
 
-    actual suspend fun startBackgroundUpdates(): Unit {
-        _intentFlow.emit(Intent(GPSLocationService.ACTION_START_BACKGROUND_UPDATES))
+    actual fun allowBackgroundLocationUpdates() {
+        CoroutineScope(Dispatchers.Main).launch {
+            _intentFlow.emit(Intent(GPSLocationService.ACTION_START_BACKGROUND_UPDATES))
+        }
 
         //    // send start to foreground service // cant do this here... why? // leave for reference
         //    Intent(appContext, GPSLocationForegroundNotificationService::class.java).apply {
@@ -149,8 +155,10 @@ actual class GPSLocationService  {
         //        appContext.startService(this) // sends command to start service
         //    }
     }
-    actual suspend fun stopBackgroundUpdates(): Unit {
-        _intentFlow.emit(Intent(GPSLocationService.ACTION_STOP_BACKGROUND_UPDATES))
+    actual fun preventBackgroundLocationUpdates() {
+        CoroutineScope(Dispatchers.Main).launch {
+            _intentFlow.emit(Intent(GPSLocationService.ACTION_STOP_BACKGROUND_UPDATES))
+        }
     }
 
     companion object {

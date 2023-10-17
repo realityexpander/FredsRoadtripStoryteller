@@ -225,9 +225,9 @@ fun App() {
                                 isTrackingEnabled = !isTrackingEnabled
                                 coroutineScope.launch {
                                     if (isTrackingEnabled) {
-                                        gpsLocationService.startBackgroundUpdates()
+                                        gpsLocationService.allowBackgroundLocationUpdates()
                                     } else {
-                                        gpsLocationService.stopBackgroundUpdates()
+                                        gpsLocationService.preventBackgroundLocationUpdates()
                                     }
                                 }
                         }) {

@@ -13,6 +13,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import co.touchlab.kermit.Logger as Log
 
@@ -21,8 +22,7 @@ import co.touchlab.kermit.Logger as Log
 class GPSLocationForegroundNotificationService: Service() {
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-//    private lateinit var locationClient: LocationClient
-    private lateinit var gpsLocationClient: GPSLocationService
+    private lateinit var gpsLocationService: GPSLocationService
 
     override fun onBind(p0: Intent?): IBinder? {
         return null
@@ -30,7 +30,7 @@ class GPSLocationForegroundNotificationService: Service() {
 
     override fun onCreate() {
         super.onCreate()
-        gpsLocationClient = GPSLocationService()
+        gpsLocationService = GPSLocationService()
 
         // for flow - leave for reference
         //    locationClient = LocationClientImpl(
@@ -61,14 +61,18 @@ class GPSLocationForegroundNotificationService: Service() {
 
         // Uses a callback to update the notification
         serviceScope.launch {
-            gpsLocationClient.onUpdatedGPSLocation(
+            gpsLocationService.onUpdatedGPSLocation(
                 errorCallback = { error ->
                     Log.w("com.realityexpander.LocationForegroundService, Error: $error" )
                 }
             ) { newLocation ->
 
+                if(!serviceScope.isActive) {
+                    return@onUpdatedGPSLocation
+                }
+
                 fun Double.trimTo5Decimals(): String {
-                    return  toString()
+                    return toString()
                                 .substringBeforeLast(".") +
                         "." +
                             toString()
@@ -109,13 +113,10 @@ class GPSLocationForegroundNotificationService: Service() {
     }
 
     private fun stop() {
-        serviceScope.launch {
-            removeNotification()
-
-            stopForeground(Service.STOP_FOREGROUND_REMOVE)
-            serviceScope.cancel()
-            stopSelf()
-        }
+        serviceScope.cancel()
+        removeNotification()
+        stopForeground(Service.STOP_FOREGROUND_REMOVE)
+        stopSelf()
     }
 
     private fun removeNotification() {

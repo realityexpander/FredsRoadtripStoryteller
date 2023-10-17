@@ -73,6 +73,7 @@ class MainActivity : AppCompatActivity() {
         stopBackgroundUpdates()
     }
 
+    // Turn off the notification service for the GPS service, which prevents background location updates
     private fun stopBackgroundUpdates() {
         Intent(applicationContext, GPSLocationForegroundNotificationService::class.java).apply {
             action = GPSLocationForegroundNotificationService.ACTION_STOP_NOTIFICATION_SERVICE
@@ -80,6 +81,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Turn on the notification service for the GPS service, which allows background location updates
     private fun startBackgroundUpdates() {
         Intent(applicationContext, GPSLocationForegroundNotificationService::class.java).apply {
             action = GPSLocationForegroundNotificationService.ACTION_START_NOTIFICATION_SERVICE
