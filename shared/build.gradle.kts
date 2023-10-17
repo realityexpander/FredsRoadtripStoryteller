@@ -1,3 +1,5 @@
+import org.jetbrains.compose.ComposeBuildConfig.composeVersion
+
 plugins {
     kotlin("multiplatform")
     kotlin("native.cocoapods")
@@ -30,7 +32,7 @@ kotlin {
         // Must define the pods that are in the Podfile (Is this just the way it works?)
         pod("GoogleMaps") {
             version = "8.2.0"
-            //    version = "7.4.0" // for GoogleMapsUtils 4.2.2 (doesnt build for some unknown reason)
+            //    version = "7.4.0" // for GoogleMapsUtils 4.2.2 (doesn't build for some unknown reason, waiting for 5.0.0)
         }
 
         //    pod("Google-Maps-iOS-Utils") {
@@ -91,6 +93,7 @@ kotlin {
         }
         val androidMain by getting {
             dependencies {
+
                 api("androidx.activity:activity-compose:1.8.0")
                 api("androidx.appcompat:appcompat:1.6.1")
                 api("androidx.core:core-ktx:1.12.0")
