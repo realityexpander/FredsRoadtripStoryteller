@@ -4,6 +4,8 @@
 10/8/23
 Google Maps for Compose KMP experimental app
 
+<img width="1700" alt="image" src="https://github.com/realityexpander/GoolgeMapsUsingCocoaPodsExample/assets/5157474/7b0395d3-04e6-48df-9219-990cb10d81e1">
+
 Source:
 https://github.com/JetBrains/compose-multiplatform/tree/master/examples/cocoapods-ios-example
 
