@@ -5,6 +5,7 @@ import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
@@ -13,12 +14,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomSheetScaffold
 import androidx.compose.material.Button
+import androidx.compose.material.ButtonColors
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
+import androidx.compose.material.Slider
 import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
@@ -239,23 +244,47 @@ fun App() {
                             }
 
                             SettingsSwitch(
-                                settings = settings,
-                                title = "Show Talk Radius",
+                                title = "Start background tracking at app launch",
                                 isChecked = true, //settings.showTalkRadius(),
                                 onCheckedChange = {
                                     // settings.setShowTalkRadius(it)
                                 }
                             )
 
+                            SettingsSwitch(
+                                title = "Show Talk Radius on map",
+                                isChecked = true, //settings.showTalkRadius(),
+                                onCheckedChange = {
+                                    // settings.setShowTalkRadius(it)
+                                }
+                            )
+
+                            SettingsSlider(
+                                title = "Talk Radius (miles)",
+                                currentValue = 0.5f, //settings.talkRadius(),
+                                onValueChange = {
+                                    // settings.setTalkRadius(it)
+                                }
+                            )
+
+                            Spacer(modifier = Modifier.padding(16.dp))
+                            Divider(modifier = Modifier.fillMaxWidth())
+                            Spacer(modifier = Modifier.padding(16.dp))
+
                             Button(
                                 modifier = Modifier
-                                    .align(Alignment.End),
+                                    .align(Alignment.CenterHorizontally),
+                                colors = ButtonDefaults.buttonColors(
+                                    backgroundColor = MaterialTheme.colors.error,
+                                    contentColor = MaterialTheme.colors.onError
+                                ),
                                 onClick = {
                                 coroutineScope.launch {
-                                    bottomSheetScaffoldState.bottomSheetState.collapse()
+                                    // bottomSheetScaffoldState.bottomSheetState.collapse()
+                                    // show confirmation dialog
                                 }
                             }) {
-                                Text("Save Settings")
+                                Text("Reset Marker Info Cache")
                             }
                         }
                     }
@@ -436,14 +465,13 @@ fun App() {
 
 @Composable
 private fun SettingsSwitch(
-    settings: Settings,
     title: String,
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
     Row {
         Text(
-            "Show Talk Radius",
+            title,
             modifier = Modifier
                 .weight(3f)
                 .align(Alignment.CenterVertically),
@@ -452,10 +480,40 @@ private fun SettingsSwitch(
             modifier = Modifier
                 .weight(1f)
                 .align(Alignment.CenterVertically),
-            checked = isChecked, //settings.showTalkRadius(),
-            onCheckedChange = {
-                // settings.setShowTalkRadius(it)
+            checked = isChecked,
+            onCheckedChange = onCheckedChange
+        )
+    }
+}
+
+@Composable
+private fun SettingsSlider(
+    title: String,
+    currentValue: Float,
+    onValueChange: (Float) -> Unit
+) {
+    Row {
+        Text(
+            title,
+            modifier = Modifier
+                .weight(1f)
+                .align(Alignment.CenterVertically),
+        )
+        Slider(
+            modifier = Modifier
+                .weight(2f)
+                .align(Alignment.CenterVertically),
+            value = currentValue,
+            valueRange = 0f..10f,
+            onValueChange = {
+                onValueChange(it)
             }
+        )
+        Text(
+            text = currentValue.toString(),
+            modifier = Modifier
+                .weight(.5f)
+                .align(Alignment.CenterVertically),
         )
     }
 }
