@@ -13,3 +13,4 @@ AppSecrets.plist
 /build/ios/
 /.idea/
 /androidApp/build/
+/androidApp/google-services.json
