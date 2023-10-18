@@ -5,6 +5,9 @@ plugins {
 
     // for Google Maps API key secrets gradle plugin
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+
+    // Google Services - for feedback
+    id("com.google.gms.google-services")
 }
 
 kotlin {

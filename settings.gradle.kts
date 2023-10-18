@@ -16,6 +16,7 @@ pluginManagement {
         val agpVersion = extra["agp.version"] as String
         val composeVersion = extra["compose.version"] as String
         val googleMapsSecretsPluginVersion = extra["google.maps.secrets-gradle-plugin.version"] as String
+        val googleServicesVersion = extra["google.services.version"] as String
 
         kotlin("jvm").version(kotlinVersion)
         kotlin("multiplatform").version(kotlinVersion)
@@ -30,6 +31,9 @@ pluginManagement {
 
         // For Google Maps Secrets Gradle Plugin
         id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin").version(googleMapsSecretsPluginVersion)
+
+        // For Google Services
+        id("com.google.gms.google-services").version(googleServicesVersion)
     }
 }
 

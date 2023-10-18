@@ -1,5 +1,6 @@
 package com.realityexpander
 
+import GPSLocationService
 import MainView
 import android.Manifest
 import android.content.Intent
@@ -11,6 +12,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import appContext
 import com.google.android.gms.maps.MapsInitializer
+import com.google.firebase.FirebaseApp
+import com.google.firebase.appdistribution.InterruptionLevel
+import com.google.firebase.appdistribution.ktx.appDistribution
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.ktx.app
 import intentFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -62,6 +68,19 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+
+        // todo - trigger from settings
+        // Enable dev mode on your local device:
+        // - adb shell setprop debug.firebase.appdistro.devmode true  // false to turn off
+//        FirebaseApp.initializeApp(this)
+//        // Show the Firebase feedback notification
+//        Firebase.appDistribution.showFeedbackNotification(
+//            // Text providing notice to your testers about collection and
+//            // processing of their feedback data
+//            "Please let us know your thoughts about this app!",
+//            // The level of interruption for the notification
+//            InterruptionLevel.HIGH)
+////        Firebase.appDistribution.startFeedback("feedback")
 
         setContent {
             MainView()

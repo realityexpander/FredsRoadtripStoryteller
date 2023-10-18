@@ -110,6 +110,15 @@ kotlin {
 
                 // For Logger in Android todo (why doesn't this automatically put this in shared android module?)
                 api("co.touchlab:kermit:2.0.1")
+
+                // Firebase BoM
+                api(platform("com.google.firebase:firebase-bom:32.3.1"))
+                // Firebase SDK for Google Analytics
+                api("com.google.firebase:firebase-analytics-ktx")
+                // Firebase feedback // todo move to beta variant?
+                api("com.google.firebase:firebase-appdistribution-api-ktx:16.0.0-beta10")
+                api("com.google.firebase:firebase-appdistribution:16.0.0-beta10")
+
             }
         }
     }
