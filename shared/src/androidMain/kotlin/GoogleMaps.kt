@@ -38,6 +38,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberTileOverlayState
 import com.google.maps.android.heatmaps.HeatmapTileProvider
 import com.google.maps.android.heatmaps.WeightedLatLng
+import loadMarkers.milesToMeters
 import co.touchlab.kermit.Logger as Log
 
 @OptIn(MapsComposeExperimentalApi::class)
