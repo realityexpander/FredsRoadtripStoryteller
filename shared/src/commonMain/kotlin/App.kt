@@ -55,13 +55,6 @@ const val kMaxReloadDistanceMiles = 2
 const val kTalkRadiusMiles = 0.5
 const val kMaxMarkerCacheAgeSeconds = 60 * 60 * 24 * 30  // 30 days
 
-fun Double.metersToMiles(): Double {
-    return this * 0.000621371
-}
-fun Double.milesToMeters(): Double {
-    return this * 1609.34
-}
-
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun App() {
