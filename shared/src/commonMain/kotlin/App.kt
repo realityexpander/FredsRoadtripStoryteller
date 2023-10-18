@@ -1,10 +1,15 @@
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomSheetScaffold
+import androidx.compose.material.Button
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
@@ -33,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -55,6 +61,12 @@ const val kMaxReloadDistanceMiles = 2
 const val kTalkRadiusMiles = 0.5
 const val kMaxMarkerCacheAgeSeconds = 60 * 60 * 24 * 30  // 30 days
 
+sealed class BottomSheetScreen {
+    data object None : BottomSheetScreen()
+    data object Settings : BottomSheetScreen()
+    data class MarkerDetails(val markerId: String) : BottomSheetScreen()
+}
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun App() {
@@ -62,8 +74,9 @@ fun App() {
     MaterialTheme {
         val coroutineScope = rememberCoroutineScope()
 
-        val bottomSheetState = rememberBottomSheetScaffoldState()
+        val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
         val scaffoldState = rememberScaffoldState()
+        var bottomSheetScreen by remember { mutableStateOf<BottomSheetScreen>(BottomSheetScreen.None) }
 
         var isTrackingEnabled by remember { mutableStateOf(false) }
         var findMeCameraLocation by remember { mutableStateOf<Location?>(null) } // used to center map on user
@@ -85,12 +98,13 @@ fun App() {
             maxReloadDistanceMiles = kMaxReloadDistanceMiles,
             showLoadingState = false,
             useFakeDataSetId =
-                kUseRealNetwork,
+            kUseRealNetwork,
             //    kSunnyvaleFakeDataset,
             //    kTepoztlanFakeDataset,
             //    kSingleItemPageFakeDataset
         )
-        val cachedMapMarkers = remember { mutableStateListOf<MapMarker>() } // prevents flicker when loading new markers
+        val cachedMapMarkers =
+            remember { mutableStateListOf<MapMarker>() } // prevents flicker when loading new markers
         var shouldUpdateMapMarkers by remember { mutableStateOf(true) }
         val mapMarkers = remember(markersLoadResult.isMarkerPageParseFinished) {
 
@@ -175,20 +189,58 @@ fun App() {
         }
 
         BottomSheetScaffold(
-            scaffoldState = bottomSheetState,
+            scaffoldState = bottomSheetScaffoldState,
             sheetPeekHeight = 0.dp,
-            sheetContent = { /* show bottom sheet content for a tapped selected marker*/ },
+            sheetContentColor = MaterialTheme.colors.onBackground,
+            sheetBackgroundColor = MaterialTheme.colors.background,
+            sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+            sheetContent = {
+                when(bottomSheetScreen) {
+                    BottomSheetScreen.None -> {
+                        Text("None")
+                    }
+                    is BottomSheetScreen.Settings -> {
+                        val scrollState = rememberScrollState()
+                        Column(
+                            Modifier.fillMaxWidth()
+                                .padding(16.dp)
+                                .scrollable(scrollState, orientation = Orientation.Vertical)
+                            ,
+                            horizontalAlignment = Alignment.Start,
+                        ) {
+                            Text("Settings")
+
+                            Button(onClick = {
+                                coroutineScope.launch {
+                                    bottomSheetScaffoldState.bottomSheetState.collapse()
+                                }
+                            }) {
+                                Text("Save")
+                            }
+                        }
+                    }
+                    is BottomSheetScreen.MarkerDetails -> {
+                        Text("Marker Details")
+                    }
+                }
+            },
+            drawerContent =  {
+                Text("Application Menu")
+            }
         ) {
             Scaffold(
                 scaffoldState = scaffoldState,
                 topBar = {
-                    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(
+                        Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
                         TopAppBar(
                             navigationIcon = {
                                 IconButton(onClick = {
                                     coroutineScope.launch {
-                                        bottomSheetState.bottomSheetState.apply {
-                                            if (isCollapsed) expand() else collapse()
+                                        bottomSheetScaffoldState.drawerState.apply {
+                                            if(isClosed) open() else close()
                                         }
                                     }
                                 }) {
@@ -206,13 +258,30 @@ fun App() {
                                 )
                             },
                             actions = {
-                                IconButton(onClick = {}) { // show settings page
+                                // Settings
+                                IconButton(onClick = {
+                                    coroutineScope.launch {
+                                        bottomSheetScreen = BottomSheetScreen.Settings
+                                        bottomSheetScaffoldState.bottomSheetState.apply {
+                                            if (isCollapsed) expand() else collapse()
+                                        }
+                                    }
+                                }) { // show settings page
                                     Icon(
                                         imageVector = Icons.Default.Settings,
                                         contentDescription = "Settings"
                                     )
                                 }
-                                IconButton(onClick = {}) { // show marker history panel
+
+                                // Recent Markers History List
+                                IconButton(onClick = {
+                                    coroutineScope.launch {
+                                        bottomSheetScreen = BottomSheetScreen.MarkerDetails("markerId")
+                                        bottomSheetScaffoldState.bottomSheetState.apply {
+                                            if (isCollapsed) expand() else collapse()
+                                        }
+                                    }
+                                }) { // show marker history panel
                                     Icon(
                                         imageVector = Icons.Default.History,
                                         contentDescription = "Hide/Show Marker List"
@@ -225,7 +294,7 @@ fun App() {
                         AnimatedVisibility(
                             visible = markersLoadResult.loadingState is LoadingState.Error,
                         ) {
-                            if(markersLoadResult.loadingState is LoadingState.Error) {
+                            if (markersLoadResult.loadingState is LoadingState.Error) {
                                 Text(
                                     modifier = Modifier.fillMaxWidth()
                                         .background(MaterialTheme.colors.error),
@@ -252,11 +321,11 @@ fun App() {
                                         gpsLocationService.preventBackgroundLocationUpdates()
                                     }
                                 }
-                        }) {
+                            }) {
                             Icon(
                                 imageVector = if (isTrackingEnabled)
                                     Icons.Default.Pause
-                                        else Icons.Default.PlayArrow,
+                                else Icons.Default.PlayArrow,
                                 contentDescription = "Toggle track your location"
                             )
                         }
@@ -267,7 +336,7 @@ fun App() {
                             onClick = {
                                 // center on location
                                 findMeCameraLocation = userLocation.copy()
-                        }) {
+                            }) {
                             Icon(
                                 imageVector = Icons.Default.MyLocation,
                                 contentDescription = "Center on your location"
@@ -310,7 +379,7 @@ fun MapContent(
     var isFirstUpdate by remember { mutableStateOf(true) } // force map to update at least once
 
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-        if(isFinishedLoadingMarkerData || !isFirstUpdate) {
+        if (isFinishedLoadingMarkerData || !isFirstUpdate) {
             GoogleMaps(
                 modifier = Modifier.fillMaxSize(),
                 isTrackingEnabled = isTrackingEnabled,
@@ -332,15 +401,17 @@ fun MapContent(
                     }
                 },
                 shouldUpdateMapMarkers = shouldUpdateMapMarkers,
-                cameraOnetimePosition = remember { CameraPosition(
-                    target = LatLong(
+                cameraOnetimePosition = remember {
+                    CameraPosition(
+                        target = LatLong(
 //                            37.422160,
 //                            -122.084270  // googleplex
-                        initialUserLocation.latitude,
-                        initialUserLocation.longitude
-                    ),
-                    zoom = 12f  // note: forced zoom level
-                )},
+                            initialUserLocation.latitude,
+                            initialUserLocation.longitude
+                        ),
+                        zoom = 12f  // note: forced zoom level
+                    )
+                },
                 cameraLocationBounds = remember {  // Center around bound of markers
                     mapBounds?.let {
                         CameraLocationBounds(
