@@ -241,10 +241,10 @@ actual fun GoogleMaps(
                                 userLocation.latitude,
                                 userLocation.longitude
                             )
-                            radius = 1000.0
-                            fillColor = UIColor.blueColor().colorWithAlphaComponent(0.2)
-                            strokeWidth = 2.0
-                            strokeColor = UIColor.blueColor().colorWithAlphaComponent(0.5)
+                            radius = kTalkRadiusMiles.milesToMeters()
+                            fillColor = UIColor.blueColor().colorWithAlphaComponent(0.4)
+                            strokeColor = UIColor.whiteColor().colorWithAlphaComponent(0.8)
+                            strokeWidth = 4.0
                             map = view
                         }
                     }
