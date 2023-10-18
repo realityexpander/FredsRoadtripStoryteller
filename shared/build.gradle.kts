@@ -115,7 +115,7 @@ kotlin {
                 api(platform("com.google.firebase:firebase-bom:32.3.1"))
                 // Firebase SDK for Google Analytics
                 api("com.google.firebase:firebase-analytics-ktx")
-                // Firebase feedback // todo move to beta variant?
+                // Firebase feedback // todo move to beta variant for final release
                 api("com.google.firebase:firebase-appdistribution-api-ktx:16.0.0-beta10")
                 api("com.google.firebase:firebase-appdistribution:16.0.0-beta10")
 

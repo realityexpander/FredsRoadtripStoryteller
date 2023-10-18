@@ -1,5 +1,3 @@
-
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -260,10 +258,10 @@ actual fun GoogleMaps(
             userLocation?.let { myLocation ->
                 Circle(
                     center = LatLng(myLocation.latitude, myLocation.longitude),
-                    radius = 1000.0,
-                    fillColor = Color.Blue.copy(alpha = 0.2f),
-                    strokeColor = Color.Blue.copy(alpha = 0.5f),
-                    strokeWidth = 2.0f
+                    radius = kTalkRadiusMiles.milesToMeters(),
+                    fillColor = Color.Blue.copy(alpha = 0.4f),
+                    strokeColor = Color.White.copy(alpha = 0.8f),
+                    strokeWidth = 4.0f
                 )
 
 //                // If tracking, move the camera to the user's location

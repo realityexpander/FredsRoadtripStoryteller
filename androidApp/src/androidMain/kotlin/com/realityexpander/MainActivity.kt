@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // todo - trigger from settings
+        // todo - make button to trigger from settings
         // Enable dev mode on your local device:
         // - adb shell setprop debug.firebase.appdistro.devmode true  // false to turn off
 //        FirebaseApp.initializeApp(this)
