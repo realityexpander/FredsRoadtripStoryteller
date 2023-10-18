@@ -102,7 +102,9 @@ actual fun GoogleMaps(
     // Implementing the `GoogleMaps` using UIKit inside a composable is a bit of a hack, as it's
     //       not really meant to be used inside a Composable. To work with this limitation we have to
     //       trigger independent updates of the map "parts" (ie: markers, heatmaps), and sometimes
-    //       re-render the map elements.
+    //       re-render the map elements, on a one-time basis. This is done by setting the
+    //       `isRedrawMapTriggered` variable to `true` and then back to `false` after the map is
+    //       re-rendered. This is done in the `update` block of the `UIKitView` below.
     // If it's not done like this, the UI for the map will not allow the user to move around
     //       using gestures.
     Box(Modifier.fillMaxSize()) {
@@ -177,8 +179,8 @@ actual fun GoogleMaps(
                     view.mapType = gmsMapViewType
                 }
 
-//                if(didMyLocationButtonVisiblityChange) {
-//                    didMyLocationButtonVisiblityChange = false
+//                if(didMyLocationButtonVisibilityChange) {
+//                    didMyLocationButtonVisibilityChange = false
 //                    view.settings.myLocationButton = !isTrackingEnabled
 //                }
 
