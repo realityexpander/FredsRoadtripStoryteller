@@ -238,24 +238,14 @@ fun App() {
                                 }
                             }
 
-                            Row {
-                                Text(
-                                    "Show Talk Radius",
-                                    modifier = Modifier
-                                        .weight(3f)
-                                        .align(Alignment.CenterVertically),
-                                )
-                                Switch(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .align(Alignment.CenterVertically)
-                                    ,
-                                    checked = true, //settings.showTalkRadius(),
-                                    onCheckedChange = {
-                                        // settings.setShowTalkRadius(it)
-                                    }
-                                )
-                            }
+                            SettingsSwitch(
+                                settings = settings,
+                                title = "Show Talk Radius",
+                                isChecked = true, //settings.showTalkRadius(),
+                                onCheckedChange = {
+                                    // settings.setShowTalkRadius(it)
+                                }
+                            )
 
                             Button(
                                 modifier = Modifier
@@ -441,6 +431,32 @@ fun App() {
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun SettingsSwitch(
+    settings: Settings,
+    title: String,
+    isChecked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row {
+        Text(
+            "Show Talk Radius",
+            modifier = Modifier
+                .weight(3f)
+                .align(Alignment.CenterVertically),
+        )
+        Switch(
+            modifier = Modifier
+                .weight(1f)
+                .align(Alignment.CenterVertically),
+            checked = isChecked, //settings.showTalkRadius(),
+            onCheckedChange = {
+                // settings.setShowTalkRadius(it)
+            }
+        )
     }
 }
 
