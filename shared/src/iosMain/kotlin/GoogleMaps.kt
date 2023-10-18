@@ -20,6 +20,7 @@ import cocoapods.GoogleMaps.GMSCameraUpdate
 import cocoapods.GoogleMaps.GMSCircle
 import cocoapods.GoogleMaps.GMSCoordinateBounds
 import cocoapods.GoogleMaps.GMSMapView
+import cocoapods.GoogleMaps.GMSMapViewDelegateProtocol
 import cocoapods.GoogleMaps.GMSMarker
 import cocoapods.GoogleMaps.GMSMarker.Companion.markerImageWithColor
 import cocoapods.GoogleMaps.GMSMutablePath
@@ -27,9 +28,12 @@ import cocoapods.GoogleMaps.GMSPolyline
 import cocoapods.GoogleMaps.animateWithCameraUpdate
 import cocoapods.GoogleMaps.kGMSTypeNormal
 import cocoapods.GoogleMaps.kGMSTypeSatellite
+import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
+import platform.CoreLocation.CLLocationCoordinate2D
 import platform.CoreLocation.CLLocationCoordinate2DMake
 import platform.UIKit.UIColor
+import platform.darwin.NSObject
 
 
 @OptIn(ExperimentalForeignApi::class)
@@ -107,24 +111,24 @@ actual fun GoogleMaps(
             modifier = modifier.fillMaxSize(),
             interactive = true,
             factory = {
-                // Does not work yet... :(
-                //    googleMapView.delegate = object : NSObject(), GMSMapViewDelegateProtocol {
-                //        override fun mapView(
-                //            mapView: GMSMapView,
-                //            didTapAtCoordinate: CValue<CLLocationCoordinate2D>
-                //        ) {
-                //
-                //        }
-                //
-                //        override fun mapView(
-                //            mapView: GMSMapView,
-                //            didTapMarker: GMSMarker
-                //        ): Boolean {
-                //            val userData = didTapMarker.userData()
-                //            println("map marker click ${userData}")
-                //            return true
-                //        }
-                //    }
+//                // Does not work yet... :(
+//                    googleMapView.delegate = object : NSObject(), GMSMapViewDelegateProtocol {
+//                        override fun mapView(
+//                            mapView: GMSMapView,
+//                            didTapAtCoordinate: CValue<CLLocationCoordinate2D>
+//                        ) {
+//                            showSomething = !showSomething
+//                        }
+//
+////                        override fun mapView(
+////                            mapView: GMSMapView,
+////                            didTapMarker: GMSMarker
+////                        ): Boolean {
+////                            val userData = didTapMarker.userData()
+////                            println("map marker click ${userData}")
+////                            return true
+////                        }
+//                    }
 
                 googleMapView
             },
