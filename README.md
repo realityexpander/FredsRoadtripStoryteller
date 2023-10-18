@@ -6,15 +6,14 @@ Google Maps for Compose KMP experimental app
 
 <img width="1700" alt="image" src="https://github.com/realityexpander/GoolgeMapsUsingCocoaPodsExample/assets/5157474/7b0395d3-04e6-48df-9219-990cb10d81e1">
 
-Source:
+Firebase console: https://console.firebase.google.com/u/0/project/talkingmarkers/overview
+
+Source: (Code snapshot taken 10/8/24)
 https://github.com/JetBrains/compose-multiplatform/tree/master/examples/cocoapods-ios-example
 
-(Code snapshot taken 10/8/24)
-
-- Must create AppSecrets.plist from within Xcode
+- Must create AppSecrets.plist from within Xcode - in password vault
+- Can get google-services.json from Google Cloud Console
 - must do "pod install" from the iosApp folder
-
-- Tried to add clustering on iOS - not ready yet!
 
 ### KMP Stuff
 - KMP Wizard

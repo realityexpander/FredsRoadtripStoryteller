@@ -5,7 +5,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import httpClient
+import network.httpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 

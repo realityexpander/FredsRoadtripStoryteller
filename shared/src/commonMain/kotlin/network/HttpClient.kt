@@ -1,3 +1,5 @@
+package network
+
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.Charsets
 import io.ktor.client.plugins.UserAgent

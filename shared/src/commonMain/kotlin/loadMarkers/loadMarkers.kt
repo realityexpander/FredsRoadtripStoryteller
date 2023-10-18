@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.sp
 import cachedMarkersLastLocation
 import cachedMarkersResult
 import com.russhwolf.settings.Settings
-import httpClient
+import network.httpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import kCachedMarkersLastLocation
