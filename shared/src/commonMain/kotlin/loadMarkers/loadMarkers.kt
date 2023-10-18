@@ -96,6 +96,7 @@ fun loadMarkers(
     showLoadingState: Boolean = false,
     useFakeDataSetId: Int = 0,  // 0 = use real data, >1 = use fake data (1 = 3 pages around googleplex, 2 = 1 page around tepoztlan)
 ): MarkersResult {
+    // If the user location is not set, return an empty result
     if (userLocation.latitude == 0.0 && userLocation.longitude == 0.0)
         return MarkersResult()
 

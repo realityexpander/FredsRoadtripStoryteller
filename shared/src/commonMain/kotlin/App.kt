@@ -2,9 +2,12 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,9 +19,11 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
+import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MyLocation
@@ -190,6 +195,8 @@ fun App() {
 
         BottomSheetScaffold(
             scaffoldState = bottomSheetScaffoldState,
+            sheetElevation = 16.dp,
+            sheetGesturesEnabled = false, // interferes with map gestures
             sheetPeekHeight = 0.dp,
             sheetContentColor = MaterialTheme.colors.onBackground,
             sheetBackgroundColor = MaterialTheme.colors.background,
@@ -208,14 +215,57 @@ fun App() {
                             ,
                             horizontalAlignment = Alignment.Start,
                         ) {
-                            Text("Settings")
+                            Row {
+                                Text(
+                                    "Settings",
+                                    fontSize = MaterialTheme.typography.h5.fontSize,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier
+                                        .weight(3f)
+                                )
+                                IconButton(
+                                    modifier = Modifier
+                                        .offset(16.dp, (-16).dp),
+                                    onClick = {
+                                    coroutineScope.launch {
+                                        bottomSheetScaffoldState.bottomSheetState.collapse()
+                                    }
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Close"
+                                    )
+                                }
+                            }
 
-                            Button(onClick = {
+                            Row {
+                                Text(
+                                    "Show Talk Radius",
+                                    modifier = Modifier
+                                        .weight(3f)
+                                        .align(Alignment.CenterVertically),
+                                )
+                                Switch(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .align(Alignment.CenterVertically)
+                                    ,
+                                    checked = true, //settings.showTalkRadius(),
+                                    onCheckedChange = {
+                                        // settings.setShowTalkRadius(it)
+                                    }
+                                )
+                            }
+
+                            Button(
+                                modifier = Modifier
+                                    .align(Alignment.End),
+                                onClick = {
                                 coroutineScope.launch {
                                     bottomSheetScaffoldState.bottomSheetState.collapse()
                                 }
                             }) {
-                                Text("Save")
+                                Text("Save Settings")
                             }
                         }
                     }
@@ -224,8 +274,38 @@ fun App() {
                     }
                 }
             },
+            drawerElevation = 16.dp,
+            drawerScrimColor = Color.Black.copy(alpha = 0.5f),
+            drawerGesturesEnabled = !bottomSheetScaffoldState.drawerState.isClosed,
             drawerContent =  {
-                Text("Application Menu")
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        "Fred's Talking Markers",
+                        fontSize = MaterialTheme.typography.h5.fontSize,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .weight(3f)
+                    )
+                    IconButton(
+                        modifier = Modifier
+                            .offset(16.dp, (-16).dp),
+                        onClick = {
+                            coroutineScope.launch {
+                                bottomSheetScaffoldState.drawerState.close()
+                            }
+                        }) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close"
+                        )
+                    }
+                }
             }
         ) {
             Scaffold(
