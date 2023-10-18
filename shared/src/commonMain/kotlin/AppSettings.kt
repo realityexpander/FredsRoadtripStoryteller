@@ -1,11 +1,7 @@
-package loadMarkers
-
-import Location
 import com.russhwolf.settings.Settings
-import json
 import kotlinx.serialization.encodeToString
+import loadMarkers.MarkersResult
 import co.touchlab.kermit.Logger as Log
-
 
 // Settings Keys
 const val kCachedMarkersResult = "cachedMarkersResult"

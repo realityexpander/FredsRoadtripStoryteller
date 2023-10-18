@@ -32,7 +32,7 @@ pluginManagement {
         // For Google Maps Secrets Gradle Plugin
         id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin").version(googleMapsSecretsPluginVersion)
 
-        // For Google Services
+        // For Google Services (Analytics, Feedback)
         id("com.google.gms.google-services").version(googleServicesVersion)
     }
 }

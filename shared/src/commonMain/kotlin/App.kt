@@ -1,3 +1,7 @@
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -37,11 +41,10 @@ import androidx.compose.ui.unit.dp
 import com.russhwolf.settings.Settings
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
-import loadMarkers.lastKnownUserLocation
+import loadMarkers.LoadingState
+import loadMarkers.MarkersResult
 import loadMarkers.loadMarkers
-import loadMarkers.printAppSettings
 import loadMarkers.sampleData.kUseRealNetwork
-import loadMarkers.setLastKnownUserLocation
 import co.touchlab.kermit.Logger as Log
 
 val json = Json {
@@ -77,7 +80,7 @@ fun App() {
         var userLocation: Location by remember {
             mutableStateOf(settings.lastKnownUserLocation())
         }
-        val markersLoadResult = loadMarkers(
+        val markersLoadResult: MarkersResult = loadMarkers(
             settings,
             userLocation = userLocation,
             maxReloadDistanceMiles = kMaxReloadDistanceMiles,
@@ -152,6 +155,8 @@ fun App() {
                     Log.w { "Error: Unable to get current location" }
                     return@run userLocation // just return the most recent location
                 }
+
+                // todo check for new markers inside talk radius & add to recentlySeen list
             }
 
             // Experimenting with flows - LEAVE FOR REFERENCE
@@ -178,43 +183,61 @@ fun App() {
             Scaffold(
                 scaffoldState = scaffoldState,
                 topBar = {
-                    TopAppBar(
-                        navigationIcon = {
-                            IconButton(onClick = {
-                                coroutineScope.launch {
-                                    bottomSheetState.bottomSheetState.apply {
-                                        if (isCollapsed) expand() else collapse()
+                    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                        TopAppBar(
+                            navigationIcon = {
+                                IconButton(onClick = {
+                                    coroutineScope.launch {
+                                        bottomSheetState.bottomSheetState.apply {
+                                            if (isCollapsed) expand() else collapse()
+                                        }
                                     }
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Menu,
+                                        contentDescription = "Settings"
+                                    )
                                 }
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Default.Menu,
-                                    contentDescription = "Settings"
+                            },
+                            title = {
+                                Text(
+                                    text = "Fred's Markers",
+                                    fontStyle = FontStyle.Normal,
+                                    fontWeight = FontWeight.Medium
                                 )
+                            },
+                            actions = {
+                                IconButton(onClick = {}) { // show settings page
+                                    Icon(
+                                        imageVector = Icons.Default.Settings,
+                                        contentDescription = "Settings"
+                                    )
+                                }
+                                IconButton(onClick = {}) { // show marker history panel
+                                    Icon(
+                                        imageVector = Icons.Default.History,
+                                        contentDescription = "Hide/Show Marker List"
+                                    )
+                                }
                             }
-                        },
-                        title = {
-                            Text(
-                                text = "Fred's Markers",
-                                fontStyle = FontStyle.Normal,
-                                fontWeight = FontWeight.Medium
-                            )
-                        },
-                        actions = {
-                            IconButton(onClick = {}) { // show settings page
-                                Icon(
-                                    imageVector = Icons.Default.Settings,
-                                    contentDescription = "Settings"
-                                )
-                            }
-                            IconButton(onClick = {}) { // show marker history panel
-                                Icon(
-                                    imageVector = Icons.Default.History,
-                                    contentDescription = "Hide/Show Marker List"
+                        )
+
+                        // Show loading error
+                        AnimatedVisibility(
+                            visible = markersLoadResult.loadingState is LoadingState.Error,
+                        ) {
+                            if(markersLoadResult.loadingState is LoadingState.Error) {
+                                Text(
+                                    modifier = Modifier.fillMaxWidth()
+                                        .background(MaterialTheme.colors.error),
+                                    text = "Error: ${markersLoadResult.loadingState.errorMessage}",
+                                    fontStyle = FontStyle.Normal,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colors.onError
                                 )
                             }
                         }
-                    )
+                    }
                 },
                 floatingActionButton = {
                     Column {

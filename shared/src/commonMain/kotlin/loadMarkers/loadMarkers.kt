@@ -17,26 +17,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cachedMarkersLastLocation
+import cachedMarkersResult
 import com.russhwolf.settings.Settings
 import httpClient
 import io.ktor.client.call.body
-import io.ktor.client.request.accept
 import io.ktor.client.request.get
-import io.ktor.http.ContentType
-import io.ktor.http.charset
-import io.ktor.http.withCharset
-import io.ktor.utils.io.charsets.Charsets
-import io.ktor.utils.io.core.String
-import json
+import kCachedMarkersLastLocation
+import kCachedMarkersLastUpdatedEpochSeconds
+import kCachedMarkersResult
 import kMaxMarkerCacheAgeSeconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import loadMarkers.sampleData.generateFakeMarkerPageHtml
 import loadMarkers.sampleData.kUseRealNetwork
+import setCachedMarkersLastLocation
+import setCachedMarkersLastUpdatedEpochSeconds
+import setCachedMarkersResult
 import co.touchlab.kermit.Logger as Log
 
 @Serializable
@@ -58,7 +60,9 @@ data class MarkersResult(
     val markerInfos: Map<String, MarkerInfo> = mutableMapOf(),
     val rawMarkerCountFromFirstPageHtmlOfMultiPageResult: Int = 0,
     val isMarkerPageParseFinished: Boolean = false,
-    // todo add loading state here to allow main UI to show loading state
+
+    @Contextual
+    val loadingState: LoadingState<String> = LoadingState.Idle,
 )
 
 // Strategy:
@@ -100,10 +104,7 @@ fun loadMarkers(
     // Holds the current processing state of the parsed markers
     var markersResultState by remember {
         // Load the cached result from persistent storage (Settings) as the initial state
-        mutableStateOf(
-            json.decodeFromString<MarkersResult>(
-                settings.getString(kCachedMarkersResult, "{}")
-        ) ) 
+        mutableStateOf(settings.cachedMarkersResult())
     }
 
     var markersLoadingState: LoadingState<String> by remember { mutableStateOf(LoadingState.Idle) }
@@ -197,28 +198,28 @@ fun loadMarkers(
                 "&MilesType=1&HistMark=Y&WarMem=Y&FilterNOT=&FilterTown=&FilterCounty=&FilterState=&FilterCountry=&FilterCategory=0" +
                 "&Page=$curHtmlPageNum"
 
-            mutableStateOf<LoadingState<String>>(LoadingState.Loading)// triggers network load
-        } else {
-            // Step 5 - Finished loading pages, now Save result to cache
-            cachedMarkersResultState = markersResultState.copy(
-                markerIdToRawMarkerInfoStrings = mutableMapOf(), // Clear the strings (they are no longer needed)
-            )
-
-            // Save the cachedResultState to persistent storage (Settings) (if it was updated from the network)
-            if (shouldUpdateCache) {
-                coroutineScope.launch {
-                    settings.setCachedMarkersResult(cachedMarkersResultState)
-                    settings.setCachedMarkersLastUpdatedEpochSeconds(Clock.System.now().epochSeconds)
-                    settings.setCachedMarkersLastLocation(userLocation)
-                    // Log.d("Saved markers to Settings, total count: ${cachedMarkersResultState.markerInfos.size}")
-                }
-            }
-
-            // 6 PROCESS COMPLETE
-            // Log.d("Finished loading all pages, total markers: ${parsedMarkersResultState.markerInfos.size}")
-            markersLoadingState = LoadingState.Idle
-            mutableStateOf<LoadingState<String>>(LoadingState.Idle)
+            return@remember mutableStateOf<LoadingState<String>>(LoadingState.Loading)// triggers network load
         }
+
+        // Step 5 - Finished loading pages, now Save result to cache
+        cachedMarkersResultState = markersResultState.copy(
+            markerIdToRawMarkerInfoStrings = mutableMapOf(), // Clear the strings (they are no longer needed)
+        )
+
+        // Save the cachedResultState to persistent storage (Settings) (if it was updated from the network)
+        if (shouldUpdateCache) {
+            coroutineScope.launch {
+                settings.setCachedMarkersResult(cachedMarkersResultState)
+                settings.setCachedMarkersLastUpdatedEpochSeconds(Clock.System.now().epochSeconds)
+                settings.setCachedMarkersLastLocation(userLocation)
+                // Log.d("Saved markers to Settings, total count: ${cachedMarkersResultState.markerInfos.size}")
+            }
+        }
+
+        // 6 PROCESS COMPLETE
+        // Log.d("Finished loading all pages, total markers: ${parsedMarkersResultState.markerInfos.size}")
+        markersLoadingState = LoadingState.Idle
+        mutableStateOf<LoadingState<String>>(LoadingState.Idle)
     }
 
     // Load the data from the network when `markerHtmlPageUrl` is changed
@@ -226,7 +227,10 @@ fun loadMarkers(
 
         // Step 3 (real network) - Perform the load from network
         markerHtmlPageUrl?.let { assetUrl ->
-            networkLoadingState = LoadingState.Loading
+            networkLoadingState = LoadingState.Loading // leave for debugging
+            markersResultState = markersResultState.copy(
+                loadingState = LoadingState.Loading
+            )
             yield() // allow the UI to update before loading the network data // todo necessary? test UI
 
             networkLoadingState = try {
@@ -246,13 +250,16 @@ fun loadMarkers(
 
                 // Step 4 - Parse the HTML to extract the marker info
                 withContext(Dispatchers.Default) {
-                    Log.d("Before parsing raw HTML, markerInfos.size: ${markersResultState.markerInfos.size}, markerIdToRawMarkerInfoStrings.size: ${markersResultState.markerIdToRawMarkerInfoStrings.size}")
+                    // Log.d("Before parsing raw HTML, markerInfos.size: ${markersResultState.markerInfos.size}, markerIdToRawMarkerInfoStrings.size: ${markersResultState.markerIdToRawMarkerInfoStrings.size}")
 
                     // Guard against blank data
                     if (rawHtmlString.isBlank()) {
                         Log.w("Blank data for page $curHtmlPageNum, location: $userLocation")
-                        networkLoadingState = LoadingState.Error("Blank data for page $curHtmlPageNum, location: $userLocation")
-                        markersResultState = markersResultState.copy(isMarkerPageParseFinished = true)
+                        networkLoadingState = LoadingState.Error("Blank data for page $curHtmlPageNum, location: $userLocation") // leave for debugging
+                        markersResultState = markersResultState.copy(
+                            isMarkerPageParseFinished = true,
+                            loadingState = LoadingState.Error("Blank data for page $curHtmlPageNum, location: $userLocation")
+                        )
                         return@withContext
                     }
 
@@ -296,7 +303,10 @@ fun loadMarkers(
                         curHtmlPageNum++  // trigger the next page load
                     } else {
                         //Log.d("Finished processing all pages, total markers: ${markersResultState.markerInfos.size}")
-                        markersResultState = markersResultState.copy(isMarkerPageParseFinished = true)
+                        markersResultState = markersResultState.copy(
+                            isMarkerPageParseFinished = true,
+                            loadingState = LoadingState.Idle
+                        )
 
                         // Save the final parsed results to the cache.
                         cachedMarkersResultState = markersResultState.copy()
@@ -306,10 +316,13 @@ fun loadMarkers(
                 LoadingState.Idle
             } catch (e: Exception) {
                 shouldUpdateCache = false
-                markersResultState = markersResultState.copy(isMarkerPageParseFinished = true)
+                markersResultState = markersResultState.copy(
+                    isMarkerPageParseFinished = true,
+                    loadingState = LoadingState.Error(e.cause?.message ?: "Loading error - ${e.message}")
+                )
                 Log.w("Failed to load page: $curHtmlPageNum, assetUrl: $assetUrl, error: ${e.cause?.message}")
                 
-                LoadingState.Error(e.cause?.message ?: "error")
+                LoadingState.Error(e.cause?.message ?: "error")  // leave for debugging
             }
         }
     }
@@ -338,7 +351,7 @@ fun loadMarkers(
                 }
 
                 is LoadingState.Error -> {
-                    Text("Error: ${state.message}")
+                    Text("Error: ${state.errorMessage}")
                 }
 
                 else -> {

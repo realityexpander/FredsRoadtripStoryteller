@@ -12,11 +12,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import appContext
 import com.google.android.gms.maps.MapsInitializer
-import com.google.firebase.FirebaseApp
-import com.google.firebase.appdistribution.InterruptionLevel
-import com.google.firebase.appdistribution.ktx.appDistribution
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.ktx.app
 import intentFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
