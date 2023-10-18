@@ -56,7 +56,8 @@ actual fun GoogleMaps(
     polyLine: List<LatLong>?,
     onMapClick: ((LatLong) -> Unit)?,
     onMapLongClick: ((LatLong) -> Unit)?,
-    onMarkerClick: ((MapMarker) -> Unit)?
+    onMarkerClick: ((MapMarker) -> Unit)?,
+    talkRadiusMiles: Double
 ) {
 
     val cameraPositionState = rememberCameraPositionState()
@@ -259,7 +260,8 @@ actual fun GoogleMaps(
             userLocation?.let { myLocation ->
                 Circle(
                     center = LatLng(myLocation.latitude, myLocation.longitude),
-                    radius = kTalkRadiusMiles.milesToMeters(),
+//                    radius = kTalkRadiusMiles.milesToMeters(),
+                    radius = talkRadiusMiles.milesToMeters(),
                     fillColor = Color.Blue.copy(alpha = 0.4f),
                     strokeColor = Color.White.copy(alpha = 0.8f),
                     strokeWidth = 4.0f

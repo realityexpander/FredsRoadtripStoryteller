@@ -14,7 +14,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomSheetScaffold
 import androidx.compose.material.Button
-import androidx.compose.material.ButtonColors
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
@@ -87,6 +86,7 @@ fun App() {
         val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
         val scaffoldState = rememberScaffoldState()
         var bottomSheetScreen by remember { mutableStateOf<BottomSheetScreen>(BottomSheetScreen.None) }
+        var talkRadiusMiles by remember { mutableStateOf(kTalkRadiusMiles) }
 
         var isTrackingEnabled by remember { mutableStateOf(false) }
         var findMeCameraLocation by remember { mutableStateOf<Location?>(null) } // used to center map on user
@@ -244,7 +244,7 @@ fun App() {
                             }
 
                             SettingsSwitch(
-                                title = "Start background tracking at app launch",
+                                title = "Start tracking automatically when app launches",
                                 isChecked = true, //settings.showTalkRadius(),
                                 onCheckedChange = {
                                     // settings.setShowTalkRadius(it)
@@ -261,9 +261,12 @@ fun App() {
 
                             SettingsSlider(
                                 title = "Talk Radius (miles)",
-                                currentValue = 0.5f, //settings.talkRadius(),
+                                currentValue = talkRadiusMiles, //0.5f, //settings.talkRadius(),
                                 onValueChange = {
                                     // settings.setTalkRadius(it)
+                                    coroutineScope.launch {
+                                        talkRadiusMiles = it
+                                    }
                                 }
                             )
 
@@ -453,7 +456,8 @@ fun App() {
                         mapBounds = null,
                         shouldUpdateMapMarkers = shouldUpdateMapMarkers,  // todo - implement?
                         isTrackingEnabled = isTrackingEnabled,
-                        centerOnUserCameraLocation = findMeCameraLocation
+                        centerOnUserCameraLocation = findMeCameraLocation,
+                        talkRadiusMiles = talkRadiusMiles
                     )
                 if (didMapMarkersUpdate) {
                     shouldUpdateMapMarkers = false
@@ -489,8 +493,8 @@ private fun SettingsSwitch(
 @Composable
 private fun SettingsSlider(
     title: String,
-    currentValue: Float,
-    onValueChange: (Float) -> Unit
+    currentValue: Double,
+    onValueChange: (Double) -> Unit
 ) {
     Row {
         Text(
@@ -503,14 +507,20 @@ private fun SettingsSlider(
             modifier = Modifier
                 .weight(2f)
                 .align(Alignment.CenterVertically),
-            value = currentValue,
-            valueRange = 0f..10f,
+            value = currentValue.toFloat(),
+            steps = 10,
+            valueRange = 0.10f..2f,
             onValueChange = {
-                onValueChange(it)
+                onValueChange(it.toDouble())
             }
         )
         Text(
-            text = currentValue.toString(),
+            text = currentValue.toString()
+                    .substringBefore(".", "")
+                + "." +
+                    currentValue.toString()
+                    .substringAfter(".", "")
+                    .take(2),
             modifier = Modifier
                 .weight(.5f)
                 .align(Alignment.CenterVertically),
@@ -528,6 +538,7 @@ fun MapContent(
     shouldUpdateMapMarkers: Boolean,
     isTrackingEnabled: Boolean = false,
     centerOnUserCameraLocation: Location? = null,
+    talkRadiusMiles: Double = .5,
 ): Boolean {
     var didMapMarkersUpdate by remember(shouldUpdateMapMarkers) { mutableStateOf(true) }
     var isFirstUpdate by remember { mutableStateOf(true) } // force map to update at least once
@@ -542,18 +553,6 @@ fun MapContent(
                     userLocation.longitude
                 ),
                 markers = mapMarkers.ifEmpty { null },
-                cameraLocationLatLong = remember(centerOnUserCameraLocation) {
-                    // 37.422160,
-                    // -122.084270  // googleplex
-                    centerOnUserCameraLocation?.let {
-                        LatLong(
-                            centerOnUserCameraLocation.latitude,
-                            centerOnUserCameraLocation.longitude
-                        )
-                    } ?: run {
-                        null
-                    }
-                },
                 shouldUpdateMapMarkers = shouldUpdateMapMarkers,
                 cameraOnetimePosition = remember {
                     CameraPosition(
@@ -566,6 +565,18 @@ fun MapContent(
                         zoom = 12f  // note: forced zoom level
                     )
                 },
+                cameraLocationLatLong = remember(centerOnUserCameraLocation) {
+                    // 37.422160,
+                    // -122.084270  // googleplex
+                    centerOnUserCameraLocation?.let {
+                        LatLong(
+                            centerOnUserCameraLocation.latitude,
+                            centerOnUserCameraLocation.longitude
+                        )
+                    } ?: run {
+                        null
+                    }
+                },
                 cameraLocationBounds = remember {  // Center around bound of markers
                     mapBounds?.let {
                         CameraLocationBounds(
@@ -576,6 +587,7 @@ fun MapContent(
                         null // won't center around bounds
                     }
                 },
+                talkRadiusMiles = talkRadiusMiles
             )
 
             isFirstUpdate = false

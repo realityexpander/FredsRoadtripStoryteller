@@ -20,7 +20,6 @@ import cocoapods.GoogleMaps.GMSCameraUpdate
 import cocoapods.GoogleMaps.GMSCircle
 import cocoapods.GoogleMaps.GMSCoordinateBounds
 import cocoapods.GoogleMaps.GMSMapView
-import cocoapods.GoogleMaps.GMSMapViewDelegateProtocol
 import cocoapods.GoogleMaps.GMSMarker
 import cocoapods.GoogleMaps.GMSMarker.Companion.markerImageWithColor
 import cocoapods.GoogleMaps.GMSMutablePath
@@ -28,13 +27,10 @@ import cocoapods.GoogleMaps.GMSPolyline
 import cocoapods.GoogleMaps.animateWithCameraUpdate
 import cocoapods.GoogleMaps.kGMSTypeNormal
 import cocoapods.GoogleMaps.kGMSTypeSatellite
-import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import loadMarkers.milesToMeters
-import platform.CoreLocation.CLLocationCoordinate2D
 import platform.CoreLocation.CLLocationCoordinate2DMake
 import platform.UIKit.UIColor
-import platform.darwin.NSObject
 
 
 @OptIn(ExperimentalForeignApi::class)
@@ -52,7 +48,8 @@ actual fun GoogleMaps(
     polyLine: List<LatLong>?,
     onMapClick: ((LatLong) -> Unit)?,  // shows the user's location with a 100m radius circle
     onMapLongClick: ((LatLong) -> Unit)?,
-    onMarkerClick: ((MapMarker) -> Unit)?
+    onMarkerClick: ((MapMarker) -> Unit)?,
+    talkRadiusMiles: Double
 ) {
     val googleMapView = remember { GMSMapView() }
 
@@ -248,7 +245,8 @@ actual fun GoogleMaps(
                                 userLocation.latitude,
                                 userLocation.longitude
                             )
-                            radius = kTalkRadiusMiles.milesToMeters()
+//                            radius = kTalkRadiusMiles.milesToMeters()
+                            radius = talkRadiusMiles.milesToMeters()
                             fillColor = UIColor.blueColor().colorWithAlphaComponent(0.4)
                             strokeColor = UIColor.whiteColor().colorWithAlphaComponent(0.8)
                             strokeWidth = 4.0
