@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomSheetScaffold
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -24,9 +23,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.MyLocation
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.material.rememberScaffoldState
@@ -363,43 +359,6 @@ fun App() {
                         }
                     }
                 },
-                floatingActionButton = {
-                    Column {
-                        FloatingActionButton(
-                            modifier = Modifier
-                                .padding(16.dp),
-                            onClick = {
-                                isTrackingEnabled = !isTrackingEnabled
-                                coroutineScope.launch {
-                                    if (isTrackingEnabled) {
-                                        startTracking()
-                                    } else {
-                                        stopTracking()
-                                    }
-                                }
-                            }) {
-                            Icon(
-                                imageVector = if (isTrackingEnabled)
-                                    Icons.Default.Pause
-                                else Icons.Default.PlayArrow,
-                                contentDescription = "Toggle track your location"
-                            )
-                        }
-
-                        FloatingActionButton(
-                            modifier = Modifier
-                                .padding(16.dp),
-                            onClick = {
-                                // center on location
-                                centerOnUserCameraLocation = userLocation.copy()
-                            }) {
-                            Icon(
-                                imageVector = Icons.Default.MyLocation,
-                                contentDescription = "Center on your location"
-                            )
-                        }
-                    }
-                }
             ) {
                 val transitionRecentMarkersPanel: Float by animateFloatAsState(
                     if (isRecentlySeenMarkersVisible) 0.5f else 0f,
@@ -429,15 +388,29 @@ fun App() {
                                 centerOnUserCameraLocation = centerOnUserCameraLocation,
                                 talkRadiusMiles = talkRadiusMiles,
                                 cachedMarkersLastUpdatedLocation =
-                                remember(
-                                    settings.shouldShowMarkersLastUpdatedLocation(),
-                                    cachedMarkersLastUpdatedLocation
-                                ) {
-                                    if (settings.shouldShowMarkersLastUpdatedLocation())
+                                    remember(
+                                        settings.shouldShowMarkersLastUpdatedLocation(),
                                         cachedMarkersLastUpdatedLocation
-                                    else
-                                        null
+                                    ) {
+                                        if (settings.shouldShowMarkersLastUpdatedLocation())
+                                            cachedMarkersLastUpdatedLocation
+                                        else
+                                            null
+                                    },
+                                toggleIsTrackingEnabled = {
+                                    isTrackingEnabled = !isTrackingEnabled
+                                    coroutineScope.launch {
+                                        if (isTrackingEnabled) {
+                                            startTracking()
+                                        } else {
+                                            stopTracking()
+                                        }
+                                    }
                                 },
+                                onFindMeButtonClicked = {
+                                    // center on location
+                                    centerOnUserCameraLocation = userLocation.copy()
+                                }
                             )
                         if (didMapMarkersUpdate) {
                             shouldUpdateMapMarkers = false
@@ -473,6 +446,8 @@ fun MapContent(
     centerOnUserCameraLocation: Location? = null,
     talkRadiusMiles: Double = .5,
     cachedMarkersLastUpdatedLocation: Location? = null,
+    toggleIsTrackingEnabled: (() -> Unit)? = null,
+    onFindMeButtonClicked: (() -> Unit)? = null
 ): Boolean {
     var didMapMarkersUpdate by remember(shouldUpdateMapMarkers) { mutableStateOf(true) }
     var isFirstUpdate by remember { mutableStateOf(true) } // force map to update at least once
@@ -482,6 +457,12 @@ fun MapContent(
             GoogleMaps(
                 modifier = modifier,
                 isTrackingEnabled = isTrackingEnabled,
+                userLocation = LatLong( // passed to map to track location
+                    userLocation.latitude,
+                    userLocation.longitude
+                ),
+                markers = mapMarkers.ifEmpty { null },
+                shouldUpdateMapMarkers = shouldUpdateMapMarkers,
                 cameraOnetimePosition =
                 if (isFirstUpdate) {  // set initial camera position
                     CameraPosition(
@@ -493,12 +474,6 @@ fun MapContent(
                     )
                 } else
                     null,
-                userLocation = LatLong( // passed to map to track location
-                    userLocation.latitude,
-                    userLocation.longitude
-                ),
-                markers = mapMarkers.ifEmpty { null },
-                shouldUpdateMapMarkers = shouldUpdateMapMarkers,
                 cameraLocationLatLong = remember(centerOnUserCameraLocation) {
                     // 37.422160,
                     // -122.084270  // googleplex
@@ -522,7 +497,9 @@ fun MapContent(
                     }
                 },
                 talkRadiusMiles = talkRadiusMiles,
-                cachedMarkersLastUpdatedLocation = cachedMarkersLastUpdatedLocation
+                cachedMarkersLastUpdatedLocation = cachedMarkersLastUpdatedLocation,
+                toggleIsTrackingEnabled = toggleIsTrackingEnabled,
+                onFindMeButtonClicked = onFindMeButtonClicked
             )
 
             isFirstUpdate = false

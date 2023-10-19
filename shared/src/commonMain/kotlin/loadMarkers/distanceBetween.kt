@@ -5,8 +5,9 @@ import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.sin
 
+// Returns distance in miles (or kilometers if shouldUseKM is true)
 // from https://dzone.com/articles/distance-calculation-using-3
-fun distanceBetween(lat1: Double, lon1: Double, lat2: Double, lon2: Double, shouldUseKM: Boolean = true): Double {
+fun distanceBetween(lat1: Double, lon1: Double, lat2: Double, lon2: Double, shouldUseKm: Boolean = true): Double {
     val theta = lon1 - lon2
     var dist: Double = (sin(deg2rad(lat1))
             * sin(deg2rad(lat2))
@@ -17,7 +18,7 @@ fun distanceBetween(lat1: Double, lon1: Double, lat2: Double, lon2: Double, shou
     dist = rad2deg(dist)
     dist *= 60 * 1.1515
 
-    if(shouldUseKM)
+    if(shouldUseKm)
         dist *= 1.609344
 
     return dist

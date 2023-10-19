@@ -51,7 +51,9 @@ actual fun GoogleMaps(
     onMapLongClick: ((LatLong) -> Unit)?,
     onMarkerClick: ((MapMarker) -> Unit)?,
     talkRadiusMiles: Double,
-    cachedMarkersLastUpdatedLocation: Location?
+    cachedMarkersLastUpdatedLocation: Location?,
+    toggleIsTrackingEnabled: (() -> Unit)?,
+    onFindMeButtonClicked: (() -> Unit)?
 ) {
     val googleMapView = remember { GMSMapView() }
 

@@ -8,9 +8,10 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -24,7 +25,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MapStyleOptions
@@ -66,7 +66,9 @@ actual fun GoogleMaps(
     onMapLongClick: ((LatLong) -> Unit)?,
     onMarkerClick: ((MapMarker) -> Unit)?,
     talkRadiusMiles: Double,
-    cachedMarkersLastUpdatedLocation: Location?
+    cachedMarkersLastUpdatedLocation: Location?,
+    toggleIsTrackingEnabled: (() -> Unit)?,
+    onFindMeButtonClicked: (() -> Unit)?
 ) {
 
     val cameraPositionState = rememberCameraPositionState()
@@ -508,19 +510,44 @@ actual fun GoogleMaps(
             }
         }
 
-//        FloatingActionButton(
-//            modifier = Modifier
-//                .padding(16.dp)
-//                .align(Alignment.BottomEnd),
-//            onClick = {
-//                // center on location
-////                centerOnUserCameraLocation = userLocation.copy()
-//            }) {
-//            Icon(
-//                imageVector = Icons.Default.MyLocation,
-//                contentDescription = "Center on your location"
-//            )
-//        }
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .align(Alignment.BottomEnd),
+            horizontalAlignment = Alignment.End
+        ) {
+            // Toggle tracking
+            FloatingActionButton(
+                modifier = Modifier
+                    .padding(16.dp),
+                onClick = {
+                    toggleIsTrackingEnabled?.let { nativeFun ->
+                        nativeFun()
+                    }
+                }) {
+                Icon(
+                    imageVector = if (isTrackingEnabled)
+                        Icons.Default.Pause
+                    else Icons.Default.PlayArrow,
+                    contentDescription = "Toggle track your location"
+                )
+            }
+
+            // Center on user's location
+            FloatingActionButton(
+                modifier = Modifier
+                    .padding(16.dp),
+                onClick = {
+                    onFindMeButtonClicked?.let { nativeFun ->
+                        nativeFun()
+                    }
+                }) {
+                Icon(
+                    imageVector = Icons.Default.MyLocation,
+                    contentDescription = "Center on your location"
+                )
+            }
+        }
     }
 }
 
