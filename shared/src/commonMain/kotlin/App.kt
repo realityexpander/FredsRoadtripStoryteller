@@ -60,8 +60,8 @@ import loadMarkers.MarkersResult
 import loadMarkers.loadMarkers
 import loadMarkers.sampleData.kUseRealNetwork
 import co.touchlab.kermit.Logger as Log
-import composables.SettingsSlider
-import composables.SettingsSwitch
+import components.SettingsSlider
+import components.SettingsSwitch
 
 val json = Json {
     prettyPrint = true
@@ -91,10 +91,6 @@ fun App() {
         val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
         val scaffoldState = rememberScaffoldState()
         var bottomSheetScreen by remember { mutableStateOf<BottomSheetScreen>(BottomSheetScreen.None) }
-        var talkRadiusMiles by remember { mutableStateOf(kTalkRadiusMiles) }
-
-        var isTrackingEnabled by remember { mutableStateOf(false) }
-        var findMeCameraLocation by remember { mutableStateOf<Location?>(null) } // used to center map on user
 
         val settings = remember {
             Settings().apply {
@@ -103,6 +99,11 @@ fun App() {
                 printAppSettings()
             }
         }
+        var talkRadiusMiles by remember { mutableStateOf(settings.talkRadiusMiles()) }
+
+        var isTrackingEnabled by remember { mutableStateOf(false) }
+        var findMeCameraLocation by remember { mutableStateOf<Location?>(null) } // used to center map on user
+
         val gpsLocationService by remember { mutableStateOf(GPSLocationService()) }
         var userLocation: Location by remember {
             mutableStateOf(settings.lastKnownUserLocation())
@@ -218,7 +219,12 @@ fun App() {
                     }
 
                     is BottomSheetScreen.Settings -> {
-                        SettingsScreen(settings, bottomSheetScaffoldState, talkRadiusMiles,)
+                        SettingsScreen(
+                            settings,
+                            bottomSheetScaffoldState,
+                            talkRadiusMiles,
+                            onTalkRadiusChange = { talkRadiusMiles = it }
+                        )
                     }
 
                     is BottomSheetScreen.MarkerDetails -> {
@@ -403,9 +409,9 @@ fun App() {
 private fun SettingsScreen(
     settings: Settings,
     bottomSheetScaffoldState: BottomSheetScaffoldState,
-    talkRadiusMiles: Double
+    talkRadiusMiles: Double,
+    onTalkRadiusChange: (Double) -> Unit = {}
 ) {
-    var talkRadiusMiles1 = talkRadiusMiles
     val scrollState = rememberScrollState()
     var isResetCacheAlertVisible by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
@@ -449,20 +455,18 @@ private fun SettingsScreen(
 
         SettingsSwitch(
             title = "Show Talk Radius on map",
-            isChecked = true, //settings.showTalkRadius(),
+            isChecked = settings.showTalkRadius(),
             onCheckedChange = {
-                // settings.setShowTalkRadius(it)
+                settings.setShowTalkRadius(it)
             }
         )
 
         SettingsSlider(
             title = "Talk Radius (miles)",
-            currentValue = talkRadiusMiles1, //0.5f, //settings.talkRadius(),
+            currentValue = talkRadiusMiles,
             onValueChange = {
-                // settings.setTalkRadius(it)
-                coroutineScope.launch {
-                    talkRadiusMiles1 = it
-                }
+                settings.setTalkRadiusMiles(it)
+                onTalkRadiusChange(it)
             }
         )
 

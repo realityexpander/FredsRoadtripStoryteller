@@ -1,4 +1,4 @@
-package composables
+package components
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.Switch
