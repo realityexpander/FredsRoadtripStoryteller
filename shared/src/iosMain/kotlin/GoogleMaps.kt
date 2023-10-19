@@ -107,10 +107,10 @@ actual fun GoogleMaps(
     //       re-rendered. This is done in the `update` block of the `UIKitView` below.
     // If it's not done like this, the UI for the map will not allow the user to move around
     //       using gestures.
-    Box(Modifier.fillMaxSize()) {
+    Box(modifier.fillMaxSize()) {
         // Google Maps
         UIKitView(
-            modifier = modifier.fillMaxSize(),
+            modifier = Modifier,
             interactive = true,
             factory = {
 //                // Does not work yet... :(

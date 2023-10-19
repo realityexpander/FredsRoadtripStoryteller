@@ -202,7 +202,6 @@ actual fun GoogleMaps(
 
         GoogleMap(
             cameraPositionState = cameraPositionState,
-//            modifier = Modifier.fillMaxSize(),
             uiSettings = uiSettings,
             properties = properties,
             onMapClick = { latLng: LatLng ->

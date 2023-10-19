@@ -1,12 +1,12 @@
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -53,8 +53,8 @@ import loadMarkers.MarkerInfo
 import loadMarkers.MarkersResult
 import loadMarkers.loadMarkers
 import loadMarkers.sampleData.kUseRealNetwork
-import co.touchlab.kermit.Logger as Log
 import screens.SettingsScreen
+import co.touchlab.kermit.Logger as Log
 
 val json = Json {
     prettyPrint = true
@@ -403,7 +403,7 @@ fun App() {
             ) {
                 val transitionRecentMarkersPanel: Float by animateFloatAsState(
                     if (isRecentlySeenMarkersVisible) 0.5f else 0f,
-                    animationSpec = tween(700)
+                    animationSpec = tween(500)
                 )
 
                 Column(
@@ -445,9 +445,13 @@ fun App() {
 
                         Text(
                             text = "Recently Seen Markers",
+                            color = MaterialTheme.colors.onBackground,
                             fontStyle = FontStyle.Normal,
                             fontWeight = FontWeight.Medium,
-                            modifier = Modifier.fillMaxHeight(transitionRecentMarkersPanel)
+                            modifier = Modifier
+//                                .fillMaxHeight(transitionRecentMarkersPanel)
+                                .fillMaxSize()
+                                .background(Color.Red)
                         )
                     }
                 }
