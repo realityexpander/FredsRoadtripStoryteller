@@ -24,8 +24,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
-import androidx.compose.material.Slider
-import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
@@ -62,6 +60,8 @@ import loadMarkers.MarkersResult
 import loadMarkers.loadMarkers
 import loadMarkers.sampleData.kUseRealNetwork
 import co.touchlab.kermit.Logger as Log
+import composables.SettingsSlider
+import composables.SettingsSwitch
 
 val json = Json {
     prettyPrint = true
@@ -576,69 +576,6 @@ fun ShowResetCacheAlert(
             usePlatformDefaultWidth = true
         )
     )
-
-@Composable
-private fun SettingsSwitch(
-    title: String,
-    isChecked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    Row {
-        Text(
-            title,
-            modifier = Modifier
-                .weight(3f)
-                .align(Alignment.CenterVertically),
-        )
-        Switch(
-            modifier = Modifier
-                .weight(1f)
-                .align(Alignment.CenterVertically),
-            checked = isChecked,
-            onCheckedChange = onCheckedChange
-        )
-    }
-}
-
-@Composable
-private fun SettingsSlider(
-    title: String,
-    currentValue: Double,
-    onValueChange: (Double) -> Unit
-) {
-    val currentValueAsString = remember(currentValue) {
-        currentValue.toString()
-            .substringBefore(".", "")
-            .plus(".")
-            .plus(currentValue.toString().substringAfter(".", "").take(2))
-    }
-
-    Row {
-        Text(
-            title,
-            modifier = Modifier
-                .weight(1f)
-                .align(Alignment.CenterVertically),
-        )
-        Slider(
-            modifier = Modifier
-                .weight(2f)
-                .align(Alignment.CenterVertically),
-            value = currentValue.toFloat(),
-            steps = 5,
-            valueRange = 0.10f..1f,
-            onValueChange = {
-                onValueChange(it.toDouble())
-            }
-        )
-        Text(
-            text = currentValueAsString,
-            modifier = Modifier
-                .weight(.5f)
-                .align(Alignment.CenterVertically),
-        )
-    }
-}
 
 @Composable
 fun MapContent(
