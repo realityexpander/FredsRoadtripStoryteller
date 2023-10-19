@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MapStyleOptions
@@ -39,6 +40,7 @@ import com.google.maps.android.compose.rememberTileOverlayState
 import com.google.maps.android.heatmaps.HeatmapTileProvider
 import com.google.maps.android.heatmaps.WeightedLatLng
 import components.SwitchWithLabel
+import kotlinx.coroutines.launch
 import loadMarkers.milesToMeters
 import co.touchlab.kermit.Logger as Log
 
@@ -192,10 +194,10 @@ actual fun GoogleMaps(
             uiSettings = uiSettings,
             properties = properties,
             onMapClick = { latLng: LatLng ->
-                     onMapClick?.let { nativeFun ->
-                         nativeFun(LatLong(latLng.latitude, latLng.longitude))
-                     }
-                },
+                 onMapClick?.let { nativeFun ->
+                     nativeFun(LatLong(latLng.latitude, latLng.longitude))
+                 }
+            },
         ) {
 
             // Heat Map Overlay
@@ -245,7 +247,6 @@ actual fun GoogleMaps(
                         transparency = 0.0f
                     )
                 }
-
 
             // temporary markers
             myMarkers.value.forEach { marker ->
@@ -366,13 +367,13 @@ actual fun GoogleMaps(
                                 override fun getSnippet(): String = marker.subtitle
                                 override fun getPosition(): LatLng =
                                     LatLng(marker.position.latitude, marker.position.longitude)
-
                                 override fun getZIndex(): Float = 1.0f
                             }
                         } ?: listOf<ClusterItem>()
                         // Log.d { "Recalculating cluster items, markers.size= ${markers?.size}, result.size= ${result.size}" }
                         cachedMarkers.clear()
                         cachedMarkers.addAll(result)
+
                         return@remember result
                     }
                 },
@@ -380,21 +381,26 @@ actual fun GoogleMaps(
                     Log.d { "cluster clicked" }
                     true
                 },
-//                onClusterItemClick = { clusterItem ->
-//                    Log.d { "cluster item clicked" }
-////                    coroutineScope.launch {
-////                        myMarkers.value = myMarkers.value + MapMarker(
-////                            key = clusterItem.position.toString(),
-////                            position = LatLong(
-////                                clusterItem.position.latitude,
-////                                clusterItem.position.longitude
-////                            ),
-////                            title = clusterItem.title ?: "",
-////                            alpha = 1.0f
-////                        )
-////                    }
-//                    true
-//                },
+                onClusterItemClick = { clusterItem ->
+                    Log.d { "cluster item clicked" }
+                    coroutineScope.launch {
+                        val selectedMarker = MapMarker(
+                            key = clusterItem.position.toString(),
+                            position = LatLong(
+                                clusterItem.position.latitude,
+                                clusterItem.position.longitude
+                            ),
+                            title = clusterItem.title ?: "",
+                            alpha = 1.0f
+                        )
+                        onMarkerClick?.let { nativeFun ->
+                            nativeFun(selectedMarker)
+                        }
+
+                        println("selectedMarker = ${selectedMarker.title}")
+                    }
+                    false
+                },
 //                clusterContent = { cluster ->
 //                    Log.d { "clusterContent" }
 //                    Marker(
@@ -439,7 +445,6 @@ actual fun GoogleMaps(
 //                    title = marker.title
 //                )
 //            }
-
 
         }
 
