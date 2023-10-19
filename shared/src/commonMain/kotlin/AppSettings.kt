@@ -55,11 +55,11 @@ fun Settings.lastKnownUserLocation(): Location {
 }
 
 // For Settings panel
-fun Settings.setShowTalkRadius(showTalkRadius: Boolean) {
-    putBoolean("showTalkRadius", showTalkRadius)
+fun Settings.setShouldAutomaticallyStartTrackingWhenAppLaunches(shouldStartBackgroundUpdatesWhenAppLaunches: Boolean) {
+    putBoolean("startBackgroundUpdatesWhenAppLaunches", shouldStartBackgroundUpdatesWhenAppLaunches)
 }
-fun Settings.showTalkRadius(): Boolean {
-    return getBoolean("showTalkRadius", true)
+fun Settings.shouldAutomaticallyStartTrackingWhenAppLaunches(): Boolean {
+    return getBoolean("startBackgroundUpdatesWhenAppLaunches", false)
 }
 
 fun Settings.setTalkRadiusMiles(talkRadiusMiles: Double) {
@@ -68,5 +68,3 @@ fun Settings.setTalkRadiusMiles(talkRadiusMiles: Double) {
 fun Settings.talkRadiusMiles(): Double {
     return getDouble("talkRadius", 0.5)
 }
-
-

@@ -416,6 +416,10 @@ private fun SettingsScreen(
     var isResetCacheAlertVisible by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
+    var shouldStartTrackingAutomaticallyWhenAppLaunches by remember {
+        mutableStateOf(settings.shouldAutomaticallyStartTrackingWhenAppLaunches())
+    }
+
     Column(
         Modifier.fillMaxWidth()
             .padding(16.dp)
@@ -447,17 +451,10 @@ private fun SettingsScreen(
 
         SettingsSwitch(
             title = "Start tracking automatically when app launches",
-            isChecked = true, //settings.showTalkRadius(),
+            isChecked = shouldStartTrackingAutomaticallyWhenAppLaunches,
             onCheckedChange = {
-                // settings.setShowTalkRadius(it)
-            }
-        )
-
-        SettingsSwitch(
-            title = "Show Talk Radius on map",
-            isChecked = settings.showTalkRadius(),
-            onCheckedChange = {
-                settings.setShowTalkRadius(it)
+                settings.setShouldAutomaticallyStartTrackingWhenAppLaunches(it)
+                shouldStartTrackingAutomaticallyWhenAppLaunches = it
             }
         )
 
@@ -470,11 +467,10 @@ private fun SettingsScreen(
             }
         )
 
-        Spacer(modifier = Modifier.padding(16.dp))
-
         // Show feedback button on Android only
         // - to turn on dev mode: adb shell setprop debug.firebase.appdistro.devmode true // false to turn off
         if (getPlatformName().contains("Android")) {
+            Spacer(modifier = Modifier.padding(8.dp))
             Button(
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally),
@@ -489,9 +485,9 @@ private fun SettingsScreen(
             }
         }
 
-        Spacer(modifier = Modifier.padding(16.dp))
+        Spacer(modifier = Modifier.padding(8.dp))
         Divider(modifier = Modifier.fillMaxWidth())
-        Spacer(modifier = Modifier.padding(16.dp))
+        Spacer(modifier = Modifier.padding(8.dp))
 
         // Reset Marker Info Cache
         Button(
