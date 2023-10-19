@@ -40,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.russhwolf.settings.Settings
 import kotlinx.coroutines.launch
@@ -106,6 +107,9 @@ fun App() {
         var recentlySeenMarkers by remember { mutableStateOf(listOf<MarkerInfo>()) }
         var isRecentlySeenMarkersVisible by remember { mutableStateOf(false) }
 
+        // Error state
+        var isShowingError by remember { mutableStateOf<String?>(null) }
+
         // Load markers
         val markersLoadResult: MarkersResult = loadMarkers(
             settings,
@@ -155,21 +159,24 @@ fun App() {
                 Log.d { "Final map-applied marker count = ${snapShot.size}" }
             }
         }
-        // LEAVE FOR REFERENCE
-        //val mapBounds by remember(mapMarkers) {
-        //    mutableStateOf(
-        //        mapMarkers.map {
-        //            it.position
-        //        }.toList()
-        //    )
-        //}
+        if(false) {
+            // LEAVE FOR REFERENCE
+            //val mapBounds by remember(mapMarkers) {
+            //    mutableStateOf(
+            //        mapMarkers.map {
+            //            it.position
+            //        }.toList()
+            //    )
+            //}
+        }
 
         // Update user location
         LaunchedEffect(Unit) {
             // Set the last known location to the current location
             gpsLocationService.onUpdatedGPSLocation(
-                errorCallback = { error ->
-                    Log.w("Error: $error")
+                errorCallback = { errorMessage ->
+                    Log.w("Error: $errorMessage")
+                    isShowingError = errorMessage
                 }
             ) { location ->
                 //    val locationTemp = Location(
@@ -183,7 +190,7 @@ fun App() {
                     Log.w { "Error: Unable to get current location" }
                     return@run userLocation // just return the most recent location
                 }
-
+                isShowingError = null
                 // todo check for new markers inside talk radius & add to recentlySeen list
             }
 
@@ -194,13 +201,15 @@ fun App() {
                     settings.setLastKnownUserLocation(location)
                 }
 
-            // LEAVE FOR REFERENCE
-            //    // Get heading updates
-            //    locationService.currentHeading { heading ->
-            //        heading?.let {
-            //            Log.d { "heading = ${it.trueHeading}, ${it.magneticHeading}" }
-            //        }
-            //    }
+            if(false) {
+                // LEAVE FOR REFERENCE
+                //    // Get heading updates
+                //    locationService.currentHeading { heading ->
+                //        heading?.let {
+                //            Log.d { "heading = ${it.trueHeading}, ${it.magneticHeading}" }
+                //        }
+                //    }
+            }
         }
 
         fun startTracking() {
@@ -374,6 +383,18 @@ fun App() {
                         modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        AnimatedVisibility(isShowingError != null) {
+                            Text(
+                                modifier = Modifier.fillMaxWidth()
+                                    .background(MaterialTheme.colors.error),
+                                text = "Error: $isShowingError",
+                                textAlign = TextAlign.Center,
+                                fontStyle = FontStyle.Normal,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colors.onError
+                            )
+                        }
+
                         val didMapMarkersUpdate =
                             MapContent(
                                 modifier = Modifier

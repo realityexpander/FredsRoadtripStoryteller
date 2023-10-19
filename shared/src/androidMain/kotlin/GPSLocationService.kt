@@ -86,8 +86,16 @@ actual class GPSLocationService  {
         val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
         val isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
 
-        if (!isGpsEnabled) { errorCallback?.let { errorCallback("GPS is disabled") } }
-        if (!isNetworkEnabled) { errorCallback?.let { errorCallback("Network is disabled") } }
+        if (!isGpsEnabled) {
+            errorCallback?.let { errorCallback("GPS is disabled") }
+            Log.d("GPS is disabled")
+            return
+        }
+        if (!isNetworkEnabled) {
+            errorCallback?.let { errorCallback("Network is disabled") }
+            Log.d("Network is disabled")
+            return
+        }
 
         // Setup the location callback
         internalLocationCallback?.let { fusedLocationClient.removeLocationUpdates(it) }

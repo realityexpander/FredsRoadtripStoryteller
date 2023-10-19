@@ -9,6 +9,7 @@ import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import appContext
 import com.google.android.gms.maps.MapsInitializer
@@ -35,6 +36,21 @@ class MainActivity : AppCompatActivity() {
             //        action = GPSLocationForegroundNotificationService.ACTION_START
             //        startService(this) // sends command to start service
             //    }
+
+            if(it[Manifest.permission.ACCESS_FINE_LOCATION] == false ||
+                it[Manifest.permission.ACCESS_COARSE_LOCATION] == false) {
+                AlertDialog.Builder(this)
+                    .setTitle("Location Permissions Required")
+                    .setMessage("This app requires location permissions to function. Please enable location permissions in the app settings.")
+                    .setPositiveButton("OK") { _, _ ->
+                        finish()
+                    }
+                    .show()
+            } else {
+                setContent {
+                    MainView()
+                }
+            }
         }
 
         // Get permissions to access location (opens dialog)
@@ -69,9 +85,9 @@ class MainActivity : AppCompatActivity() {
         // - adb shell setprop debug.firebase.appdistro.devmode true  // false to turn off
         FirebaseApp.initializeApp(this)
 
-        setContent {
-            MainView()
-        }
+//        setContent {
+//            MainView()
+//        }
     }
 
     override fun onDestroy() {
