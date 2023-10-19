@@ -71,15 +71,16 @@ actual class GPSLocationService  {
     }
 
     actual suspend fun onUpdatedGPSLocation(
-        errorCallback: (String) -> Unit,
+        errorCallback: (String) -> Unit,  // not used in iOS
         locationCallback: (Location?) -> Unit
     ) {
         locationManager.requestWhenInUseAuthorization()  // for background location updates
         locationDelegate.onLocationUpdate = locationCallback
         locationManager.delegate = locationDelegate
 
-        locationManager.showsBackgroundLocationIndicator = true
-        locationManager.allowsBackgroundLocationUpdates = true
+        locationManager.pausesLocationUpdatesAutomatically = true  // to save battery
+        locationManager.showsBackgroundLocationIndicator = true // required for background location updates
+        locationManager.allowsBackgroundLocationUpdates = true // required for background location updates
         locationManager.distanceFilter = kCLDistanceFilterNone
         locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation
         locationManager.startUpdatingLocation()
