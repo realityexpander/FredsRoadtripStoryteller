@@ -28,6 +28,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
     private val splashState = MutableStateFlow(false)
 
+    private var isSendingUserToAppSettingsScreen = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -47,18 +49,23 @@ class MainActivity : AppCompatActivity() {
                 it[Manifest.permission.ACCESS_COARSE_LOCATION] == false) {
                 AlertDialog.Builder(this)
                     .setTitle("Location Permissions Required")
-                    .setMessage("This app requires location permissions to function. Please enable location permissions in the app settings.")
-                    .setPositiveButton("OK") { _, _ ->
-//                        finish()
+                    .setMessage("This app requires location permissions to function. " +
+                            "Please enable location permissions in the app settings.")
+                    .setPositiveButton("App Settings") { _, _ ->
 
                         // Intent to open the App Settings
                         Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                             data = android.net.Uri.parse("package:$packageName")
                             startActivity(this)
                         }
+                        isSendingUserToAppSettingsScreen = true
+                    }
+                    .setNegativeButton("Cancel") { _, _ ->
+                        finish()
                     }
                     .show()
             } else {
+                // Dismiss the splash screen
                 splashState.tryEmit(true)
 
                 setContent {
@@ -127,8 +134,38 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
 
+        println("onNewIntent: intent: $intent")
+
         if(intent?.action == GPSLocationForegroundNotificationService.ACTION_STOP_NOTIFICATION_SERVICE) {
             stopBackgroundUpdates()
+        }
+    }
+
+//    // Capture result from permission request - LEAVE FOR REFERENCE
+//    override fun onRequestPermissionsResult(
+//        requestCode: Int,
+//        permissions: Array<String>,
+//        grantResults: IntArray
+//    ) {
+//        super.onRequestPermissionsResult(
+//            requestCode,
+//            permissions,
+//            grantResults
+//        )
+//        println("onRequestPermissionsResult: requestCode: $requestCode, permissions: $permissions, grantResults: $grantResults")
+//    }
+
+    override fun onResume() {
+        super.onResume()
+        println("onResume: intent: $intent")
+
+        // Relaunch the permission dialog if the user was sent to the app settings screen
+        if(isSendingUserToAppSettingsScreen) {
+            isSendingUserToAppSettingsScreen = false
+            permissionLauncher.launch(arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+            ))
         }
     }
 }

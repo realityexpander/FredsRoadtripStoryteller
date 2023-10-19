@@ -209,12 +209,11 @@ fun App() {
                             markerLat,
                             markerLong
                         )
+
+                        // add to recently seen list?
                         if(distanceFromMarkerToUserLocationMiles < talkRadiusMiles*1.75) {
-                            // add to recently seen list
                             recentlySeenMarkers.add(marker)
-
                             Log.d("Added Marker ${marker.key} is within talk radius of $talkRadiusMiles miles, distance=$distanceFromMarkerToUserLocationMiles miles, total recentlySeenMarkers=${recentlySeenMarkers.size}")
-
                         }
                     }
                 }
