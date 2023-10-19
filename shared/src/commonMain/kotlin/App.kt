@@ -38,7 +38,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -47,8 +46,8 @@ import com.russhwolf.settings.Settings
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import loadMarkers.LoadingState
-import loadMarkers.MarkerInfo
 import loadMarkers.MarkersResult
+import loadMarkers.distanceBetween
 import loadMarkers.loadMarkers
 import loadMarkers.sampleData.kUseRealNetwork
 import screens.SettingsScreen
@@ -105,8 +104,8 @@ fun App() {
         }
 
         // Recently Seen Markers
-        var recentlySeenMarkers by remember { mutableStateOf(listOf<MarkerInfo>()) }
-        var isRecentlySeenMarkersVisible by remember { mutableStateOf(false) }
+        val recentlySeenMarkers by remember { mutableStateOf(mutableSetOf<MapMarker>()) }
+        var isRecentlySeenMarkersPanelVisible by remember { mutableStateOf(false) }
 
         // Error state
         var isShowingError by remember { mutableStateOf<String?>(null) }
@@ -117,8 +116,7 @@ fun App() {
             userLocation = userLocation,
             maxReloadDistanceMiles = kMaxReloadDistanceMiles.toInt(),
             showLoadingState = false,
-            useFakeDataSetId =
-            kUseRealNetwork,
+            useFakeDataSetId = kUseRealNetwork,
             //    kSunnyvaleFakeDataset,
             //    kTepoztlanFakeDataset,
             //    kSingleItemPageFakeDataset
@@ -201,6 +199,24 @@ fun App() {
                     settings.setLastKnownUserLocation(location)
 
                     // todo check for new markers inside talk radius & add to recentlySeen list
+                    mapMarkers.map { marker ->
+                        // if marker is within talk radius, add to recently seen list
+                        val markerLat = marker.position.latitude
+                        val markerLong = marker.position.longitude
+                        val distanceFromMarkerToUserLocationMiles = distanceBetween(
+                            userLocation.latitude,
+                            userLocation.longitude,
+                            markerLat,
+                            markerLong
+                        )
+                        if(distanceFromMarkerToUserLocationMiles < talkRadiusMiles*1.75) {
+                            // add to recently seen list
+                            recentlySeenMarkers.add(marker)
+
+                            Log.d("Added Marker ${marker.key} is within talk radius of $talkRadiusMiles miles, distance=$distanceFromMarkerToUserLocationMiles miles, total recentlySeenMarkers=${recentlySeenMarkers.size}")
+
+                        }
+                    }
                 }
 
             if(false) {
@@ -342,7 +358,7 @@ fun App() {
                                 // Recent Markers History List
                                 IconButton(onClick = {
                                     coroutineScope.launch {
-                                        isRecentlySeenMarkersVisible = !isRecentlySeenMarkersVisible
+                                        isRecentlySeenMarkersPanelVisible = !isRecentlySeenMarkersPanelVisible
                                     }
                                 }) { // show marker history panel
                                     Icon(
@@ -372,7 +388,7 @@ fun App() {
                 },
             ) {
                 val transitionRecentMarkersPanel: Float by animateFloatAsState(
-                    if (isRecentlySeenMarkersVisible) 0.5f else 0f,
+                    if (isRecentlySeenMarkersPanelVisible) 0.5f else 0f,
                     animationSpec = tween(500)
                 )
 
