@@ -42,3 +42,6 @@ expect fun GoogleMaps(
 //onMarkerClick: (MapMarker) -> Unit = {},
 //onMapClick: (LatLong) -> Unit = {},
 //onMapLongClick: (LatLong) -> Unit = {},
+
+
+expect fun triggerFirebaseFeedback()

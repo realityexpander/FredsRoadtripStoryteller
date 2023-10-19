@@ -2,6 +2,7 @@ package com.realityexpander
 
 import GPSLocationService
 import MainView
+import TRIGGER_FIREBASE_FEEDBACK
 import android.Manifest
 import android.content.Intent
 import android.os.Bundle
@@ -12,6 +13,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import appContext
 import com.google.android.gms.maps.MapsInitializer
+import com.google.firebase.FirebaseApp
+import com.google.firebase.appdistribution.InterruptionLevel
+import com.google.firebase.appdistribution.ktx.appDistribution
+import com.google.firebase.ktx.Firebase
 import intentFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -61,21 +66,24 @@ class MainActivity : AppCompatActivity() {
                 if(intent.action == GPSLocationService.ACTION_START_BACKGROUND_UPDATES) {
                     startBackgroundUpdates()
                 }
+                if(intent.action == TRIGGER_FIREBASE_FEEDBACK) {
+                    Firebase.appDistribution.startFeedback("We value your feedback!")
+
+                    //    // Show the Firebase feedback notification
+                    //    Firebase.appDistribution.showFeedbackNotification(
+                    //        // Text providing notice to your testers about collection and
+                    //        // processing of their feedback data
+                    //        "Please let us know your thoughts about this app!",
+                    //        // The level of interruption for the notification
+                    //        InterruptionLevel.HIGH
+                    //    )
+                }
             }
         }
 
-        // todo - make button to trigger from settings
         // Enable dev mode on your local device:
         // - adb shell setprop debug.firebase.appdistro.devmode true  // false to turn off
-//        FirebaseApp.initializeApp(this)
-//        // Show the Firebase feedback notification
-//        Firebase.appDistribution.showFeedbackNotification(
-//            // Text providing notice to your testers about collection and
-//            // processing of their feedback data
-//            "Please let us know your thoughts about this app!",
-//            // The level of interruption for the notification
-//            InterruptionLevel.HIGH)
-////        Firebase.appDistribution.startFeedback("feedback")
+        FirebaseApp.initializeApp(this)
 
         setContent {
             MainView()

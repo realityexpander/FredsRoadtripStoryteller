@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.BottomSheetScaffold
+import androidx.compose.material.BottomSheetScaffoldState
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
@@ -51,6 +53,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import com.russhwolf.settings.Settings
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -69,6 +72,8 @@ val json = Json {
 const val kMaxReloadDistanceMiles = 2
 const val kTalkRadiusMiles = 0.5
 const val kMaxMarkerCacheAgeSeconds = 60 * 60 * 24 * 30  // 30 days
+
+const val TRIGGER_FIREBASE_FEEDBACK = "TRIGGER_FIREBASE_FEEDBACK"
 
 sealed class BottomSheetScreen {
     data object None : BottomSheetScreen()
@@ -207,104 +212,15 @@ fun App() {
             sheetBackgroundColor = MaterialTheme.colors.background,
             sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
             sheetContent = {
-                when(bottomSheetScreen) {
+                when (bottomSheetScreen) {
                     BottomSheetScreen.None -> {
                         Text("None")
                     }
+
                     is BottomSheetScreen.Settings -> {
-                        val scrollState = rememberScrollState()
-                        Column(
-                            Modifier.fillMaxWidth()
-                                .padding(16.dp)
-                                .scrollable(scrollState, orientation = Orientation.Vertical)
-                            ,
-                            horizontalAlignment = Alignment.Start,
-                        ) {
-                            Row {
-                                Text(
-                                    "Settings",
-                                    fontSize = MaterialTheme.typography.h5.fontSize,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier
-                                        .weight(3f)
-                                )
-                                IconButton(
-                                    modifier = Modifier
-                                        .offset(16.dp, (-16).dp),
-                                    onClick = {
-                                    coroutineScope.launch {
-                                        bottomSheetScaffoldState.bottomSheetState.collapse()
-                                    }
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = "Close"
-                                    )
-                                }
-                            }
-
-                            SettingsSwitch(
-                                title = "Start tracking automatically when app launches",
-                                isChecked = true, //settings.showTalkRadius(),
-                                onCheckedChange = {
-                                    // settings.setShowTalkRadius(it)
-                                }
-                            )
-
-                            SettingsSwitch(
-                                title = "Show Talk Radius on map",
-                                isChecked = true, //settings.showTalkRadius(),
-                                onCheckedChange = {
-                                    // settings.setShowTalkRadius(it)
-                                }
-                            )
-
-                            SettingsSlider(
-                                title = "Talk Radius (miles)",
-                                currentValue = talkRadiusMiles, //0.5f, //settings.talkRadius(),
-                                onValueChange = {
-                                    // settings.setTalkRadius(it)
-                                    coroutineScope.launch {
-                                        talkRadiusMiles = it
-                                    }
-                                }
-                            )
-
-                            Spacer(modifier = Modifier.padding(16.dp))
-
-                            Button(
-                                modifier = Modifier
-                                    .align(Alignment.CenterHorizontally),
-                                onClick = {
-                                    coroutineScope.launch {
-                                         bottomSheetScaffoldState.bottomSheetState.collapse()
-                                        // trigger feedback
-                                    }
-                                }) {
-                                Text("Send Feedback to Developer")
-                            }
-
-                            Spacer(modifier = Modifier.padding(16.dp))
-                            Divider(modifier = Modifier.fillMaxWidth())
-                            Spacer(modifier = Modifier.padding(16.dp))
-
-                            Button(
-                                modifier = Modifier
-                                    .align(Alignment.CenterHorizontally),
-                                colors = ButtonDefaults.buttonColors(
-                                    backgroundColor = MaterialTheme.colors.error,
-                                    contentColor = MaterialTheme.colors.onError
-                                ),
-                                onClick = {
-                                coroutineScope.launch {
-                                    // bottomSheetScaffoldState.bottomSheetState.collapse()
-                                    // show confirmation dialog
-                                }
-                            }) {
-                                Text("Reset Marker Info Cache")
-                            }
-                        }
+                        SettingsScreen(settings, bottomSheetScaffoldState, talkRadiusMiles,)
                     }
+
                     is BottomSheetScreen.MarkerDetails -> {
                         Text("Marker Details")
                     }
@@ -313,7 +229,7 @@ fun App() {
             drawerElevation = 16.dp,
             drawerScrimColor = Color.Black.copy(alpha = 0.5f),
             drawerGesturesEnabled = !bottomSheetScaffoldState.drawerState.isClosed,
-            drawerContent =  {
+            drawerContent = {
                 Row(
                     Modifier
                         .fillMaxWidth()
@@ -356,7 +272,7 @@ fun App() {
                                 IconButton(onClick = {
                                     coroutineScope.launch {
                                         bottomSheetScaffoldState.drawerState.apply {
-                                            if(isClosed) open() else close()
+                                            if (isClosed) open() else close()
                                         }
                                     }
                                 }) {
@@ -392,7 +308,8 @@ fun App() {
                                 // Recent Markers History List
                                 IconButton(onClick = {
                                     coroutineScope.launch {
-                                        bottomSheetScreen = BottomSheetScreen.MarkerDetails("markerId")
+                                        bottomSheetScreen =
+                                            BottomSheetScreen.MarkerDetails("markerId")
                                         bottomSheetScaffoldState.bottomSheetState.apply {
                                             if (isCollapsed) expand() else collapse()
                                         }
@@ -480,6 +397,185 @@ fun App() {
         }
     }
 }
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+private fun SettingsScreen(
+    settings: Settings,
+    bottomSheetScaffoldState: BottomSheetScaffoldState,
+    talkRadiusMiles: Double
+) {
+    var talkRadiusMiles1 = talkRadiusMiles
+    val scrollState = rememberScrollState()
+    var isResetCacheAlertVisible by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+
+    Column(
+        Modifier.fillMaxWidth()
+            .padding(16.dp)
+            .scrollable(scrollState, orientation = Orientation.Vertical),
+        horizontalAlignment = Alignment.Start,
+    ) {
+        Row {
+            Text(
+                "Settings",
+                fontSize = MaterialTheme.typography.h5.fontSize,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .weight(3f)
+            )
+            IconButton(
+                modifier = Modifier
+                    .offset(16.dp, (-16).dp),
+                onClick = {
+                    coroutineScope.launch {
+                        bottomSheetScaffoldState.bottomSheetState.collapse()
+                    }
+                }) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Close"
+                )
+            }
+        }
+
+        SettingsSwitch(
+            title = "Start tracking automatically when app launches",
+            isChecked = true, //settings.showTalkRadius(),
+            onCheckedChange = {
+                // settings.setShowTalkRadius(it)
+            }
+        )
+
+        SettingsSwitch(
+            title = "Show Talk Radius on map",
+            isChecked = true, //settings.showTalkRadius(),
+            onCheckedChange = {
+                // settings.setShowTalkRadius(it)
+            }
+        )
+
+        SettingsSlider(
+            title = "Talk Radius (miles)",
+            currentValue = talkRadiusMiles1, //0.5f, //settings.talkRadius(),
+            onValueChange = {
+                // settings.setTalkRadius(it)
+                coroutineScope.launch {
+                    talkRadiusMiles1 = it
+                }
+            }
+        )
+
+        Spacer(modifier = Modifier.padding(16.dp))
+
+        // Show feedback button on Android only
+        // - to turn on dev mode: adb shell setprop debug.firebase.appdistro.devmode true // false to turn off
+        if (getPlatformName().contains("Android")) {
+            Button(
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally),
+                onClick = {
+                    coroutineScope.launch {
+                        bottomSheetScaffoldState.bottomSheetState.collapse()
+                        // trigger feedback
+                        triggerFirebaseFeedback()
+                    }
+                }) {
+                Text("Send Feedback to Developer")
+            }
+        }
+
+        Spacer(modifier = Modifier.padding(16.dp))
+        Divider(modifier = Modifier.fillMaxWidth())
+        Spacer(modifier = Modifier.padding(16.dp))
+
+        // Reset Marker Info Cache
+        Button(
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally),
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = MaterialTheme.colors.error,
+                contentColor = MaterialTheme.colors.onError
+            ),
+            onClick = {
+                coroutineScope.launch {
+                    // bottomSheetScaffoldState.bottomSheetState.collapse()
+                    // show confirmation dialog
+                    isResetCacheAlertVisible = true
+                }
+            }) {
+            Text("Reset Marker Info Cache")
+        }
+        Text(
+            "Cache size: ${settings.cachedMarkersResult().markerInfos.size} markers",
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally),
+        )
+
+        // Show Reset Cache Alert
+        if (isResetCacheAlertVisible)
+            ShowResetCacheAlert(
+                settings,
+                onClose = {
+                    coroutineScope.launch {
+                        isResetCacheAlertVisible = false
+                    }
+            })
+    }
+}
+
+@Composable
+fun ShowResetCacheAlert(
+    settings: Settings,
+    onClose: () -> Unit = {}
+) =
+    AlertDialog(
+        title = {
+            Text(
+                text = "Reset Marker Info Cache?",
+                fontWeight = FontWeight.Bold,
+            )
+        },
+        text = {
+            Text(
+                text = "This will clear the cache of marker info, forcing the app to reload the data from the server. Are you sure?",
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    // reset cache
+                    settings.clear()
+                    onClose()
+                },
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = MaterialTheme.colors.error,
+                    contentColor = MaterialTheme.colors.onError
+                ),
+            ) {
+                Text("Reset Cache")
+            }
+        },
+        dismissButton = {
+            Button(
+                onClick = {
+                    // dismiss dialog
+                    onClose()
+                },
+            ) {
+                Text("Cancel")
+            }
+        },
+        onDismissRequest = {
+            // dismiss dialog
+            onClose()
+        },
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true,
+            usePlatformDefaultWidth = true
+        )
+    )
 
 @Composable
 private fun SettingsSwitch(
