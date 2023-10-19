@@ -28,3 +28,28 @@ private fun deg2rad(deg: Double): Double {
 private fun rad2deg(rad: Double): Double {
     return rad * 180.0 / PI
 }
+
+// Todo - test these work
+public fun Double.milesToDegrees(): Double {
+    val miles = this
+    val earthRadius = 3960.0 // in miles
+    val radiansToDegrees = 180.0 / PI
+    return (miles / earthRadius) * radiansToDegrees
+}
+public fun distanceAtLongitude(startLongitude: Double, miles: Double): Double {
+    return distanceBetween(
+        0.0,
+        startLongitude,
+        0.0,
+        startLongitude + miles.milesToDegrees()
+    )
+}
+
+public fun distanceAtLatitude(startLatitude: Double, miles: Double): Double {
+    return distanceBetween(
+        startLatitude,
+        0.0,
+        startLatitude + miles.milesToDegrees(),
+        0.0
+    )
+}

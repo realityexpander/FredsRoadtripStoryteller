@@ -304,7 +304,7 @@ actual fun GoogleMaps(
                 )
             }
 
-            // Last cache loaded location
+            // Show Last cache loaded location
             cachedMarkersLastUpdatedLocation?.let { cachedMarkersLastUpdatedLocation ->
                 Circle(
                     center = LatLng(cachedMarkersLastUpdatedLocation.latitude, cachedMarkersLastUpdatedLocation.longitude),
@@ -313,6 +313,33 @@ actual fun GoogleMaps(
                     strokeColor = Color.White.copy(alpha = 0.3f),
                     strokeWidth = 2.0f
                 )
+
+                //    // Show using a rectangle - todo distance estimates are a bit off
+                //    val lastLoc = cachedMarkersLastUpdatedLocation
+                //    val searchDistanceLngDegrees = distanceBetween(
+                //        lastLoc.latitude, lastLoc.longitude,
+                //        lastLoc.latitude + kMaxReloadDistanceMiles.milesToDegrees()/100.0, lastLoc.longitude,
+                //        true
+                //    )
+                //    val searchDistanceLatDegrees = //searchDistanceLatDegrees
+                //        distanceBetween(
+                //            lastLoc.latitude, lastLoc.longitude,
+                //            lastLoc.latitude, lastLoc.longitude + kMaxReloadDistanceMiles.milesToDegrees()/100.0,
+                //            true
+                //        )
+                //    val polyLineRectangle = PolylineOptions()
+                //        .add(LatLng(lastLoc.latitude - searchDistanceLatDegrees, lastLoc.longitude - searchDistanceLngDegrees))
+                //        .add(LatLng(lastLoc.latitude + searchDistanceLatDegrees, lastLoc.longitude - searchDistanceLngDegrees))
+                //        .add(LatLng(lastLoc.latitude + searchDistanceLatDegrees, lastLoc.longitude + searchDistanceLngDegrees))
+                //        .add(LatLng(lastLoc.latitude - searchDistanceLatDegrees, lastLoc.longitude + searchDistanceLngDegrees))
+                //        .add(LatLng(lastLoc.latitude - searchDistanceLatDegrees, lastLoc.longitude - searchDistanceLngDegrees))
+                //    Polyline(
+                //        points = polyLineRectangle.points,
+                //        color = Color.Yellow.copy(alpha = 0.3f),
+                //        width = 16f,
+                //        startCap = SquareCap(),
+                //        endCap = SquareCap()
+                //    )
             }
 
             Clustering(

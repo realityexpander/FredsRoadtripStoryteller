@@ -61,8 +61,6 @@ val json = Json {
 const val kMaxReloadDistanceMiles = 2.0
 const val kMaxMarkerCacheAgeSeconds = 60 * 60 * 24 * 30  // 30 days
 
-const val TRIGGER_FIREBASE_FEEDBACK = "TRIGGER_FIREBASE_FEEDBACK"
-
 sealed class BottomSheetScreen {
     data object None : BottomSheetScreen()
     data object Settings : BottomSheetScreen()
@@ -203,6 +201,7 @@ fun App() {
             scaffoldState = bottomSheetScaffoldState,
             sheetElevation = 16.dp,
             sheetGesturesEnabled = false, // interferes with map gestures
+            sheetPeekHeight = 0.dp,
             sheetContentColor = MaterialTheme.colors.onBackground,
             sheetBackgroundColor = MaterialTheme.colors.background,
             sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
