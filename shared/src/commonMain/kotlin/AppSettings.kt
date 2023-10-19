@@ -4,13 +4,13 @@ import loadMarkers.MarkersResult
 import co.touchlab.kermit.Logger as Log
 
 // Settings Keys
-const val kCachedMarkersResult = "cachedMarkersResult"
-const val kCachedMarkersLastUpdatedEpochSeconds = "cachedMarkersLastUpdatedEpochSeconds"
-const val kCachedMarkersLastLoadLocation = "cachedMarkersLastLocation"
-const val kLastKnownUserLocation = "lastKnownUserLocation"
-const val kStartBackgroundUpdatesWhenAppLaunches = "startBackgroundUpdatesWhenAppLaunches"
-const val kTalkRadiusMilesSetting = "talkRadiusMiles"
-const val kShouldShowMarkersLastUpdatedLocation = "shouldShowMarkersLastUpdatedLocation"
+const val kCachedMarkersResult =                    "cachedMarkersResult"
+const val kCachedMarkersLastUpdatedEpochSeconds =   "cachedMarkersLastUpdatedEpochSeconds"
+const val kCachedMarkersLastLoadLocation =          "cachedMarkersLastLocation"
+const val kLastKnownUserLocation =                  "lastKnownUserLocation"
+const val kStartBackgroundUpdatesWhenAppLaunches =  "startBackgroundUpdatesWhenAppLaunches"
+const val kTalkRadiusMilesSetting =                 "talkRadiusMiles"
+const val kShouldShowMarkersLastUpdatedLocation =   "shouldShowMarkersLastUpdatedLocation"
 
 fun Settings.printAppSettings() {
     // Show current settings

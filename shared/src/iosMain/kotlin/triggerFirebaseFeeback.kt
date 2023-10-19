@@ -1,4 +1,4 @@
 
-actual fun triggerFirebaseFeedback() {
+actual fun triggerDeveloperFeedback() {
    // todo - implement callback
 }

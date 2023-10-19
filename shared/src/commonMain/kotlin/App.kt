@@ -1,23 +1,14 @@
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.AlertDialog
 import androidx.compose.material.BottomSheetScaffold
-import androidx.compose.material.BottomSheetScaffoldState
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
@@ -51,7 +42,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
 import com.russhwolf.settings.Settings
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -60,8 +50,7 @@ import loadMarkers.MarkersResult
 import loadMarkers.loadMarkers
 import loadMarkers.sampleData.kUseRealNetwork
 import co.touchlab.kermit.Logger as Log
-import components.SettingsSlider
-import components.SettingsSwitch
+import screens.SettingsScreen
 
 val json = Json {
     prettyPrint = true
@@ -214,7 +203,6 @@ fun App() {
             scaffoldState = bottomSheetScaffoldState,
             sheetElevation = 16.dp,
             sheetGesturesEnabled = false, // interferes with map gestures
-            sheetPeekHeight = 0.dp,
             sheetContentColor = MaterialTheme.colors.onBackground,
             sheetBackgroundColor = MaterialTheme.colors.background,
             sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
@@ -397,7 +385,7 @@ fun App() {
                         userLocation = userLocation,
                         mapMarkers = mapMarkers,
                         mapBounds = null,
-                        shouldUpdateMapMarkers = shouldUpdateMapMarkers,  // todo - implement?
+                        shouldUpdateMapMarkers = shouldUpdateMapMarkers, // redraw the map & markers
                         isTrackingEnabled = isTrackingEnabled,
                         centerOnUserCameraLocation = findMeCameraLocation,
                         talkRadiusMiles = talkRadiusMiles,
@@ -419,189 +407,6 @@ fun App() {
         }
     }
 }
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-private fun SettingsScreen(
-    settings: Settings,
-    bottomSheetScaffoldState: BottomSheetScaffoldState,
-    talkRadiusMiles: Double,
-    onTalkRadiusChange: (Double) -> Unit = {}
-) {
-    val scrollState = rememberScrollState()
-    var isResetCacheAlertDialogVisible by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
-
-    var shouldStartTrackingAutomaticallyWhenAppLaunches by remember {
-        mutableStateOf(settings.shouldAutomaticallyStartTrackingWhenAppLaunches())
-    }
-    var shouldShowMarkersLastUpdatedLocation by remember {
-        mutableStateOf(settings.shouldShowMarkersLastUpdatedLocation())
-    }
-
-    Column(
-        Modifier.fillMaxWidth()
-            .padding(16.dp)
-            .scrollable(scrollState, orientation = Orientation.Vertical),
-        horizontalAlignment = Alignment.Start,
-    ) {
-        Row {
-            Text(
-                "Settings",
-                fontSize = MaterialTheme.typography.h5.fontSize,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .weight(3f)
-            )
-            IconButton(
-                modifier = Modifier
-                    .offset(16.dp, (-16).dp),
-                onClick = {
-                    coroutineScope.launch {
-                        bottomSheetScaffoldState.bottomSheetState.collapse()
-                    }
-                }) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "Close"
-                )
-            }
-        }
-
-        SettingsSwitch(
-            title = "Start tracking automatically when app launches",
-            isChecked = shouldStartTrackingAutomaticallyWhenAppLaunches,
-            onCheckedChange = {
-                settings.setShouldAutomaticallyStartTrackingWhenAppLaunches(it)
-                shouldStartTrackingAutomaticallyWhenAppLaunches = it
-            }
-        )
-
-        SettingsSlider(
-            title = "Talk Radius (miles)",
-            currentValue = talkRadiusMiles,
-            onValueChange = {
-                settings.setTalkRadiusMiles(it)
-                onTalkRadiusChange(it)
-            }
-        )
-
-        SettingsSwitch(
-            title = "Show last marker update location",
-            isChecked = shouldShowMarkersLastUpdatedLocation,
-            onCheckedChange = {
-                settings.setShouldShowMarkersLastUpdatedLocation(it)
-                shouldShowMarkersLastUpdatedLocation = it
-            }
-        )
-
-        // Show feedback button on Android only
-        // - to turn on dev mode: adb shell setprop debug.firebase.appdistro.devmode true // false to turn off
-        if (getPlatformName().contains("Android")) {
-            Spacer(modifier = Modifier.padding(8.dp))
-            Button(
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally),
-                onClick = {
-                    coroutineScope.launch {
-                        bottomSheetScaffoldState.bottomSheetState.collapse()
-                        // trigger feedback
-                        triggerFirebaseFeedback()
-                    }
-                }) {
-                Text("Send Feedback to Developer")
-            }
-        }
-
-        Spacer(modifier = Modifier.padding(8.dp))
-        Divider(modifier = Modifier.fillMaxWidth())
-        Spacer(modifier = Modifier.padding(8.dp))
-
-        // Reset Marker Info Cache
-        Button(
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = MaterialTheme.colors.error,
-                contentColor = MaterialTheme.colors.onError
-            ),
-            onClick = {
-                coroutineScope.launch {
-                    // show confirmation dialog
-                    isResetCacheAlertDialogVisible = true
-                }
-            }) {
-                Text("Reset Marker Info Cache")
-            }
-        Text(
-            "Cache size: ${settings.cachedMarkersResult().markerInfos.size} markers",
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally),
-        )
-
-        // Show Reset Cache Alert Dialog
-        if (isResetCacheAlertDialogVisible)
-            ShowResetCacheAlert(
-                settings,
-                onClose = {
-                    coroutineScope.launch {
-                        isResetCacheAlertDialogVisible = false
-                    }
-            })
-    }
-}
-
-@Composable
-private fun ShowResetCacheAlert(
-    settings: Settings,
-    onClose: () -> Unit = {}
-) =
-    AlertDialog(
-        title = {
-            Text(
-                text = "Reset Marker Info Cache?",
-                fontWeight = FontWeight.Bold,
-            )
-        },
-        text = {
-            Text(
-                text = "This will clear the cache of marker info, forcing the app to reload the data from the server. Are you sure?",
-            )
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    // reset cache
-                    settings.clear()
-                    onClose()
-                },
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = MaterialTheme.colors.error,
-                    contentColor = MaterialTheme.colors.onError
-                ),
-            ) {
-                Text("Reset Cache")
-            }
-        },
-        dismissButton = {
-            Button(
-                onClick = {
-                    // dismiss dialog
-                    onClose()
-                },
-            ) {
-                Text("Cancel")
-            }
-        },
-        onDismissRequest = {
-            // dismiss dialog
-            onClose()
-        },
-        properties = DialogProperties(
-            dismissOnBackPress = true,
-            dismissOnClickOutside = true,
-            usePlatformDefaultWidth = true
-        )
-    )
 
 @Composable
 fun MapContent(
