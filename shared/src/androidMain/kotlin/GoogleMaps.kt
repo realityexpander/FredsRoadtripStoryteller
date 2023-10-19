@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -66,16 +67,20 @@ actual fun GoogleMaps(
 
     val cameraPositionState = rememberCameraPositionState()
     val uiSettings by remember {
-        mutableStateOf(MapUiSettings(
-            myLocationButtonEnabled = false, //!isTrackingEnabled,
-            compassEnabled = false,
-            mapToolbarEnabled = false,
-            zoomControlsEnabled = false,  // the +/- buttons (obscures the FAB)
-            zoomGesturesEnabled = true,
-            scrollGesturesEnabled = true,
-        )) }
+        mutableStateOf(
+            MapUiSettings(
+                myLocationButtonEnabled = false, //!isTrackingEnabled,
+                compassEnabled = false,
+                mapToolbarEnabled = false,
+                zoomControlsEnabled = false,  // the +/- buttons (obscures the FAB)
+                zoomGesturesEnabled = true,
+                scrollGesturesEnabled = true,
+            )
+        )
+    }
     var properties by remember {
-        mutableStateOf(MapProperties(
+        mutableStateOf(
+            MapProperties(
                 isMyLocationEnabled = true,  // always show the dot
                 minZoomPreference = 1f,
                 maxZoomPreference = 20f,
@@ -94,7 +99,6 @@ actual fun GoogleMaps(
     // Usually used to setup the initial camera position (doesn't support tracking due to forcing zoom level)
     LaunchedEffect(cameraOnetimePosition) {
         cameraOnetimePosition?.let { cameraPosition ->
-            // Log.d { "cameraPosition = ${cameraPosition.target.latitude}, ${cameraPosition.target.longitude}" }
             cameraPositionState.move(
                 CameraUpdateFactory.newLatLngZoom(
                     LatLng(
@@ -139,13 +143,11 @@ actual fun GoogleMaps(
     var previousCameraLocationLatLong by remember { mutableStateOf<LatLong?>(null) }
     LaunchedEffect(cameraLocationLatLong) {
         cameraLocationLatLong?.let { cameraLocationLatLong ->
-            if(previousCameraLocationLatLong == cameraLocationLatLong) {
-                // Log.d { "cameraLocationLatLong = ${cameraLocationLatLong.latitude}, ${cameraLocationLatLong.longitude} is the same as previousCameraLocationLatLong, skipping" }
+            if (previousCameraLocationLatLong == cameraLocationLatLong) {
                 return@LaunchedEffect
             }
 
             previousCameraLocationLatLong = cameraLocationLatLong
-            // Log.d { "cameraLocationLatLong = ${cameraLocationLatLong.latitude}, ${cameraLocationLatLong.longitude}" }
             cameraPositionState.animate(
                 CameraUpdateFactory.newLatLng(
                     LatLng(
@@ -160,7 +162,7 @@ actual fun GoogleMaps(
     // Set Camera to User Location (Tracking) (doesn't change zoom level)
     LaunchedEffect(userLocation) {
         userLocation?.let { myLocation ->
-            if(isTrackingEnabled) {
+            if (isTrackingEnabled) {
                 cameraPositionState.animate(
                     CameraUpdateFactory.newLatLng(
                         LatLng(
@@ -181,9 +183,14 @@ actual fun GoogleMaps(
         var cachedTileProvider by remember {
             mutableStateOf(
                 HeatmapTileProvider.Builder()
-                    .weightedData(listOf(
-                        WeightedLatLng(LatLng(0.0, 0.0), 0.0)  // default cache value (heatmap must have at least 1 item, and this wont be visible)
-                    ))
+                    .weightedData(
+                        listOf(
+                            WeightedLatLng(
+                                LatLng(0.0, 0.0),
+                                0.0
+                            )  // default cache value (heatmap must have at least 1 item, and this wont be visible)
+                        )
+                    )
                     .build()
             )
         }
@@ -194,59 +201,59 @@ actual fun GoogleMaps(
             uiSettings = uiSettings,
             properties = properties,
             onMapClick = { latLng: LatLng ->
-                 onMapClick?.let { nativeFun ->
-                     nativeFun(LatLong(latLng.latitude, latLng.longitude))
-                 }
+                onMapClick?.let { nativeFun ->
+                    nativeFun(LatLong(latLng.latitude, latLng.longitude))
+                }
             },
         ) {
 
             // Heat Map Overlay
             if (markers != null) {
-                    TileOverlay(
-                        tileProvider = remember(shouldUpdateMapMarkers, markers) {
-                            if (!shouldUpdateMapMarkers) {
-                                // Log.d { "Using cached heatmap items, cachedHeatmap = $cachedTileProvider" }
+                TileOverlay(
+                    tileProvider = remember(shouldUpdateMapMarkers, markers) {
+                        if (!shouldUpdateMapMarkers) {
+                            // Log.d { "Using cached heatmap items, cachedHeatmap = $cachedTileProvider" }
+                            return@remember cachedTileProvider
+                        } else {
+                            // check if the markers are different than the cached markers
+                            if (markers.size == cachedMarkers.size) {
+                                // Log.d { "Using cached heatmap items because list of markers has not changed, cachedHeatmap = $cachedTileProvider" }
                                 return@remember cachedTileProvider
-                            } else {
-                                // check if the markers are different than the cached markers
-                                if (markers.size == cachedMarkers.size) {
-                                    // Log.d { "Using cached heatmap items because list of markers has not changed, cachedHeatmap = $cachedTileProvider" }
-                                    return@remember cachedTileProvider
-                                }
-
-                                // Calculate the heatmap
-                                val result = HeatmapTileProvider.Builder()
-                                    .weightedData(
-                                        if (markers.isNotEmpty()) {
-                                            markers.map { marker ->
-                                                WeightedLatLng(
-                                                    LatLng(
-                                                        marker.position.latitude,
-                                                        marker.position.longitude
-                                                    ),
-                                                    2.0
-                                                )
-                                            }
-                                        } else {
-                                            listOf( // default cache value (heatmap must have at least 1 item, and this wont be visible)
-                                                WeightedLatLng(
-                                                    LatLng(0.0, 0.0), 0.0
-                                                )
-                                            )
-                                        })
-                                    .radius(25) // convolution filter size in pixels
-                                    .build()
-                                // Log.d("Recalculating heatmap items, markers.size= ${markers.size}, HeatmapTileProvider= $result")
-                                cachedTileProvider = result
-                                return@remember result
                             }
-                        },
-                        state = rememberTileOverlayState(),
-                        visible = isHeatMapEnabled,
-                        fadeIn = true,
-                        transparency = 0.0f
-                    )
-                }
+
+                            // Calculate the heatmap
+                            val result = HeatmapTileProvider.Builder()
+                                .weightedData(
+                                    if (markers.isNotEmpty()) {
+                                        markers.map { marker ->
+                                            WeightedLatLng(
+                                                LatLng(
+                                                    marker.position.latitude,
+                                                    marker.position.longitude
+                                                ),
+                                                2.0
+                                            )
+                                        }
+                                    } else {
+                                        listOf( // default cache value (heatmap must have at least 1 item, and this wont be visible)
+                                            WeightedLatLng(
+                                                LatLng(0.0, 0.0), 0.0
+                                            )
+                                        )
+                                    })
+                                .radius(25) // convolution filter size in pixels
+                                .build()
+                            // Log.d("Recalculating heatmap items, markers.size= ${markers.size}, HeatmapTileProvider= $result")
+                            cachedTileProvider = result
+                            return@remember result
+                        }
+                    },
+                    state = rememberTileOverlayState(),
+                    visible = isHeatMapEnabled,
+                    fadeIn = true,
+                    transparency = 0.0f
+                )
+            }
 
             // temporary markers
             myMarkers.value.forEach { marker ->
@@ -308,7 +315,10 @@ actual fun GoogleMaps(
             // Show Last cache loaded location
             cachedMarkersLastUpdatedLocation?.let { cachedMarkersLastUpdatedLocation ->
                 Circle(
-                    center = LatLng(cachedMarkersLastUpdatedLocation.latitude, cachedMarkersLastUpdatedLocation.longitude),
+                    center = LatLng(
+                        cachedMarkersLastUpdatedLocation.latitude,
+                        cachedMarkersLastUpdatedLocation.longitude
+                    ),
                     radius = kMaxReloadDistanceMiles.milesToMeters(),
                     fillColor = Color.Yellow.copy(alpha = 0.1f),
                     strokeColor = Color.White.copy(alpha = 0.3f),
@@ -367,6 +377,7 @@ actual fun GoogleMaps(
                                 override fun getSnippet(): String = marker.subtitle
                                 override fun getPosition(): LatLng =
                                     LatLng(marker.position.latitude, marker.position.longitude)
+
                                 override fun getZIndex(): Float = 1.0f
                             }
                         } ?: listOf<ClusterItem>()
@@ -449,7 +460,7 @@ actual fun GoogleMaps(
         }
 
         // Local Map Controls
-        if(isControlsVisible) {
+        if (isControlsVisible) {
             Column(
                 modifier = Modifier
                     .padding(16.dp)

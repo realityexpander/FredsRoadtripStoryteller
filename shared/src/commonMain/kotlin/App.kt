@@ -76,7 +76,9 @@ fun App() {
 
         val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
         val scaffoldState = rememberScaffoldState()
-        var bottomSheetScreen by remember { mutableStateOf<BottomSheetScreen>(BottomSheetScreen.None) }
+        var bottomSheetActiveScreen by remember {
+            mutableStateOf<BottomSheetScreen>(BottomSheetScreen.None)
+        }
 
         val settings = remember {
             Settings().apply {
@@ -90,9 +92,9 @@ fun App() {
             mutableStateOf(settings.cachedMarkersLastUpdatedLocation())
         }
 
-        // Google Menu UI elements
+        // Google Maps UI elements
         var isTrackingEnabled by remember { mutableStateOf(false) }
-        var findMeCameraLocation by remember { mutableStateOf<Location?>(null) } // used to center map on user
+        var centerOnUserCameraLocation by remember { mutableStateOf<Location?>(null) } // used to center map on user
 
         // GPS Location
         val gpsLocationService by remember { mutableStateOf(GPSLocationService()) }
@@ -197,16 +199,33 @@ fun App() {
             //    }
         }
 
+        fun startTracking() {
+            isTrackingEnabled = true
+            gpsLocationService.allowBackgroundLocationUpdates()
+        }
+        fun stopTracking() {
+            isTrackingEnabled = false
+            gpsLocationService.preventBackgroundLocationUpdates()
+        }
+
+        // Turn on tracking automatically, depending on settings
+        LaunchedEffect(Unit) {
+            val shouldStart = settings.shouldAutomaticallyStartTrackingWhenAppLaunches()
+            if(shouldStart) {
+                startTracking()
+            }
+        }
+
         BottomSheetScaffold(
             scaffoldState = bottomSheetScaffoldState,
             sheetElevation = 16.dp,
             sheetGesturesEnabled = false, // interferes with map gestures
             sheetPeekHeight = 0.dp,
             sheetContentColor = MaterialTheme.colors.onBackground,
-            sheetBackgroundColor = MaterialTheme.colors.background,
+            sheetBackgroundColor = Color.LightGray,
             sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
             sheetContent = {
-                when (bottomSheetScreen) {
+                when (bottomSheetActiveScreen) {
                     BottomSheetScreen.None -> {
                         Text("None")
                     }
@@ -292,7 +311,7 @@ fun App() {
                                 // Settings
                                 IconButton(onClick = {
                                     coroutineScope.launch {
-                                        bottomSheetScreen = BottomSheetScreen.Settings
+                                        bottomSheetActiveScreen = BottomSheetScreen.Settings
                                         bottomSheetScaffoldState.bottomSheetState.apply {
                                             if (isCollapsed) expand() else collapse()
                                         }
@@ -307,7 +326,7 @@ fun App() {
                                 // Recent Markers History List
                                 IconButton(onClick = {
                                     coroutineScope.launch {
-                                        bottomSheetScreen =
+                                        bottomSheetActiveScreen =
                                             BottomSheetScreen.MarkerDetails("markerId")
                                         bottomSheetScaffoldState.bottomSheetState.apply {
                                             if (isCollapsed) expand() else collapse()
@@ -348,9 +367,9 @@ fun App() {
                                 isTrackingEnabled = !isTrackingEnabled
                                 coroutineScope.launch {
                                     if (isTrackingEnabled) {
-                                        gpsLocationService.allowBackgroundLocationUpdates()
+                                        startTracking()
                                     } else {
-                                        gpsLocationService.preventBackgroundLocationUpdates()
+                                        stopTracking()
                                     }
                                 }
                             }) {
@@ -367,7 +386,7 @@ fun App() {
                                 .padding(16.dp),
                             onClick = {
                                 // center on location
-                                findMeCameraLocation = userLocation.copy()
+                                centerOnUserCameraLocation = userLocation.copy()
                             }) {
                             Icon(
                                 imageVector = Icons.Default.MyLocation,
@@ -386,7 +405,7 @@ fun App() {
                         mapBounds = null,
                         shouldUpdateMapMarkers = shouldUpdateMapMarkers, // redraw the map & markers
                         isTrackingEnabled = isTrackingEnabled,
-                        centerOnUserCameraLocation = findMeCameraLocation,
+                        centerOnUserCameraLocation = centerOnUserCameraLocation,
                         talkRadiusMiles = talkRadiusMiles,
                         cachedMarkersLastUpdatedLocation =
                             remember(
@@ -428,23 +447,23 @@ fun MapContent(
             GoogleMaps(
                 modifier = Modifier.fillMaxSize(),
                 isTrackingEnabled = isTrackingEnabled,
+                cameraOnetimePosition =
+                    if(isFirstUpdate) {  // set initial camera position
+                        CameraPosition(
+                        target = LatLong(
+                            initialUserLocation.latitude,
+                            initialUserLocation.longitude
+                        ),
+                        zoom = 12f  // note: forced zoom level
+                    )
+                    } else
+                        null,
                 userLocation = LatLong( // passed to map to track location
                     userLocation.latitude,
                     userLocation.longitude
                 ),
                 markers = mapMarkers.ifEmpty { null },
                 shouldUpdateMapMarkers = shouldUpdateMapMarkers,
-                cameraOnetimePosition = remember {
-                    CameraPosition(
-                        target = LatLong(
-//                            37.422160,
-//                            -122.084270  // googleplex
-                            initialUserLocation.latitude,
-                            initialUserLocation.longitude
-                        ),
-                        zoom = 12f  // note: forced zoom level
-                    )
-                },
                 cameraLocationLatLong = remember(centerOnUserCameraLocation) {
                     // 37.422160,
                     // -122.084270  // googleplex
