@@ -32,7 +32,7 @@ import loadMarkers.milesToMeters
 import platform.CoreLocation.CLLocationCoordinate2DMake
 import platform.UIKit.UIColor
 
-
+// iOS Google Maps implementation
 @OptIn(ExperimentalForeignApi::class)
 @Composable
 actual fun GoogleMaps(
@@ -49,7 +49,8 @@ actual fun GoogleMaps(
     onMapClick: ((LatLong) -> Unit)?,  // shows the user's location with a 100m radius circle
     onMapLongClick: ((LatLong) -> Unit)?,
     onMarkerClick: ((MapMarker) -> Unit)?,
-    talkRadiusMiles: Double
+    talkRadiusMiles: Double,
+    cachedMarkersLastUpdatedLocation: Location?
 ) {
     val googleMapView = remember { GMSMapView() }
 
@@ -253,6 +254,8 @@ actual fun GoogleMaps(
                             map = view
                         }
                     }
+
+                    // render the "lastMarkerCacheUpdateLocation" circle
 
                     // render the markers
                     if(isMarkersEnabled) {

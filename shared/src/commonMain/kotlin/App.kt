@@ -69,8 +69,7 @@ val json = Json {
     ignoreUnknownKeys = true
 }
 
-const val kMaxReloadDistanceMiles = 2
-const val kTalkRadiusMiles = 0.5
+const val kMaxReloadDistanceMiles = 2.0
 const val kMaxMarkerCacheAgeSeconds = 60 * 60 * 24 * 30  // 30 days
 
 const val TRIGGER_FIREBASE_FEEDBACK = "TRIGGER_FIREBASE_FEEDBACK"
@@ -100,18 +99,25 @@ fun App() {
             }
         }
         var talkRadiusMiles by remember { mutableStateOf(settings.talkRadiusMiles()) }
+        val cachedMarkersLastUpdatedLocation by remember(settings.cachedMarkersLastUpdatedLocation()) {
+            mutableStateOf(settings.cachedMarkersLastUpdatedLocation())
+        }
 
+        // Google Menu UI elements
         var isTrackingEnabled by remember { mutableStateOf(false) }
         var findMeCameraLocation by remember { mutableStateOf<Location?>(null) } // used to center map on user
 
+        // GPS Location
         val gpsLocationService by remember { mutableStateOf(GPSLocationService()) }
         var userLocation: Location by remember {
             mutableStateOf(settings.lastKnownUserLocation())
         }
+
+        // Load markers
         val markersLoadResult: MarkersResult = loadMarkers(
             settings,
             userLocation = userLocation,
-            maxReloadDistanceMiles = kMaxReloadDistanceMiles,
+            maxReloadDistanceMiles = kMaxReloadDistanceMiles.toInt(),
             showLoadingState = false,
             useFakeDataSetId =
             kUseRealNetwork,
@@ -394,7 +400,17 @@ fun App() {
                         shouldUpdateMapMarkers = shouldUpdateMapMarkers,  // todo - implement?
                         isTrackingEnabled = isTrackingEnabled,
                         centerOnUserCameraLocation = findMeCameraLocation,
-                        talkRadiusMiles = talkRadiusMiles
+                        talkRadiusMiles = talkRadiusMiles,
+                        cachedMarkersLastUpdatedLocation =
+                            remember(
+                                settings.shouldShowMarkersLastUpdatedLocation(),
+                                cachedMarkersLastUpdatedLocation
+                            ) {
+                                if(settings.shouldShowMarkersLastUpdatedLocation())
+                                    cachedMarkersLastUpdatedLocation
+                                else
+                                    null
+                            },
                     )
                 if (didMapMarkersUpdate) {
                     shouldUpdateMapMarkers = false
@@ -413,11 +429,14 @@ private fun SettingsScreen(
     onTalkRadiusChange: (Double) -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
-    var isResetCacheAlertVisible by remember { mutableStateOf(false) }
+    var isResetCacheAlertDialogVisible by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
     var shouldStartTrackingAutomaticallyWhenAppLaunches by remember {
         mutableStateOf(settings.shouldAutomaticallyStartTrackingWhenAppLaunches())
+    }
+    var shouldShowMarkersLastUpdatedLocation by remember {
+        mutableStateOf(settings.shouldShowMarkersLastUpdatedLocation())
     }
 
     Column(
@@ -467,6 +486,15 @@ private fun SettingsScreen(
             }
         )
 
+        SettingsSwitch(
+            title = "Show last marker update location",
+            isChecked = shouldShowMarkersLastUpdatedLocation,
+            onCheckedChange = {
+                settings.setShouldShowMarkersLastUpdatedLocation(it)
+                shouldShowMarkersLastUpdatedLocation = it
+            }
+        )
+
         // Show feedback button on Android only
         // - to turn on dev mode: adb shell setprop debug.firebase.appdistro.devmode true // false to turn off
         if (getPlatformName().contains("Android")) {
@@ -491,41 +519,39 @@ private fun SettingsScreen(
 
         // Reset Marker Info Cache
         Button(
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally),
+            modifier = Modifier.align(Alignment.CenterHorizontally),
             colors = ButtonDefaults.buttonColors(
                 backgroundColor = MaterialTheme.colors.error,
                 contentColor = MaterialTheme.colors.onError
             ),
             onClick = {
                 coroutineScope.launch {
-                    // bottomSheetScaffoldState.bottomSheetState.collapse()
                     // show confirmation dialog
-                    isResetCacheAlertVisible = true
+                    isResetCacheAlertDialogVisible = true
                 }
             }) {
-            Text("Reset Marker Info Cache")
-        }
+                Text("Reset Marker Info Cache")
+            }
         Text(
             "Cache size: ${settings.cachedMarkersResult().markerInfos.size} markers",
             modifier = Modifier
                 .align(Alignment.CenterHorizontally),
         )
 
-        // Show Reset Cache Alert
-        if (isResetCacheAlertVisible)
+        // Show Reset Cache Alert Dialog
+        if (isResetCacheAlertDialogVisible)
             ShowResetCacheAlert(
                 settings,
                 onClose = {
                     coroutineScope.launch {
-                        isResetCacheAlertVisible = false
+                        isResetCacheAlertDialogVisible = false
                     }
             })
     }
 }
 
 @Composable
-fun ShowResetCacheAlert(
+private fun ShowResetCacheAlert(
     settings: Settings,
     onClose: () -> Unit = {}
 ) =
@@ -588,6 +614,7 @@ fun MapContent(
     isTrackingEnabled: Boolean = false,
     centerOnUserCameraLocation: Location? = null,
     talkRadiusMiles: Double = .5,
+    cachedMarkersLastUpdatedLocation: Location? = null,
 ): Boolean {
     var didMapMarkersUpdate by remember(shouldUpdateMapMarkers) { mutableStateOf(true) }
     var isFirstUpdate by remember { mutableStateOf(true) } // force map to update at least once
@@ -636,7 +663,8 @@ fun MapContent(
                         null // won't center around bounds
                     }
                 },
-                talkRadiusMiles = talkRadiusMiles
+                talkRadiusMiles = talkRadiusMiles,
+                cachedMarkersLastUpdatedLocation = cachedMarkersLastUpdatedLocation
             )
 
             isFirstUpdate = false

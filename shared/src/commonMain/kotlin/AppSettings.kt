@@ -6,8 +6,11 @@ import co.touchlab.kermit.Logger as Log
 // Settings Keys
 const val kCachedMarkersResult = "cachedMarkersResult"
 const val kCachedMarkersLastUpdatedEpochSeconds = "cachedMarkersLastUpdatedEpochSeconds"
-const val kCachedMarkersLastLocation = "cachedMarkersLastLocation"
+const val kCachedMarkersLastLoadLocation = "cachedMarkersLastLocation"
 const val kLastKnownUserLocation = "lastKnownUserLocation"
+const val kStartBackgroundUpdatesWhenAppLaunches = "startBackgroundUpdatesWhenAppLaunches"
+const val kTalkRadiusMilesSetting = "talkRadiusMiles"
+const val kShouldShowMarkersLastUpdatedLocation = "shouldShowMarkersLastUpdatedLocation"
 
 fun Settings.printAppSettings() {
     // Show current settings
@@ -17,7 +20,7 @@ fun Settings.printAppSettings() {
     Log.d("Settings: cachedMarkersLastUpdatedEpochSeconds= " +
             getLong(kCachedMarkersLastUpdatedEpochSeconds, 0L).toString())
     Log.d("Settings: cachedMarkersLastLocation= " +
-            getString(kCachedMarkersLastLocation, "{latitude:0.0, longitude:0.0}"))
+            getString(kCachedMarkersLastLoadLocation, "{latitude:0.0, longitude:0.0}"))
     Log.d("Settings: LastKnownUserLocation= " +
             getString(kLastKnownUserLocation, "{latitude:0.0, longitude:0.0}"))
 }
@@ -38,12 +41,12 @@ fun Settings.cachedMarkersLastUpdatedEpochSeconds(): Long {
     return getLong(kCachedMarkersLastUpdatedEpochSeconds, 0L)
 }
 
-// Cached Markers Last Location
-fun Settings.setCachedMarkersLastLocation(location: Location) {
-    putString(kCachedMarkersLastLocation, json.encodeToString(location))
+// Cached Markers Last Loaded Location
+fun Settings.setCachedMarkersLastUpdatedLocation(location: Location) {
+    putString(kCachedMarkersLastLoadLocation, json.encodeToString(location))
 }
-fun Settings.cachedMarkersLastLocation(): Location {
-    return json.decodeFromString(getString(kCachedMarkersLastLocation, "{latitude:0.0, longitude:0.0}"))
+fun Settings.cachedMarkersLastUpdatedLocation(): Location {
+    return json.decodeFromString(getString(kCachedMarkersLastLoadLocation, "{latitude:0.0, longitude:0.0}"))
 }
 
 // Last Known User Location
@@ -54,17 +57,24 @@ fun Settings.lastKnownUserLocation(): Location {
     return json.decodeFromString(getString(kLastKnownUserLocation, "{latitude:0.0, longitude:0.0}"))
 }
 
-// For Settings panel
+// • For Settings panel
 fun Settings.setShouldAutomaticallyStartTrackingWhenAppLaunches(shouldStartBackgroundUpdatesWhenAppLaunches: Boolean) {
-    putBoolean("startBackgroundUpdatesWhenAppLaunches", shouldStartBackgroundUpdatesWhenAppLaunches)
+    putBoolean(kStartBackgroundUpdatesWhenAppLaunches, shouldStartBackgroundUpdatesWhenAppLaunches)
 }
 fun Settings.shouldAutomaticallyStartTrackingWhenAppLaunches(): Boolean {
-    return getBoolean("startBackgroundUpdatesWhenAppLaunches", false)
+    return getBoolean(kStartBackgroundUpdatesWhenAppLaunches, false)
 }
 
 fun Settings.setTalkRadiusMiles(talkRadiusMiles: Double) {
-    putDouble("talkRadius", talkRadiusMiles)
+    putDouble(kTalkRadiusMilesSetting, talkRadiusMiles)
 }
 fun Settings.talkRadiusMiles(): Double {
-    return getDouble("talkRadius", 0.5)
+    return getDouble(kTalkRadiusMilesSetting, 0.5)
+}
+
+fun Settings.shouldShowMarkersLastUpdatedLocation(): Boolean {
+    return getBoolean(kShouldShowMarkersLastUpdatedLocation, false)
+}
+fun Settings.setShouldShowMarkersLastUpdatedLocation(shouldShowMarkersLastUpdatedLocation: Boolean) {
+    putBoolean(kShouldShowMarkersLastUpdatedLocation, shouldShowMarkersLastUpdatedLocation)
 }

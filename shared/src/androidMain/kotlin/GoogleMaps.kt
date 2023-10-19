@@ -57,11 +57,12 @@ actual fun GoogleMaps(
     onMapClick: ((LatLong) -> Unit)?,
     onMapLongClick: ((LatLong) -> Unit)?,
     onMarkerClick: ((MapMarker) -> Unit)?,
-    talkRadiusMiles: Double
+    talkRadiusMiles: Double,
+    cachedMarkersLastUpdatedLocation: Location?
 ) {
 
     val cameraPositionState = rememberCameraPositionState()
-    var uiSettings by remember {
+    val uiSettings by remember {
         mutableStateOf(MapUiSettings(
             myLocationButtonEnabled = false, //!isTrackingEnabled,
             compassEnabled = false,
@@ -299,6 +300,17 @@ actual fun GoogleMaps(
                     },
                     color = Color(0XFF00AFFE),
                     width = 8f
+                )
+            }
+
+            // Last cache loaded location
+            cachedMarkersLastUpdatedLocation?.let { cachedMarkersLastUpdatedLocation ->
+                Circle(
+                    center = LatLng(cachedMarkersLastUpdatedLocation.latitude, cachedMarkersLastUpdatedLocation.longitude),
+                    radius = kMaxReloadDistanceMiles.milesToMeters(),
+                    fillColor = Color.Yellow.copy(alpha = 0.1f),
+                    strokeColor = Color.White.copy(alpha = 0.3f),
+                    strokeWidth = 2.0f
                 )
             }
 

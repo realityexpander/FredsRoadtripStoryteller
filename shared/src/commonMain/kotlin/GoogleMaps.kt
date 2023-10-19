@@ -36,6 +36,7 @@ expect fun GoogleMaps(
     onMapLongClick: ((LatLong) -> Unit)? = {},
     onMarkerClick: ((MapMarker) -> Unit)? = {},
     talkRadiusMiles: Double = .5,
+    cachedMarkersLastUpdatedLocation: Location? = null,
 )
 
 

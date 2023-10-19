@@ -17,13 +17,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cachedMarkersLastLocation
+import cachedMarkersLastUpdatedLocation
 import cachedMarkersResult
 import com.russhwolf.settings.Settings
 import network.httpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import kCachedMarkersLastLocation
+import kCachedMarkersLastLoadLocation
 import kCachedMarkersLastUpdatedEpochSeconds
 import kCachedMarkersResult
 import kMaxMarkerCacheAgeSeconds
@@ -36,7 +36,7 @@ import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import loadMarkers.sampleData.generateFakeMarkerPageHtml
 import loadMarkers.sampleData.kUseRealNetwork
-import setCachedMarkersLastLocation
+import setCachedMarkersLastUpdatedLocation
 import setCachedMarkersLastUpdatedEpochSeconds
 import setCachedMarkersResult
 import co.touchlab.kermit.Logger as Log
@@ -151,13 +151,13 @@ fun loadMarkers(
             }
 
             // Step 1.2 - Check if the user is outside the reload radius
-            if (settings.hasKey(kCachedMarkersLastLocation)) {
-                val cachedMarkersLastLocationLatLong = settings.cachedMarkersLastLocation()
+            if (settings.hasKey(kCachedMarkersLastLoadLocation)) {
+                val cachedMarkersLastLoadLocation = settings.cachedMarkersLastUpdatedLocation()
                 val userDistanceFromCachedLastLocationMiles = distanceBetween(
                     userLocation.latitude,
                     userLocation.longitude,
-                    cachedMarkersLastLocationLatLong.latitude,
-                    cachedMarkersLastLocationLatLong.longitude
+                    cachedMarkersLastLoadLocation.latitude,
+                    cachedMarkersLastLoadLocation.longitude
                 )
 
                 Log.d("userDistanceFromCachedLastLocationMiles: $userDistanceFromCachedLastLocationMiles")
@@ -212,7 +212,7 @@ fun loadMarkers(
             coroutineScope.launch {
                 settings.setCachedMarkersResult(cachedMarkersResultState)
                 settings.setCachedMarkersLastUpdatedEpochSeconds(Clock.System.now().epochSeconds)
-                settings.setCachedMarkersLastLocation(userLocation)
+                settings.setCachedMarkersLastUpdatedLocation(userLocation)
                 // Log.d("Saved markers to Settings, total count: ${cachedMarkersResultState.markerInfos.size}")
             }
         }
