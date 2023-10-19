@@ -3,7 +3,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
@@ -175,6 +179,7 @@ actual fun GoogleMaps(
         }
     }
 
+//    Box(modifier) {
     Box(modifier.fillMaxSize()) {
 
         val myMarkers = remember { mutableStateOf(listOf<MapMarker>()) }
@@ -197,7 +202,7 @@ actual fun GoogleMaps(
 
         GoogleMap(
             cameraPositionState = cameraPositionState,
-            modifier = Modifier.fillMaxSize(),
+//            modifier = Modifier.fillMaxSize(),
             uiSettings = uiSettings,
             properties = properties,
             onMapClick = { latLng: LatLng ->
@@ -503,6 +508,20 @@ actual fun GoogleMaps(
                 }
             }
         }
+
+//        FloatingActionButton(
+//            modifier = Modifier
+//                .padding(16.dp)
+//                .align(Alignment.BottomEnd),
+//            onClick = {
+//                // center on location
+////                centerOnUserCameraLocation = userLocation.copy()
+//            }) {
+//            Icon(
+//                imageVector = Icons.Default.MyLocation,
+//                contentDescription = "Center on your location"
+//            )
+//        }
     }
 }
 

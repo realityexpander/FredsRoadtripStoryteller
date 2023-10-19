@@ -1,12 +1,13 @@
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -107,6 +108,7 @@ fun App() {
 
         // Recently Seen Markers
         var recentlySeenMarkers by remember { mutableStateOf(listOf<MarkerInfo>()) }
+        var isRecentlySeenMarkersVisible by remember { mutableStateOf(false) }
 
         // Load markers
         val markersLoadResult: MarkersResult = loadMarkers(
@@ -209,6 +211,7 @@ fun App() {
             isTrackingEnabled = true
             gpsLocationService.allowBackgroundLocationUpdates()
         }
+
         fun stopTracking() {
             isTrackingEnabled = false
             gpsLocationService.preventBackgroundLocationUpdates()
@@ -217,7 +220,7 @@ fun App() {
         // Turn on tracking automatically, depending on settings
         LaunchedEffect(Unit) {
             val shouldStart = settings.shouldAutomaticallyStartTrackingWhenAppLaunches()
-            if(shouldStart) {
+            if (shouldStart) {
                 startTracking()
             }
         }
@@ -332,11 +335,7 @@ fun App() {
                                 // Recent Markers History List
                                 IconButton(onClick = {
                                     coroutineScope.launch {
-                                        bottomSheetActiveScreen =
-                                            BottomSheetScreen.MarkerDetails("markerId")
-                                        bottomSheetScaffoldState.bottomSheetState.apply {
-                                            if (isCollapsed) expand() else collapse()
-                                        }
+                                        isRecentlySeenMarkersVisible = !isRecentlySeenMarkersVisible
                                     }
                                 }) { // show marker history panel
                                     Icon(
@@ -402,52 +401,53 @@ fun App() {
                     }
                 }
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    val didMapMarkersUpdate =
-                        MapContent(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(300.dp),
-                            isFinishedLoadingMarkerData = markersLoadResult.isMarkerPageParseFinished,
-                            initialUserLocation = settings.lastKnownUserLocation(),
-                            userLocation = userLocation,
-                            mapMarkers = mapMarkers,
-                            mapBounds = null,
-                            shouldUpdateMapMarkers = shouldUpdateMapMarkers, // redraw the map & markers
-                            isTrackingEnabled = isTrackingEnabled,
-                            centerOnUserCameraLocation = centerOnUserCameraLocation,
-                            talkRadiusMiles = talkRadiusMiles,
-                            cachedMarkersLastUpdatedLocation =
-                            remember(
-                                settings.shouldShowMarkersLastUpdatedLocation(),
-                                cachedMarkersLastUpdatedLocation
-                            ) {
-                                if (settings.shouldShowMarkersLastUpdatedLocation())
-                                    cachedMarkersLastUpdatedLocation
-                                else
-                                    null
-                            },
-                        )
-                    if (didMapMarkersUpdate) {
-                        shouldUpdateMapMarkers = false
-                    }
+                val transitionRecentMarkersPanel: Float by animateFloatAsState(
+                    if (isRecentlySeenMarkersVisible) 0.5f else 0f,
+                    animationSpec = tween(700)
+                )
 
+                Column(
+                    modifier = Modifier.fillMaxHeight(),
+                    verticalArrangement = Arrangement.SpaceBetween,
+                    horizontalAlignment = Alignment.Start
+                ) {
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(300.dp)
-                            .padding(16.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        val didMapMarkersUpdate =
+                            MapContent(
+                                modifier = Modifier
+                                    .fillMaxHeight(1.0f - transitionRecentMarkersPanel),
+                                isFinishedLoadingMarkerData = markersLoadResult.isMarkerPageParseFinished,
+                                initialUserLocation = settings.lastKnownUserLocation(),
+                                userLocation = userLocation,
+                                mapMarkers = mapMarkers,
+                                mapBounds = null,
+                                shouldUpdateMapMarkers = shouldUpdateMapMarkers, // redraw the map & markers
+                                isTrackingEnabled = isTrackingEnabled,
+                                centerOnUserCameraLocation = centerOnUserCameraLocation,
+                                talkRadiusMiles = talkRadiusMiles,
+                                cachedMarkersLastUpdatedLocation =
+                                remember(
+                                    settings.shouldShowMarkersLastUpdatedLocation(),
+                                    cachedMarkersLastUpdatedLocation
+                                ) {
+                                    if (settings.shouldShowMarkersLastUpdatedLocation())
+                                        cachedMarkersLastUpdatedLocation
+                                    else
+                                        null
+                                },
+                            )
+                        if (didMapMarkersUpdate) {
+                            shouldUpdateMapMarkers = false
+                        }
+
                         Text(
                             text = "Recently Seen Markers",
                             fontStyle = FontStyle.Normal,
                             fontWeight = FontWeight.Medium,
-                            modifier = Modifier
-                                .fillMaxWidth()
+                            modifier = Modifier.fillMaxHeight(transitionRecentMarkersPanel)
                         )
                     }
                 }
@@ -479,16 +479,16 @@ fun MapContent(
                 modifier = modifier,
                 isTrackingEnabled = isTrackingEnabled,
                 cameraOnetimePosition =
-                    if(isFirstUpdate) {  // set initial camera position
-                        CameraPosition(
+                if (isFirstUpdate) {  // set initial camera position
+                    CameraPosition(
                         target = LatLong(
                             initialUserLocation.latitude,
                             initialUserLocation.longitude
                         ),
                         zoom = 12f  // note: forced zoom level
                     )
-                    } else
-                        null,
+                } else
+                    null,
                 userLocation = LatLong( // passed to map to track location
                     userLocation.latitude,
                     userLocation.longitude
