@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen">
+<!--    <style name="Theme.App.Starting" parent="Theme.AppCompat.Light.NoActionBar">-->
+        <item name="windowSplashScreenBackground">@color/freds_blue</item>
+
+        <!-- for must include even if not animated -->
+<!--        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>-->
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+
+        <!-- for animation duration -->
+        <item name="windowSplashScreenAnimationDuration">500</item>
+
+        <!-- For Android 12 only, the color of the background circle for the splash screen icon. -->
+        <item name="windowSplashScreenIconBackgroundColor">@color/freds_blue</item>
+
+        <!-- After splash screen is shown, use the following theme -->
+        <item name="postSplashScreenTheme">@style/Theme.AppCompat.Light.NoActionBar</item>
+
+    </style>
+</resources>

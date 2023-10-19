@@ -2,6 +2,7 @@ package com.realityexpander
 
 import GPSLocationService
 import MainView
+import SplashScreen
 import android.Manifest
 import android.content.Intent
 import android.os.Bundle
@@ -11,42 +12,55 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import appContext
 import com.google.android.gms.maps.MapsInitializer
 import com.google.firebase.FirebaseApp
 import intentFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
+    private val splashState = MutableStateFlow(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // https://proandroiddev.com/implementing-core-splashscreen-api-e62f0e690f74
+        installSplashScreen().apply {
+            setKeepOnScreenCondition {
+                splashState.asStateFlow().value
+            }
+        }
 
         // Setup the permission launcher & callback
         permissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) {
-            // Default to background location updates off for now
-            //    // After we have permissions, we can get start the foreground service and show notification
-            //    Intent(applicationContext, GPSLocationForegroundNotificationService::class.java).apply {
-            //        action = GPSLocationForegroundNotificationService.ACTION_START
-            //        startService(this) // sends command to start service
-            //    }
-
+            // Check if permissions were granted
             if(it[Manifest.permission.ACCESS_FINE_LOCATION] == false ||
                 it[Manifest.permission.ACCESS_COARSE_LOCATION] == false) {
                 AlertDialog.Builder(this)
                     .setTitle("Location Permissions Required")
                     .setMessage("This app requires location permissions to function. Please enable location permissions in the app settings.")
                     .setPositiveButton("OK") { _, _ ->
-                        finish()
+//                        finish()
+
+                        // Intent to open the App Settings
+                        Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = android.net.Uri.parse("package:$packageName")
+                            startActivity(this)
+                        }
                     }
                     .show()
             } else {
+                splashState.tryEmit(true)
+
                 setContent {
                     MainView()
                 }
@@ -64,7 +78,6 @@ class MainActivity : AppCompatActivity() {
         MapsInitializer.initialize(this, MapsInitializer.Renderer.LATEST) {
             Log.d("TAG", "onMapsSdkInitialized: initialized Google Maps SDK, version: ${it.name}")
         }
-
 
         // Collects the intent flow from the common module Android specific code
         // note: for some reason, this doesn't work in the common module, so we must collect assert(true)
@@ -85,9 +98,9 @@ class MainActivity : AppCompatActivity() {
         // - adb shell setprop debug.firebase.appdistro.devmode true  // false to turn off
         FirebaseApp.initializeApp(this)
 
-//        setContent {
-//            MainView()
-//        }
+        setContent {
+            SplashScreen()
+        }
     }
 
     override fun onDestroy() {
@@ -119,3 +132,4 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
+

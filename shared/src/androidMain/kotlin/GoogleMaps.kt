@@ -204,6 +204,8 @@ actual fun GoogleMaps(
 
         GoogleMap(
             cameraPositionState = cameraPositionState,
+//            modifier = Modifier.background(Color.Black, RectangleShape),
+            modifier = Modifier.background(Color(0xFF1F44CC), RectangleShape), // todo use theme colors
             uiSettings = uiSettings,
             properties = properties,
             onMapClick = { latLng: LatLng ->

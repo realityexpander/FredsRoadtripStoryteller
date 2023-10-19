@@ -38,6 +38,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -187,18 +188,19 @@ fun App() {
                 //    )
                 //    myLocation = locationTemp ?: run { // use defined location above
                 userLocation = location ?: run { // use live location
-                    Log.w { "Error: Unable to get current location" }
+                    isShowingError = "Unable to get current location"
+                    Log.w(isShowingError.toString())
                     return@run userLocation // just return the most recent location
                 }
                 isShowingError = null
-                // todo check for new markers inside talk radius & add to recentlySeen list
             }
 
-            // Experimenting with flows - LEAVE FOR REFERENCE
+            // Save the last known location to settings (using Flow)
             snapshotFlow { userLocation }
                 .collect { location ->
-                    // Log.d { "location = ${location.latitude}, ${location.longitude}" }
                     settings.setLastKnownUserLocation(location)
+
+                    // todo check for new markers inside talk radius & add to recentlySeen list
                 }
 
             if(false) {
@@ -578,3 +580,22 @@ expect fun getPlatformName(): String
 ////                } catch (e: Exception) {
 ////                    Log.d { "Error: ${e.message}" }
 ////                }
+
+
+@Composable
+fun SplashScreen() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF1F44CC)),  // todo add material theme color here
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top
+    ) {
+        Text(
+            "Fred's Historical Markers",
+            color = Color.White,
+            textAlign = TextAlign.Center,
+            fontSize = MaterialTheme.typography.h3.fontSize,
+        )
+    }
+}
