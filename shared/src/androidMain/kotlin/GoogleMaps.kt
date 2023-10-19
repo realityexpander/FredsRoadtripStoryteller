@@ -175,7 +175,7 @@ actual fun GoogleMaps(
         }
     }
 
-    Box(Modifier.fillMaxSize()) {
+    Box(modifier.fillMaxSize()) {
 
         val myMarkers = remember { mutableStateOf(listOf<MapMarker>()) }
         val coroutineScope = rememberCoroutineScope()
@@ -197,7 +197,7 @@ actual fun GoogleMaps(
 
         GoogleMap(
             cameraPositionState = cameraPositionState,
-            modifier = modifier,
+            modifier = Modifier.fillMaxSize(),
             uiSettings = uiSettings,
             properties = properties,
             onMapClick = { latLng: LatLng ->

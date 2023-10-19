@@ -3,8 +3,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -46,6 +48,7 @@ import com.russhwolf.settings.Settings
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import loadMarkers.LoadingState
+import loadMarkers.MarkerInfo
 import loadMarkers.MarkersResult
 import loadMarkers.loadMarkers
 import loadMarkers.sampleData.kUseRealNetwork
@@ -101,6 +104,9 @@ fun App() {
         var userLocation: Location by remember {
             mutableStateOf(settings.lastKnownUserLocation())
         }
+
+        // Recently Seen Markers
+        var recentlySeenMarkers by remember { mutableStateOf(listOf<MarkerInfo>()) }
 
         // Load markers
         val markersLoadResult: MarkersResult = loadMarkers(
@@ -396,30 +402,54 @@ fun App() {
                     }
                 }
             ) {
-                val didMapMarkersUpdate =
-                    MapContent(
-                        isFinishedLoadingMarkerData = markersLoadResult.isMarkerPageParseFinished,
-                        initialUserLocation = settings.lastKnownUserLocation(),
-                        userLocation = userLocation,
-                        mapMarkers = mapMarkers,
-                        mapBounds = null,
-                        shouldUpdateMapMarkers = shouldUpdateMapMarkers, // redraw the map & markers
-                        isTrackingEnabled = isTrackingEnabled,
-                        centerOnUserCameraLocation = centerOnUserCameraLocation,
-                        talkRadiusMiles = talkRadiusMiles,
-                        cachedMarkersLastUpdatedLocation =
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    val didMapMarkersUpdate =
+                        MapContent(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(300.dp),
+                            isFinishedLoadingMarkerData = markersLoadResult.isMarkerPageParseFinished,
+                            initialUserLocation = settings.lastKnownUserLocation(),
+                            userLocation = userLocation,
+                            mapMarkers = mapMarkers,
+                            mapBounds = null,
+                            shouldUpdateMapMarkers = shouldUpdateMapMarkers, // redraw the map & markers
+                            isTrackingEnabled = isTrackingEnabled,
+                            centerOnUserCameraLocation = centerOnUserCameraLocation,
+                            talkRadiusMiles = talkRadiusMiles,
+                            cachedMarkersLastUpdatedLocation =
                             remember(
                                 settings.shouldShowMarkersLastUpdatedLocation(),
                                 cachedMarkersLastUpdatedLocation
                             ) {
-                                if(settings.shouldShowMarkersLastUpdatedLocation())
+                                if (settings.shouldShowMarkersLastUpdatedLocation())
                                     cachedMarkersLastUpdatedLocation
                                 else
                                     null
                             },
-                    )
-                if (didMapMarkersUpdate) {
-                    shouldUpdateMapMarkers = false
+                        )
+                    if (didMapMarkersUpdate) {
+                        shouldUpdateMapMarkers = false
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(300.dp)
+                            .padding(16.dp),
+                    ) {
+                        Text(
+                            text = "Recently Seen Markers",
+                            fontStyle = FontStyle.Normal,
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        )
+                    }
                 }
             }
         }
@@ -428,8 +458,9 @@ fun App() {
 
 @Composable
 fun MapContent(
-    isFinishedLoadingMarkerData: Boolean = false,
-    initialUserLocation: Location,  // only sets the initial position, not tracked. Use `userLocation` for tracking.
+    modifier: Modifier = Modifier,
+    isFinishedLoadingMarkerData: Boolean = false,  // only sets the initial position, not tracked. Use `userLocation` for tracking.
+    initialUserLocation: Location,
     userLocation: Location,
     mapMarkers: List<MapMarker>,
     mapBounds: List<LatLong>? = null,
@@ -445,7 +476,7 @@ fun MapContent(
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         if (isFinishedLoadingMarkerData || !isFirstUpdate) {
             GoogleMaps(
-                modifier = Modifier.fillMaxSize(),
+                modifier = modifier,
                 isTrackingEnabled = isTrackingEnabled,
                 cameraOnetimePosition =
                     if(isFirstUpdate) {  // set initial camera position
