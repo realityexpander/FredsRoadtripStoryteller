@@ -271,6 +271,20 @@ fun App() {
                             )
 
                             Spacer(modifier = Modifier.padding(16.dp))
+
+                            Button(
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally),
+                                onClick = {
+                                    coroutineScope.launch {
+                                         bottomSheetScaffoldState.bottomSheetState.collapse()
+                                        // trigger feedback
+                                    }
+                                }) {
+                                Text("Send Feedback to Developer")
+                            }
+
+                            Spacer(modifier = Modifier.padding(16.dp))
                             Divider(modifier = Modifier.fillMaxWidth())
                             Spacer(modifier = Modifier.padding(16.dp))
 
@@ -496,6 +510,13 @@ private fun SettingsSlider(
     currentValue: Double,
     onValueChange: (Double) -> Unit
 ) {
+    val currentValueAsString = remember(currentValue) {
+        currentValue.toString()
+            .substringBefore(".", "")
+            .plus(".")
+            .plus(currentValue.toString().substringAfter(".", "").take(2))
+    }
+
     Row {
         Text(
             title,
@@ -508,19 +529,14 @@ private fun SettingsSlider(
                 .weight(2f)
                 .align(Alignment.CenterVertically),
             value = currentValue.toFloat(),
-            steps = 10,
-            valueRange = 0.10f..2f,
+            steps = 5,
+            valueRange = 0.10f..1f,
             onValueChange = {
                 onValueChange(it.toDouble())
             }
         )
         Text(
-            text = currentValue.toString()
-                    .substringBefore(".", "")
-                + "." +
-                    currentValue.toString()
-                    .substringAfter(".", "")
-                    .take(2),
+            text = currentValueAsString,
             modifier = Modifier
                 .weight(.5f)
                 .align(Alignment.CenterVertically),
