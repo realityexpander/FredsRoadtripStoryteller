@@ -114,16 +114,8 @@ fun App() {
         val recentlySeenMarkersSet by remember {
             mutableStateOf(mutableSetOf<RecentMapMarker>())
         }
-        val recentlySeenMarkersList = remember {
-            recentlySeenMarkersSet.toMutableStateList()
-        }
         val recentlySeenMarkersForUiList by remember {
-            // return sorted list for UI
-//            mutableStateOf(recentlySeenMarkersList.sortedByDescending { recentMarker ->
-//                    recentMarker.timeAddedToRecentList
-//                }.toMutableStateList()
-//            )
-            mutableStateOf(recentlySeenMarkersList.toMutableStateList())
+            mutableStateOf(recentlySeenMarkersSet.toMutableStateList())
         }
         var isRecentlySeenMarkersPanelVisible by remember { mutableStateOf(settings.isRecentlySeenMarkersPanelVisible()) }
 
@@ -247,33 +239,34 @@ fun App() {
                                     recentlySeenMarkersSet.size + 1
                                 )
                                 recentlySeenMarkersSet.add(newlySeenMarker)
-                                recentlySeenMarkersList.add(newlySeenMarker)
+                                recentlySeenMarkersForUiList.add(newlySeenMarker)
                                 Log.d("Added Marker ${marker.key} is within talk radius of $talkRadiusMiles miles, distance=$distanceFromMarkerToUserLocationMiles miles, total recentlySeenMarkers=${recentlySeenMarkersSet.size}")
 
                                 // Trim the UI list to 5 items
-                                if(recentlySeenMarkersList.size > 5) {
-                                    Log.d("Trimming recentlySeenMarkersForUiList.size=${recentlySeenMarkersList.size}")
+                                if(recentlySeenMarkersForUiList.size > 5) {
+                                    Log.d("Trimming recentlySeenMarkersForUiList.size=${recentlySeenMarkersForUiList.size}")
                                     // remove old markers until there are only 5
                                     do {
                                         val oldestMarker =
-                                            recentlySeenMarkersList.minByOrNull { recentMarker ->
+                                            recentlySeenMarkersForUiList.minByOrNull { recentMarker ->
                                                 recentMarker.timeAddedToRecentList
                                             }
 
                                         // remove the oldest marker
                                         oldestMarker?.let { oldMarker ->
-                                            recentlySeenMarkersList.remove(oldMarker)
+                                            recentlySeenMarkersForUiList.remove(oldMarker)
                                         }
-                                        Log.d("Removed oldest marker, recentlySeenMarkersList.size=${recentlySeenMarkersList.size}")
-                                    } while(recentlySeenMarkersList.size > 5)
+                                        Log.d("Removed oldest marker, recentlySeenMarkersList.size=${recentlySeenMarkersForUiList.size}")
+                                    } while(recentlySeenMarkersForUiList.size > 5)
                                 }
                             }
                         }
                     }
 
                     // Update the UI list
+                    val oldList = recentlySeenMarkersForUiList.toList()
                     recentlySeenMarkersForUiList.clear()
-                    recentlySeenMarkersForUiList.addAll(recentlySeenMarkersList.sortedByDescending { recentMarker ->
+                    recentlySeenMarkersForUiList.addAll(oldList.sortedByDescending { recentMarker ->
                         recentMarker.timeAddedToRecentList
                     }.toMutableStateList())
                 }
