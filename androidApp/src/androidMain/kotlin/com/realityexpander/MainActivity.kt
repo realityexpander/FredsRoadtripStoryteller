@@ -46,7 +46,8 @@ class MainActivity : AppCompatActivity() {
         ) {
             // Check if permissions were granted
             if(it[Manifest.permission.ACCESS_FINE_LOCATION] == false ||
-                it[Manifest.permission.ACCESS_COARSE_LOCATION] == false) {
+                it[Manifest.permission.ACCESS_COARSE_LOCATION] == false
+            ) {
                 AlertDialog.Builder(this)
                     .setTitle("Location Permissions Required")
                     .setMessage("This app requires location permissions to function. " +
@@ -83,7 +84,7 @@ class MainActivity : AppCompatActivity() {
         // Initialize Google Maps SDK
         // See https://issuetracker.google.com/issues/228091313
         MapsInitializer.initialize(this, MapsInitializer.Renderer.LATEST) {
-            Log.d("TAG", "onMapsSdkInitialized: initialized Google Maps SDK, version: ${it.name}")
+            Log.i("App", "onMapsSdkInitialized: initialized Google Maps SDK, version: ${it.name}")
         }
 
         // Collects the intent flow from the common module Android specific code
