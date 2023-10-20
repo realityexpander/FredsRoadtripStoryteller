@@ -121,7 +121,6 @@ kotlin {
 
                 // Splash Screen
                 api("androidx.core:core-splashscreen:1.0.1")
-
             }
         }
     }

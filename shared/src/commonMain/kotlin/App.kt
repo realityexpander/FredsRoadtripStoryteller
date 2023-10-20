@@ -49,6 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.russhwolf.settings.Settings
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.serialization.json.Json
@@ -326,14 +327,19 @@ fun App() {
                                 isMarkersLastUpdatedLocationVisible = it
                             },
                         ) {
-                            // Reset Marker Info Cache - reset the seen markers list
+                            // Reset Marker Info Cache & reset the `seen markers` list
                             recentlySeenMarkersSet.clear()
                             recentlySeenMarkersForUiList.clear()
                             mapMarkers.clear()
                             cachedMapMarkers.clear()
 
-                            // Trigger a reload of the markers
-                            userLocation = Location(userLocation.latitude + 0.0001, userLocation.longitude + 0.0001)
+                            // Trigger a reload of the markers from the server
+                            settings.setCachedMarkersLastUpdatedLocation(Location(0.1, 0.1))
+                            settings.setCachedMarkersLastUpdatedEpochSeconds(0L)
+                            coroutineScope.launch {
+                                delay(50)
+                                userLocation = Location(userLocation.latitude + 0.001, userLocation.longitude + 0.001)
+                            }
                         }
                     }
                     is BottomSheetScreen.MarkerDetails -> {
@@ -521,25 +527,42 @@ fun App() {
                                 isMapOptionSwitchesVisible = !isRecentlySeenMarkersPanelVisible  // hide map options when showing marker list
                             )
                         if (didMapMarkersUpdate) {
-                            shouldRedrawMapMarkers = false
+                            shouldRedrawMapMarkers = false  // The map has been updated, so don't redraw it again.
                         }
+                    }
 
-                        // Show recently seen markers
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(MaterialTheme.colors.background),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                    // Show `recently seen markers` list
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colors.background),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        LazyColumn(
+                            userScrollEnabled = true,
                         ) {
-                            LazyColumn(
-                                userScrollEnabled = true,
-                            ) {
+                            item {
+                                Text(
+                                    text = "Recently Seen Markers",
+                                    color = MaterialTheme.colors.onBackground,
+                                    fontStyle = FontStyle.Normal,
+                                    fontSize = MaterialTheme.typography.h5.fontSize,
+                                    fontWeight = FontWeight.Medium,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(start = 8.dp)
+                                )
+                            }
+                            if (recentlySeenMarkersForUiList.isEmpty()) {
                                 item {
+
+                                    Spacer(modifier = Modifier.height(48.dp))
                                     Text(
-                                        text = "Recently Seen Markers",
+                                        text = "No recently seen markers, drive around to see some!",
                                         color = MaterialTheme.colors.onBackground,
                                         fontStyle = FontStyle.Normal,
-                                        fontSize = MaterialTheme.typography.h5.fontSize,
+                                        fontSize = MaterialTheme.typography.h6.fontSize,
                                         fontWeight = FontWeight.Medium,
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier
@@ -547,26 +570,10 @@ fun App() {
                                             .padding(start = 8.dp)
                                     )
                                 }
-                                if(recentlySeenMarkersForUiList.isEmpty()) {
-                                    item {
+                            }
 
-                                        Spacer(modifier = Modifier.height(48.dp))
-                                        Text(
-                                            text = "No recently seen markers, drive around to see some!",
-                                            color = MaterialTheme.colors.onBackground,
-                                            fontStyle = FontStyle.Normal,
-                                            fontSize = MaterialTheme.typography.h6.fontSize,
-                                            fontWeight = FontWeight.Medium,
-                                            textAlign = TextAlign.Center,
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(start = 8.dp)
-                                        )
-                                    }
-                                }
-
-                                items(recentlySeenMarkersForUiList.size) {
-                                    val marker = recentlySeenMarkersForUiList.elementAt(it)
+                            items(recentlySeenMarkersForUiList.size) {
+                                val marker = recentlySeenMarkersForUiList.elementAt(it)
 //                                    val marker = RecentMapMarker(
 //                                        MapMarker(
 //                                            key = "marker1",
@@ -579,24 +586,28 @@ fun App() {
 //                                        ),
 //                                        Clock.System.now().toEpochMilliseconds()
 //                                    )
-                                    Text(
-                                        text = marker.seenOrder.toString() +":"+ marker.key() + ":" + marker.marker.title,
-                                        color = MaterialTheme.colors.onBackground,
-                                        fontStyle = FontStyle.Normal,
-                                        fontSize = MaterialTheme.typography.h6.fontSize,
-                                        fontWeight = FontWeight.Medium,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(start = 8.dp, top = 0.dp, bottom = 8.dp, end = 8.dp)
-                                            .border(
-                                                width = 1.dp,
-                                                color = MaterialTheme.colors.onBackground,
-                                                shape = RoundedCornerShape(8.dp)
-                                            )
-                                            .heightIn(min = 48.dp)
-                                            .padding(8.dp, top = 0.dp, bottom = 4.dp)
-                                    )
-                                }
+                                Text(
+                                    text = marker.seenOrder.toString() + ":" + marker.key() + ":" + marker.marker.title,
+                                    color = MaterialTheme.colors.onBackground,
+                                    fontStyle = FontStyle.Normal,
+                                    fontSize = MaterialTheme.typography.h6.fontSize,
+                                    fontWeight = FontWeight.Medium,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(
+                                            start = 8.dp,
+                                            top = 0.dp,
+                                            bottom = 8.dp,
+                                            end = 8.dp
+                                        )
+                                        .border(
+                                            width = 1.dp,
+                                            color = MaterialTheme.colors.onBackground,
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        .heightIn(min = 48.dp)
+                                        .padding(8.dp, top = 0.dp, bottom = 4.dp)
+                                )
                             }
                         }
                     }

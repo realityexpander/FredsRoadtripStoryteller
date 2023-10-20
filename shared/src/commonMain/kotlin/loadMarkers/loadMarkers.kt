@@ -117,7 +117,8 @@ fun loadMarkers(
         if(markersLoadingState !is LoadingState.Idle) return@remember mutableStateOf(markersResultState)
 
         // Step 1 - Check for a cached result in the Settings
-        if (settings.hasKey(kCachedMarkersResultSetting)) {
+//        if (settings.hasKey(kCachedMarkersResultSetting)) { // todo test
+        if (settings.cachedMarkersResult().markerInfos.isNotEmpty()) {
             val cachedMarkers = settings.cachedMarkersResult()
                     .copy(isMarkerPageParseFinished = true) // ensure the cached result is marked as finished // todo needed?
 

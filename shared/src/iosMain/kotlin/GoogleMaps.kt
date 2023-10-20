@@ -32,6 +32,7 @@ import cocoapods.GoogleMaps.GMSCameraUpdate
 import cocoapods.GoogleMaps.GMSCircle
 import cocoapods.GoogleMaps.GMSCoordinateBounds
 import cocoapods.GoogleMaps.GMSMapView
+import cocoapods.GoogleMaps.GMSMapViewDelegateProtocol
 import cocoapods.GoogleMaps.GMSMarker
 import cocoapods.GoogleMaps.GMSMarker.Companion.markerImageWithColor
 import cocoapods.GoogleMaps.GMSMutablePath
@@ -44,6 +45,7 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import loadMarkers.milesToMeters
 import platform.CoreLocation.CLLocationCoordinate2DMake
 import platform.UIKit.UIColor
+import platform.darwin.NSObject
 
 // iOS Google Maps implementation
 @OptIn(ExperimentalForeignApi::class)
