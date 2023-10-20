@@ -15,6 +15,9 @@ https://github.com/JetBrains/compose-multiplatform/tree/master/examples/cocoapod
 - Can get google-services.json from Google Cloud Console
 - must do "pod install" from the iosApp folder
 
+### Code style
+  - https://github.com/realityexpander/ktor-web-app-server/blob/main/src/main/kotlin/LIBRARY_README.md
+
 ### KMP Stuff
 - KMP Wizard
   - https://terrakok.github.io/Compose-Multiplatform-Wizard/

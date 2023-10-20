@@ -39,10 +39,10 @@ import components.SettingsSwitch
 import getPlatformName
 import kotlinx.coroutines.launch
 import setShouldAutomaticallyStartTrackingWhenAppLaunches
-import setShouldShowMarkersLastUpdatedLocation
+import setIsMarkersLastUpdatedLocationVisible
 import setTalkRadiusMiles
 import shouldAutomaticallyStartTrackingWhenAppLaunches
-import shouldShowMarkersLastUpdatedLocation
+import isMarkersLastUpdatedLocationVisible
 import triggerDeveloperFeedback
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -51,7 +51,8 @@ fun SettingsScreen(
     settings: Settings,
     bottomSheetScaffoldState: BottomSheetScaffoldState,
     talkRadiusMiles: Double,
-    onTalkRadiusChange: (Double) -> Unit = {}
+    onTalkRadiusChange: (Double) -> Unit = {},
+    onShouldShowMarkerDataLastSearchedLocationChange: ((Boolean) -> Unit)? = null
 ) {
     val scrollState = rememberScrollState()
     var isResetCacheAlertDialogVisible by remember { mutableStateOf(false) }
@@ -60,8 +61,8 @@ fun SettingsScreen(
     var shouldStartTrackingAutomaticallyWhenAppLaunches by remember {
         mutableStateOf(settings.shouldAutomaticallyStartTrackingWhenAppLaunches())
     }
-    var shouldShowMarkersLastUpdatedLocation by remember {
-        mutableStateOf(settings.shouldShowMarkersLastUpdatedLocation())
+    var shouldShowMarkerDataLastSearchedLocation by remember {
+        mutableStateOf(settings.isMarkersLastUpdatedLocationVisible())
     }
 
     Column(
@@ -112,11 +113,14 @@ fun SettingsScreen(
         )
 
         SettingsSwitch(
-            title = "Show last marker update location",
-            isChecked = shouldShowMarkersLastUpdatedLocation,
+            title = "Show marker data last searched location",
+            isChecked = shouldShowMarkerDataLastSearchedLocation,
             onCheckedChange = {
-                settings.setShouldShowMarkersLastUpdatedLocation(it)
-                shouldShowMarkersLastUpdatedLocation = it
+                settings.setIsMarkersLastUpdatedLocationVisible(it)
+                shouldShowMarkerDataLastSearchedLocation = it
+                onShouldShowMarkerDataLastSearchedLocationChange?.let { nativeFun ->
+                    nativeFun(it)
+                }
             }
         )
 

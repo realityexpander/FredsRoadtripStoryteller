@@ -27,7 +27,7 @@ expect fun GoogleMaps(
     isTrackingEnabled: Boolean = false,
     userLocation: LatLong? = null,
     markers: List<MapMarker>? = null,
-    shouldUpdateMapMarkers: Boolean = false,
+    shouldRedrawMapMarkers: Boolean = false,
     cameraOnetimePosition: CameraPosition? = null,
     cameraLocationLatLong: LatLong? = null,
     cameraLocationBounds: CameraLocationBounds? = null,
@@ -37,8 +37,9 @@ expect fun GoogleMaps(
     onMarkerClick: ((MapMarker) -> Unit)? = {},
     talkRadiusMiles: Double = .5,
     cachedMarkersLastUpdatedLocation: Location? = null,
-    toggleIsTrackingEnabled: (() -> Unit)? = null,
+    onToggleIsTrackingEnabled: (() -> Unit)? = null,
     onFindMeButtonClicked: (() -> Unit)? = null,
+    isMarkersLastUpdatedLocationVisible: Boolean = false,
 )
 
 

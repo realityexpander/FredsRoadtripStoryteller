@@ -23,9 +23,9 @@ import com.russhwolf.settings.Settings
 import network.httpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import kCachedMarkersLastLoadLocation
-import kCachedMarkersLastUpdatedEpochSeconds
-import kCachedMarkersResult
+import kCachedMarkersLastLoadLocationSetting
+import kCachedMarkersLastUpdatedEpochSecondsSetting
+import kCachedMarkersResultSetting
 import kMaxMarkerCacheAgeSeconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -117,7 +117,7 @@ fun loadMarkers(
         if(markersLoadingState !is LoadingState.Idle) return@remember mutableStateOf(markersResultState)
 
         // Step 1 - Check for a cached result in the Settings
-        if (settings.hasKey(kCachedMarkersResult)) {
+        if (settings.hasKey(kCachedMarkersResultSetting)) {
             val cachedMarkers = settings.cachedMarkersResult()
                     .copy(isMarkerPageParseFinished = true) // ensure the cached result is marked as finished // todo needed?
 
@@ -125,9 +125,9 @@ fun loadMarkers(
             markersResultState = cachedMarkers.copy(isMarkerPageParseFinished = true)
 
             // Step 1.1 - Check if the cache is expired
-            if(settings.hasKey(kCachedMarkersLastUpdatedEpochSeconds)) {
+            if(settings.hasKey(kCachedMarkersLastUpdatedEpochSecondsSetting)) {
                 val cacheLastUpdatedEpochSeconds =
-                    settings.getLong(kCachedMarkersLastUpdatedEpochSeconds, 0)
+                    settings.getLong(kCachedMarkersLastUpdatedEpochSecondsSetting, 0)
                 // Log.d("Days since last cache update: $(Clock.System.now().epochSeconds - cacheLastUpdatedEpochSeconds) / (60 * 60 * 24)")
 
                 // if(true) { // test cache expiry
@@ -139,10 +139,10 @@ fun loadMarkers(
 
                     // Clear the cache in the settings
                     coroutineScope.launch {
-                        settings.remove(kCachedMarkersResult)
+                        settings.remove(kCachedMarkersResultSetting)
                         // Update the cache expiry time
                         settings.putLong(
-                            kCachedMarkersLastUpdatedEpochSeconds,
+                            kCachedMarkersLastUpdatedEpochSecondsSetting,
                             Clock.System.now().epochSeconds
                         )
                         Log.d("Cache expired, cleared markers from Settings")
@@ -151,7 +151,7 @@ fun loadMarkers(
             }
 
             // Step 1.2 - Check if the user is outside the reload radius
-            if (settings.hasKey(kCachedMarkersLastLoadLocation)) {
+            if (settings.hasKey(kCachedMarkersLastLoadLocationSetting)) {
                 val cachedMarkersLastLoadLocation = settings.cachedMarkersLastUpdatedLocation()
                 val userDistanceFromCachedLastLocationMiles = distanceBetween(
                     userLocation.latitude,
