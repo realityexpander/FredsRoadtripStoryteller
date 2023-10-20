@@ -119,7 +119,7 @@ kotlin {
                 api("com.google.firebase:firebase-appdistribution-api-ktx:16.0.0-beta10")
                 api("com.google.firebase:firebase-appdistribution:16.0.0-beta10")
 
-                // SplashScreen
+                // Splash Screen
                 api("androidx.core:core-splashscreen:1.0.1")
 
             }
