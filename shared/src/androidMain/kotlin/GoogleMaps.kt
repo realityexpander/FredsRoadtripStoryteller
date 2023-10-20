@@ -1,6 +1,11 @@
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.FloatingActionButton
@@ -53,7 +58,7 @@ import co.touchlab.kermit.Logger as Log
 @Composable
 actual fun GoogleMaps(
     modifier: Modifier,
-    isControlsVisible: Boolean,
+    isMapOptionSwitchesVisible: Boolean,
     isTrackingEnabled: Boolean,
     userLocation: LatLong?,
     markers: List<MapMarker>?,
@@ -471,12 +476,18 @@ actual fun GoogleMaps(
         }
 
         // Local Map Controls
-        if (isControlsVisible) {
+        AnimatedVisibility (
+            visible = isMapOptionSwitchesVisible,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
             Column(
                 modifier = Modifier
+                    .fillMaxHeight()
                     .padding(16.dp)
                     .align(Alignment.BottomStart),
-                horizontalAlignment = Alignment.Start
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.Bottom
             ) {
                 SwitchWithLabel(
                     label = "Markers",

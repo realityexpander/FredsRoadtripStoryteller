@@ -2,13 +2,14 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -509,7 +510,8 @@ fun App() {
                                     // center on location
                                     centerOnUserCameraLocation = userLocation.copy()
                                 },
-                                isMarkersLastUpdatedLocationVisible = isMarkersLastUpdatedLocationVisible
+                                isMarkersLastUpdatedLocationVisible = isMarkersLastUpdatedLocationVisible,
+                                isMapOptionSwitchesVisible = !isRecentlySeenMarkersPanelVisible  // hide map options when showing marker list
                             )
                         if (didMapMarkersUpdate) {
                             shouldRedrawMapMarkers = false
@@ -560,7 +562,14 @@ fun App() {
                                         fontWeight = FontWeight.Medium,
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(8.dp)
+                                            .padding(start = 8.dp, top = 0.dp, bottom = 8.dp, end = 8.dp)
+                                            .border(
+                                                width = 1.dp,
+                                                color = MaterialTheme.colors.onBackground,
+                                                shape = RoundedCornerShape(8.dp)
+                                            )
+                                            .heightIn(min = 48.dp)
+                                            .padding(8.dp, top = 0.dp, bottom = 4.dp)
                                     )
                                 }
                             }
@@ -587,7 +596,8 @@ fun MapContent(
     cachedMarkersLastUpdatedLocation: Location? = null,
     onToggleIsTrackingEnabled: (() -> Unit)? = null,
     onFindMeButtonClicked: (() -> Unit)? = null,
-    isMarkersLastUpdatedLocationVisible: Boolean = false
+    isMarkersLastUpdatedLocationVisible: Boolean = false,
+    isMapOptionSwitchesVisible: Boolean = true
 ): Boolean {
     var didMapMarkersUpdate by remember(shouldRedrawMapMarkers) { mutableStateOf(true) }
     var isFirstUpdate by remember { mutableStateOf(true) } // force map to update at least once
@@ -640,7 +650,8 @@ fun MapContent(
                 cachedMarkersLastUpdatedLocation = cachedMarkersLastUpdatedLocation,
                 onToggleIsTrackingEnabledClick = onToggleIsTrackingEnabled,
                 onFindMeButtonClick = onFindMeButtonClicked,
-                isMarkersLastUpdatedLocationVisible = isMarkersLastUpdatedLocationVisible
+                isMarkersLastUpdatedLocationVisible = isMarkersLastUpdatedLocationVisible,
+                isMapOptionSwitchesVisible = isMapOptionSwitchesVisible
             )
 
             isFirstUpdate = false

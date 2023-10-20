@@ -33,7 +33,7 @@ class CameraPosition(
 @Composable
 expect fun GoogleMaps(
     modifier: Modifier,
-    isControlsVisible: Boolean = true,
+    isMapOptionSwitchesVisible: Boolean = true,
     isTrackingEnabled: Boolean = false,
     userLocation: LatLong? = null,
     markers: List<MapMarker>? = null,

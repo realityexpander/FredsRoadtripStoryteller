@@ -1,6 +1,12 @@
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.FloatingActionButton
@@ -44,7 +50,7 @@ import platform.UIKit.UIColor
 @Composable
 actual fun GoogleMaps(
     modifier: Modifier,
-    isControlsVisible: Boolean,
+    isMapOptionSwitchesVisible: Boolean,
     isTrackingEnabled: Boolean,
     userLocation: LatLong?,
     markers: List<MapMarker>?,
@@ -270,7 +276,6 @@ actual fun GoogleMaps(
                     // render the "lastMarkerCacheUpdateLocation" circle
                     // Show Last cache loaded location
                     if(isMarkersLastUpdatedLocationVisible) {
-                        println("cachedMarkersLastUpdatedLocation: $cachedMarkersLastUpdatedLocation")
                         cachedMarkersLastUpdatedLocation?.let { cachedMarkersLastUpdatedLocation ->
                             GMSCircle().apply {
                                 position = CLLocationCoordinate2DMake(
@@ -334,13 +339,20 @@ actual fun GoogleMaps(
         )
 
         // Local Map Controls
-        if(isControlsVisible) {
+        AnimatedVisibility(
+            visible = isMapOptionSwitchesVisible,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
             Column(
                 modifier = Modifier
+                    .fillMaxHeight()
                     .padding(16.dp)
                     .align(Alignment.BottomStart),
-                horizontalAlignment = Alignment.Start
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.Bottom
             ) {
+                Spacer(modifier = Modifier.weight(1f))
                 SwitchWithLabel(
                     label = "Markers",
                     state = isMarkersEnabled,
@@ -363,7 +375,8 @@ actual fun GoogleMaps(
                     darkOnLightTextColor = gmsMapViewType == kGMSTypeSatellite
                 ) { shouldUseSatellite ->
                     didMapTypeChange = true
-                    gmsMapViewType = if (shouldUseSatellite) kGMSTypeSatellite else kGMSTypeNormal
+                    gmsMapViewType =
+                        if (shouldUseSatellite) kGMSTypeSatellite else kGMSTypeNormal
                 }
 
                 if (showSomething) {  // leave for testing purposes
@@ -375,6 +388,7 @@ actual fun GoogleMaps(
                 }
             }
         }
+
 
         Column(
             modifier = Modifier
