@@ -6,9 +6,11 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -527,10 +529,28 @@ fun App() {
                                         fontStyle = FontStyle.Normal,
                                         fontSize = MaterialTheme.typography.h5.fontSize,
                                         fontWeight = FontWeight.Medium,
+                                        textAlign = TextAlign.Center,
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .padding(start = 8.dp)
                                     )
+                                }
+                                if(recentlySeenMarkersForUiList.isEmpty()) {
+                                    item {
+
+                                        Spacer(modifier = Modifier.height(48.dp))
+                                        Text(
+                                            text = "No recently seen markers, drive around to see some!",
+                                            color = MaterialTheme.colors.onBackground,
+                                            fontStyle = FontStyle.Normal,
+                                            fontSize = MaterialTheme.typography.h6.fontSize,
+                                            fontWeight = FontWeight.Medium,
+                                            textAlign = TextAlign.Center,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(start = 8.dp)
+                                        )
+                                    }
                                 }
 
                                 items(recentlySeenMarkersForUiList.size) {
