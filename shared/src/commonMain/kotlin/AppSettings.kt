@@ -11,18 +11,27 @@ const val kLastKnownUserLocationSetting =                  "lastKnownUserLocatio
 const val kStartBackgroundUpdatesWhenAppLaunchesSetting =  "startBackgroundUpdatesWhenAppLaunches"
 const val kTalkRadiusMilesSetting =                        "talkRadiusMiles"
 const val kIsMarkersLastUpdatedLocationVisibleSetting =    "isMarkersLastUpdatedLocationVisible"
+const val kIsRecentlySeenMarkersPanelVisibleSetting =      "isRecentlySeenMarkersPanelVisible"
 
 fun Settings.printAppSettings() {
     // Show current settings
     Log.d { "keys from settings: $keys" }
     Log.d("Settings: cachedMarkersResult markerInfos.size= " +
-            json.decodeFromString<MarkersResult>(getString(kCachedMarkersResultSetting, "{}")).markerInfos.size.toString())
+            cachedMarkersResult().markerInfos.size.toString())
     Log.d("Settings: cachedMarkersLastUpdatedEpochSeconds= " +
             getLong(kCachedMarkersLastUpdatedEpochSecondsSetting, 0L).toString())
     Log.d("Settings: cachedMarkersLastLocation= " +
             getString(kCachedMarkersLastLoadLocationSetting, "{latitude:0.0, longitude:0.0}"))
     Log.d("Settings: LastKnownUserLocation= " +
             getString(kLastKnownUserLocationSetting, "{latitude:0.0, longitude:0.0}"))
+    Log.d("Settings: startBackgroundUpdatesWhenAppLaunches= " +
+            getBoolean(kStartBackgroundUpdatesWhenAppLaunchesSetting, false).toString())
+    Log.d("Settings: talkRadiusMiles= " +
+            getDouble(kTalkRadiusMilesSetting, 0.5).toString())
+    Log.d("Settings: isMarkersLastUpdatedLocationVisible= " +
+            getBoolean(kIsMarkersLastUpdatedLocationVisibleSetting, false).toString())
+    Log.d("Settings: isRecentlySeenMarkersPanelVisible= " +
+            getBoolean(kIsRecentlySeenMarkersPanelVisibleSetting, false).toString())
 }
 
 // Cached Markers
@@ -77,4 +86,11 @@ fun Settings.isMarkersLastUpdatedLocationVisible(): Boolean {
 }
 fun Settings.setIsMarkersLastUpdatedLocationVisible(isMarkersLastUpdatedLocationVisible: Boolean) {
     putBoolean(kIsMarkersLastUpdatedLocationVisibleSetting, isMarkersLastUpdatedLocationVisible)
+}
+
+fun Settings.isRecentlySeenMarkersPanelVisible(): Boolean {
+    return getBoolean(kIsRecentlySeenMarkersPanelVisibleSetting, false)
+}
+fun Settings.setIsRecentlySeenMarkersPanelVisible(isRecentlySeenMarkersPanelVisible: Boolean) {
+    putBoolean(kIsRecentlySeenMarkersPanelVisibleSetting, isRecentlySeenMarkersPanelVisible)
 }

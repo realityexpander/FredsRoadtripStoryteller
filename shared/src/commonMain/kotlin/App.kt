@@ -5,11 +5,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomSheetScaffold
 import androidx.compose.material.ExperimentalMaterialApi
@@ -35,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,6 +47,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.russhwolf.settings.Settings
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import kotlinx.serialization.json.Json
 import loadMarkers.LoadingState
 import loadMarkers.MarkersResult
@@ -106,8 +110,21 @@ fun App() {
         }
 
         // Recently Seen Markers
-        val recentlySeenMarkers by remember { mutableStateOf(mutableSetOf<MapMarker>()) }
-        var isRecentlySeenMarkersPanelVisible by remember { mutableStateOf(false) }
+        val recentlySeenMarkersSet by remember {
+            mutableStateOf(mutableSetOf<RecentMapMarker>())
+        }
+        val recentlySeenMarkersList = remember {
+            recentlySeenMarkersSet.toMutableStateList()
+        }
+        val recentlySeenMarkersForUiList by remember {
+            // return sorted list for UI
+//            mutableStateOf(recentlySeenMarkersList.sortedByDescending { recentMarker ->
+//                    recentMarker.timeAddedToRecentList
+//                }.toMutableStateList()
+//            )
+            mutableStateOf(recentlySeenMarkersList.toMutableStateList())
+        }
+        var isRecentlySeenMarkersPanelVisible by remember { mutableStateOf(settings.isRecentlySeenMarkersPanelVisible()) }
 
         // Error state
         var isShowingError by remember { mutableStateOf<String?>(null) }
@@ -157,7 +174,7 @@ fun App() {
                     shouldRedrawMapMarkers = true
                 }
 
-                Log.d { "Final map-applied marker count = ${snapShot.size}" }
+                // Log.d { "Final map-applied marker count = ${snapShot.size}" }
             }
         }
         if(false) {
@@ -200,7 +217,7 @@ fun App() {
                 .collect { location ->
                     settings.setLastKnownUserLocation(location)
 
-                    // todo check for new markers inside talk radius & add to recentlySeen list
+                    // Check for new markers inside talk radius & add to recentlySeen list
                     mapMarkers.map { marker ->
                         // if marker is within talk radius, add to recently seen list
                         val markerLat = marker.position.latitude
@@ -212,12 +229,50 @@ fun App() {
                             markerLong
                         )
 
-                        // add to recently seen list?
-                        if(distanceFromMarkerToUserLocationMiles < talkRadiusMiles*1.75) {
-                            recentlySeenMarkers.add(marker)
-                            Log.d("Added Marker ${marker.key} is within talk radius of $talkRadiusMiles miles, distance=$distanceFromMarkerToUserLocationMiles miles, total recentlySeenMarkers=${recentlySeenMarkers.size}")
+                        fun MutableSet<RecentMapMarker>.containsMarker(marker: MapMarker): Boolean {
+                            return recentlySeenMarkersSet.any {
+                                it.key() == marker.key
+                            }
+                        }
+
+                        // add to recently seen set?
+                        if(distanceFromMarkerToUserLocationMiles < talkRadiusMiles * 1.75) {
+                            // Already in the `seen` set?
+                            if (!recentlySeenMarkersSet.containsMarker(marker)) {
+                                val newlySeenMarker = RecentMapMarker(
+                                    marker,
+                                    Clock.System.now().toEpochMilliseconds()
+                                )
+                                recentlySeenMarkersSet.add(newlySeenMarker)
+                                recentlySeenMarkersList.add(newlySeenMarker)
+                                Log.d("Added Marker ${marker.key} is within talk radius of $talkRadiusMiles miles, distance=$distanceFromMarkerToUserLocationMiles miles, total recentlySeenMarkers=${recentlySeenMarkersSet.size}")
+                            }
+
+                            // Trim the UI list to 5 items
+                            if(recentlySeenMarkersList.size > 5) {
+                                Log.d("Trimming recentlySeenMarkersForUiList.size=${recentlySeenMarkersList.size}")
+                                // remove old markers until there are only 5
+                                do {
+                                    val oldestMarker =
+                                        recentlySeenMarkersList.minByOrNull { recentMarker ->
+                                            recentMarker.timeAddedToRecentList
+                                        }
+
+                                    // remove the oldest marker
+                                    oldestMarker?.let { oldMarker ->
+                                        recentlySeenMarkersList.remove(oldMarker)
+                                    }
+                                    Log.d("Removed oldest marker, recentlySeenMarkersList.size=${recentlySeenMarkersList.size}")
+                                } while(recentlySeenMarkersList.size > 5)
+                            }
                         }
                     }
+
+                    // Update the UI list
+                    recentlySeenMarkersForUiList.clear()
+                    recentlySeenMarkersForUiList.addAll(recentlySeenMarkersList.sortedByDescending { recentMarker ->
+                        recentMarker.timeAddedToRecentList
+                    }.toMutableStateList())
                 }
 
             if(false) {
@@ -359,6 +414,7 @@ fun App() {
                                 IconButton(onClick = {
                                     coroutineScope.launch {
                                         isRecentlySeenMarkersPanelVisible = !isRecentlySeenMarkersPanelVisible
+                                        settings.setIsRecentlySeenMarkersPanelVisible(isRecentlySeenMarkersPanelVisible)
                                     }
                                 }) { // show marker history panel
                                     Icon(
@@ -413,6 +469,7 @@ fun App() {
                             )
                         }
 
+                        // Show Map
                         val didMapMarkersUpdate =
                             MapContent(
                                 modifier = Modifier
@@ -456,16 +513,56 @@ fun App() {
                             shouldRedrawMapMarkers = false
                         }
 
-                        Text(
-                            text = "Recently Seen Markers",
-                            color = MaterialTheme.colors.onBackground,
-                            fontStyle = FontStyle.Normal,
-                            fontWeight = FontWeight.Medium,
+                        // Show recently seen markers
+                        Column(
                             modifier = Modifier
-//                                .fillMaxHeight(transitionRecentMarkersPanel)
                                 .fillMaxSize()
-                                .background(Color.Red)
-                        )
+                                .background(MaterialTheme.colors.background),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            LazyColumn(
+                                userScrollEnabled = true,
+                            ) {
+                                item {
+                                    Text(
+                                        text = "Recently Seen Markers",
+                                        color = MaterialTheme.colors.onBackground,
+                                        fontStyle = FontStyle.Normal,
+                                        fontSize = MaterialTheme.typography.h5.fontSize,
+                                        fontWeight = FontWeight.Medium,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(start = 8.dp)
+                                    )
+                                }
+
+                                items(recentlySeenMarkersForUiList.size) {
+                                    val marker = recentlySeenMarkersForUiList.elementAt(it)
+//                                    val marker = RecentMapMarker(
+//                                        MapMarker(
+//                                            key = "marker1",
+//                                            position = LatLong(
+//                                                37.422160,
+//                                                -122.084270
+//                                            ),
+//                                            title = "Googleplex",
+//                                            alpha = 1.0f
+//                                        ),
+//                                        Clock.System.now().toEpochMilliseconds()
+//                                    )
+                                    Text(
+                                        text = marker.key() + ":" + marker.marker.title,
+                                        color = MaterialTheme.colors.onBackground,
+                                        fontStyle = FontStyle.Normal,
+                                        fontSize = MaterialTheme.typography.h6.fontSize,
+                                        fontWeight = FontWeight.Medium,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(8.dp)
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }

@@ -160,7 +160,7 @@ fun loadMarkers(
                     cachedMarkersLastLoadLocation.longitude
                 )
 
-                Log.d("userDistanceFromCachedLastLocationMiles: $userDistanceFromCachedLastLocationMiles")
+                // Log.d("userDistanceFromCachedLastLocationMiles: $userDistanceFromCachedLastLocationMiles")
                 if (userDistanceFromCachedLastLocationMiles > maxReloadDistanceMiles && markersResultState.isMarkerPageParseFinished) {
                     Log.d("User is outside the max re-load radius, attempting load from network..." )
 

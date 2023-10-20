@@ -3,13 +3,22 @@ import androidx.compose.ui.Modifier
 
 data class LatLong(val latitude: Double = 0.0, val longitude: Double = 0.0)
 
-class MapMarker(
+open class MapMarker(
     val key: String = "",
     val position: LatLong = LatLong(0.0, 0.0),
     val title: String = "",
     val alpha: Float = 1.0f,
     val subtitle: String = ""
 )
+
+class RecentMapMarker(
+    val marker: MapMarker,
+    val timeAddedToRecentList: Long = 0,
+) {
+    fun mapMarker() = marker
+    fun key() = marker.key
+}
+
 class CameraLocationBounds(
     val coordinates: List<LatLong> = listOf(),
     val padding: Int = 0
