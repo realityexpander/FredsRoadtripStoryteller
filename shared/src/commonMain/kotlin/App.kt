@@ -188,7 +188,7 @@ fun App() {
             //}
         }
 
-        // Update user location
+        // Update user location & Update Recently Seen Markers
         LaunchedEffect(Unit) {
             // Set the last known location to the current location
             gpsLocationService.onUpdatedGPSLocation(
@@ -235,13 +235,15 @@ fun App() {
                             }
                         }
 
-                        // add to recently seen set?
+                        // add marker to recently seen set?
                         if(distanceFromMarkerToUserLocationMiles < talkRadiusMiles * 1.75) {
                             // Already in the `seen` set?
                             if (!recentlySeenMarkersSet.containsMarker(marker)) {
+                                // Add to the `seen` set
                                 val newlySeenMarker = RecentMapMarker(
                                     marker,
-                                    Clock.System.now().toEpochMilliseconds()
+                                    Clock.System.now().toEpochMilliseconds(),
+                                    recentlySeenMarkersSet.size + 1
                                 )
                                 recentlySeenMarkersSet.add(newlySeenMarker)
                                 recentlySeenMarkersList.add(newlySeenMarker)
@@ -551,7 +553,7 @@ fun App() {
 //                                        Clock.System.now().toEpochMilliseconds()
 //                                    )
                                     Text(
-                                        text = marker.key() + ":" + marker.marker.title,
+                                        text = marker.seenOrder.toString() +":"+ marker.key() + ":" + marker.marker.title,
                                         color = MaterialTheme.colors.onBackground,
                                         fontStyle = FontStyle.Normal,
                                         fontSize = MaterialTheme.typography.h6.fontSize,
