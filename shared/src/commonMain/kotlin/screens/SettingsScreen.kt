@@ -1,5 +1,6 @@
 package screens
 
+import Location
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
@@ -43,6 +44,9 @@ import setIsMarkersLastUpdatedLocationVisible
 import setTalkRadiusMiles
 import shouldAutomaticallyStartTrackingWhenAppLaunches
 import isMarkersLastUpdatedLocationVisible
+import loadMarkers.MarkersResult
+import setCachedMarkersLastUpdatedLocation
+import setCachedMarkersResult
 import triggerDeveloperFeedback
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -52,7 +56,8 @@ fun SettingsScreen(
     bottomSheetScaffoldState: BottomSheetScaffoldState,
     talkRadiusMiles: Double,
     onTalkRadiusChange: (Double) -> Unit = {},
-    onShouldShowMarkerDataLastSearchedLocationChange: ((Boolean) -> Unit)? = null
+    onShouldShowMarkerDataLastSearchedLocationChange: ((Boolean) -> Unit)? = null,
+    onShouldResetMarkerInfoCache: (() -> Unit)? = null
 ) {
     val scrollState = rememberScrollState()
     var isResetCacheAlertDialogVisible by remember { mutableStateOf(false) }
@@ -175,14 +180,27 @@ fun SettingsScreen(
                     coroutineScope.launch {
                         isResetCacheAlertDialogVisible = false
                     }
-            })
+                },
+                onSuccess = {
+                    coroutineScope.launch {
+                        isResetCacheAlertDialogVisible = false
+                        // reset cache
+                        settings.setCachedMarkersResult(MarkersResult())
+                        settings.setCachedMarkersLastUpdatedLocation(Location(0.0,0.0))
+                        onShouldResetMarkerInfoCache?.let { nativeFun ->
+                            nativeFun()
+                        }
+                    }
+                }
+            )
     }
 }
 
 @Composable
 private fun ShowResetCacheAlert(
     settings: Settings,
-    onClose: () -> Unit = {}
+    onClose: () -> Unit = {},
+    onSuccess: () -> Unit = {},
 ) =
     AlertDialog(
         title = {
@@ -199,9 +217,7 @@ private fun ShowResetCacheAlert(
         confirmButton = {
             Button(
                 onClick = {
-                    // reset cache
-                    settings.clear()
-                    onClose()
+                    onSuccess()
                 },
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = MaterialTheme.colors.error,

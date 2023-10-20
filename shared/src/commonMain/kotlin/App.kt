@@ -119,7 +119,9 @@ fun App() {
         val recentlySeenMarkersForUiList by remember {
             mutableStateOf(recentlySeenMarkersSet.toMutableStateList())
         }
-        var isRecentlySeenMarkersPanelVisible by remember { mutableStateOf(settings.isRecentlySeenMarkersPanelVisible()) }
+        var isRecentlySeenMarkersPanelVisible by remember {
+            mutableStateOf(settings.isRecentlySeenMarkersPanelVisible())
+        }
 
         // Error state
         var isShowingError by remember { mutableStateOf<String?>(null) }
@@ -127,7 +129,7 @@ fun App() {
         // Load markers
         val markersLoadResult: MarkersResult = loadMarkers(
             settings,
-            userLocation = userLocation,
+            userLocation = userLocation, // when user location changes, triggers potential load markers from server
             maxReloadDistanceMiles = kMaxReloadDistanceMiles.toInt(),
             showLoadingState = false,
             useFakeDataSetId = kUseRealNetwork,
@@ -140,7 +142,9 @@ fun App() {
         var shouldRedrawMapMarkers by remember { mutableStateOf(true) }
         val mapMarkers = remember(markersLoadResult.isMarkerPageParseFinished) {
 
-            if (!markersLoadResult.isMarkerPageParseFinished) { // While loading new markers, use the cached markers to prevent flicker
+            // More pages to load?
+            if (!markersLoadResult.isMarkerPageParseFinished) {
+                // While loading new markers, use the cached markers to prevent flicker
                 return@remember cachedMapMarkers
             }
 
@@ -185,7 +189,7 @@ fun App() {
 
         // Update user location & Update Recently Seen Markers
         LaunchedEffect(Unit) {
-            // Set the last known location to the current location
+            // Set the last known location to the current location in settings
             gpsLocationService.onUpdatedGPSLocation(
                 errorCallback = { errorMessage ->
                     Log.w("Error: $errorMessage")
@@ -321,9 +325,17 @@ fun App() {
                             onShouldShowMarkerDataLastSearchedLocationChange = {
                                 isMarkersLastUpdatedLocationVisible = it
                             },
-                        )
-                    }
+                        ) {
+                            // Reset Marker Info Cache - reset the seen markers list
+                            recentlySeenMarkersSet.clear()
+                            recentlySeenMarkersForUiList.clear()
+                            mapMarkers.clear()
+                            cachedMapMarkers.clear()
 
+                            // Trigger a reload of the markers
+                            userLocation = Location(userLocation.latitude + 0.0001, userLocation.longitude + 0.0001)
+                        }
+                    }
                     is BottomSheetScreen.MarkerDetails -> {
                         Text("Marker Details")
                     }
