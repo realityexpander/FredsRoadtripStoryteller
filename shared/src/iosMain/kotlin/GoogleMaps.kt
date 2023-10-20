@@ -3,7 +3,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,7 +48,7 @@ actual fun GoogleMaps(
     isTrackingEnabled: Boolean,
     userLocation: LatLong?,
     markers: List<MapMarker>?,
-    shouldUpdateMapMarkers: Boolean,
+    shouldRedrawMapMarkers: Boolean,
     cameraOnetimePosition: CameraPosition?,  // best for tracking user location
     cameraLocationLatLong: LatLong?,  // best for showing a bunch of markers
     cameraLocationBounds: CameraLocationBounds?, // usually only used for initial camera position bc zoom level is forced
@@ -52,10 +58,10 @@ actual fun GoogleMaps(
     onMarkerClick: ((MapMarker) -> Unit)?,
     talkRadiusMiles: Double,
     cachedMarkersLastUpdatedLocation: Location?,
-    toggleIsTrackingEnabled: (() -> Unit)?,
-    onFindMeButtonClicked: (() -> Unit)?
+    onToggleIsTrackingEnabledClick: (() -> Unit)?,
+    onFindMeButtonClick: (() -> Unit)?,
+    isMarkersLastUpdatedLocationVisible: Boolean
 ) {
-    val googleMapView = remember { GMSMapView() }
 
     var isMapSetupCompleted by remember { mutableStateOf(false) }
 
@@ -65,12 +71,14 @@ actual fun GoogleMaps(
     var didCameraPositionLatLongBoundsChange by remember { mutableStateOf(false) }
     var didCameraPositionChange by remember { mutableStateOf(false) }
     var didCameraLocationLatLongChange by remember { mutableStateOf(false) }
-    var isMapRedrawTriggered by remember { mutableStateOf(false) }
+    var isMapRedrawTriggered by remember { mutableStateOf(true) }
 
     // Local UI state
     var isMarkersEnabled by remember { mutableStateOf(true) }
     // var isHeatMapEnabled by remember { mutableStateOf(false) }  // reserved for future use
     var showSomething = remember { false } // leave for testing purposes
+
+    val googleMapView = remember(isMapRedrawTriggered) { GMSMapView() }
 
     LaunchedEffect(userLocation, markers) {
         if (userLocation != null) {
@@ -79,6 +87,14 @@ actual fun GoogleMaps(
         if (markers != null) {
             isMapRedrawTriggered = true
         }
+    }
+
+    LaunchedEffect(isMarkersLastUpdatedLocationVisible) {
+        isMapRedrawTriggered = true
+    }
+
+    LaunchedEffect(talkRadiusMiles) {
+        isMapRedrawTriggered = true
     }
 
     LaunchedEffect(cameraLocationBounds) {
@@ -99,7 +115,6 @@ actual fun GoogleMaps(
         }
     }
 
-
     // Note: Why there so many `did_____Change` variables, and the `isRedrawMapTriggered` variable?
     // Implementing the `GoogleMaps` using UIKit inside a composable is a bit of a hack, as it's
     //       not really meant to be used inside a Composable. To work with this limitation we have to
@@ -117,21 +132,21 @@ actual fun GoogleMaps(
             factory = {
 //                // Does not work yet... :(
 //                    googleMapView.delegate = object : NSObject(), GMSMapViewDelegateProtocol {
-//                        override fun mapView(
-//                            mapView: GMSMapView,
-//                            didTapAtCoordinate: CValue<CLLocationCoordinate2D>
-//                        ) {
-//                            showSomething = !showSomething
-//                        }
-//
 ////                        override fun mapView(
 ////                            mapView: GMSMapView,
-////                            didTapMarker: GMSMarker
-////                        ): Boolean {
-////                            val userData = didTapMarker.userData()
-////                            println("map marker click ${userData}")
-////                            return true
+////                            didTapAtCoordinate: CValue<CLLocationCoordinate2D>
+////                        ) {
+////                            showSomething = !showSomething
 ////                        }
+////
+//                        override fun mapView(
+//                            mapView: GMSMapView,
+//                            didTapMarker: GMSMarker
+//                        ): Boolean {
+//                            val userData = didTapMarker.userData()
+//                            println("map marker click ${userData}")
+//                            return true
+//                        }
 //                    }
 
                 googleMapView
@@ -180,11 +195,6 @@ actual fun GoogleMaps(
                     didMapTypeChange = false
                     view.mapType = gmsMapViewType
                 }
-
-//                if(didMyLocationButtonVisibilityChange) {
-//                    didMyLocationButtonVisibilityChange = false
-//                    view.settings.myLocationButton = !isTrackingEnabled
-//                }
 
                 if(didCameraPositionChange) {
                     didCameraPositionChange = false
@@ -249,7 +259,6 @@ actual fun GoogleMaps(
                                 userLocation.latitude,
                                 userLocation.longitude
                             )
-//                            radius = kTalkRadiusMiles.milesToMeters()
                             radius = talkRadiusMiles.milesToMeters()
                             fillColor = UIColor.blueColor().colorWithAlphaComponent(0.4)
                             strokeColor = UIColor.whiteColor().colorWithAlphaComponent(0.8)
@@ -259,6 +268,23 @@ actual fun GoogleMaps(
                     }
 
                     // render the "lastMarkerCacheUpdateLocation" circle
+                    // Show Last cache loaded location
+                    if(isMarkersLastUpdatedLocationVisible) {
+                        println("cachedMarkersLastUpdatedLocation: $cachedMarkersLastUpdatedLocation")
+                        cachedMarkersLastUpdatedLocation?.let { cachedMarkersLastUpdatedLocation ->
+                            GMSCircle().apply {
+                                position = CLLocationCoordinate2DMake(
+                                    cachedMarkersLastUpdatedLocation.latitude,
+                                    cachedMarkersLastUpdatedLocation.longitude
+                                )
+                                radius = kMaxReloadDistanceMiles.milesToMeters()
+                                fillColor = UIColor.yellowColor().colorWithAlphaComponent(0.1)
+                                strokeColor = UIColor.whiteColor().colorWithAlphaComponent(0.3)
+                                strokeWidth = 2.0
+                                map = view
+                            }
+                        }
+                    }
 
                     // render the markers
                     if(isMarkersEnabled) {
@@ -270,8 +296,8 @@ actual fun GoogleMaps(
                                 )
                                 title = marker.title
                                 userData = marker.key
-                                map = view
                                 icon = markerImageWithColor(UIColor.blueColor())
+                                map = view
                             }
 
                             if (tempMarker.userData as String == curSelectedMarkerId) {
@@ -324,13 +350,13 @@ actual fun GoogleMaps(
                     isMapRedrawTriggered = true
                 }
                 // LEAVE FOR FUTURE USE
-//                SwitchWithLabel(
-//                    label = "Heat Map",
-//                    state = isHeatMapEnabled,
-//                    darkOnLightTextColor = true //smMapViewType == kGMSTypeSatellite
-//                ) {
-//                    isHeatMapEnabled = !isHeatMapEnabled
-//                }
+                //    SwitchWithLabel(
+                //        label = "Heat Map",
+                //        state = isHeatMapEnabled,
+                //        darkOnLightTextColor = true //smMapViewType == kGMSTypeSatellite
+                //    ) {
+                //        isHeatMapEnabled = !isHeatMapEnabled
+                //    }
                 SwitchWithLabel(
                     label = "Satellite",
                     state = gmsMapViewType == kGMSTypeSatellite,
@@ -345,6 +371,49 @@ actual fun GoogleMaps(
                         "SOMETHING",
                         modifier = Modifier
                             .background(color = Color.Red)
+                    )
+                }
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .align(Alignment.BottomEnd),
+            horizontalAlignment = Alignment.End
+        ) {
+            // Toggle tracking
+            if(onToggleIsTrackingEnabledClick != null) {
+                FloatingActionButton(
+                    modifier = Modifier
+                        .padding(16.dp),
+                    onClick = {
+                        onToggleIsTrackingEnabledClick?.let { nativeFun ->
+                            nativeFun()
+                        }
+                    }) {
+                    Icon(
+                        imageVector = if (isTrackingEnabled)
+                            Icons.Default.Pause
+                        else Icons.Default.PlayArrow,
+                        contentDescription = "Toggle track your location"
+                    )
+                }
+            }
+
+            // Center on user's
+            if(onFindMeButtonClick != null) {
+                FloatingActionButton(
+                    modifier = Modifier
+                        .padding(16.dp),
+                    onClick = {
+                        onFindMeButtonClick?.let { nativeFun ->
+                            nativeFun()
+                        }
+                    }) {
+                    Icon(
+                        imageVector = Icons.Default.MyLocation,
+                        contentDescription = "Center on your location"
                     )
                 }
             }

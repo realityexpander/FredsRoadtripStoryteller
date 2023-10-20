@@ -37,8 +37,8 @@ expect fun GoogleMaps(
     onMarkerClick: ((MapMarker) -> Unit)? = {},
     talkRadiusMiles: Double = .5,
     cachedMarkersLastUpdatedLocation: Location? = null,
-    onToggleIsTrackingEnabled: (() -> Unit)? = null,
-    onFindMeButtonClicked: (() -> Unit)? = null,
+    onToggleIsTrackingEnabledClick: (() -> Unit)? = null,
+    onFindMeButtonClick: (() -> Unit)? = null,
     isMarkersLastUpdatedLocationVisible: Boolean = false,
 )
 

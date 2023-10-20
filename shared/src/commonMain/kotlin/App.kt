@@ -63,7 +63,6 @@ const val kMaxReloadDistanceMiles = 2.0
 const val kMaxMarkerCacheAgeSeconds = 60 * 60 * 24 * 30  // 30 days
 
 sealed class BottomSheetScreen {
-    data object None : BottomSheetScreen()
     data object Settings : BottomSheetScreen()
     data class MarkerDetails(val markerId: String) : BottomSheetScreen()
 }
@@ -78,7 +77,7 @@ fun App() {
         val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
         val scaffoldState = rememberScaffoldState()
         var bottomSheetActiveScreen by remember {
-            mutableStateOf<BottomSheetScreen>(BottomSheetScreen.None)
+            mutableStateOf<BottomSheetScreen>(BottomSheetScreen.Settings)
         }
 
         val settings = remember {
@@ -91,6 +90,9 @@ fun App() {
         var talkRadiusMiles by remember { mutableStateOf(settings.talkRadiusMiles()) }
         val cachedMarkersLastUpdatedLocation by remember(settings.cachedMarkersLastUpdatedLocation()) {
             mutableStateOf(settings.cachedMarkersLastUpdatedLocation())
+        }
+        var isMarkersLastUpdatedLocationVisible by remember(settings.isMarkersLastUpdatedLocationVisible()) {
+            mutableStateOf(settings.isMarkersLastUpdatedLocationVisible())
         }
 
         // Google Maps UI elements
@@ -123,7 +125,7 @@ fun App() {
         )
         val cachedMapMarkers =
             remember { mutableStateListOf<MapMarker>() } // prevents flicker when loading new markers
-        var shouldUpdateMapMarkers by remember { mutableStateOf(true) }
+        var shouldRedrawMapMarkers by remember { mutableStateOf(true) }
         val mapMarkers = remember(markersLoadResult.isMarkerPageParseFinished) {
 
             if (!markersLoadResult.isMarkerPageParseFinished) { // While loading new markers, use the cached markers to prevent flicker
@@ -152,7 +154,7 @@ fun App() {
                 cachedMapMarkers.addAll(markers)
 
                 coroutineScope.launch {
-                    shouldUpdateMapMarkers = true
+                    shouldRedrawMapMarkers = true
                 }
 
                 Log.d { "Final map-applied marker count = ${snapShot.size}" }
@@ -257,16 +259,15 @@ fun App() {
             sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
             sheetContent = {
                 when (bottomSheetActiveScreen) {
-                    BottomSheetScreen.None -> {
-                        Text("None")
-                    }
-
                     is BottomSheetScreen.Settings -> {
                         SettingsScreen(
                             settings,
                             bottomSheetScaffoldState,
                             talkRadiusMiles,
-                            onTalkRadiusChange = { talkRadiusMiles = it }
+                            onTalkRadiusChange = { talkRadiusMiles = it },
+                            onShouldShowMarkerDataLastSearchedLocationChange = {
+                                isMarkersLastUpdatedLocationVisible = it
+                            },
                         )
                     }
 
@@ -421,21 +422,21 @@ fun App() {
                                 userLocation = userLocation,
                                 mapMarkers = mapMarkers,
                                 mapBounds = null,
-                                shouldUpdateMapMarkers = shouldUpdateMapMarkers, // redraw the map & markers
+                                shouldRedrawMapMarkers = shouldRedrawMapMarkers, // redraw the map & markers
                                 isTrackingEnabled = isTrackingEnabled,
                                 centerOnUserCameraLocation = centerOnUserCameraLocation,
                                 talkRadiusMiles = talkRadiusMiles,
                                 cachedMarkersLastUpdatedLocation =
                                     remember(
-                                        settings.shouldShowMarkersLastUpdatedLocation(),
+                                        settings.isMarkersLastUpdatedLocationVisible(),
                                         cachedMarkersLastUpdatedLocation
                                     ) {
-                                        if (settings.shouldShowMarkersLastUpdatedLocation())
+                                        if (settings.isMarkersLastUpdatedLocationVisible())
                                             cachedMarkersLastUpdatedLocation
                                         else
                                             null
                                     },
-                                toggleIsTrackingEnabled = {
+                                onToggleIsTrackingEnabled = {
                                     isTrackingEnabled = !isTrackingEnabled
                                     coroutineScope.launch {
                                         if (isTrackingEnabled) {
@@ -448,10 +449,11 @@ fun App() {
                                 onFindMeButtonClicked = {
                                     // center on location
                                     centerOnUserCameraLocation = userLocation.copy()
-                                }
+                                },
+                                isMarkersLastUpdatedLocationVisible = isMarkersLastUpdatedLocationVisible
                             )
                         if (didMapMarkersUpdate) {
-                            shouldUpdateMapMarkers = false
+                            shouldRedrawMapMarkers = false
                         }
 
                         Text(
@@ -479,15 +481,16 @@ fun MapContent(
     userLocation: Location,
     mapMarkers: List<MapMarker>,
     mapBounds: List<LatLong>? = null,
-    shouldUpdateMapMarkers: Boolean,
+    shouldRedrawMapMarkers: Boolean,
     isTrackingEnabled: Boolean = false,
     centerOnUserCameraLocation: Location? = null,
     talkRadiusMiles: Double = .5,
     cachedMarkersLastUpdatedLocation: Location? = null,
-    toggleIsTrackingEnabled: (() -> Unit)? = null,
-    onFindMeButtonClicked: (() -> Unit)? = null
+    onToggleIsTrackingEnabled: (() -> Unit)? = null,
+    onFindMeButtonClicked: (() -> Unit)? = null,
+    isMarkersLastUpdatedLocationVisible: Boolean = false
 ): Boolean {
-    var didMapMarkersUpdate by remember(shouldUpdateMapMarkers) { mutableStateOf(true) }
+    var didMapMarkersUpdate by remember(shouldRedrawMapMarkers) { mutableStateOf(true) }
     var isFirstUpdate by remember { mutableStateOf(true) } // force map to update at least once
 
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -500,18 +503,18 @@ fun MapContent(
                     userLocation.longitude
                 ),
                 markers = mapMarkers.ifEmpty { null },
-                shouldUpdateMapMarkers = shouldUpdateMapMarkers,
+                shouldRedrawMapMarkers = shouldRedrawMapMarkers,
                 cameraOnetimePosition =
-                if (isFirstUpdate) {  // set initial camera position
-                    CameraPosition(
-                        target = LatLong(
-                            initialUserLocation.latitude,
-                            initialUserLocation.longitude
-                        ),
-                        zoom = 12f  // note: forced zoom level
-                    )
-                } else
-                    null,
+                    if (isFirstUpdate) {  // set initial camera position
+                        CameraPosition(
+                            target = LatLong(
+                                initialUserLocation.latitude,
+                                initialUserLocation.longitude
+                            ),
+                            zoom = 12f  // note: forced zoom level
+                        )
+                    } else
+                        null,
                 cameraLocationLatLong = remember(centerOnUserCameraLocation) {
                     // 37.422160,
                     // -122.084270  // googleplex
@@ -536,8 +539,9 @@ fun MapContent(
                 },
                 talkRadiusMiles = talkRadiusMiles,
                 cachedMarkersLastUpdatedLocation = cachedMarkersLastUpdatedLocation,
-                toggleIsTrackingEnabled = toggleIsTrackingEnabled,
-                onFindMeButtonClicked = onFindMeButtonClicked
+                onToggleIsTrackingEnabledClick = onToggleIsTrackingEnabled,
+                onFindMeButtonClick = onFindMeButtonClicked,
+                isMarkersLastUpdatedLocationVisible = isMarkersLastUpdatedLocationVisible
             )
 
             isFirstUpdate = false

@@ -57,7 +57,7 @@ actual fun GoogleMaps(
     isTrackingEnabled: Boolean,
     userLocation: LatLong?,
     markers: List<MapMarker>?,
-    shouldUpdateMapMarkers: Boolean,
+    shouldRedrawMapMarkers: Boolean,
     cameraOnetimePosition: CameraPosition?, // Best for setting initial camera position bc zoom level is forced
     cameraLocationLatLong: LatLong?, // Best for tracking user location
     cameraLocationBounds: CameraLocationBounds?, // Best for showing a bunch of markers
@@ -67,8 +67,9 @@ actual fun GoogleMaps(
     onMarkerClick: ((MapMarker) -> Unit)?,
     talkRadiusMiles: Double,
     cachedMarkersLastUpdatedLocation: Location?,
-    toggleIsTrackingEnabled: (() -> Unit)?,
-    onFindMeButtonClicked: (() -> Unit)?
+    onToggleIsTrackingEnabledClick: (() -> Unit)?,
+    onFindMeButtonClick: (() -> Unit)?,
+    isMarkersLastUpdatedLocationVisible: Boolean
 ) {
 
     val cameraPositionState = rememberCameraPositionState()
@@ -218,8 +219,8 @@ actual fun GoogleMaps(
             // Heat Map Overlay
             if (markers != null) {
                 TileOverlay(
-                    tileProvider = remember(shouldUpdateMapMarkers, markers) {
-                        if (!shouldUpdateMapMarkers) {
+                    tileProvider = remember(shouldRedrawMapMarkers, markers) {
+                        if (!shouldRedrawMapMarkers) {
                             // Log.d { "Using cached heatmap items, cachedHeatmap = $cachedTileProvider" }
                             return@remember cachedTileProvider
                         } else {
@@ -321,54 +322,56 @@ actual fun GoogleMaps(
             }
 
             // Show Last cache loaded location
-            cachedMarkersLastUpdatedLocation?.let { cachedMarkersLastUpdatedLocation ->
-                Circle(
-                    center = LatLng(
-                        cachedMarkersLastUpdatedLocation.latitude,
-                        cachedMarkersLastUpdatedLocation.longitude
-                    ),
-                    radius = kMaxReloadDistanceMiles.milesToMeters(),
-                    fillColor = Color.Yellow.copy(alpha = 0.1f),
-                    strokeColor = Color.White.copy(alpha = 0.3f),
-                    strokeWidth = 2.0f
-                )
+            if(isMarkersLastUpdatedLocationVisible) {
+                cachedMarkersLastUpdatedLocation?.let { cachedMarkersLastUpdatedLocation ->
+                    Circle(
+                        center = LatLng(
+                            cachedMarkersLastUpdatedLocation.latitude,
+                            cachedMarkersLastUpdatedLocation.longitude
+                        ),
+                        radius = kMaxReloadDistanceMiles.milesToMeters(),
+                        fillColor = Color.Yellow.copy(alpha = 0.1f),
+                        strokeColor = Color.White.copy(alpha = 0.3f),
+                        strokeWidth = 2.0f
+                    )
 
-                //    // Show using a rectangle - todo distance estimates are a bit off
-                //    val lastLoc = cachedMarkersLastUpdatedLocation
-                //    val searchDistanceLngDegrees = distanceBetween(
-                //        lastLoc.latitude, lastLoc.longitude,
-                //        lastLoc.latitude + kMaxReloadDistanceMiles.milesToDegrees()/100.0, lastLoc.longitude,
-                //        true
-                //    )
-                //    val searchDistanceLatDegrees = //searchDistanceLatDegrees
-                //        distanceBetween(
-                //            lastLoc.latitude, lastLoc.longitude,
-                //            lastLoc.latitude, lastLoc.longitude + kMaxReloadDistanceMiles.milesToDegrees()/100.0,
-                //            true
-                //        )
-                //    val polyLineRectangle = PolylineOptions()
-                //        .add(LatLng(lastLoc.latitude - searchDistanceLatDegrees, lastLoc.longitude - searchDistanceLngDegrees))
-                //        .add(LatLng(lastLoc.latitude + searchDistanceLatDegrees, lastLoc.longitude - searchDistanceLngDegrees))
-                //        .add(LatLng(lastLoc.latitude + searchDistanceLatDegrees, lastLoc.longitude + searchDistanceLngDegrees))
-                //        .add(LatLng(lastLoc.latitude - searchDistanceLatDegrees, lastLoc.longitude + searchDistanceLngDegrees))
-                //        .add(LatLng(lastLoc.latitude - searchDistanceLatDegrees, lastLoc.longitude - searchDistanceLngDegrees))
-                //    Polyline(
-                //        points = polyLineRectangle.points,
-                //        color = Color.Yellow.copy(alpha = 0.3f),
-                //        width = 16f,
-                //        startCap = SquareCap(),
-                //        endCap = SquareCap()
-                //    )
+                    //    // Show using a rectangle - todo distance estimates are a bit off
+                    //    val lastLoc = cachedMarkersLastUpdatedLocation
+                    //    val searchDistanceLngDegrees = distanceBetween(
+                    //        lastLoc.latitude, lastLoc.longitude,
+                    //        lastLoc.latitude + kMaxReloadDistanceMiles.milesToDegrees()/100.0, lastLoc.longitude,
+                    //        true
+                    //    )
+                    //    val searchDistanceLatDegrees = //searchDistanceLatDegrees
+                    //        distanceBetween(
+                    //            lastLoc.latitude, lastLoc.longitude,
+                    //            lastLoc.latitude, lastLoc.longitude + kMaxReloadDistanceMiles.milesToDegrees()/100.0,
+                    //            true
+                    //        )
+                    //    val polyLineRectangle = PolylineOptions()
+                    //        .add(LatLng(lastLoc.latitude - searchDistanceLatDegrees, lastLoc.longitude - searchDistanceLngDegrees))
+                    //        .add(LatLng(lastLoc.latitude + searchDistanceLatDegrees, lastLoc.longitude - searchDistanceLngDegrees))
+                    //        .add(LatLng(lastLoc.latitude + searchDistanceLatDegrees, lastLoc.longitude + searchDistanceLngDegrees))
+                    //        .add(LatLng(lastLoc.latitude - searchDistanceLatDegrees, lastLoc.longitude + searchDistanceLngDegrees))
+                    //        .add(LatLng(lastLoc.latitude - searchDistanceLatDegrees, lastLoc.longitude - searchDistanceLngDegrees))
+                    //    Polyline(
+                    //        points = polyLineRectangle.points,
+                    //        color = Color.Yellow.copy(alpha = 0.3f),
+                    //        width = 16f,
+                    //        startCap = SquareCap(),
+                    //        endCap = SquareCap()
+                    //    )
+                }
             }
 
             Clustering(
-                items = remember(shouldUpdateMapMarkers, markers, isMarkersEnabled) {
+                items = remember(shouldRedrawMapMarkers, markers, isMarkersEnabled) {
                     if (!isMarkersEnabled) {
                         // Log.d { "Using empty cluster items" }
                         return@remember listOf<ClusterItem>()
                     }
 
-                    if (!shouldUpdateMapMarkers) {
+                    if (!shouldRedrawMapMarkers) {
                         // Log.d { "Using cached cluster items, cachedMarkers.size = ${cachedMarkers.size}" }
                         return@remember cachedMarkers
                     } else {
@@ -519,35 +522,35 @@ actual fun GoogleMaps(
             horizontalAlignment = Alignment.End
         ) {
             // Toggle tracking
-            FloatingActionButton(
-                modifier = Modifier
-                    .padding(16.dp),
-                onClick = {
-                    toggleIsTrackingEnabled?.let { nativeFun ->
-                        nativeFun()
-                    }
-                }) {
-                Icon(
-                    imageVector = if (isTrackingEnabled)
-                        Icons.Default.Pause
-                    else Icons.Default.PlayArrow,
-                    contentDescription = "Toggle track your location"
-                )
+            if(onToggleIsTrackingEnabledClick != null) {
+                FloatingActionButton(
+                    modifier = Modifier
+                        .padding(16.dp),
+                    onClick = {
+                        onToggleIsTrackingEnabledClick()
+                    }) {
+                    Icon(
+                        imageVector = if (isTrackingEnabled)
+                            Icons.Default.Pause
+                        else Icons.Default.PlayArrow,
+                        contentDescription = "Toggle track your location"
+                    )
+                }
             }
 
-            // Center on user's location
-            FloatingActionButton(
-                modifier = Modifier
-                    .padding(16.dp),
-                onClick = {
-                    onFindMeButtonClicked?.let { nativeFun ->
-                        nativeFun()
-                    }
-                }) {
-                Icon(
-                    imageVector = Icons.Default.MyLocation,
-                    contentDescription = "Center on your location"
-                )
+            // Center on user's
+            if(onFindMeButtonClick != null) {
+                FloatingActionButton(
+                    modifier = Modifier
+                        .padding(16.dp),
+                    onClick = {
+                        onFindMeButtonClick()
+                    }) {
+                    Icon(
+                        imageVector = Icons.Default.MyLocation,
+                        contentDescription = "Center on your location"
+                    )
+                }
             }
         }
     }
