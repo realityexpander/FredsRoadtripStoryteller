@@ -1,6 +1,7 @@
 package components
 
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material.Slider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -39,6 +40,7 @@ fun SettingsSlider(
                 onValueChange(it.toDouble())
             }
         )
+        Spacer(modifier = Modifier.weight(.1f))
         Text(
             text = currentValueAsString,
             modifier = Modifier
