@@ -238,7 +238,7 @@ fun App() {
 
                         // add marker to recently seen set?
                         if(distanceFromMarkerToUserLocationMiles < talkRadiusMiles * 1.75) {
-                            // Already in the `seen` set?
+                            // Not already in the `seen` set?
                             if (!recentlySeenMarkersSet.containsMarker(marker)) {
                                 // Add to the `seen` set
                                 val newlySeenMarker = RecentMapMarker(
@@ -249,24 +249,24 @@ fun App() {
                                 recentlySeenMarkersSet.add(newlySeenMarker)
                                 recentlySeenMarkersList.add(newlySeenMarker)
                                 Log.d("Added Marker ${marker.key} is within talk radius of $talkRadiusMiles miles, distance=$distanceFromMarkerToUserLocationMiles miles, total recentlySeenMarkers=${recentlySeenMarkersSet.size}")
-                            }
 
-                            // Trim the UI list to 5 items
-                            if(recentlySeenMarkersList.size > 5) {
-                                Log.d("Trimming recentlySeenMarkersForUiList.size=${recentlySeenMarkersList.size}")
-                                // remove old markers until there are only 5
-                                do {
-                                    val oldestMarker =
-                                        recentlySeenMarkersList.minByOrNull { recentMarker ->
-                                            recentMarker.timeAddedToRecentList
+                                // Trim the UI list to 5 items
+                                if(recentlySeenMarkersList.size > 5) {
+                                    Log.d("Trimming recentlySeenMarkersForUiList.size=${recentlySeenMarkersList.size}")
+                                    // remove old markers until there are only 5
+                                    do {
+                                        val oldestMarker =
+                                            recentlySeenMarkersList.minByOrNull { recentMarker ->
+                                                recentMarker.timeAddedToRecentList
+                                            }
+
+                                        // remove the oldest marker
+                                        oldestMarker?.let { oldMarker ->
+                                            recentlySeenMarkersList.remove(oldMarker)
                                         }
-
-                                    // remove the oldest marker
-                                    oldestMarker?.let { oldMarker ->
-                                        recentlySeenMarkersList.remove(oldMarker)
-                                    }
-                                    Log.d("Removed oldest marker, recentlySeenMarkersList.size=${recentlySeenMarkersList.size}")
-                                } while(recentlySeenMarkersList.size > 5)
+                                        Log.d("Removed oldest marker, recentlySeenMarkersList.size=${recentlySeenMarkersList.size}")
+                                    } while(recentlySeenMarkersList.size > 5)
+                                }
                             }
                         }
                     }
