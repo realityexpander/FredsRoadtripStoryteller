@@ -1,9 +1,8 @@
-import org.jetbrains.compose.ComposeBuildConfig.composeVersion
-
 plugins {
     kotlin("multiplatform")
     kotlin("native.cocoapods")
     id("com.android.library")
+
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.plugin.serialization")
 }
@@ -25,8 +24,8 @@ kotlin {
         podfile = project.file("../iosApp/Podfile") // why doesn't it load the cocoapods from the iosApp podfile?
         framework {
             baseName = "shared"
-            isStatic = true
-            transitiveExport = true
+            isStatic = true // todo test necessary?
+            transitiveExport = true // todo test necessary?
         }
 
         // Must define the pods that are in the Podfile (Is this just the way it works?)
@@ -47,41 +46,42 @@ kotlin {
         val ktorClientCoreVersion = "2.3.5"
         val ksoupVersion = "0.2.1"
         val mapsComposeVersion = "3.1.0"
-        @Suppress("SpellCheckingInspection") // the library is spelled like this(!)
-        val kMutliplatformSettingsVersion = "1.1.0"
+        val kMultiplatformSettingsVersion = "1.1.0"
+        val kotlinVersion = extra["kotlin.version"] as String
 
         val commonMain by getting {
             dependencies {
                 implementation(compose.runtime)
                 implementation(compose.foundation)
                 implementation(compose.material)
+                implementation(compose.materialIconsExtended)
+                implementation(compose.animation)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.components.resources)
-                implementation(compose.materialIconsExtended)
 
                 // Ktor client for HTTP requests
                 implementation("io.ktor:ktor-client-core:$ktorClientCoreVersion")
                 implementation("io.ktor:ktor-client-content-negotiation:$ktorClientVersion")
                 implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorClientVersion")
 
-                // kotlinx serialization
+                // Kotlinx serialization
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 
-                // coroutines
+                // Coroutines
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 
-                // image loading
+                // Image loading
                 implementation("media.kamel:kamel-image:0.5.1")
 
-                // scraping & parsing HTML
+                // Scraping & parsing HTML
                 implementation("com.mohamedrejeb.ksoup:ksoup-html:$ksoupVersion")
                 // Only for encoding and decoding HTML entities
                 implementation("com.mohamedrejeb.ksoup:ksoup-entites:$ksoupVersion")
 
                 // Settings persistence
-                implementation("com.russhwolf:multiplatform-settings:$kMutliplatformSettingsVersion")
-                implementation("com.russhwolf:multiplatform-settings-no-arg:$kMutliplatformSettingsVersion")
-                implementation("com.russhwolf:multiplatform-settings-test:$kMutliplatformSettingsVersion")
+                implementation("com.russhwolf:multiplatform-settings:$kMultiplatformSettingsVersion")
+                implementation("com.russhwolf:multiplatform-settings-no-arg:$kMultiplatformSettingsVersion")
+                implementation("com.russhwolf:multiplatform-settings-test:$kMultiplatformSettingsVersion")
 
                 // Logging
                 implementation("co.touchlab:kermit:2.0.1")
@@ -93,6 +93,11 @@ kotlin {
         }
         val androidMain by getting {
             dependencies {
+                // Compose
+                implementation(compose.ui)
+                implementation(compose.uiTooling)
+                implementation(compose.preview)
+                // todo needed? implementation("androidx.compose.ui:ui-tooling-preview-android:$composeVersion")
 
                 api("androidx.activity:activity-compose:1.8.0")
                 api("androidx.appcompat:appcompat:1.6.1")
@@ -102,7 +107,7 @@ kotlin {
                 api("com.google.android.gms:play-services-location:21.0.1")
                 api("com.google.android.gms:play-services-maps:18.1.0")
                 implementation("com.google.maps.android:maps-compose:$mapsComposeVersion")
-                // clustering
+                // Clustering
                 implementation("com.google.maps.android:maps-compose-utils:$mapsComposeVersion")
 
                 // Ktor Client for Android
@@ -121,6 +126,11 @@ kotlin {
 
                 // Splash Screen
                 api("androidx.core:core-splashscreen:1.0.1")
+            }
+        }
+        val commonTest by getting {
+            dependencies {
+                implementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
             }
         }
     }

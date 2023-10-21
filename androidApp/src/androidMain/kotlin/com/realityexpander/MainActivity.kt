@@ -12,6 +12,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.Composable
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import appContext
 import com.google.android.gms.maps.MapsInitializer
@@ -171,3 +172,8 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
+@Preview
+@Composable
+fun Test() {
+    Text("Hello World")
+}

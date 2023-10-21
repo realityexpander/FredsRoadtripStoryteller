@@ -404,9 +404,7 @@ actual fun GoogleMaps(
                     modifier = Modifier
                         .padding(16.dp),
                     onClick = {
-                        onToggleIsTrackingEnabledClick?.let { nativeFun ->
-                            nativeFun()
-                        }
+                        onToggleIsTrackingEnabledClick()
                     }) {
                     Icon(
                         imageVector = if (isTrackingEnabled)
@@ -423,9 +421,7 @@ actual fun GoogleMaps(
                     modifier = Modifier
                         .padding(16.dp),
                     onClick = {
-                        onFindMeButtonClick?.let { nativeFun ->
-                            nativeFun()
-                        }
+                        onFindMeButtonClick()
                     }) {
                     Icon(
                         imageVector = Icons.Default.MyLocation,
