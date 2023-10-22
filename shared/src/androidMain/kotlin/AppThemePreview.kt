@@ -40,3 +40,42 @@ fun SettingsPreview() {
         )
     }
 }
+
+
+@OptIn(ExperimentalMaterialApi::class)
+@Preview(showBackground = true, showSystemUi = false, backgroundColor = 0xFF8F8F8F,
+    uiMode = Configuration.UI_MODE_NIGHT_NO or Configuration.UI_MODE_TYPE_NORMAL
+)
+@Composable
+fun MarkerInfoPreview() {
+    AppTheme {
+        MarkerInfoScreen(
+            bottomSheetScaffoldState = BottomSheetScaffoldState(
+                bottomSheetState = BottomSheetState(
+                    initialValue = BottomSheetValue.Collapsed,
+                    density = LocalDensity.current,
+                    confirmValueChange = {
+                        true
+                    },
+                ),
+                drawerState = DrawerState(
+                    initialValue = DrawerValue.Closed,
+                    confirmStateChange = {
+                        true
+                    }
+                ),
+                snackbarHostState = SnackbarHostState()
+            ),
+            marker = MapMarker(
+                key = "test",
+                position = LatLong(
+                    latitude = 0.0,
+                    longitude = 0.0
+                ),
+                title = "Test",
+                subtitle = "Test",
+                alpha = 1f
+            )
+        )
+    }
+}
