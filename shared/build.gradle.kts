@@ -77,39 +77,23 @@ kotlin {
                 implementation(libs.multiplatform.settings.test)
 
                 // Logging
-                implementation(libs.logger.kermit)
-                implementation(libs.logger.slf4j.nop) // removes this warning: https://www.slf4j.org/codes.html#StaticLoggerBinder
+                api(libs.logger.kermit)
+                api(libs.logger.slf4j.nop) // removes this warning: https://www.slf4j.org/codes.html#StaticLoggerBinder
 
                 // Date-time
                 implementation(libs.kotlinx.datetime)
             }
         }
+        // Android-only dependencies that are used in the shared module (expect/actual)
+        //   & native bridges to kotlin-only libraries
         val androidMain by getting {
             dependencies {
-                // Kotlin compose
-                implementation(libs.compose.runtime)
-                implementation(libs.compose.foundation)
-                implementation(libs.compose.ui)
-                implementation(libs.compose.ui.tooling)
-                implementation(libs.compose.ui.tooling.preview)
-
-                // Android compose
-                implementation(libs.androidx.compose.foundation)
-                implementation(libs.androidx.compose.ui)
-                implementation(libs.androidx.compose.ui.tooling)
-                implementation(libs.androidx.compose.ui.tooling.preview)
-                implementation(libs.androidx.compose.material)
-                implementation(libs.androidx.activity.compose)
-
                 // Compose previews
-                implementation(libs.compose.ui.tooling.preview)
+                implementation(libs.compose.ui.tooling.preview)  // previews only work on Android side
                 implementation(libs.compose.ui.tooling)
-
-                // Android-only UI
-                api(libs.androidx.appcompat)
 
                 // Google maps for Android
-                api(libs.google.play.services.android.location)
+                api(libs.google.play.services.android.location)  // api means its exposed to the pure-android app
                 api(libs.google.play.services.android.maps)
                 // Google maps for Compose for Android
                 implementation(libs.google.maps.android.compose)
@@ -117,26 +101,20 @@ kotlin {
                 implementation(libs.google.maps.android.compose.utils)
 
                 // Ktor Client for Android
-                implementation(libs.ktor.client.android)
+                implementation(libs.ktor.client.android)  // native bridge to kotlin-only library
 
                 // Firebase BoM
-                api(platform(libs.google.firebase.bom.get())) // use .get bc its just a simple string and no version id
+                api(platform(libs.google.firebase.bom.get())) // use `.get` bc its just a simple string with no version id
                 // Firebase SDK for Google Analytics
-                api(libs.google.firebase.analytics.ktx.get())  // use .get bc its just a simple string and no version id
+                api(libs.google.firebase.analytics.ktx.get())
                 // Firebase feedback // todo move to beta variant for final release
-                api(libs.google.firebase.appdistribution.api.ktx)
-                api(libs.google.firebase.appdistribution)
-
-                // Logger
-                api(libs.logger.kermit)
-
-                // Splash Screen
-                api(libs.androidx.core.splashscreen)
+                implementation(libs.google.firebase.appdistribution.api.ktx)
+                implementation(libs.google.firebase.appdistribution)
             }
         }
         val commonTest by getting {
             dependencies {
-                implementation("org.jetbrains.kotlin:kotlin-test:${libs.versions.kotlin.get()}")
+                implementation(libs.kotlin.test)
             }
         }
     }

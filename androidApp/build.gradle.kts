@@ -21,7 +21,7 @@ kotlin {
     }
 }
 
-// For the Android App MainActivity (Pure Android)
+
 android {
     compileSdk = (findProperty("android.compileSdk") as String).toInt()
     namespace = "com.realityexpander"
@@ -43,10 +43,17 @@ android {
         jvmToolchain(17)
     }
 
+    // For the Android App MainActivity (Android-specific only, not shared)
     dependencies {
         implementation(libs.androidx.compose.ui)
         implementation(libs.androidx.compose.ui.tooling.preview)
         implementation(libs.androidx.activity.compose)
         implementation(libs.androidx.compose.material)
+
+        // Android-only Components
+        implementation(libs.androidx.appcompat)
+
+        // Splash Screen
+        implementation(libs.androidx.core.splashscreen)
     }
 }
