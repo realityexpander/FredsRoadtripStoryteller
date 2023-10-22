@@ -24,14 +24,14 @@ kotlin {
         podfile = project.file("../iosApp/Podfile") // why doesn't it load the cocoapods from the iosApp podfile?
         framework {
             baseName = "shared"
-            isStatic = true // todo test necessary?
-            transitiveExport = true // todo test necessary?
+            isStatic = true
+//            transitiveExport = true // todo test necessary?
         }
 
         // Must define the pods that are in the Podfile (Is this just the way it works?)
         pod("GoogleMaps") {
             version = "8.2.0"
-            //    version = "7.4.0" // for GoogleMapsUtils 4.2.2 (doesn't build for some unknown reason, waiting for 5.0.0)
+            //    version = "7.4.0" // for GoogleMapsUtils 4.2.2 (doesn't build for some c-interop reason, waiting for 5.0.0)
         }
 
         //    pod("Google-Maps-iOS-Utils") {
