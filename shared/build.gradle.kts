@@ -138,4 +138,12 @@ android {
     kotlin {
         jvmToolchain(17)
     }
+
+    // enable previews
+    buildFeatures {
+        compose = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
+    }
 }

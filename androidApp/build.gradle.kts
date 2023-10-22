@@ -43,6 +43,13 @@ android {
         jvmToolchain(17)
     }
 
+    buildFeatures {
+        compose = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
+    }
+
     // For the Android App MainActivity (Android-specific only, not shared)
     dependencies {
         implementation(libs.androidx.compose.ui)
