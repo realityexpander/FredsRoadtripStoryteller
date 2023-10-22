@@ -55,6 +55,7 @@ import kotlinx.coroutines.launch
 import loadMarkers.milesToMeters
 import co.touchlab.kermit.Logger as Log
 
+// Android Google Maps implementation
 @OptIn(MapsComposeExperimentalApi::class)
 @Composable
 actual fun GoogleMaps(

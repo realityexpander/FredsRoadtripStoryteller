@@ -79,7 +79,7 @@ sealed class BottomSheetScreen {
 @Composable
 fun App() {
 
-    MaterialTheme {
+    AppTheme {
         val coroutineScope = rememberCoroutineScope()
 
         val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
@@ -90,7 +90,7 @@ fun App() {
 
         val settings = remember {
             Settings().apply {
-//                clear()  // Force clear all settings
+                // clear()  // Force clear all settings & stored data
                 // Log.setMinSeverity(Severity.Warn)
                 printAppSettings()
             }
@@ -177,7 +177,7 @@ fun App() {
                 // Log.d { "Final map-applied marker count = ${snapShot.size}" }
             }
         }
-        if(false) {
+        if (false) {
             // LEAVE FOR REFERENCE
             //val mapBounds by remember(mapMarkers) {
             //    mutableStateOf(
@@ -236,7 +236,7 @@ fun App() {
                         }
 
                         // add marker to recently seen set?
-                        if(distanceFromMarkerToUserLocationMiles < talkRadiusMiles * 1.75) {
+                        if (distanceFromMarkerToUserLocationMiles < talkRadiusMiles * 1.75) {
                             // Not already in the `seen` set?
                             if (!recentlySeenMarkersSet.containsMarker(marker)) {
                                 // Add to the `seen` set
@@ -250,7 +250,7 @@ fun App() {
                                 Log.d("Added Marker ${marker.key} is within talk radius of $talkRadiusMiles miles, distance=$distanceFromMarkerToUserLocationMiles miles, total recentlySeenMarkers=${recentlySeenMarkersSet.size}")
 
                                 // Trim the UI list to 5 items
-                                if(recentlySeenMarkersForUiList.size > 5) {
+                                if (recentlySeenMarkersForUiList.size > 5) {
                                     Log.d("Trimming recentlySeenMarkersForUiList.size=${recentlySeenMarkersForUiList.size}")
                                     // remove old markers until there are only 5
                                     do {
@@ -264,7 +264,7 @@ fun App() {
                                             recentlySeenMarkersForUiList.remove(oldMarker)
                                         }
                                         Log.d("Removed oldest marker, recentlySeenMarkersList.size=${recentlySeenMarkersForUiList.size}")
-                                    } while(recentlySeenMarkersForUiList.size > 5)
+                                    } while (recentlySeenMarkersForUiList.size > 5)
                                 }
                             }
                         }
@@ -278,7 +278,7 @@ fun App() {
                     }.toMutableStateList())
                 }
 
-            if(false) {
+            if (false) {
                 // LEAVE FOR REFERENCE
                 //    // Get heading updates
                 //    locationService.currentHeading { heading ->
@@ -338,10 +338,14 @@ fun App() {
                             settings.setCachedMarkersLastUpdatedEpochSeconds(0L)
                             coroutineScope.launch {
                                 delay(50)
-                                userLocation = Location(userLocation.latitude + 0.001, userLocation.longitude + 0.001)
+                                userLocation = Location(
+                                    userLocation.latitude + 0.001,
+                                    userLocation.longitude + 0.001
+                                )
                             }
                         }
                     }
+
                     is BottomSheetScreen.MarkerDetails -> {
                         Text("Marker Details")
                     }
@@ -429,8 +433,11 @@ fun App() {
                                 // Recent Markers History List
                                 IconButton(onClick = {
                                     coroutineScope.launch {
-                                        isRecentlySeenMarkersPanelVisible = !isRecentlySeenMarkersPanelVisible
-                                        settings.setIsRecentlySeenMarkersPanelVisible(isRecentlySeenMarkersPanelVisible)
+                                        isRecentlySeenMarkersPanelVisible =
+                                            !isRecentlySeenMarkersPanelVisible
+                                        settings.setIsRecentlySeenMarkersPanelVisible(
+                                            isRecentlySeenMarkersPanelVisible
+                                        )
                                     }
                                 }) { // show marker history panel
                                     Icon(
@@ -500,15 +507,15 @@ fun App() {
                                 centerOnUserCameraLocation = centerOnUserCameraLocation,
                                 talkRadiusMiles = talkRadiusMiles,
                                 cachedMarkersLastUpdatedLocation =
-                                    remember(
-                                        settings.isMarkersLastUpdatedLocationVisible(),
+                                remember(
+                                    settings.isMarkersLastUpdatedLocationVisible(),
+                                    cachedMarkersLastUpdatedLocation
+                                ) {
+                                    if (settings.isMarkersLastUpdatedLocationVisible())
                                         cachedMarkersLastUpdatedLocation
-                                    ) {
-                                        if (settings.isMarkersLastUpdatedLocationVisible())
-                                            cachedMarkersLastUpdatedLocation
-                                        else
-                                            null
-                                    },
+                                    else
+                                        null
+                                },
                                 onToggleIsTrackingEnabled = {
                                     isTrackingEnabled = !isTrackingEnabled
                                     coroutineScope.launch {
@@ -527,7 +534,8 @@ fun App() {
                                 isMapOptionSwitchesVisible = !isRecentlySeenMarkersPanelVisible  // hide map options when showing marker list
                             )
                         if (didMapMarkersUpdate) {
-                            shouldRedrawMapMarkers = false  // The map has been updated, so don't redraw it again.
+                            shouldRedrawMapMarkers =
+                                false  // The map has been updated, so don't redraw it again.
                         }
                     }
 
