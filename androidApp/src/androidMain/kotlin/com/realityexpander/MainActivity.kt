@@ -19,6 +19,8 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import appContext
 import com.google.android.gms.maps.MapsInitializer
 import com.google.firebase.FirebaseApp
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.logEvent
 import intentFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -35,6 +37,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
 
         // https://proandroiddev.com/implementing-core-splashscreen-api-e62f0e690f74
         installSplashScreen().apply {
@@ -65,6 +68,15 @@ class MainActivity : AppCompatActivity() {
                         isSendingUserToAppSettingsScreen = true
                     }
                     .setNegativeButton("Cancel") { _, _ ->
+
+                        // enable logging:  adb shell setprop log.tag.FA VERBOSE
+                        //                  adb shell setprop log.tag.FA-SVC VERBOSE
+                        //                  adb logcat -v time -s FA FA-SVC
+                        // disable logging: adb shell setprop debug.firebase.analytics.app .none.
+                        firebaseAnalytics.logEvent("location_granted") {
+                            param("granted", "false")
+                        }
+
                         finish()
                     }
                     .show()

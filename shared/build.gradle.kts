@@ -93,8 +93,8 @@ kotlin {
                 implementation(libs.compose.ui.tooling)
 
                 // Google maps for Android
-                api(libs.google.play.services.android.location)  // api means its exposed to the pure-android app
-                api(libs.google.play.services.android.maps)
+                implementation(libs.google.play.services.android.location)
+                api(libs.google.play.services.android.maps)  // api means its exposed to the pure-android app (for init)
                 // Google maps for Compose for Android
                 implementation(libs.google.maps.android.compose)
                 // Clustering
