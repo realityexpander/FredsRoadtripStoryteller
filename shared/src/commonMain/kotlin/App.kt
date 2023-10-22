@@ -345,7 +345,6 @@ fun App() {
                             }
                         }
                     }
-
                     is BottomSheetScreen.MarkerDetails -> {
                         Text("Marker Details")
                     }

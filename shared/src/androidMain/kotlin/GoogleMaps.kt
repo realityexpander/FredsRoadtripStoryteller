@@ -189,7 +189,6 @@ actual fun GoogleMaps(
         }
     }
 
-//    Box(modifier) {
     Box(modifier.fillMaxSize()) {
 
         val myMarkers = remember { mutableStateOf(listOf<MapMarker>()) }
