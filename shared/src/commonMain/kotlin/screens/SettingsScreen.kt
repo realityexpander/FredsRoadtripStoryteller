@@ -38,36 +38,36 @@ import com.russhwolf.settings.Settings
 import components.SettingsSlider
 import components.SettingsSwitch
 import getPlatformName
-import kotlinx.coroutines.launch
-import setShouldAutomaticallyStartTrackingWhenAppLaunches
-import setIsMarkersLastUpdatedLocationVisible
-import setTalkRadiusMiles
-import shouldAutomaticallyStartTrackingWhenAppLaunches
 import isMarkersLastUpdatedLocationVisible
+import kotlinx.coroutines.launch
 import loadMarkers.MarkersResult
 import setCachedMarkersLastUpdatedLocation
 import setCachedMarkersResult
+import setIsMarkersLastUpdatedLocationVisible
+import setShouldAutomaticallyStartTrackingWhenAppLaunches
+import setTalkRadiusMiles
+import shouldAutomaticallyStartTrackingWhenAppLaunches
 import triggerDeveloperFeedback
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SettingsScreen(
-    settings: Settings,
+    settings: Settings? = null,
     bottomSheetScaffoldState: BottomSheetScaffoldState,
     talkRadiusMiles: Double,
     onTalkRadiusChange: (Double) -> Unit = {},
-    onShouldShowMarkerDataLastSearchedLocationChange: ((Boolean) -> Unit)? = null,
-    onShouldResetMarkerInfoCache: (() -> Unit)? = null
+    onShouldShowMarkerDataLastSearchedLocationChange: ((Boolean) -> Unit) = {},
+    onShouldResetMarkerInfoCache: (() -> Unit) = {}
 ) {
     val scrollState = rememberScrollState()
     var isResetCacheAlertDialogVisible by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
     var shouldStartTrackingAutomaticallyWhenAppLaunches by remember {
-        mutableStateOf(settings.shouldAutomaticallyStartTrackingWhenAppLaunches())
+        mutableStateOf(settings?.shouldAutomaticallyStartTrackingWhenAppLaunches() ?: false)
     }
     var shouldShowMarkerDataLastSearchedLocation by remember {
-        mutableStateOf(settings.isMarkersLastUpdatedLocationVisible())
+        mutableStateOf(settings?.isMarkersLastUpdatedLocationVisible() ?: false)
     }
 
     Column(
@@ -103,7 +103,7 @@ fun SettingsScreen(
             title = "Start tracking automatically when app launches",
             isChecked = shouldStartTrackingAutomaticallyWhenAppLaunches,
             onCheckedChange = {
-                settings.setShouldAutomaticallyStartTrackingWhenAppLaunches(it)
+                settings?.setShouldAutomaticallyStartTrackingWhenAppLaunches(it)
                 shouldStartTrackingAutomaticallyWhenAppLaunches = it
             }
         )
@@ -112,7 +112,7 @@ fun SettingsScreen(
             title = "Talk Radius (miles)",
             currentValue = talkRadiusMiles,
             onValueChange = {
-                settings.setTalkRadiusMiles(it)
+                settings?.setTalkRadiusMiles(it)
                 onTalkRadiusChange(it)
             }
         )
@@ -121,11 +121,9 @@ fun SettingsScreen(
             title = "Show marker data last searched location",
             isChecked = shouldShowMarkerDataLastSearchedLocation,
             onCheckedChange = {
-                settings.setIsMarkersLastUpdatedLocationVisible(it)
+                settings?.setIsMarkersLastUpdatedLocationVisible(it)
                 shouldShowMarkerDataLastSearchedLocation = it
-                onShouldShowMarkerDataLastSearchedLocationChange?.let { nativeFun ->
-                    nativeFun(it)
-                }
+                onShouldShowMarkerDataLastSearchedLocationChange(it)
             }
         )
 
@@ -167,7 +165,7 @@ fun SettingsScreen(
                 Text("Reset Marker Info Cache")
             }
         Text(
-            "Cache size: ${settings.cachedMarkersResult().markerInfos.size} markers",
+            "Cache size: ${settings?.cachedMarkersResult()?.markerInfos?.size} markers",
             modifier = Modifier
                 .align(Alignment.CenterHorizontally),
         )
@@ -175,7 +173,6 @@ fun SettingsScreen(
         // Show Reset Cache Alert Dialog
         if (isResetCacheAlertDialogVisible)
             ShowResetCacheAlert(
-                settings,
                 onClose = {
                     coroutineScope.launch {
                         isResetCacheAlertDialogVisible = false
@@ -185,11 +182,9 @@ fun SettingsScreen(
                     coroutineScope.launch {
                         isResetCacheAlertDialogVisible = false
                         // reset cache
-                        settings.setCachedMarkersResult(MarkersResult())
-                        settings.setCachedMarkersLastUpdatedLocation(Location(0.0,0.0))
-                        onShouldResetMarkerInfoCache?.let { nativeFun ->
-                            nativeFun()
-                        }
+                        settings?.setCachedMarkersResult(MarkersResult())
+                        settings?.setCachedMarkersLastUpdatedLocation(Location(0.0,0.0))
+                        onShouldResetMarkerInfoCache()
                     }
                 }
             )
@@ -198,7 +193,6 @@ fun SettingsScreen(
 
 @Composable
 private fun ShowResetCacheAlert(
-    settings: Settings,
     onClose: () -> Unit = {},
     onSuccess: () -> Unit = {},
 ) =

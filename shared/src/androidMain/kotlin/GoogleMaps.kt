@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.NoLiveLiterals
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -56,6 +57,7 @@ import loadMarkers.milesToMeters
 import co.touchlab.kermit.Logger as Log
 
 // Android Google Maps implementation
+@NoLiveLiterals
 @OptIn(MapsComposeExperimentalApi::class)
 @Composable
 actual fun GoogleMaps(
@@ -568,6 +570,7 @@ actual fun GoogleMaps(
     }
 }
 
+@NoLiveLiterals
 // https://mapstyle.withgoogle.com/
 fun mapStyle(): String {
     return """

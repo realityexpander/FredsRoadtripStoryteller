@@ -326,24 +326,25 @@ fun App() {
                             onShouldShowMarkerDataLastSearchedLocationChange = {
                                 isMarkersLastUpdatedLocationVisible = it
                             },
-                        ) {
-                            // Reset Marker Info Cache & reset the `seen markers` list
-                            recentlySeenMarkersSet.clear()
-                            recentlySeenMarkersForUiList.clear()
-                            mapMarkers.clear()
-                            cachedMapMarkers.clear()
+                            onShouldResetMarkerInfoCache = {
+                                // Reset Marker Info Cache & reset the `seen markers` list
+                                recentlySeenMarkersSet.clear()
+                                recentlySeenMarkersForUiList.clear()
+                                mapMarkers.clear()
+                                cachedMapMarkers.clear()
 
-                            // Trigger a reload of the markers from the server
-                            settings.setCachedMarkersLastUpdatedLocation(Location(0.1, 0.1))
-                            settings.setCachedMarkersLastUpdatedEpochSeconds(0L)
-                            coroutineScope.launch {
-                                delay(50)
-                                userLocation = Location(
-                                    userLocation.latitude + 0.001,
-                                    userLocation.longitude + 0.001
-                                )
+                                // Trigger a reload of the markers from the server
+                                settings.setCachedMarkersLastUpdatedLocation(Location(0.1, 0.1))
+                                settings.setCachedMarkersLastUpdatedEpochSeconds(0L)
+                                coroutineScope.launch {
+                                    delay(50)
+                                    userLocation = Location(
+                                        userLocation.latitude + 0.001,
+                                        userLocation.longitude + 0.001
+                                    )
+                                }
                             }
-                        }
+                        )
                     }
                     is BottomSheetScreen.MarkerDetails -> {
                         Text("Marker Details")
