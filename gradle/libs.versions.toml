@@ -1,0 +1,80 @@
+[versions]
+agp = "8.1.2"
+androidx-activityCompose = "1.8.0"
+androidx-coreSplashscreen = "1.0.1"
+androidx-appcompat = "1.6.1"
+compose = "1.5.3"
+compose-compiler = "1.5.3"  # usually the same as `compose`
+compose-material3 = "1.5.10-rc01" # usually the same as compose
+google-MapsAndroidComposeVersion = "3.1.0"
+google-PlayServicesAndroidLocation = "21.0.1"
+google-PlayServicesAndroidMaps = "18.1.0"
+google-FirebaseBom = "32.3.1"
+google-FirebaseAppdistribution = "16.0.0-beta10"
+kamelImage = "0.5.1"
+logger-kermit = "2.0.1"
+kMutliplatformSettingsVersion = "1.1.0"
+kotlin = "1.9.10"
+kotlinx-CoroutinesCore = "1.7.3"
+kotlinx-Datetime = "0.4.1"
+kotlinx-SerializationJson = "1.6.0"
+ksoupVersion = "0.2.1"
+ktor-ClientCore = "2.3.5"
+ktor-ClientAndroid = "2.2.4"
+logger-Slf4jNop = "2.0.9"
+pods-google-maps = "8.2.0"
+pods-google-mapsUtils = "4.2.2"
+
+
+[libraries]
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
+androidx-compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose" }
+androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }
+androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose" }
+androidx-compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "compose" }
+androidx-compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "compose-material3" }
+androidx-compose-material = { module = "androidx.compose.material:material", version.ref = "compose" }
+androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "androidx-coreSplashscreen" }
+compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose" }
+compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose" }
+compose-material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "compose" }
+compose-material = { module = "org.jetbrains.compose.material:material", version.ref = "compose" }
+compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "compose-material3" }
+compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose" }
+compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
+compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose" }
+compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose" }
+google-firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "google-FirebaseBom" }
+google-firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "" } # no version needed
+google-firebase-appdistribution-api-ktx = { module = "com.google.firebase:firebase-appdistribution-api-ktx", version.ref="google-FirebaseAppdistribution" }
+google-firebase-appdistribution = { module = "com.google.firebase:firebase-appdistribution", version.ref = "google-FirebaseAppdistribution" }
+google-maps-android-compose = { module = "com.google.maps.android:maps-compose", version.ref = "google-MapsAndroidComposeVersion" }
+google-maps-android-compose-utils = { module = "com.google.maps.android:maps-compose-utils", version.ref = "google-MapsAndroidComposeVersion" }
+google-play-services-android-location = { module = "com.google.android.gms:play-services-location", version.ref = "google-PlayServicesAndroidLocation" }
+google-play-services-android-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "google-PlayServicesAndroidMaps" }
+kamel-image = { module = "media.kamel:kamel-image", version.ref = "kamelImage" }
+logger-kermit = { module = "co.touchlab:kermit", version.ref = "logger-kermit" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-CoroutinesCore" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-Datetime" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-SerializationJson" }
+ksoup-entites = { module = "com.mohamedrejeb.ksoup:ksoup-entites", version.ref = "ksoupVersion" }
+ksoup-html = { module = "com.mohamedrejeb.ksoup:ksoup-html", version.ref = "ksoupVersion" }
+ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktor-ClientAndroid" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor-ClientAndroid" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor-ClientCore" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor-ClientAndroid" }
+multiplatform-settings = { module = "com.russhwolf:multiplatform-settings", version.ref = "kMutliplatformSettingsVersion" }
+multiplatform-settings-no-arg = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "kMutliplatformSettingsVersion" }
+multiplatform-settings-test = { module = "com.russhwolf:multiplatform-settings-test", version.ref = "kMutliplatformSettingsVersion" }
+logger-slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "logger-Slf4jNop" }
+androidx-ui-tooling-preview-android = { group = "androidx.compose.ui", name = "ui-tooling-preview-android", version = "1.5.4" }
+
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-cocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version.ref = "kotlin" }

@@ -41,8 +41,10 @@ import cocoapods.GoogleMaps.animateWithCameraUpdate
 import cocoapods.GoogleMaps.kGMSTypeNormal
 import cocoapods.GoogleMaps.kGMSTypeSatellite
 import components.SwitchWithLabel
+import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import loadMarkers.milesToMeters
+import platform.CoreLocation.CLLocationCoordinate2D
 import platform.CoreLocation.CLLocationCoordinate2DMake
 import platform.UIKit.UIColor
 import platform.darwin.NSObject
@@ -138,7 +140,7 @@ actual fun GoogleMaps(
             modifier = Modifier,
             interactive = true,
             factory = {
-//                // Does not work yet... :(
+////                // Does not work yet... :(
 //                    googleMapView.delegate = object : NSObject(), GMSMapViewDelegateProtocol {
 ////                        override fun mapView(
 ////                            mapView: GMSMapView,
@@ -147,13 +149,20 @@ actual fun GoogleMaps(
 ////                            showSomething = !showSomething
 ////                        }
 ////
+////                        override fun mapView(
+////                            mapView: GMSMapView,
+////                            didTapMarker: GMSMarker
+////                        ): Boolean {
+////                            val userData = didTapMarker.userData()
+////                            println("map marker click ${userData}")
+////                            return true
+////                        }
+//
 //                        override fun mapView(
 //                            mapView: GMSMapView,
-//                            didTapMarker: GMSMarker
-//                        ): Boolean {
-//                            val userData = didTapMarker.userData()
-//                            println("map marker click ${userData}")
-//                            return true
+//                            didLongPressAtCoordinate: CValue<CLLocationCoordinate2D>
+//                        ) {
+//                            super.mapView(mapView, didLongPressAtCoordinate)
 //                        }
 //                    }
 
