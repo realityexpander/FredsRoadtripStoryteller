@@ -146,15 +146,20 @@ fun MarkerInfoScreen(
                     var offset by remember {
                         mutableStateOf(Offset.Zero)
                     }
+                    //    var rotationZ by remember {
+                    //        mutableStateOf(0f)
+                    //    }
 
                     BoxWithConstraints(
                         modifier = Modifier
                             .fillMaxWidth()
                             .aspectRatio(1280f / 959f)
                     ) {
+
+                        // Setup pan/zoom (not rotation) transformable state
+                        @Suppress("UNUSED_ANONYMOUS_PARAMETER")
                         val state =
                             rememberTransformableState { zoomChange, panChange, rotationChange ->
-                                println("zoomChange: $zoomChange, panChange: $panChange, rotationChange: $rotationChange")
                                 scale = (scale * zoomChange).coerceIn(1f, 2.5f)
 
                                 val extraWidth = (scale - 1) * constraints.maxWidth
@@ -167,22 +172,24 @@ fun MarkerInfoScreen(
                                     x = (offset.x + scale * panChange.x).coerceIn(-maxX, maxX),
                                     y = (offset.y + scale * panChange.y).coerceIn(-maxY, maxY),
                                 )
+
+                                // rotationZ += rotationChange
                             }
 
                         KamelImage(
                             resource = painterResource,
                             contentDescription = marker.title,
                             modifier = Modifier
-                                //.aspectRatio(16f / 9f)
+                                // .aspectRatio(16f / 9f)
                                 .fillMaxWidth()
                                 .graphicsLayer {
                                     scaleX = scale
                                     scaleY = scale
                                     translationX = offset.x
                                     translationY = offset.y
+                                    // this.rotationZ = rotationZ
                                 }
-                                .transformable(state, lockRotationOnZoomPan = true)
-                            ,
+                                .transformable(state, lockRotationOnZoomPan = true),
                             contentScale = ContentScale.Crop,
                             onLoading = { progress ->
                                 Box(

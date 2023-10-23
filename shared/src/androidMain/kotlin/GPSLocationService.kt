@@ -157,12 +157,6 @@ actual class GPSLocationService  {
         CoroutineScope(Dispatchers.Main).launch {
             _intentFlow.emit(Intent(GPSLocationService.ACTION_START_BACKGROUND_UPDATES))
         }
-
-        //    // send start to foreground service // cant do this here... why? // leave for reference
-        //    Intent(appContext, GPSLocationForegroundNotificationService::class.java).apply {
-        //        action = GPSLocationForegroundService.ACTION_START_BACKGROUND_UPDATES
-        //        appContext.startService(this) // sends command to start service
-        //    }
     }
     actual fun preventBackgroundLocationUpdates() {
         CoroutineScope(Dispatchers.Main).launch {
@@ -173,7 +167,5 @@ actual class GPSLocationService  {
     companion object {
         const val ACTION_START_BACKGROUND_UPDATES = "ACTION_START_BACKGROUND_UPDATES"
         const val ACTION_STOP_BACKGROUND_UPDATES = "ACTION_STOP_BACKGROUND_UPDATES"
-
-        const val kIsAllowedBackgroundLocationUpdates = false
     }
 }

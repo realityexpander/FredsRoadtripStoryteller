@@ -38,7 +38,6 @@ fun AppTheme(
             primary = Color(0xFF111162),
             secondary = Color(0xFF03DAC5),
 //            tertiary = Color(0xFF3700B3)
-//            background = Color(0xFF0000FF), // todo delete
 //            onSurface = Color(0xFF111111),
             surface = Color(0xFFEEEEEE),
             onSurface = Color(0xFF000000),
