@@ -24,11 +24,13 @@ fun AppTheme(
 //        darkColorScheme(
         darkColors(
             primary = Color(0xFF111162),
-            onPrimary = Color(0xFFEEEEEE),
+            onPrimary = Color(0xFFBBBBBB),
             secondary = Color(0xFF03DAC5),
 //            tertiary = Color(0xFF3700B3)
             surface = Color(0xFF222222),
-            onSurface = Color(0xFFEEEEEE),
+            onSurface = Color(0xFFBBBBBB),
+            background = Color(0xFF333344),
+            onBackground = Color(0xFFDDDDDD),
         )
     } else {
 //        lightColorScheme(
@@ -36,10 +38,12 @@ fun AppTheme(
             primary = Color(0xFF111162),
             secondary = Color(0xFF03DAC5),
 //            tertiary = Color(0xFF3700B3)
-            background = Color(0xFF0000FF),
+//            background = Color(0xFF0000FF), // todo delete
 //            onSurface = Color(0xFF111111),
             surface = Color(0xFFEEEEEE),
             onSurface = Color(0xFF000000),
+            background = Color(0xFF444444),
+            onBackground = Color(0xFFDDDDDD),
         )
     }
     val typography = Typography(

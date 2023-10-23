@@ -320,7 +320,7 @@ fun App() {
             sheetGesturesEnabled = false, // interferes with map gestures
             sheetPeekHeight = 0.dp,
             sheetContentColor = MaterialTheme.colors.onBackground,
-            sheetBackgroundColor = Color.LightGray,
+            sheetBackgroundColor = MaterialTheme.colors.background,
             sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
             sheetContent = {
                 when (bottomSheetActiveScreen) {
@@ -553,23 +553,26 @@ fun App() {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(MaterialTheme.colors.surface),
+                            .background(MaterialTheme.colors.surface)
+                        ,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         LazyColumn(
                             userScrollEnabled = true,
+                            modifier = Modifier
+                                .background(MaterialTheme.colors.surface)
                         ) {
                             item {
                                 Text(
-                                    text = "Recently Seen Markers",
+                                    text = "RECENTLY SEEN MARKERS",
                                     color = MaterialTheme.colors.onSurface,
                                     fontStyle = FontStyle.Normal,
-                                    fontSize = MaterialTheme.typography.h5.fontSize,
+                                    fontSize = MaterialTheme.typography.subtitle2.fontSize,
                                     fontWeight = FontWeight.Medium,
                                     textAlign = TextAlign.Center,
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(start = 8.dp)
+                                        .padding(start = 8.dp, bottom = 8.dp)
                                 )
                             }
                             if (recentlySeenMarkersForUiList.isEmpty()) {
@@ -606,7 +609,7 @@ fun App() {
 //                                    )
                                 Text(
                                     text = marker.seenOrder.toString() + ":" + marker.key() + ":" + marker.marker.title,
-                                    color = MaterialTheme.colors.onSurface,
+                                    color = MaterialTheme.colors.onPrimary,
                                     fontStyle = FontStyle.Normal,
                                     fontSize = MaterialTheme.typography.h6.fontSize,
                                     fontWeight = FontWeight.Medium,
@@ -618,9 +621,10 @@ fun App() {
                                             bottom = 8.dp,
                                             end = 8.dp
                                         )
-                                        .border(
-                                            width = 1.dp,
-                                            color = MaterialTheme.colors.onBackground,
+                                        .background(
+                                            color = MaterialTheme.colors.primary.copy(
+                                                alpha = 0.75f
+                                            ),
                                             shape = RoundedCornerShape(8.dp)
                                         )
                                         .heightIn(min = 48.dp)

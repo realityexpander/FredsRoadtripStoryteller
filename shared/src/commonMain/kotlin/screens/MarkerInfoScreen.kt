@@ -1,14 +1,10 @@
-import androidx.compose.animation.core.AnimationVector
-import androidx.compose.animation.core.DurationBasedAnimationSpec
-import androidx.compose.animation.core.FiniteAnimationSpec
-import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.TweenSpec
-import androidx.compose.animation.core.TwoWayConverter
-import androidx.compose.animation.core.VectorizedFiniteAnimationSpec
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.rememberTransformableState
+import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -36,11 +32,16 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalInspectionMode
@@ -53,7 +54,6 @@ import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalResourceApi::class)
 @Composable
@@ -103,7 +103,8 @@ fun MarkerInfoScreen(
                     coroutineScope.launch {
                         bottomSheetScaffoldState.bottomSheetState.collapse()
                     }
-                }) {
+                },
+            ) {
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = "Close",
@@ -139,37 +140,76 @@ fun MarkerInfoScreen(
                         shape = MaterialTheme.shapes.medium,
                     )
                 ) {
-                    KamelImage(
-                        resource = painterResource,
-                        contentDescription = marker.title,
+                    var scale by remember {
+                        mutableStateOf(1f)
+                    }
+                    var offset by remember {
+                        mutableStateOf(Offset.Zero)
+                    }
+
+                    BoxWithConstraints(
                         modifier = Modifier
-                            .aspectRatio(16f / 9f),
-                        contentScale = ContentScale.Crop,
-                        onLoading = { progress ->
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize(),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                if(progress < 0.05f) {
-                                    Text(
-                                        "Loading image..."
-                                    )
-                                } else {
-                                    CircularProgressIndicator(progress)
-                                }
-                            }
-                        },
-                        onFailure = { exception: Throwable ->
-                            coroutineScope.launch {
-                                snackbarHostState.showSnackbar(
-                                    message = "Image loading error: " + exception.message.toString(),
-                                    duration= SnackbarDuration.Long
+                            .fillMaxWidth()
+                            .aspectRatio(1280f / 959f)
+                    ) {
+                        val state =
+                            rememberTransformableState { zoomChange, panChange, rotationChange ->
+                                println("zoomChange: $zoomChange, panChange: $panChange, rotationChange: $rotationChange")
+                                scale = (scale * zoomChange).coerceIn(1f, 2.5f)
+
+                                val extraWidth = (scale - 1) * constraints.maxWidth
+                                val extraHeight = (scale - 1) * constraints.maxHeight
+
+                                val maxX = extraWidth / 2
+                                val maxY = extraHeight / 2
+
+                                offset = Offset(
+                                    x = (offset.x + scale * panChange.x).coerceIn(-maxX, maxX),
+                                    y = (offset.y + scale * panChange.y).coerceIn(-maxY, maxY),
                                 )
                             }
-                        },
-                        animationSpec = TweenSpec(500)
-                    )
+
+                        KamelImage(
+                            resource = painterResource,
+                            contentDescription = marker.title,
+                            modifier = Modifier
+                                //.aspectRatio(16f / 9f)
+                                .fillMaxWidth()
+                                .graphicsLayer {
+                                    scaleX = scale
+                                    scaleY = scale
+                                    translationX = offset.x
+                                    translationY = offset.y
+                                }
+                                .transformable(state, lockRotationOnZoomPan = true)
+                            ,
+                            contentScale = ContentScale.Crop,
+                            onLoading = { progress ->
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize(),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    if (progress < 0.05f) {
+                                        Text(
+                                            "Loading image..."
+                                        )
+                                    } else {
+                                        CircularProgressIndicator(progress)
+                                    }
+                                }
+                            },
+                            onFailure = { exception: Throwable ->
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "Image loading error: " + exception.message.toString(),
+                                        duration = SnackbarDuration.Long
+                                    )
+                                }
+                            },
+                            animationSpec = TweenSpec(500)
+                        )
+                    }
                 }
             }
             SnackbarHost(
