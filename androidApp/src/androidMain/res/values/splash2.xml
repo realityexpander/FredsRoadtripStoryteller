@@ -15,7 +15,7 @@
         <item name="windowSplashScreenIconBackgroundColor">@color/freds_blue</item>
 
         <!-- After splash screen is shown, use the following theme -->
-        <item name="postSplashScreenTheme">@style/Theme.AppCompat.Light.NoActionBar</item>
+        <item name="postSplashScreenTheme">@style/Theme.AppCompat.DayNight.NoActionBar</item>
 
     </style>
 </resources>

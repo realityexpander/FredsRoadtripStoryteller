@@ -38,7 +38,7 @@ import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
-import components.ImagePreviewPlaceholder
+import components.PreviewPlaceholder
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalResourceApi::class)
 @Composable
@@ -72,25 +72,33 @@ fun MarkerInfoScreen(
 //            res = "cat-2536662_640.jpg"
 //        )
 
-
     Column(
         Modifier.fillMaxWidth()
-            .padding(16.dp)
-            .scrollable(scrollState, orientation = Orientation.Vertical),
+            .padding(start=16.dp, end=16.dp, bottom = 0.dp, top = 0.dp)
+            .scrollable(scrollState, orientation = Orientation.Vertical)
+        ,
         horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.Top
+        verticalArrangement = Arrangement.Top,
     ) {
-        Row {
+        // Title
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+            ,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
-                "Marker Info",
+                marker.title,
+                modifier = Modifier
+                    .weight(3f),
                 fontSize = MaterialTheme.typography.h5.fontSize,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .weight(3f)
             )
             IconButton(
                 modifier = Modifier
-                    .offset(16.dp, (-16).dp),
+                    .offset(16.dp, 0.dp)
+                ,
                 onClick = {
                     coroutineScope.launch {
                         bottomSheetScaffoldState.bottomSheetState.collapse()
@@ -98,73 +106,64 @@ fun MarkerInfoScreen(
                 }) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Close"
+                    contentDescription = "Close",
+                    modifier = Modifier.padding(bottom = 0.dp, top = 0.dp)
                 )
             }
         }
 
-        Column {
-            Text(
-                "Marker Name: ${marker.title}",
-                fontSize = MaterialTheme.typography.h6.fontSize,
-                fontWeight = FontWeight.Bold,
-            )
-            Text(
-                "Marker Subtitle: ${marker.subtitle}",
-                fontSize = MaterialTheme.typography.subtitle1.fontSize,
-                fontWeight = FontWeight.Bold,
-            )
-            Text(
-                "Marker Latitude: ${marker.position.latitude}",
-                fontSize = MaterialTheme.typography.body1.fontSize,
-                fontWeight = FontWeight.Bold,
-            )
-            Text(
-                "Marker Longitude: ${marker.position.longitude}",
-                fontSize = MaterialTheme.typography.body1.fontSize,
-                fontWeight = FontWeight.Bold,
-            )
+        Text(
+            marker.subtitle,
+                modifier = Modifier.offset(0.dp, (-8).dp),  // Cant get rid of the padding
+            fontSize = MaterialTheme.typography.h6.fontSize,
+            fontWeight = FontWeight.Normal,
+        )
 
-            if(LocalInspectionMode.current) {
-                ImagePreviewPlaceholder("Another Image")
-            } else {
-                KamelImage(
-                    resource = painterResource,
-                    contentDescription = null,
-                    modifier = Modifier.aspectRatio(16f / 9f),
-                    contentScale = ContentScale.Crop,
-                    onLoading = { CircularProgressIndicator(it) },
-                    onFailure = { exception: Throwable ->
-                        scope.launch {
-                            snackbarHostState.showSnackbar(
-                                message = exception.message.toString(),
-                                actionLabel = "Hide",
-                            )
-                        }
-                    },
-                )
-            }
-
-            Spacer(modifier = Modifier.padding(8.dp))
-            Divider()
-            Spacer(modifier = Modifier.padding(8.dp))
-
-            if(LocalInspectionMode.current) {
-//                ImagePreviewPlaceholder("Cat playing with plant")
-                ImagePreviewPlaceholder("Freds head")
-            } else {
-                Image(
-//                    painter = painterResource("cat-2536662_640.jpg"),
-                    painter = painterResource("fred-head-owl-1.png"),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        //.aspectRatio(16f / 9f)
-                    ,
-                    contentScale = ContentScale.FillWidth,
-                )
-            }
+        if(LocalInspectionMode.current) {
+            PreviewPlaceholder("Another Image")
+        } else {
+            KamelImage(
+                resource = painterResource,
+                contentDescription = null,
+                modifier = Modifier.aspectRatio(16f / 9f),
+                contentScale = ContentScale.Crop,
+                onLoading = { CircularProgressIndicator(it) },
+                onFailure = { exception: Throwable ->
+                    scope.launch {
+                        snackbarHostState.showSnackbar(
+                            message = exception.message.toString(),
+                            actionLabel = "Hide",
+                        )
+                    }
+                },
+            )
         }
+
+        Spacer(modifier = Modifier.padding(8.dp))
+        Divider()
+        Spacer(modifier = Modifier.padding(8.dp))
+
+        if(LocalInspectionMode.current) {
+            PreviewPlaceholder("Freds head")
+        } else {
+            Image(
+                painter = painterResource("fred-head-owl-1.png"),
+                contentDescription = null,
+                modifier = Modifier.fillMaxWidth(),
+                contentScale = ContentScale.FillWidth,
+            )
+        }
+
+        Text(
+            "Marker Latitude: ${marker.position.latitude}",
+            fontSize = MaterialTheme.typography.body1.fontSize,
+            fontWeight = FontWeight.Bold,
+        )
+        Text(
+            "Marker Longitude: ${marker.position.longitude}",
+            fontSize = MaterialTheme.typography.body1.fontSize,
+            fontWeight = FontWeight.Bold,
+        )
     }
 }
 

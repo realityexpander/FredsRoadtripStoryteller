@@ -1,9 +1,11 @@
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -44,11 +46,14 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.russhwolf.settings.Settings
+import components.PreviewPlaceholder
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -58,6 +63,8 @@ import loadMarkers.MarkersResult
 import loadMarkers.distanceBetween
 import loadMarkers.loadMarkers
 import loadMarkers.sampleData.kUseRealNetwork
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.painterResource
 import screens.SettingsScreen
 import co.touchlab.kermit.Logger as Log
 
@@ -71,8 +78,8 @@ const val kMaxReloadDistanceMiles = 2.0
 const val kMaxMarkerCacheAgeSeconds = 60 * 60 * 24 * 30  // 30 days
 
 sealed class BottomSheetScreen {
-    data object Settings : BottomSheetScreen()
-    data class MarkerDetails(val markerId: String) : BottomSheetScreen()
+    data object SettingsScreen : BottomSheetScreen()
+    data class MarkerDetailsScreen(val markerId: String) : BottomSheetScreen()
 }
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -85,7 +92,7 @@ fun App() {
         val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
         val scaffoldState = rememberScaffoldState()
         var bottomSheetActiveScreen by remember {
-            mutableStateOf<BottomSheetScreen>(BottomSheetScreen.Settings)
+            mutableStateOf<BottomSheetScreen>(BottomSheetScreen.SettingsScreen)
         }
 
         val settings = remember {
@@ -317,7 +324,7 @@ fun App() {
             sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
             sheetContent = {
                 when (bottomSheetActiveScreen) {
-                    is BottomSheetScreen.Settings -> {
+                    is BottomSheetScreen.SettingsScreen -> {
                         SettingsScreen(
                             settings,
                             bottomSheetScaffoldState,
@@ -346,7 +353,7 @@ fun App() {
                             }
                         )
                     }
-                    is BottomSheetScreen.MarkerDetails -> {
+                    is BottomSheetScreen.MarkerDetailsScreen -> {
                         Text("Marker Details")
                     }
                 }
@@ -418,7 +425,7 @@ fun App() {
                                 // Settings
                                 IconButton(onClick = {
                                     coroutineScope.launch {
-                                        bottomSheetActiveScreen = BottomSheetScreen.Settings
+                                        bottomSheetActiveScreen = BottomSheetScreen.SettingsScreen
                                         bottomSheetScaffoldState.bottomSheetState.apply {
                                             if (isCollapsed) expand() else collapse()
                                         }
@@ -755,21 +762,69 @@ expect fun getPlatformName(): String
 ////                }
 
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
-fun SplashScreen() {
+fun SplashScreenForPermissions(
+    isPermissionsGranted: Boolean = false,
+) {
+    if(isPermissionsGranted) {
+        Box(
+          modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colors.primary)
+        )
+        return
+    }
+
+
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF1F44CC)),  // todo add material theme color here
+//            .heightIn(min = 48.dp, max=300.dp)
+            .background(MaterialTheme.colors.primary),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        Text(
-            "Fred's Historical Markers",
-            color = Color.White,
-            textAlign = TextAlign.Center,
-            fontSize = MaterialTheme.typography.h3.fontSize,
-        )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .weight(1f)
+                ,
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if(LocalInspectionMode.current) {
+                    PreviewPlaceholder(
+                        "Freds head",
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .background(Color.Red)
+                    )
+                } else {
+                    Image(
+                        painter = painterResource("fred-head-owl-1.png"),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .weight(1f),
+                        contentScale = ContentScale.FillWidth,
+                    )
+                }
+    //            PreviewPlaceholder("Freds head",
+    //                modifier = Modifier
+    //                    .weight(1f)
+    //                    .fillMaxHeight()
+    //                    .background(Color.Red)
+    //            )
+                Text(
+                    "Fred's Historic Markers",
+                    color = Color.White,
+                    textAlign = TextAlign.Center,
+                    fontSize = MaterialTheme.typography.h3.fontSize,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            Spacer(modifier = Modifier.weight(2.5f))
     }
 }
 

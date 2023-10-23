@@ -1,8 +1,9 @@
 package com.realityexpander
 
+import AppTheme
 import GPSLocationService
 import MainView
-import SplashScreen
+import SplashScreenForPermissions
 import android.Manifest
 import android.content.Intent
 import android.os.Bundle
@@ -21,12 +22,16 @@ import com.google.android.gms.maps.MapsInitializer
 import com.google.firebase.FirebaseApp
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.logEvent
+import com.russhwolf.settings.Settings
 import intentFlow
+import isMarkersLastUpdatedLocationVisible
+import isPermissionsGranted
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import setIsPermissionsGranted
 
 class MainActivity : AppCompatActivity() {
 
@@ -38,6 +43,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
+        val settings = Settings()
 
         // https://proandroiddev.com/implementing-core-splashscreen-api-e62f0e690f74
         installSplashScreen().apply {
@@ -54,6 +60,7 @@ class MainActivity : AppCompatActivity() {
             if(it[Manifest.permission.ACCESS_FINE_LOCATION] == false ||
                 it[Manifest.permission.ACCESS_COARSE_LOCATION] == false
             ) {
+                settings.setIsPermissionsGranted(false)
                 AlertDialog.Builder(this)
                     .setTitle("Location Permissions Required")
                     .setMessage("This app requires location permissions to function. " +
@@ -83,6 +90,7 @@ class MainActivity : AppCompatActivity() {
             } else {
                 // Dismiss the splash screen
                 splashState.tryEmit(true)
+                settings.setIsPermissionsGranted(true)
 
                 setContent {
                     MainView()
@@ -121,8 +129,11 @@ class MainActivity : AppCompatActivity() {
         // - adb shell setprop debug.firebase.appdistro.devmode true  // false to turn off
         FirebaseApp.initializeApp(this)
 
+        // If permissions are not granted yet, show the splash screen for permissions.
         setContent {
-            SplashScreen()
+            AppTheme {
+                SplashScreenForPermissions(settings.isPermissionsGranted())
+            }
         }
     }
 

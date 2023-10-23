@@ -23,7 +23,7 @@ fun AppTheme(
     val colors = if (darkTheme) {
 //        darkColorScheme(
         darkColors(
-            primary = Color(0xFF6200EE),
+            primary = Color(0xFF111162),
             onPrimary = Color(0xFFEEEEEE),
             secondary = Color(0xFF03DAC5),
 //            tertiary = Color(0xFF3700B3)
@@ -33,7 +33,7 @@ fun AppTheme(
     } else {
 //        lightColorScheme(
         lightColors(
-            primary = Color(0xFF6200EE),
+            primary = Color(0xFF111162),
             secondary = Color(0xFF03DAC5),
 //            tertiary = Color(0xFF3700B3)
             background = Color(0xFF0000FF),
@@ -52,7 +52,7 @@ fun AppTheme(
     )
     val shapes = Shapes(
         small = RoundedCornerShape(4.dp),
-        medium = RoundedCornerShape(4.dp),
+        medium = RoundedCornerShape(8.dp),
         large = RoundedCornerShape(0.dp)
     )
 

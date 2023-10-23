@@ -1,26 +1,19 @@
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.BottomSheetScaffoldState
 import androidx.compose.material.BottomSheetState
 import androidx.compose.material.BottomSheetValue
 import androidx.compose.material.DrawerState
 import androidx.compose.material.DrawerValue
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.Wallpapers
 import components.SettingsSlider
 import components.SettingsSwitch
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
 import screens.SettingsScreen
 
 @Preview(name = "switches", group = "Settings")
@@ -100,7 +93,6 @@ fun SettingsDark() {
 
 @OptIn(ExperimentalMaterialApi::class)
 @Preview(
-    backgroundColor = 0xFF8F8F8F,
     uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL,
     showSystemUi = false, showBackground = true, name = "Marker Info", group = "Marker Info"
 )
@@ -139,3 +131,21 @@ fun MarkerInfoPreview() {
         }
     }
 }
+
+@Preview(
+    uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL,
+    showSystemUi = false,
+    showBackground = true,
+    name = "Splash Screen",
+    group = "Splash Screen"
+)
+@Composable
+fun SplashScreenPreview() {
+    AppTheme {
+        Surface {
+            SplashScreenForPermissions()
+        }
+    }
+}
+
+

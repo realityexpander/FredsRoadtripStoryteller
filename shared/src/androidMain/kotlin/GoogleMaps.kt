@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MyLocation
@@ -214,7 +215,7 @@ actual fun GoogleMaps(
         GoogleMap(
             cameraPositionState = cameraPositionState,
 //            modifier = Modifier.background(Color.Black, RectangleShape),
-            modifier = Modifier.background(Color(0xFF1F44CC), RectangleShape), // todo use theme colors
+            modifier = Modifier.background(MaterialTheme.colors.background, RectangleShape),
             uiSettings = uiSettings,
             properties = properties,
             onMapClick = { latLng: LatLng ->

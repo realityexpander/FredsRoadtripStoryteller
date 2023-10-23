@@ -19,14 +19,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun ImagePreviewPlaceholder(
+fun PreviewPlaceholder(
     placeholderName: String,
+    placeholderKind: String = "Image Placeholder",
+    modifier : Modifier = Modifier
+        .fillMaxWidth()
+        .aspectRatio(16f / 9f)
+        .background(
+            MaterialTheme.colors.background,
+            shape = MaterialTheme.shapes.medium,
+        )
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(16f / 9f)
-            .background(MaterialTheme.colors.background),
+        modifier = modifier,
         contentAlignment = Alignment.Center,
 
         ) {
@@ -35,15 +40,17 @@ fun ImagePreviewPlaceholder(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                "Image Here",
+                placeholderKind,
                 fontSize = MaterialTheme.typography.h6.fontSize,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colors.onBackground,
                 textAlign = TextAlign.Center,
             )
+
             Spacer(modifier = Modifier.padding(8.dp))
             Divider()
             Spacer(modifier = Modifier.padding(8.dp))
+
             Text(
                 placeholderName,
                 fontSize = MaterialTheme.typography.body2.fontSize,

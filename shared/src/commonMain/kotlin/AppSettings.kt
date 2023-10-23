@@ -12,6 +12,7 @@ const val kStartBackgroundUpdatesWhenAppLaunchesSetting =  "startBackgroundUpdat
 const val kTalkRadiusMilesSetting =                        "talkRadiusMiles"
 const val kIsMarkersLastUpdatedLocationVisibleSetting =    "isMarkersLastUpdatedLocationVisible"
 const val kIsRecentlySeenMarkersPanelVisibleSetting =      "isRecentlySeenMarkersPanelVisible"
+const val kIsPermissionsGranted =                          "isPermissionsGranted"
 
 fun Settings.printAppSettings() {
     // Show current settings
@@ -93,4 +94,11 @@ fun Settings.isRecentlySeenMarkersPanelVisible(): Boolean {
 }
 fun Settings.setIsRecentlySeenMarkersPanelVisible(isRecentlySeenMarkersPanelVisible: Boolean) {
     putBoolean(kIsRecentlySeenMarkersPanelVisibleSetting, isRecentlySeenMarkersPanelVisible)
+}
+
+fun Settings.isPermissionsGranted(): Boolean {
+    return getBoolean(kIsPermissionsGranted, false)
+}
+fun Settings.setIsPermissionsGranted(isPermissionsGranted: Boolean) {
+    putBoolean(kIsPermissionsGranted, isPermissionsGranted)
 }

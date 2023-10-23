@@ -72,9 +72,9 @@ kotlin {
                 implementation(libs.ksoup.entites)
 
                 // Settings persistence
-                implementation(libs.multiplatform.settings)
-                implementation(libs.multiplatform.settings.no.arg)
-                implementation(libs.multiplatform.settings.test)
+                api(libs.multiplatform.settings)
+                api(libs.multiplatform.settings.no.arg)
+                api(libs.multiplatform.settings.test)
 
                 // Logging
                 api(libs.logger.kermit)
