@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Looper
+import androidx.compose.runtime.NoLiveLiterals
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.LocationAvailability
 import com.google.android.gms.location.LocationCallback
@@ -22,6 +23,7 @@ import kotlin.coroutines.suspendCoroutine
 import co.touchlab.kermit.Logger as Log
 
 // Implement the LocationService in Android
+@NoLiveLiterals
 actual class GPSLocationService  {
 
     // Define an atomic reference to store the latest location
