@@ -1,11 +1,14 @@
 package components
 
 import androidx.compose.foundation.layout.Row
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Switch
+import androidx.compose.material.SwitchDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 
 @Composable
 fun SettingsSwitch(
@@ -25,7 +28,13 @@ fun SettingsSwitch(
                 .weight(1f)
                 .align(Alignment.CenterVertically),
             checked = isChecked,
-            onCheckedChange = onCheckedChange
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = MaterialTheme.colors.primary,
+                checkedTrackColor = MaterialTheme.colors.primary,
+                uncheckedThumbColor = Color.Gray, // MaterialTheme.colors.primary,
+                uncheckedTrackColor = Color.Gray, // MaterialTheme.colors.primary,
+            )
         )
     }
 }
