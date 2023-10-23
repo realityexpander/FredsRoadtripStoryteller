@@ -1,15 +1,26 @@
+import androidx.compose.animation.core.AnimationVector
+import androidx.compose.animation.core.DurationBasedAnimationSpec
+import androidx.compose.animation.core.FiniteAnimationSpec
+import androidx.compose.animation.core.SpringSpec
+import androidx.compose.animation.core.TweenSpec
+import androidx.compose.animation.core.TwoWayConverter
+import androidx.compose.animation.core.VectorizedFiniteAnimationSpec
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.BottomSheetScaffoldState
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
@@ -17,7 +28,10 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.SnackbarDuration
+import androidx.compose.material.SnackbarHost
 import androidx.compose.material.SnackbarHostState
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -31,14 +45,15 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import components.PreviewPlaceholder
 import io.kamel.core.Resource
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
-import components.PreviewPlaceholder
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalResourceApi::class)
 @Composable
@@ -48,57 +63,42 @@ fun MarkerInfoScreen(
     // onShouldResetMarkerInfoCache: (() -> Unit) = {}
 ) {
     val scrollState = rememberScrollState()
-//    var isResetCacheAlertDialogVisible by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
-
-//    var shouldStartTrackingAutomaticallyWhenAppLaunches by remember {
-//        mutableStateOf(settings?.shouldAutomaticallyStartTrackingWhenAppLaunches() ?: false)
-//    }
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
     val painterResource: Resource<Painter> = asyncPainterResource(
-//        data.images.first { it.orientation == Orientation.LANDSCAPE }.link,
-        data = "https://cdn.pixabay.com/photo/2020/06/13/17/51/milky-way-5295160_1280.jpg",
+//        data = "https://cdn.pixabay.com/photo/2020/06/13/17/51/milky-way-5295160_1280.jpg",
+        data = "https://www.hmdb.org/Photos/7/Photo7252.jpg?11252005",
         filterQuality = FilterQuality.Medium,
     )
 
-//    val painterResource2: Painter = painterResource(
-////            res = "./src/main/resources/cat-2536662_640.jpg"
-////            res = "./shared/src/commonMain/resources/cat-2536662_640.jpg"
-////            res = "./src/commonMain/resources/cat-2536662_640.jpg"
-////            res = "src/commonMain/resources/cat-2536662_640.jpg"
-////            res = "commonMain/resources/cat-2536662_640.jpg"
-////            res = "resources/cat-2536662_640.jpg"
-//            res = "cat-2536662_640.jpg"
-//        )
-
     Column(
-        Modifier.fillMaxWidth()
-            .padding(start=16.dp, end=16.dp, bottom = 0.dp, top = 0.dp)
-            .scrollable(scrollState, orientation = Orientation.Vertical)
-        ,
-        horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.Top,
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(.9f)
+            .padding(start=16.dp, end=16.dp, bottom = 0.dp, top = 8.dp)
     ) {
         // Title
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(bottom = 0.dp, top = 4.dp)
             ,
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.Top
         ) {
             Text(
                 marker.title,
                 modifier = Modifier
-                    .weight(3f),
+                    .weight(3f)
+                    .padding(bottom = 0.dp, top = 4.dp)
+                ,
                 fontSize = MaterialTheme.typography.h5.fontSize,
                 fontWeight = FontWeight.Bold,
             )
             IconButton(
                 modifier = Modifier
-                    .offset(16.dp, 0.dp)
-                ,
+                    .offset(16.dp, (-8).dp)
+                    .padding(8.dp),
                 onClick = {
                     coroutineScope.launch {
                         bottomSheetScaffoldState.bottomSheetState.collapse()
@@ -107,64 +107,118 @@ fun MarkerInfoScreen(
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = "Close",
-                    modifier = Modifier.padding(bottom = 0.dp, top = 0.dp)
                 )
             }
         }
-
         Text(
-            marker.subtitle,
-                modifier = Modifier.offset(0.dp, (-8).dp),  // Cant get rid of the padding
+            "subtitle", //marker.subtitle,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 0.dp, bottom = 4.dp),
             fontSize = MaterialTheme.typography.h6.fontSize,
             fontWeight = FontWeight.Normal,
         )
 
-        if(LocalInspectionMode.current) {
-            PreviewPlaceholder("Another Image")
-        } else {
-            KamelImage(
-                resource = painterResource,
-                contentDescription = null,
-                modifier = Modifier.aspectRatio(16f / 9f),
-                contentScale = ContentScale.Crop,
-                onLoading = { CircularProgressIndicator(it) },
-                onFailure = { exception: Throwable ->
-                    scope.launch {
-                        snackbarHostState.showSnackbar(
-                            message = exception.message.toString(),
-                            actionLabel = "Hide",
-                        )
-                    }
-                },
+        Column(
+            Modifier
+                .verticalScroll(
+                    scrollState,
+                    enabled = true,
+                )
+            ,
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.Top,
+        ) {
+
+            if(LocalInspectionMode.current) {
+                PreviewPlaceholder("Another Image")
+            } else {
+                Surface(
+                    modifier = Modifier.background(
+                        MaterialTheme.colors.background,
+                        shape = MaterialTheme.shapes.medium,
+                    )
+                ) {
+                    KamelImage(
+                        resource = painterResource,
+                        contentDescription = marker.title,
+                        modifier = Modifier
+                            .aspectRatio(16f / 9f),
+                        contentScale = ContentScale.Crop,
+                        onLoading = { progress ->
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize(),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                if(progress < 0.05f) {
+                                    Text(
+                                        "Loading image..."
+                                    )
+                                } else {
+                                    CircularProgressIndicator(progress)
+                                }
+                            }
+                        },
+                        onFailure = { exception: Throwable ->
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = "Image loading error: " + exception.message.toString(),
+                                    duration= SnackbarDuration.Long
+                                )
+                            }
+                        },
+                        animationSpec = TweenSpec(500)
+                    )
+                }
+            }
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(0.dp, 64.dp)
+            ) { data ->
+                Text(
+                    text = data.message,
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colors.error, shape = MaterialTheme.shapes.medium)
+                    ,
+                    color = MaterialTheme.colors.onError,
+                    textAlign = TextAlign.Center
+
+                )
+            }
+
+            Spacer(modifier = Modifier.padding(8.dp))
+            Divider()
+            Spacer(modifier = Modifier.padding(8.dp))
+
+//            if(LocalInspectionMode.current) {
+//                PreviewPlaceholder("Freds head")
+//            } else {
+//                Image(
+//                    painter = painterResource("fred-head-owl-1.png"),
+//                    contentDescription = null,
+//                    modifier = Modifier.fillMaxWidth(),
+//                    contentScale = ContentScale.FillWidth,
+//                )
+//            }
+
+            Text(
+                "Marker Latitude: ${marker.position.latitude}",
+                fontSize = MaterialTheme.typography.body1.fontSize,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                "Marker Longitude: ${marker.position.longitude}",
+                fontSize = MaterialTheme.typography.body1.fontSize,
+                fontWeight = FontWeight.Bold,
             )
         }
-
-        Spacer(modifier = Modifier.padding(8.dp))
-        Divider()
-        Spacer(modifier = Modifier.padding(8.dp))
-
-        if(LocalInspectionMode.current) {
-            PreviewPlaceholder("Freds head")
-        } else {
-            Image(
-                painter = painterResource("fred-head-owl-1.png"),
-                contentDescription = null,
-                modifier = Modifier.fillMaxWidth(),
-                contentScale = ContentScale.FillWidth,
-            )
-        }
-
-        Text(
-            "Marker Latitude: ${marker.position.latitude}",
-            fontSize = MaterialTheme.typography.body1.fontSize,
-            fontWeight = FontWeight.Bold,
-        )
-        Text(
-            "Marker Longitude: ${marker.position.longitude}",
-            fontSize = MaterialTheme.typography.body1.fontSize,
-            fontWeight = FontWeight.Bold,
-        )
     }
+
 }
 
 

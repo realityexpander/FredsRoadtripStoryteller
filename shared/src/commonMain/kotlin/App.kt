@@ -4,6 +4,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -79,7 +80,7 @@ const val kMaxMarkerCacheAgeSeconds = 60 * 60 * 24 * 30  // 30 days
 
 sealed class BottomSheetScreen {
     data object SettingsScreen : BottomSheetScreen()
-    data class MarkerDetailsScreen(val markerId: String) : BottomSheetScreen()
+    data class MarkerDetailsScreen(val marker: MapMarker) : BottomSheetScreen()
 }
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -300,7 +301,6 @@ fun App() {
             isTrackingEnabled = true
             gpsLocationService.allowBackgroundLocationUpdates()
         }
-
         fun stopTracking() {
             isTrackingEnabled = false
             gpsLocationService.preventBackgroundLocationUpdates()
@@ -354,7 +354,10 @@ fun App() {
                         )
                     }
                     is BottomSheetScreen.MarkerDetailsScreen -> {
-                        Text("Marker Details")
+                        MarkerInfoScreen(
+                            bottomSheetScaffoldState,
+                            (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker,
+                        )
                     }
                 }
             },
@@ -550,7 +553,7 @@ fun App() {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(MaterialTheme.colors.background),
+                            .background(MaterialTheme.colors.surface),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         LazyColumn(
@@ -559,7 +562,7 @@ fun App() {
                             item {
                                 Text(
                                     text = "Recently Seen Markers",
-                                    color = MaterialTheme.colors.onBackground,
+                                    color = MaterialTheme.colors.onSurface,
                                     fontStyle = FontStyle.Normal,
                                     fontSize = MaterialTheme.typography.h5.fontSize,
                                     fontWeight = FontWeight.Medium,
@@ -603,7 +606,7 @@ fun App() {
 //                                    )
                                 Text(
                                     text = marker.seenOrder.toString() + ":" + marker.key() + ":" + marker.marker.title,
-                                    color = MaterialTheme.colors.onBackground,
+                                    color = MaterialTheme.colors.onSurface,
                                     fontStyle = FontStyle.Normal,
                                     fontSize = MaterialTheme.typography.h6.fontSize,
                                     fontWeight = FontWeight.Medium,
@@ -621,7 +624,19 @@ fun App() {
                                             shape = RoundedCornerShape(8.dp)
                                         )
                                         .heightIn(min = 48.dp)
-                                        .padding(8.dp, top = 0.dp, bottom = 4.dp)
+                                        .padding(start=8.dp, end=8.dp, top = 0.dp, bottom = 4.dp)
+                                        .clickable {
+                                            // Show marker details
+                                            bottomSheetActiveScreen =
+                                                BottomSheetScreen.MarkerDetailsScreen(
+                                                    marker.marker
+                                                )
+                                            coroutineScope.launch {
+                                                bottomSheetScaffoldState.bottomSheetState.apply {
+                                                    if (isCollapsed) expand()
+                                                }
+                                            }
+                                        }
                                 )
                             }
                         }

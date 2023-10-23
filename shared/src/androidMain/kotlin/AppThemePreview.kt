@@ -123,7 +123,8 @@ fun MarkerInfoPreview() {
                         latitude = 0.0,
                         longitude = 0.0
                     ),
-                    title = "Test Title",
+//                    title = "First City Council of Tepoztlan",
+                    title = "El Tepozteco National Park",
                     subtitle = "Test Subtitle",
                     alpha = 1f
                 )
