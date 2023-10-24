@@ -330,8 +330,6 @@ fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
         spanishInscription = finalSpanishInscription,
     )
 
-    println("mapMarkerResult: $mapMarkerResult")
-
     return Pair(null, mapMarkerResult)
 }
 
