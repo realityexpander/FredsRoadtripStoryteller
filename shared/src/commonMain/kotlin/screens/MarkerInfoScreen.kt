@@ -65,7 +65,7 @@ const val kMaxWeightOfBottomDrawer = 0.9f
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalResourceApi::class, ExperimentalKamelApi::class)
 @Composable
-fun MarkerInfoScreen(
+fun MarkerDetailsScreen(
     bottomSheetScaffoldState: BottomSheetScaffoldState,
     marker: LoadingState<MapMarker>,
 ) {

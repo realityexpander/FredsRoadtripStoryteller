@@ -1,6 +1,6 @@
-package data.loadMarkerInfo.sampleData
+package data.loadMarkerDetails.sampleData
 
-fun almadenVineyardsM2580() = """
+fun firstCityCouncilOfTepoztlanM207310() = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,22 +17,22 @@ fun almadenVineyardsM2580() = """
   <META NAME="keywords" CONTENT="public history, local history, historical markers, roadside historical markers, historical signs, monopole markers, commemorative plaques, mapped history, historical location">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:site" content="@HMdbEditors">
-<meta name="date" content="2023-02-07"> 
-<link rel="canonical" href="https://www.hmdb.org/m.asp?m=2580">
-<meta property="og:url" content="https://www.hmdb.org/m.asp?m=2580" />
-<meta name="twitter:url" content="https://www.hmdb.org/m.asp?m=2580">
+<meta name="date" content="2022-10-05"> 
+<link rel="canonical" href="https://www.hmdb.org/m.asp?m=207310">
+<meta property="og:url" content="https://www.hmdb.org/m.asp?m=207310" />
+<meta name="twitter:url" content="https://www.hmdb.org/m.asp?m=207310">
   
-<title>Almadén Vineyards Historical Marker</title>
-<meta property="og:title" content="Almadén Vineyards Historical Marker" />
-<meta name="twitter:title" content="Almadén Vineyards Historical Marker">
+<title>First City Council of Tepoztlán Historical Marker</title>
+<meta property="og:title" content="First City Council of Tepoztlán Historical Marker" />
+<meta name="twitter:title" content="First City Council of Tepoztlán Historical Marker">
 
 
-<meta name="description" content="On this site in 1852 Charles LeFranc made the first commercial planting of fine European wine grapes in Santa Clara County and founded Almadén Vineyards. (A historical marker  located in San Jose in Santa Clara County, California.)">
+<meta name="description" content=".d 200 Años de la Instalación del Primer Ayuntamiento de Tepoztlán, Morelos. (A historical marker  located in Tepoztlán in Tepoztlán, Morelos, Mexico.)">
 <meta property="og:type" content="article" />
-<meta property="og:description" content="On this site in 1852 Charles LeFranc made the first commercial planting of fine European wine grapes in Santa Clara County and founded Almadén Vineyards. (A historical marker  located in San Jose in Santa Clara County, California.)" />
-<meta name="twitter:description" content="On this site in 1852 Charles LeFranc made the first commercial planting of fine European wine grapes in Santa Clara County and founded Almadén Vineyards. (A historical marker  located in San Jose in Santa Clara County, California.)">
+<meta property="og:description" content=".d 200 Años de la Instalación del Primer Ayuntamiento de Tepoztlán, Morelos. (A historical marker  located in Tepoztlán in Tepoztlán, Morelos, Mexico.)" />
+<meta name="twitter:description" content=".d 200 Años de la Instalación del Primer Ayuntamiento de Tepoztlán, Morelos. (A historical marker  located in Tepoztlán in Tepoztlán, Morelos, Mexico.)">
 
-<meta name="twitter:image" content="https://www.hmdb.org/Photos/7/Photo7252.jpg">
+<meta name="twitter:image" content="https://www.hmdb.org/Photos6/681/Photo681920.jpg">
 
 
 <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -157,7 +157,7 @@ function speak (message,button,lang,iteration) {
         
 // chop up into sentences because speechSynthesis can't handle long text.
     message=message+' [|].';
-    m = message.match(/([^\.!\?]+[\.!\?]+)|([^\.!\?]+$)/g);
+    m = message.match(/([^\.!\?]+[\.!\?]+)|([^\.!\?]+${'$'})/g);
     for (let chunk of m) {
          var msg = new SpeechSynthesisUtterance(chunk.replace(" [|].","")); 
          msg.voice=voice;
@@ -219,7 +219,7 @@ function stopSpeaking(button,lang) {
           if (tagValue.search("1010")==-1) // -1 indicates NOT tagged
           {  //it is NOT tagged so tag it.
              var H = new XMLHttpRequest();
-             H.open( "GET", "https://www.hmdb.org/tagwork.asp?task=taguntag&u=16077&m=2580&t="+tag+"&v=1",true ); // true for asynchronous request
+             H.open( "GET", "https://www.hmdb.org/tagwork.asp?task=taguntag&u=16077&m=207310&t="+tag+"&v=1",true ); // true for asynchronous request
              H.onload=function(e) { // fires when request completes
                  if (H.readyState==4) {
                       if (H.responseText=="Success") {
@@ -235,7 +235,7 @@ function stopSpeaking(button,lang) {
           else 
           {  //it is tagged, so untag it. 
              var H = new XMLHttpRequest();
-             H.open( "GET", "https://www.hmdb.org/tagwork.asp?task=taguntag&u=16077&m=2580&t="+tag+"&v=0", true); // true for asynchronous request
+             H.open( "GET", "https://www.hmdb.org/tagwork.asp?task=taguntag&u=16077&m=207310&t="+tag+"&v=0", true); // true for asynchronous request
              H.onload=function(e) {
                  if (H.readyState==4) {
                       if (H.responseText=="Success") {
@@ -278,41 +278,46 @@ function stopSpeaking(button,lang) {
 		}
 	};
 })(window);
-  </script><div class=articletoplinks><a href='photoadd.asp?MarkerID=2580'>Add&nbsp;Photo</a> &#8212; <a href='linkadd.asp?MarkerID=2580'>Add&nbsp;Link</a> &#8212; <a href='commentadd.asp?MarkerID=2580'>Add&nbsp;Commentary</a> &#8212; <a href='markeradd2.asp?MarkerID=2580'>Correct&nbsp;this&nbsp;page</a></div class=articletoplinks></div class=toplinks>
+  </script><div class=articletoplinks><a href='photoadd.asp?MarkerID=207310'>Add&nbsp;Photo</a> &#8212; <a href='linkadd.asp?MarkerID=207310'>Add&nbsp;Link</a> &#8212; <a href='commentadd.asp?MarkerID=207310'>Add&nbsp;Commentary</a> &#8212; <a href='markeradd2.asp?MarkerID=207310'>Correct&nbsp;this&nbsp;page</a></div class=articletoplinks></div class=toplinks>
 <article class=bodyserif>
-<div ID=towncountryregion class='bodysansserif towncountryregion'>South San Jose  in Santa Clara County, California &#8212; <i>The&nbsp;American&nbsp;West (Pacific&nbsp;Coastal)</i></div><div class=shim6pt>&nbsp;</div><h1>Almadén Vineyards</h1><div class=shim12pt>&nbsp;</div><div class=shim12pt>&nbsp;</div><div style='all:initial;margin-left:0px;'><div class=photoright><div style='max-width:400px; margin-left: auto; margin-right: auto;'><a target=_blank href='PhotoFullSize.asp?PhotoID=7252'><img loading=lazy class=photoimage src=Photos/7/Photo7252.jpg?11252005 style='max-height:300px;' alt='State Historic Landmark 505 image. Click for full size.' title='State Historic Landmark 505. Click for full size.'></a><div class=imagecredit>Photographed By Leticia A. Kohnen,  June 7, 2007</div> <!-- imagecredit --> <div class=imagecaption>1. State Historic Landmark 505</div></div></div></div>
-
-<span class=sectionhead>Inscription. </span>
-<div id=inscription1 style='display:none;'>Almadén Vineyards. . On this site in 1852 Charles LeFranc made the first commercial planting of fine European wine grapes in Santa Clara County and founded Almadén Vineyards. LeFranc imported cuttings from vines in the celebrated wine districts of his native France, shipping them around the Horn by sail. . This historical marker  was erected  in 1953 by California State Parks Commission. It  is in South San Jose  in Santa Clara County California</div>
+<div ID=towncountryregion class='bodysansserif towncountryregion'>Tepoztlán, Morelos, Mexico &#8212; <i>The&nbsp;Central&nbsp;Highlands (North&nbsp;America)</i></div><div class=shim6pt>&nbsp;</div><h1>First City Council of Tepoztlán</h1><div class=shim12pt>&nbsp;</div><div class=shim12pt>&nbsp;</div><div style='all:initial;margin-left:0px;'><div class=photoright><div style='max-width:399px; margin-left: auto; margin-right: auto;'><a target=_blank href='PhotoFullSize.asp?PhotoID=681920'><img loading=lazy class=photoimage src=Photos6/681/Photo681920.jpg?1052022102800PM style='max-height:273px;' alt='First City Council of Tepotzlán Marker image. Click for full size.' title='First City Council of Tepotzlán Marker. Click for full size.'></a><div class=imagecredit>Photographed By J. Makali Bruton,  August 6, 2022</div> <!-- imagecredit --> <div class=imagecaption>1. First City Council of Tepotzlán Marker</div></div></div></div><span class=sectionhead>Inscription. </span><div id=inscription1 style='display:none;'><i>English translation:</i> , <b>200 Years since the Installation of the First City Council of Tepoztlán, Morelos. (1820-2020)</b> ,  In 1820, on September 8, the day on which Tepuztecatl was celebrated, the town of Tepoztlan installed its first town hall.  , In 1826 the municipality of Tepoztlán, as part of the State of Mexico, was ratified., <small>Honorable City Council of Tepoztlan , Rogelio Torres Ortega, Municipal President of Tepoztlan 2019-2021 ,  Government of the State of Morelos , Cuauhtemoc Blanco Bravo, Governor of the State of Morelos 2018-2024 , September 8, 2020</small> . This historical marker  was erected  in 2020. It  is in Tepoztlán Morelos Mexico</div>
       <script>
           var plainText = document.getElementById('inscription1').innerText;
           document.getElementById('inscription1').innerHTML = plainText;
       </script>
- <span id=speakbutton1 style='cursor:pointer;' onclick="speak(document.getElementById('inscription1').innerHTML,1,'en',0)"><img src=SpeakIcon.png title='Click to hear the inscription.'></span> &nbsp;On this site in 1852 Charles LeFranc made the first commercial planting of fine European wine grapes in Santa Clara County and founded Almadén Vineyards. LeFranc imported cuttings from vines in the celebrated wine districts of his native France, shipping them around the Horn by sail.<br>&nbsp;<br><span class=sectionhead>Erected </span>1953 by California State Parks Commission.  (Marker Number <b>505</b>.)<br>&nbsp;<br><span class=sectionhead>Topics and series.</span> This historical marker  is listed in these topic lists: <a href='Results.asp?Search=Topic&CategoryID=1'>Agriculture</a> &bull; <a href='Results.asp?Search=Topic&CategoryID=36'>Horticulture & Forestry</a> &bull; <a href='Results.asp?Search=Topic&CategoryID=8'>Industry & Commerce</a> &bull; <a href='Results.asp?Search=Topic&CategoryID=12'>Settlements & Settlers</a>. In addition, it is included in the <a href=results.asp?Search=Series&SeriesID=489>California Historical Landmarks</a> series list. A significant historical year for this entry is 1852.<br>&nbsp;<br>
+      
+ <span id=speakbutton1 style='cursor:pointer;' onclick="speak(document.getElementById('inscription1').innerHTML,1,'en',0)"><img src=SpeakIcon.png title='Click to hear the inscription.'></span> &nbsp;<br><br>
  
- <span class=sectionhead>Location. </span>37&deg;&nbsp;14.346&#8242;&nbsp;N, 121&deg;&nbsp;53.682&#8242;&nbsp;W. Marker is in San Jose, California, in Santa Clara County. It is in South San Jose. Marker is at the intersection of Blossom Hill Road and Dartmouth Dr. (County Route G-10) on Blossom Hill Road. Plaque is located on the soundwall, on the southeast side of the intersection of Blossom Hill Rd & Dartmouth Dr. <a href="map.asp?markers=2580,38342,41456,34165,129576,52123,155038,154876,154761" target=_blank>Touch for map</a>.  Marker is  at or near this postal address: 1530 Blossom Hill Rd, San Jose CA 95118, United States of America.  <a href='https://www.google.com/maps/dir/?api=1&destination=37.2391,-121.8947' target=_blank>Touch for directions.</a><!--googleoff: index--><br>&nbsp;<br><span class=sectionhead>Other nearby markers. </span><div style='all:initial;margin-left:0px;'><div class=photoleft><div style='max-width:400px; margin-left: auto; margin-right: auto;'><a target=_blank href='PhotoFullSize.asp?PhotoID=7253'><img loading=lazy class=photoimage src=Photos/7/Photo7253.jpg?11252005 style='max-height:300px;' alt='Alamaden Vineyard original Winery Building image. Click for full size.' title='Alamaden Vineyard original Winery Building. Click for full size.'></a><div class=imagecredit>Photographed By Leticia A. Kohnen,  June 7, 2007</div> <!-- imagecredit --> <div class=imagecaption>2. Alamaden Vineyard original Winery Building</div><div class=imagesubcaption  style=''>All that remains of the original winery is this brick building which housed the original wine making and storage rooms. It is now part of Almaden Park.</div></div></div></div>
+ <lang=es><b>200 Años de la Instalación del Primer Ayuntamiento de
+Tepoztlán, Morelos. (1820-2020)</b><br>
+En 1820, el 8 de septiembre, día en que se festejaba a Tepuztecatl, el pueblo de Tepoztlan instala su primer ayuntamiento. <br>En 1826 se ratifica el ayuntamiento de Tepoztlán,
+enmarcado en el Estado de México.<br><br><small>H. Cabildo de Tepoztlan<br>
+C.Rogelio Torres Ortega Presidente Municipal de Tepoztlan 2019-2021<br>
+Gobierno del Estado de Morelos<br>C. Cuauhtemoc Blanco Bravo
+Gobernador del Estado de Morelos 2018-2024<br>8 de septiembre 2020</small>
+<br><br><lang=en><i>English translation:</i><br><b>200 Years since the Installation of the First City Council of Tepoztlán, Morelos. (1820-2020)</b><br> In 1820, on September 8, the day on which Tepuztecatl was celebrated, the town of Tepoztlan installed its first town hall. <br>In 1826 the municipality of Tepoztlán, as part of the State of Mexico, was ratified.<br><br><small>Honorable City Council of Tepoztlan<br>Rogelio Torres Ortega, Municipal President of Tepoztlan 2019-2021<br> Government of the State of Morelos<br>Cuauhtemoc Blanco Bravo, Governor of the State of <div style='all:initial;margin-left:0px;'><div class=photoleft><div style='max-width:297px; margin-left: auto; margin-right: auto;'><a target=_blank href='PhotoFullSize.asp?PhotoID=681923'><img loading=lazy class=photoimage src=Photos6/681/Photo681923.jpg?1052022103400PM style='max-height:400px;' alt='Additional tablets near the First City Council of Tepotzlán Marker image. Click for full size.' title='Additional tablets near the First City Council of Tepotzlán Marker. Click for full size.'></a><div class=imagecredit>Photographed By J. Makali Bruton,  August 6, 2022</div> <!-- imagecredit --> <div class=imagecaption>2. Additional tablets near the First City Council of Tepotzlán Marker</div><div class=imagesubcaption  style=''>These additional tablets include a commemoration of the City Council of 1995-1997 and a tribute to local environmentalist Marcos Olmedo Gutiérrez.</div></div></div></div>
         <div id=QRCode class='imagecredit onlyprint' style='float:right;margin:10px 0 10px 15px;'>
-        <a href=https://www.hmdb.org/m.asp?m=2580>
-        <img src="https://api.qrserver.com/v1/create-qr-code/?data=https://www.hmdb.org/m.asp&quest;m=2580&amp;size=100x100" ></a>
+        <a href=https://www.hmdb.org/m.asp?m=207310>
+        <img src="https://api.qrserver.com/v1/create-qr-code/?data=https://www.hmdb.org/m.asp&quest;m=207310&amp;size=100x100" ></a>
             <center><big>Click or scan to see<br>this page online</big></center>
         </div>
-        At least 8 other markers are within 4 miles of this marker, measured as the crow flies. <a href=m.asp?m=38342>De Anza Expedition 1775 - 1776</a> (approx. 0.4 miles away); <a href=m.asp?m=41456>El Senador Mine</a> (approx. 2 miles away); <a href=m.asp?m=34165>El Senator Mine</a> (approx. 2 miles away); <a href=m.asp?m=129576>Goodrich Quarry</a> (approx. 2.7 miles away); <a href=m.asp?m=52123>Hamilton House</a> (approx. 3.6 miles away); <a href=m.asp?m=155038>History of Vieira Park</a> (approx. 3.8 miles away); <a href=m.asp?m=154876>The Teddy Roosevelt Tree</a> (approx. 3.9 miles away); <a href=m.asp?m=154761>Barron House</a> (approx. 4 miles away).  <a href="results.asp?Search=Place&Town=San Jose&State=California">Touch for a list and map</a> of all markers in San Jose.<!--googleon: index--><br>&nbsp;<br><span class=sectionhead><font color=silver>Additional keywords.</font> </span><font color=silver>California verticulture, California Wineries</font>
+        Morelos 2018-2024<br>September 8, 2020</small><br>&nbsp;<br><span class=sectionhead>Erected </span>2020. <br>&nbsp;<br><span class=sectionhead>Topics.</span> This historical marker  is listed in these topic lists: <a href='Results.asp?Search=Topic&CategoryID=29'>Civil Rights</a> &bull; <a href='Results.asp?Search=Topic&CategoryID=4'>Colonial Era</a>. A significant historical date for this entry is September 8, 1820.<br>&nbsp;<br><span class=sectionhead>Location. </span>18&deg;&nbsp;59.186&#8242;&nbsp;N, 99&deg;&nbsp;6.074&#8242;&nbsp;W. Marker is in Tepoztlán, Morelos. Marker can be reached from 5 de Mayo just south of Avenida Ignacio Zaragoza, on the left when traveling south.  <a href="map.asp?markers=207310,207314,207234,207304,207229,207092,207167,207076,207043" target=_blank>Touch for map</a>.  Marker is  at or near this postal address: 5 de Mayo 119, Tepoztlán MOR 62520, Mexico.  <a href='https://www.google.com/maps/dir/?api=1&destination=18.98643843,-99.10123286' target=_blank>Touch for directions.</a><!--googleoff: index--><br>&nbsp;<br><span class=sectionhead>Other nearby markers. </span>At least 8 other markers are within 16 kilometers of this marker, measured as the crow flies. <a href=m.asp?m=207314>El Tepozteco National Park</a> (within shouting distance of this marker); <a href=m.asp?m=207234>Temple of Tezcatlipoca</a> (approx. 14.1 kilometers away); <a href=m.asp?m=207304>Teopanzolco</a> (approx. 14.1 kilometers away); <a href=m.asp?m=207229>Temples of Tlaloc and Huitilopochtli</a> (approx. 14.2 kilometers away); <a href=m.asp?m=207092>The Temple of Ehécatl</a> (approx. 14.2 kilometers away); <a href=m.asp?m=207167>Minor Temples</a> (approx. 14.2 kilometers away); <a href=m.asp?m=207076>Callejón del Cubo</a> (approx. 15.7 kilometers away); <a href=m.asp?m=207043>Carlos Pacheco Villalobos</a> (approx. 15.7 kilometers away). <!--googleon: index-->
 
 <!-- End of text, begin photos-only -->
 
-<div class=shim12pt>&nbsp;</div><div id=AdditionalPhotos style='text-align: center; width: 100%;'><div style='all:initial;margin-left:0px;'><div class=photoafter><div style='max-width:420px; margin-left: 10px; margin-right: 10px;'><a target=_blank href='PhotoFullSize.asp?PhotoID=7254'><img loading=lazy class=photoimage src=Photos/7/Photo7254.jpg?11252005 style='max-height:300px;' alt='Old Wine Press image. Click for full size.' title='Old Wine Press. Click for full size.'></a><div class=imagecredit style='padding-left: 10px; padding-right: 10px;'>Photographed By Leticia A. Kohnen,  June 7, 2007</div> <!-- imagecredit --> <div class=imagecaption style='padding-left: 10px; padding-right: 10px;'>3. Old Wine Press</div><div class=imagesubcaption  style='padding-left: 10px; padding-right: 10px;'>This hand operated wine press, once used at the winery is now the centerpiece of the park's rose garden.</div></div></div></div></div><div class=shim6pt>&nbsp;</div>&nbsp;<br><span class=sectionhead>Credits. </span><a name=WantList></a>This page was last revised on  February 7, 2023. It was originally submitted on  September 19, 2007, by Mathew H. Kohnen of San Jose, California.  This page has been viewed 1,834 times since then and 39 times this year. <b>Photos:</b>  &nbsp; <b>1, 2, 3.</b>&nbsp;submitted on  September 19, 2007, by Mathew H. Kohnen of San Jose, California.  &bull; J. J. Prats was the editor who published this page. 
+<div class=shim12pt>&nbsp;</div><div id=AdditionalPhotos style='text-align: center; width: 100%;'><div style='all:initial;margin-left:0px;'><div class=photoafter><div style='max-width:420px; margin-left: 10px; margin-right: 10px;'><a target=_blank href='PhotoFullSize.asp?PhotoID=681924'><img loading=lazy class=photoimage src=Photos6/681/Photo681924.jpg?1052022103600PM style='max-height:300px;' alt='First City Council of Tepotzlán Marker image. Click for full size.' title='First City Council of Tepotzlán Marker. Click for full size.'></a><div class=imagecredit style='padding-left: 10px; padding-right: 10px;'>Photographed By J. Makali Bruton,  August 6, 2022</div> <!-- imagecredit --> <div class=imagecaption style='padding-left: 10px; padding-right: 10px;'>3. First City Council of Tepotzlán Marker</div></div></div></div><div style='all:initial;margin-left:0px;'><div class=photoafter><div style='max-width:420px; margin-left: 10px; margin-right: 10px;'><a target=_blank href='PhotoFullSize.asp?PhotoID=681926'><img loading=lazy class=photoimage src=Photos6/681/Photo681926.jpg?1052022104000PM style='max-height:300px;' alt='First City Council of Tepotzlán Marker image. Click for full size.' title='First City Council of Tepotzlán Marker. Click for full size.'></a><div class=imagecredit style='padding-left: 10px; padding-right: 10px;'>Photographed By J. Makali Bruton,  August 6, 2022</div> <!-- imagecredit --> <div class=imagecaption style='padding-left: 10px; padding-right: 10px;'>4. First City Council of Tepotzlán Marker</div><div class=imagesubcaption  style='padding-left: 10px; padding-right: 10px;'>It can be hard to see the marker as the Ayuntamiento of Tepotzlán is often blocked by sales tents.</div></div></div></div></div><div class=shim6pt>&nbsp;</div>&nbsp;<br><span class=sectionhead>Credits. </span><a name=WantList></a>This page was last revised on  October 5, 2022. It was originally submitted on  October 5, 2022, by J. Makali Bruton of Accra, Ghana.  This page has been viewed 37 times since then and 9 times this year. <b>Photos:</b>  &nbsp; <b>1, 2, 3, 4.</b>&nbsp;submitted on  October 5, 2022, by J. Makali Bruton of Accra, Ghana. 
 </article>
 
 <div class=noprint style="vertical-align:middle;"><br>
 <div style="float:left;"><span class=sectionhead>Share this page. &nbsp;</span></div>
-<div style="float:left;margin:5px;"><a href="mailto:?body=Here's a link to this marker at the Historical Marker Database. https://www.hmdb.org/m.asp%3Fm=2580&subject=Almadén Vineyards Historical Marker"><img src=emailicon.png height=20></a></div><div style="float:left;margin:5px;"><img src=FacebookF.png height=16> <div class="fb-like" data-href="https://www.hmdb.org/m.asp?m=2580" data-send="true" data-width="320" data-layout="button_count" data-show-faces="false" data-font="arial"></div></div>
+<div style="float:left;margin:5px;"><a href="mailto:?body=Here's a link to this marker at the Historical Marker Database. https://www.hmdb.org/m.asp%3Fm=207310&subject=First City Council of Tepoztlán Historical Marker"><img src=emailicon.png height=20></a></div><div style="float:left;margin:5px;"><img src=FacebookF.png height=16> <div class="fb-like" data-href="https://www.hmdb.org/m.asp?m=207310" data-send="true" data-width="320" data-layout="button_count" data-show-faces="false" data-font="arial"></div></div>
 <div style="float:left;margin:5px;"><a href="https://twitter.com/share" class="twitter-share-button" data-show-count="true">Tweet</a><script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script></div>
 <div style="float:left;margin:5px;"><a href='https://www.tumblr.com/share' title='Share on Tumblr' style="display:inline-block; text-indent:-9999px; overflow:hidden; width:81px; height:20px; background:url('https://platform.tumblr.com/v1/share_1.png') top left no-repeat transparent;">Share on Tumblr</a></div>
-<div style="float:left;margin:5px;"><a data-pin-do="buttonPin" data-pin-count="beside" data-pin-save="true" href="https://www.pinterest.com/pin/create/button/?url=https%3A%2F%2Fwww.hmdb.org/m.asp%3Fm=2580&media=&description=Next%20stop%3A%20Pinterest"></a><script async defer src="//assets.pinterest.com/js/pinit.js"></script></div>
+<div style="float:left;margin:5px;"><a data-pin-do="buttonPin" data-pin-count="beside" data-pin-save="true" href="https://www.pinterest.com/pin/create/button/?url=https%3A%2F%2Fwww.hmdb.org/m.asp%3Fm=207310&media=&description=Next%20stop%3A%20Pinterest"></a><script async defer src="//assets.pinterest.com/js/pinit.js"></script></div>
 <div style='clear:left;'></div>
 </div>
 
-<div class=onlyprint style='float:right;margin-top:10px;margin-bottom:-10px;'>m=2580</div><br><div class='bottomlinks noprint'><div class=articletoplinks><a href='photoadd.asp?MarkerID=2580'>Add&nbsp;Photo</a> &#8212; <a href='linkadd.asp?MarkerID=2580'>Add&nbsp;Link</a> &#8212; <a href='commentadd.asp?MarkerID=2580'>Add&nbsp;Commentary</a> &#8212; <a href='markeradd2.asp?MarkerID=2580'>Correct&nbsp;this&nbsp;page</a></div class=articletoplinks></div class=bottomlinks><script>history.replaceState(null,null,'m.asp?m=2580');</script>
+<div class=onlyprint style='float:right;margin-top:10px;margin-bottom:-10px;'>m=207310</div><br><div class='bottomlinks noprint'><div class=articletoplinks><a href='photoadd.asp?MarkerID=207310'>Add&nbsp;Photo</a> &#8212; <a href='linkadd.asp?MarkerID=207310'>Add&nbsp;Link</a> &#8212; <a href='commentadd.asp?MarkerID=207310'>Add&nbsp;Commentary</a> &#8212; <a href='markeradd2.asp?MarkerID=207310'>Correct&nbsp;this&nbsp;page</a></div class=articletoplinks></div class=bottomlinks><script>history.replaceState(null,null,'m.asp?m=207310');</script>
 </div><!-- Main division -->
 
 <div class=noprint style='text-align:center; margin:5pt 0 5pt 0;'><i><a href=https://www.cera.net target=_blank>CeraNet Cloud Computing</a> sponsors the&nbsp;Historical&nbsp;Marker&nbsp;Database.</i></div>
@@ -367,7 +372,7 @@ window.onpageshow = function() {
 </div>
 
 
-<div id:logininfo style='position: absolute; top: 5px; right: 10px; width: 790px; height: 25px;  opacity:1; z-index: 100;text-align: right; visibility: visible; font-size:75%;line-height:100%; color=silver;' class='bodysansserif onlyprint'>Oct. 23, 2023</div>
+<div id:logininfo style='position: absolute; top: 5px; right: 10px; width: 790px; height: 25px;  opacity:1; z-index: 100;text-align: right; visibility: visible; font-size:75%;line-height:100%; color=silver;' class='bodysansserif onlyprint'>Oct. 24, 2023</div>
 </div> <!-- BOTTOM OF THE WRAPPER -->
 
 

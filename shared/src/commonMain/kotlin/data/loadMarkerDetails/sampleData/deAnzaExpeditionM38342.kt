@@ -1,4 +1,4 @@
-package data.loadMarkerInfo.sampleData
+package data.loadMarkerDetails.sampleData
 
 fun deAnzaExpeditionM38342() = """
 

@@ -1,10 +1,10 @@
 package com.realityexpander
 
-import data.loadMarkerInfo.parseMarkerInfoPageHtml
-import data.loadMarkerInfo.sampleData.almadenVineyardsM2580
-import data.loadMarkerInfo.sampleData.deAnzaExpeditionM38342
-import data.loadMarkerInfo.sampleData.elTepoztecoNationalParkM207314
-import data.loadMarkerInfo.sampleData.firstCityCouncilOfTepoztlanM207310
+import data.loadMarkerDetails.parseMarkerInfoPageHtml
+import data.loadMarkerDetails.sampleData.almadenVineyardsM2580
+import data.loadMarkerDetails.sampleData.deAnzaExpeditionM38342
+import data.loadMarkerDetails.sampleData.elTepoztecoNationalParkM207314
+import data.loadMarkerDetails.sampleData.firstCityCouncilOfTepoztlanM207310
 import json
 import kotlin.test.Test
 import kotlin.test.assertFalse
@@ -246,6 +246,12 @@ class ParseMarkerInfoPageHtmlTest {
         assertTrue(
             markerInfo.erected.isBlank(),
             "Erected was found but should be blank"
+        )
+
+        // Check that inscription has proper spaces between words
+        assertTrue(
+            markerInfo.englishInscription == "This park was decreed as a Protected Area on January 22, 1937, has an area of 23,286 hectares and is located in the Municipality of Tepoztlán, Morelos. This Park is made up of six types of vegetation, from the Oyamel forest to the Low Deciduous Forest. As for fauna, there are 237 species of birds, 60 of mammals and 45 of reptiles. During your visit you can appreciate the natural beauty of this Park, which is incorporated into the \"Chichinautzin Biological Corridor\" and ranges from the Lagunas de Zempoala National Park to the northern area of the municipality of Atlatlahucan. The mountainous characteristics of the area have stimulated the isolation of animal and plant species, however, in this area there are 64 at risk. With your help we keep this site.",
+            "Inscription has improper spaces between words"
         )
     }
 

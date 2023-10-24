@@ -56,7 +56,7 @@ import com.russhwolf.settings.Settings
 import screens.uiComponents.AppTheme
 import screens.uiComponents.PreviewPlaceholder
 import data.LoadingState
-import data.loadMarkerInfo.loadMapMarkerInfo
+import data.loadMarkerDetails.loadMapMarkerDetails
 import data.loadMarkers.MarkersResult
 import data.loadMarkers.distanceBetween
 import data.loadMarkers.loadMarkers
@@ -104,7 +104,7 @@ fun App() {
 
         val settings = remember {
             Settings().apply {
-//                 clear()  // Force clear all settings & stored data
+                 clear()  // Force clear all settings & stored data
                 // Log.setMinSeverity(Severity.Warn)
                 printAppSettings()
             }
@@ -368,9 +368,9 @@ fun App() {
                     }
                     is BottomSheetScreen.MarkerDetailsScreen -> {
                         val marker = (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker
-                        markerDetailsInfo = loadMapMarkerInfo(marker)
+                        markerDetailsInfo = loadMapMarkerDetails(marker)
 
-                        MarkerInfoScreen(
+                        MarkerDetailsScreen(
                             bottomSheetScaffoldState,
                             markerDetailsInfo,
                         )

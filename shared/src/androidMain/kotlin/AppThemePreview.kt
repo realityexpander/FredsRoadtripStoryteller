@@ -121,7 +121,7 @@ fun MarkerInfoPreview(
 ){
     AppTheme {
         Surface {
-            MarkerInfoScreen(
+            MarkerDetailsScreen(
                 bottomSheetScaffoldState = BottomSheetScaffoldState(
                     bottomSheetState = BottomSheetState(
                         initialValue = BottomSheetValue.Collapsed,

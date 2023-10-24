@@ -1,4 +1,4 @@
-package data.loadMarkerInfo
+package data.loadMarkerDetails
 
 import maps.MapMarker
 import androidx.compose.runtime.Composable
@@ -8,7 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import data.LoadingState
-import data.loadMarkerInfo.sampleData.almadenVineyardsM2580
+import data.loadMarkerDetails.sampleData.almadenVineyardsM2580
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import kotlinx.coroutines.yield
@@ -18,7 +18,7 @@ import data.loadMarkers.kBaseHmdbDotOrgUrl
 const val kUseFakeData = false
 
 @Composable
-fun loadMapMarkerInfo(mapMarker: MapMarker, useFakeData: Boolean = false): LoadingState<MapMarker> {
+fun loadMapMarkerDetails(mapMarker: MapMarker, useFakeData: Boolean = false): LoadingState<MapMarker> {
     var loadingState by remember {
         mutableStateOf<LoadingState<MapMarker>>(LoadingState.Loading)
     }
@@ -39,7 +39,7 @@ fun loadMapMarkerInfo(mapMarker: MapMarker, useFakeData: Boolean = false): Loadi
         }
 
         loadingState = LoadingState.Loading
-        yield() // Allow UI to render LoadingState.Loading
+        yield() // Allow UI to render LoadingState.Loading state
 
         try {
             if (!useFakeData) {

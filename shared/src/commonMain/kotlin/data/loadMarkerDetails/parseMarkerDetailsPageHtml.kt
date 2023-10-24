@@ -1,4 +1,4 @@
-package data.loadMarkerInfo
+package data.loadMarkerDetails
 
 import maps.MapMarker
 import co.touchlab.kermit.Logger
@@ -332,12 +332,17 @@ fun String.ensureSpaceAfterPeriod(): String {
 fun String.stripNewlines(): String {
     return this.replace("\n", "")
 }
+fun String.stripTripleSpace(): String {
+    return this.replace("   ", " ")
+}
 fun String.processInscriptionString(): String {
     return this
         .stripNewlines()
         .stripDoubleSpace()
         .stripDoublePeriodAndSpace()
         .ensureSpaceAfterPeriod()
+        .stripTripleSpace()
+        .stripDoubleSpace()
         .trim()
 }
 
