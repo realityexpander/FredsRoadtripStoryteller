@@ -7,7 +7,7 @@ import co.touchlab.kermit.Logger as Log
 
 const val kBaseHmdbDotOrgUrl = "https://www.hmdb.org/"
 
-suspend fun parseMarkersPageHtml(rawPageHtml: String): MarkersResult {
+fun parseMarkersPageHtml(rawPageHtml: String): MarkersResult {
     if (rawPageHtml.isBlank()) {
         Log.w { "htmlResponse is Blank" }
         return MarkersResult()
@@ -309,7 +309,7 @@ suspend fun parseMarkersPageHtml(rawPageHtml: String): MarkersResult {
             markerInfos[markerId] = MarkerInfo(
                 id = markerId,
                 title = title,
-                shortDescription = shortLocation,
+                shortDescription = shortLocation.stripEmDash(),
                 lat = lat,
                 long = long,
             )
@@ -328,4 +328,8 @@ suspend fun parseMarkersPageHtml(rawPageHtml: String): MarkersResult {
         markerInfos,
         totalMarkersAtLocation
     )
+}
+
+fun String.stripEmDash(): String {
+    return this.replace("—", "")
 }

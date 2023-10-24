@@ -4,7 +4,7 @@
 // https://www.hmdb.org/m.asp?m=2580
 // 37.2391,-121.8947
 // Almadén Vineyards
-fun singleItemPageFakeMarkerHtmlPage1() = """
+fun almadenVineyardsSingleItemPageHtmlPage1() = """
 <!DOCTYPE html>
 <html lang="en">
 <head>

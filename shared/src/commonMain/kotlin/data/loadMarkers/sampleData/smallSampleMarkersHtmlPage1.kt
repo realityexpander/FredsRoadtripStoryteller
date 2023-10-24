@@ -1,6 +1,6 @@
 package data.loadMarkers.sampleData
 
-val smallHtmlSample = """
+val smallSampleMarkersHtmlPage1 = """
     <html>
         <head>
             <title>My Title</title>

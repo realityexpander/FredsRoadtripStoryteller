@@ -2,7 +2,7 @@ package data.loadMarkers.sampleData
 
 // This is a sample of the HTML that is returned from the HMdb.org website.
 // This page represents the results of a one-page of a search for markers near a Tepoztlan, Mexico.
-fun tepoztlanFakeDatasetPage1() = """
+fun tepoztlanMarkersHtmlPage1() = """
     <!DOCTYPE html>
     <html lang="en">
     <head>

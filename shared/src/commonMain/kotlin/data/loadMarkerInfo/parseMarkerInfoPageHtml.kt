@@ -283,10 +283,9 @@ fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
     ksoupHtmlParser.write(rawPageHtml)
     ksoupHtmlParser.end()
 
-    // • Text cleanup for multi-language inscriptions
+    // • Text cleanup
 
     // Multi-language Inscription - Process the collected lines, if any
-//    if(mapMarkerResult.inscription.contains("English translation", ignoreCase=true)) {
     val finalEnglishInscription =
         if(englishInscriptionLines.size > 0
            || mapMarkerResult.inscription.contains("English translation", ignoreCase=true)
@@ -312,7 +311,6 @@ fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
     mapMarkerResult = mapMarkerResult.copy(
         englishInscription = finalEnglishInscription,
         spanishInscription = finalSpanishInscription,
-        subtitle = mapMarkerResult.subtitle.stripLongDash()
     )
 
     return Pair(null, mapMarkerResult)
@@ -333,9 +331,6 @@ fun String.ensureSpaceAfterPeriod(): String {
 }
 fun String.stripNewlines(): String {
     return this.replace("\n", "")
-}
-fun String.stripLongDash(): String {
-    return this.replace("—", "")
 }
 fun String.processInscriptionString(): String {
     return this

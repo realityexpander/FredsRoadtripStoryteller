@@ -2,7 +2,7 @@ package data.loadMarkers.sampleData
 
 // This is a sample of a full page of HTML from the HMDB website.
 // This page represents the first page of a multiple page search result for markers near a specific location.
-fun sunnyvaleFakeMarkerHtmlPage1() = """
+fun sunnyvaleMarkersHtmlPage1() = """
 <!DOCTYPE html>
 <html lang="en">
     <head>

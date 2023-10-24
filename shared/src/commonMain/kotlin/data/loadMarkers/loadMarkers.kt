@@ -35,7 +35,7 @@ import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import data.loadMarkers.sampleData.generateFakeMarkerPageHtml
+import data.loadMarkers.sampleData.simpleMarkersPageHtml
 import data.loadMarkers.sampleData.kUseRealNetwork
 import setCachedMarkersLastUpdatedLocation
 import setCachedMarkersLastUpdatedEpochSeconds
@@ -246,7 +246,7 @@ fun loadMarkers(
                         rawHtml
                     } else {
                         // use FAKE loading from fakeDataSet
-                        generateFakeMarkerPageHtml(curHtmlPageNum, useFakeDataSetId)
+                        simpleMarkersPageHtml(curHtmlPageNum, useFakeDataSetId)
                     }
 
                 // Step 4 - Parse the HTML to extract the marker info
