@@ -13,6 +13,8 @@ fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
 
     var mapMarkerResult = MapMarker(location = "")
     val rawMarkerInfoStrings = mutableListOf<String>()
+    val spanishInscriptionLines = mutableListOf<String>()
+    val englishInscriptionLines = mutableListOf<String>()
 
     if (rawPageHtml.isBlank()) {
         Logger.w { "htmlResponse is Blank" }
@@ -32,6 +34,11 @@ fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
         var isCapturingLocationTextPhase1 = false
         var isCapturingLocationTextPhase2 = false
 
+        var isCapturingSpanishInscription = false
+
+        var isCapturingEnglishInscription = false
+        var isCapturingEnglishInscriptionPaused = false
+
         return KsoupHtmlHandler.Builder()
             .onOpenTag { tagName, attributes, _ ->
                 // title - Start
@@ -41,11 +48,33 @@ fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
                     isCapturingTitleText = true
                 }
 
-                // inscription - Start
+                // inscription - Start (for english-only pages)
                 // <div id="inscription1" style="display:none;">Almadén Vineyards. . On this site in 1852 Charles LeFranc made the first commercial planting of fine European wine grapes in Santa Clara County and founded Almadén Vineyards. LeFranc imported cuttings from vines in the celebrated wine districts of his native France, shipping them around the Horn by sail. . This historical marker  was erected  in 1953 by California State Parks Commission. It  is in South San Jose  in Santa Clara County California</div>
                 if(tagName == "div" && attributes["id"] == "inscription1") {
                     isCapturingText = true
                     isCapturingInscriptionText = true
+                }
+
+                // Multi-language Inscription - Start
+                // <span id="speakbutton1" style="cursor:pointer;" onclick="speak(document.getElementById('inscription1').innerText,1,'en-US',0);"><img src="SpeakIcon.png" title="Click to hear the inscription."></span>
+                if(tagName =="span" && attributes["id"] == "speakbutton1") {
+                    isCapturingText = true
+                    isCapturingSpanishInscription = true // spanish starts first, will be set to false when "English translation:" is found
+                    isCapturingEnglishInscription = false
+                }
+
+                // Multi-language Inscription - Pause text collection for ad copy
+                // <fieldset id="incopyAd" class="adleft"><legend class="adtitle">Paid Advertisement</legend>
+                if(tagName == "fieldset" && attributes["id"] == "incopyAd") {
+                    isCapturingEnglishInscriptionPaused = true
+                }
+
+                // Multi-language Inscription - End
+                // <span class="sectionhead">Topics.</span>
+                if(isCapturingText && tagName == "span" && attributes["class"] == "sectionhead") {
+                    isCapturingText = false
+                    isCapturingSpanishInscription = false
+                    isCapturingEnglishInscription = false
                 }
 
                 // markerPhotoUrl & additionalPhotos - (self closing tag)
@@ -96,15 +125,25 @@ fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
                 }
 
             }
+            .onCloseTag { tagName, isSelfClosing ->
+                // Multi-language Inscription - Unpause for ads
+                // </div>  // from id="QRCode"
+                if(isCapturingEnglishInscriptionPaused) {
+                    if (tagName == "center") {
+                        isCapturingEnglishInscriptionPaused = false
+                    }
+                }
+            }
             .onText { text ->
                 if(isCapturingText) {
                     val decodedString =
                         KsoupEntities
                             .decodeHtml(text)
-                            .stripDoubleSpaces()
-                            .stripDoublePeriodAndSpaces()
-                    if (decodedString.isNotBlank())
-                        rawMarkerInfoStrings += decodedString
+                            .stripDoubleSpace()
+                            .trim()
+                    if (decodedString.isBlank()) return@onText
+
+                    rawMarkerInfoStrings += decodedString
 
                     // Title Text
                     if (isCapturingTitleText) {
@@ -115,13 +154,35 @@ fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
                         isCapturingTitleText = false
                     }
 
-                    // Inscription
+                    // Inscription (english-only text) (will be "English translation:" if multi-language)
                     if(isCapturingInscriptionText) {
                         mapMarkerResult = mapMarkerResult.copy(
                             inscription = decodedString
                         )
-                        isCapturingText = false
+                        isCapturingText = false  // Captures only one line of text
                         isCapturingInscriptionText = false
+                    }
+
+                    // Spanish Inscription (multi-language text)
+                    if(isCapturingSpanishInscription) {
+                        if(decodedString.contains("English translation:", ignoreCase = true)) {
+                            isCapturingEnglishInscription = true
+                            isCapturingSpanishInscription = false
+                            return@onText
+                        }
+
+//                        mapMarkerResult = mapMarkerResult.copy(
+//                            spanishInscription = mapMarkerResult.spanishInscription + decodedString
+//                        )
+                        spanishInscriptionLines += decodedString
+                    }
+
+                    // English Inscription (multi-language text)
+                    if(isCapturingEnglishInscription && !isCapturingEnglishInscriptionPaused) {
+//                        mapMarkerResult = mapMarkerResult.copy(
+//                            englishInscription = mapMarkerResult.englishInscription + decodedString
+//                        )
+                        englishInscriptionLines += decodedString
                     }
 
                     // Photo Caption(s)
@@ -207,25 +268,51 @@ fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
     ksoupHtmlParser.write(rawPageHtml)
     ksoupHtmlParser.end()
 
-//    // Parse the rawMarkerInfoStrings into a MapMarker
-//    if (rawMarkerInfoStrings.size < 2) {
-//        Logger.w { "rawMarkerInfoStrings.size < 2" }
-//        return Pair("rawMarkerInfoStrings.size < 2", null)
-//    }
+    // Multi-language Inscription - Process the collected lines, if any
+    if(mapMarkerResult.inscription.contains("English translation", ignoreCase=true)) {
+        // • Text cleanup for multi-language inscriptions
+        val finalEnglishInscription =
+            // skip the first line of the inscription (it's the title)
+            englishInscriptionLines.subList(1, englishInscriptionLines.size)
+                .joinToString("")
+                .stripNewlines()
+                .stripDoubleSpace()
+                .stripDoublePeriodAndSpace()
+                .ensureSpaceAfterPeriod()
+                .trim()
+        val finalSpanishInscription =
+            // skip the first line of the inscription (it's the title)
+            spanishInscriptionLines.subList(1, spanishInscriptionLines.size)
+                .joinToString("")
+                .stripNewlines()
+                .stripDoubleSpace()
+                .stripDoublePeriodAndSpace()
+                .ensureSpaceAfterPeriod()
+                .trim()
+        mapMarkerResult = mapMarkerResult.copy(
+            englishInscription = finalEnglishInscription,
+            spanishInscription = finalSpanishInscription,
+        )
+    }
 
     return Pair(null, mapMarkerResult)
 }
 
-fun String.stripDoubleSpaces(): String {
+fun String.stripDoubleSpace(): String {
     return this.replace("  ", " ")
 }
-
-fun String.stripDoublePeriodAndSpaces(): String {
+fun String.stripDoublePeriodAndSpace(): String {
     return this.replace(". . ", ". ")
 }
-
 fun String.stripString(stringToStrip: String): String {
     return this.replace(stringToStrip, "")
+}
+fun String.ensureSpaceAfterPeriod(): String {
+    return this.replace(". ", ".")
+        .replace(".", ". ")
+}
+fun String.stripNewlines(): String {
+    return this.replace("\n", "")
 }
 
 

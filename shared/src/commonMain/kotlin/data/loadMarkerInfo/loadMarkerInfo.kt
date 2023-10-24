@@ -13,8 +13,9 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import kotlinx.coroutines.yield
 import network.httpClient
+import data.loadMarkers.kBaseHmdbDotOrgUrl
 
-const val kUseFakeData = true
+const val kUseFakeData = false
 
 @Composable
 fun loadMapMarkerInfo(mapMarker: MapMarker): LoadingState<MapMarker> {
@@ -22,7 +23,21 @@ fun loadMapMarkerInfo(mapMarker: MapMarker): LoadingState<MapMarker> {
         mutableStateOf<LoadingState<MapMarker>>(LoadingState.Loading)
     }
 
-    LaunchedEffect(mapMarker.markerInfoPageUrl) {
+    fun String.calculateMarkerInfoPageUrl(): String {
+        val markerKeyNumber = this.substringAfter ("M").toInt()
+        return kBaseHmdbDotOrgUrl + "m.asp?m=$markerKeyNumber"
+    }
+    val markerInfoPageUrl by remember(mapMarker.key) {
+        mutableStateOf(mapMarker.key.calculateMarkerInfoPageUrl())
+    }
+
+    LaunchedEffect(markerInfoPageUrl) {
+        println("loadMapMarkerInfo $markerInfoPageUrl")
+        if(markerInfoPageUrl == "") {
+            //loadingState = LoadingState.Error("MarkerInfoPageUrl is empty")
+            return@LaunchedEffect
+        }
+
         loadingState = LoadingState.Loading
         yield() // Allow UI to render LoadingState.Loading
 
@@ -36,7 +51,8 @@ fun loadMapMarkerInfo(mapMarker: MapMarker): LoadingState<MapMarker> {
                     result.second!!
                 )
             } else {
-                val response = httpClient.get(mapMarker.markerInfoPageUrl)
+//                val response = httpClient.get(mapMarker.markerInfoPageUrl)
+                val response = httpClient.get(markerInfoPageUrl)
                 val markerInfoPageHtml = response.body<String>()
 
                 // parse the page html into a MarkerInfo object
@@ -59,7 +75,7 @@ fun loadMapMarkerInfo(mapMarker: MapMarker): LoadingState<MapMarker> {
                 )
             }
         } catch (e: Exception) {
-            loadingState = LoadingState.Error(e.cause?.message ?: "error")
+            loadingState = LoadingState.Error(e.message ?: e.cause?.message ?: "Loading error")
         }
     }
 

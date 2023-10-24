@@ -3,12 +3,13 @@ package com.realityexpander
 import data.loadMarkerInfo.parseMarkerInfoPageHtml
 import data.loadMarkerInfo.sampleData.almadenVineyardsM2580
 import data.loadMarkerInfo.sampleData.deAnzaExpeditionM38342
+import data.loadMarkerInfo.sampleData.elTepoztecoNationalParkM207314
 import json
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class AndroidParseMarkerInfoPageHtml {
+class ParseMarkerInfoPageHtmlTest {
 
     @Test
     fun `Parse MarkerInfo Page Html for almadenVineyardsM2580 is Successful`() {
@@ -17,7 +18,7 @@ class AndroidParseMarkerInfoPageHtml {
         val result = parseMarkerInfoPageHtml(markerInfoPageHtml)
         val markerInfo = result.second!!
 
-        // println(json.encodeToString(MapMarker.serializer(), markerInfo))
+         // println(json.encodeToString(MapMarker.serializer(), markerInfo))
 
         // Title
         assertTrue(
@@ -145,6 +146,93 @@ class AndroidParseMarkerInfoPageHtml {
         // Location
         assertTrue(
             markerInfo.location.contains("It is in Dartmouth. Marker is at the intersection of Meridian Avenue "),
+            "Location was not found"
+        )
+        assertFalse(
+            markerInfo.location.contains("Touch for map.") ||
+                    markerInfo.location.contains("Touch for directions."),
+            "Location contains Touch for map or Touch for directions"
+        )
+
+        // Erected
+        assertTrue(
+            markerInfo.erected.isBlank(),
+            "Erected was found but should be blank"
+        )
+    }
+
+    @Test
+    fun `Parse MarkerInfo Page Html for elTepoztecoNationalParkM207314 is Successful`() {
+        val markerInfoPageHtml = elTepoztecoNationalParkM207314()
+
+        val result = parseMarkerInfoPageHtml(markerInfoPageHtml)
+        val markerInfo = result.second!!
+
+        // println(json.encodeToString(MapMarker.serializer(), markerInfo))
+
+        // Title
+        assertTrue(
+            markerInfo.title.contains("El Tepozteco National Park"),
+            "Title was not found"
+        )
+
+        // Inscription
+        assertTrue(
+            markerInfo.inscription.contains(""), // multi-language inscription
+            "Inscription was not found"
+        )
+        assertTrue(
+            markerInfo.inscription.contains("English translation"), // multi-language inscription
+            "Inscription was incorrect for a multi-language inscription"
+        )
+        assertTrue(
+            markerInfo.englishInscription.contains("This park was decreed as a Protected Area on January 22, 1937"),
+            "English Inscription was not found"
+        )
+        assertTrue(
+            markerInfo.spanishInscription.contains("Este parque fue decretado como Área Protegida el 22 de enero de 1937"),
+            "Spanish Inscription was not found"
+        )
+
+        // Main Photo URL
+        assertTrue(
+            markerInfo.mainPhotoUrl.contains("https://www.hmdb.org/Photos6/681/Photo681931.jpg?1052022105400PM"),
+            "Marker Photo Url was not found"
+        )
+
+        // Marker Photos
+        assertTrue(
+            markerInfo.markerPhotos.size == 3,
+            "Some Marker Photos are missing"
+        )
+        assertTrue(
+            markerInfo.markerPhotos[1] == "https://www.hmdb.org/Photos6/681/Photo681932.jpg?1052022105600PM",
+            "Marker Photo at index 1 was not found"
+        )
+
+        // Photo Attributions
+        assertTrue(
+            markerInfo.photoAttributions.size == 3,
+            "Some Photo Attributions are missing"
+        )
+        assertTrue(
+            markerInfo.photoAttributions[0] == "Photographed By J. Makali Bruton, August 6, 2022",
+            "Additional Photo Attribution at index 0 was not found"
+        )
+
+        // Photo Captions
+        assertTrue(
+            markerInfo.photoCaptions.size == 3,
+            "Some Photo Captions are missing"
+        )
+        assertTrue(
+            markerInfo.photoCaptions[0] == "1. El Tepozteco National Park Marker",
+            "Additional Photo Caption at index 0 was not found"
+        )
+
+        // Location
+        assertTrue(
+            markerInfo.location.contains("Marker is in Tepoztlán, Morelos. Marker is on 5 de Mayo just south of Avenida"),
             "Location was not found"
         )
         assertFalse(

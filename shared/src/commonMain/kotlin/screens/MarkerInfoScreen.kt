@@ -299,6 +299,18 @@ fun MarkerInfoScreen(
 //            }
 
                 Text(
+                    marker.data.inscription,
+                    fontSize = MaterialTheme.typography.body2.fontSize,
+                )
+                Spacer(modifier = Modifier.padding(8.dp))
+                Divider()
+                Spacer(modifier = Modifier.padding(8.dp))
+
+                Text(
+                    marker.data.erected,
+                    fontSize = MaterialTheme.typography.body1.fontSize,
+                )
+                Text(
                     "Marker Latitude: ${marker.data.position.latitude}",
                     fontSize = MaterialTheme.typography.body1.fontSize,
                     fontWeight = FontWeight.Normal,
@@ -308,10 +320,6 @@ fun MarkerInfoScreen(
                     fontSize = MaterialTheme.typography.body1.fontSize,
                     fontWeight = FontWeight.Normal,
                 )
-//            Text(
-//                marker.description, // todo add
-//                fontSize = MaterialTheme.typography.body2.fontSize,
-//            )
             }
         }
     }

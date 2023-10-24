@@ -2,7 +2,8 @@ package com.realityexpander
 
 import getPlatformName
 
-class AppKtTest {
+class AndroidJUnit4AppKtTest {
+
     @org.junit.Test
     fun testExample() {
         val result = getPlatformName()

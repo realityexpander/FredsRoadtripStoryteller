@@ -21,6 +21,8 @@ data class MapMarker(  // todo move to proper package
     val photoCaptions: List<String> = listOf(),
     val photoAttributions: List<String> = listOf(),
     val inscription: String = "",
+    val englishInscription: String = "",
+    val spanishInscription: String = "",
     val erected: String = "",
     val credits: String = "",
     val location: String = "",
