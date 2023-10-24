@@ -298,10 +298,17 @@ fun MarkerInfoScreen(
 //                )
 //            }
 
-                Text(
-                    marker.data.inscription,
-                    fontSize = MaterialTheme.typography.body2.fontSize,
-                )
+                if(marker.data.inscription.isNotBlank()) {
+                    Text(
+                        marker.data.inscription,
+                        fontSize = MaterialTheme.typography.body2.fontSize,
+                    )
+                } else {
+                    Text(
+                        marker.data.englishInscription,  // todo add spanish translation
+                        fontSize = MaterialTheme.typography.body2.fontSize,
+                    )
+                }
                 Spacer(modifier = Modifier.padding(8.dp))
                 Divider()
                 Spacer(modifier = Modifier.padding(8.dp))

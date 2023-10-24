@@ -4,6 +4,7 @@ import data.loadMarkerInfo.parseMarkerInfoPageHtml
 import data.loadMarkerInfo.sampleData.almadenVineyardsM2580
 import data.loadMarkerInfo.sampleData.deAnzaExpeditionM38342
 import data.loadMarkerInfo.sampleData.elTepoztecoNationalParkM207314
+import data.loadMarkerInfo.sampleData.firstCityCouncilOfTepoztlanM207310
 import json
 import kotlin.test.Test
 import kotlin.test.assertFalse
@@ -18,7 +19,7 @@ class ParseMarkerInfoPageHtmlTest {
         val result = parseMarkerInfoPageHtml(markerInfoPageHtml)
         val markerInfo = result.second!!
 
-         // println(json.encodeToString(MapMarker.serializer(), markerInfo))
+        // println(json.encodeToString(MapMarker.serializer(), markerInfo))
 
         // Title
         assertTrue(
@@ -168,7 +169,7 @@ class ParseMarkerInfoPageHtmlTest {
         val result = parseMarkerInfoPageHtml(markerInfoPageHtml)
         val markerInfo = result.second!!
 
-        // println(json.encodeToString(MapMarker.serializer(), markerInfo))
+         // println(json.encodeToString(MapMarker.serializer(), markerInfo))
 
         // Title
         assertTrue(
@@ -245,6 +246,93 @@ class ParseMarkerInfoPageHtmlTest {
         assertTrue(
             markerInfo.erected.isBlank(),
             "Erected was found but should be blank"
+        )
+    }
+
+    @Test
+    fun `Parse MarkerInfo Page Html for firstCityCouncilOfTepoztlanM207310 is Successful`() {
+        val markerInfoPageHtml = firstCityCouncilOfTepoztlanM207310()
+
+        val result = parseMarkerInfoPageHtml(markerInfoPageHtml)
+        val markerInfo = result.second!!
+
+         //println(json.encodeToString(MapMarker.serializer(), markerInfo))
+
+        // Title
+        assertTrue(
+            markerInfo.title.contains("First City Council of Tepoztlán"),
+            "Title was not found"
+        )
+
+        // Inscription
+        assertTrue(
+            markerInfo.inscription.contains(""), // multi-language inscription
+            "Inscription was not found"
+        )
+        assertTrue(
+            markerInfo.inscription.contains("English translation"), // multi-language inscription
+            "Inscription was incorrect for a multi-language inscription"
+        )
+        assertTrue(
+            markerInfo.englishInscription.contains("In 1820, on September 8, the day on which Tepuztecatl was celebrated, the town of Tepoztlan"),
+            "English Inscription was not found"
+        )
+        assertTrue(
+            markerInfo.spanishInscription.contains("En 1820, el 8 de septiembre, día en que se festejaba a Tepuztecatl"),
+            "Spanish Inscription was not found"
+        )
+
+        // Main Photo URL
+        assertTrue(
+            markerInfo.mainPhotoUrl.contains("https://www.hmdb.org/Photos6/681/Photo681920.jpg?1052022102800PM"),
+            "Marker Photo Url was not found"
+        )
+
+        // Marker Photos
+        assertTrue(
+            markerInfo.markerPhotos.size == 4,
+            "Some Marker Photos are missing"
+        )
+        assertTrue(
+            markerInfo.markerPhotos[1] == "https://www.hmdb.org/Photos6/681/Photo681923.jpg?1052022103400PM",
+            "Marker Photo at index 1 was not found"
+        )
+
+        // Photo Attributions
+        assertTrue(
+            markerInfo.photoAttributions.size == 4,
+            "Some Photo Attributions are missing"
+        )
+        assertTrue(
+            markerInfo.photoAttributions[0] == "Photographed By J. Makali Bruton, August 6, 2022",
+            "Additional Photo Attribution at index 0 was not found"
+        )
+
+        // Photo Captions
+        assertTrue(
+            markerInfo.photoCaptions.size == 4,
+            "Some Photo Captions are missing"
+        )
+        assertTrue(
+            markerInfo.photoCaptions[0] == "1. First City Council of Tepotzlán Marker",
+            "Additional Photo Caption at index 0 was not found"
+        )
+
+        // Location
+        assertTrue(
+            markerInfo.location.contains("Marker is in Tepoztlán, Morelos. Marker can be reached from 5 de Mayo just south of Avenida Ignacio"),
+            "Location was not found"
+        )
+        assertFalse(
+            markerInfo.location.contains("Touch for map.") ||
+                    markerInfo.location.contains("Touch for directions."),
+            "Location contains Touch for map or Touch for directions"
+        )
+
+        // Erected
+        assertTrue(
+            markerInfo.erected.contains("2020."),
+            "Erected was not found"
         )
     }
 }

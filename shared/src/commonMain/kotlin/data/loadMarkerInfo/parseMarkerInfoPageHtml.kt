@@ -30,9 +30,11 @@ fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
 
         var isCapturingErectedTextPhase1 = false
         var isCapturingErectedTextPhase2 = false
+        var isCapturingErectedTextComplete = false
 
         var isCapturingLocationTextPhase1 = false
         var isCapturingLocationTextPhase2 = false
+        var isCapturingLocationTextComplete = false
 
         var isCapturingSpanishInscription = false
 
@@ -110,18 +112,32 @@ fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
                     isCapturingPhotoAttribution = true
                 }
 
-                // erected - Start - collects until the next `sectionhead`
+                // erected - Start - collects until the next `sectionhead` - checked in onText
                 // <span class="sectionhead">Erected </span>
-                if(tagName == "span" && attributes["class"] == "sectionhead") {
-                    isCapturingText = true
-                    isCapturingErectedTextPhase1 = true
+                if(!isCapturingErectedTextComplete) {
+                    if (tagName == "span" && attributes["class"] == "sectionhead") {
+                        if (!isCapturingErectedTextPhase2) {
+                            isCapturingText = true
+                            isCapturingErectedTextPhase1 = true // start collecting
+                        } else {
+                            isCapturingErectedTextPhase2 = false // end collecting
+                            isCapturingErectedTextComplete = true
+                        }
+                    }
                 }
 
-                // location - Start - collects until the next `sectionhead`
+                // location - Start - collects until the next `sectionhead` - checked in onText
                 // <span class="sectionhead">Location. </span>
-                if(tagName == "span" && attributes["class"] == "sectionhead") {
-                    isCapturingText = true
-                    isCapturingLocationTextPhase1 = true
+                if(!isCapturingLocationTextComplete) {
+                    if (tagName == "span" && attributes["class"] == "sectionhead") {
+                        if (!isCapturingLocationTextPhase2) {
+                            isCapturingText = true
+                            isCapturingLocationTextPhase1 = true // start collecting
+                        } else {
+                            isCapturingLocationTextPhase2 = false // end collecting
+                            isCapturingLocationTextComplete = true
+                        }
+                    }
                 }
 
             }
@@ -205,58 +221,65 @@ fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
                         isCapturingPhotoAttribution = false
                     }
 
-                    // Erected
+                    // Erected - Collect & End collecting
                     if(isCapturingErectedTextPhase1) {
                         // keep collecting until the next `sectionhead` text is found (Topics and series.)
                         if(decodedString.contains("Topics and series.", ignoreCase = true)) {
                             isCapturingErectedTextPhase1 = false
                             isCapturingErectedTextPhase2 = false
-                            isCapturingText = false
+                            isCapturingErectedTextComplete = true
                             return@onText
                         }
 
-                        // Start collecting the `erected` text after the "Erected" text is found : <span class="sectionhead">Erected </span>
-                        if(decodedString.contains("Erected", ignoreCase = true)) {
+                        // Start collecting the `erected` text after the "Erected" html text is found
+                        // <span class="sectionhead">Erected </span>
+                        if(decodedString.startsWith("Erected", ignoreCase = true)) {
+                            isCapturingErectedTextPhase1 = false
                             isCapturingErectedTextPhase2 = true
                             return@onText
                         }
 
-                        if(isCapturingErectedTextPhase2) {
-                            mapMarkerResult = mapMarkerResult.copy(
-                                erected = mapMarkerResult.erected + decodedString
-                            )
-                        }
+                    }
+                    if(isCapturingErectedTextPhase2) {
+                        mapMarkerResult = mapMarkerResult.copy(
+                            erected = mapMarkerResult.erected + decodedString
+                        )
+                        return@onText
                     }
 
-                    // Location
+                    // Location - Collect & End collecting
                     if(isCapturingLocationTextPhase1) {
                         // keep collecting until the next `sectionhead` text is found (Other nearby markers.)
                         if(decodedString.contains("Other nearby markers.", ignoreCase = true)) {
                             isCapturingLocationTextPhase1 = false
                             isCapturingLocationTextPhase2 = false
-                            isCapturingText = false
+                            isCapturingLocationTextComplete = true
                             return@onText
                         }
 
-                        // Start collecting the `location` text after the "Location" text is found : <span class="sectionhead">Location </span>
-                        if(decodedString.contains("Location", ignoreCase = true)) {
+                        // Start collecting the `location` text after the "Location" text is found
+                        // <span class="sectionhead">Location </span>
+                        if(decodedString.startsWith("Location", ignoreCase = true)) {
+                            isCapturingLocationTextPhase1 = false
                             isCapturingLocationTextPhase2 = true
                             return@onText
                         }
 
-                        if(isCapturingLocationTextPhase2) {
-                            mapMarkerResult = mapMarkerResult.copy(
-                                location = mapMarkerResult.location + decodedString
-                            )
-
-                            // Strip the final string of "Touch for map." or "Touch for directions."
-                            mapMarkerResult = mapMarkerResult.copy(
-                                location = mapMarkerResult.location
-                                    .stripString("Touch for map.")
-                                    .stripString("Touch for directions.")
-                            )
-                        }
                     }
+                    if(isCapturingLocationTextPhase2) {
+                        mapMarkerResult = mapMarkerResult.copy(
+                            location = mapMarkerResult.location + decodedString
+                        )
+
+                        // Strip the final string of "Touch for map." or "Touch for directions."
+                        mapMarkerResult = mapMarkerResult.copy(
+                            location = mapMarkerResult.location
+                                .stripString("Touch for map.")
+                                .stripString("Touch for directions.")
+                        )
+                        return@onText
+                    }
+
                 }
             }
             .build()
