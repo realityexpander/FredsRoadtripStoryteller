@@ -15,7 +15,7 @@ import kotlinx.coroutines.yield
 import network.httpClient
 import data.loadMarkers.kBaseHmdbDotOrgUrl
 
-const val kUseFakeData = false
+const val kUseFakeData = true
 
 @Composable
 fun loadMapMarkerInfo(mapMarker: MapMarker): LoadingState<MapMarker> {
