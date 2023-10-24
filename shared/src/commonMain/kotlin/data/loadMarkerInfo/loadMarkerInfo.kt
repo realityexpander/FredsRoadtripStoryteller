@@ -45,13 +45,10 @@ fun loadMapMarkerInfo(mapMarker: MapMarker): LoadingState<MapMarker> {
             if(kUseFakeData) {
 //                loadingState = fakeLoadingStateForParseMarkerInfoPageHtml(mapMarker)
 
-                val markerInfoPageHtml = almadenVineyardsM2580()
-                val result = parseMarkerInfoPageHtml(markerInfoPageHtml)
-                loadingState = LoadingState.Loaded(
-                    result.second!!
-                )
+//                val markerInfoPageHtml = almadenVineyardsM2580()
+//                val result = parseMarkerInfoPageHtml(markerInfoPageHtml)
+//                loadingState = LoadingState.Loaded(result.second!!)
             } else {
-//                val response = httpClient.get(mapMarker.markerInfoPageUrl)
                 val response = httpClient.get(markerInfoPageUrl)
                 val markerInfoPageHtml = response.body<String>()
 
@@ -60,17 +57,25 @@ fun loadMapMarkerInfo(mapMarker: MapMarker): LoadingState<MapMarker> {
                 parsedMarkerResult.second ?: throw Exception(parsedMarkerResult.first)
 
                 // update the passed-in marker with the parsed info and return it
-                val markerInfo = parsedMarkerResult.second!!
+                val parsedMarkerInfo = parsedMarkerResult.second!!
+                println("parsedMarkerInfo: $parsedMarkerInfo")
+
                 loadingState = LoadingState.Loaded(
                     mapMarker.copy(
+                        location = mapMarker.location,
+                        key = mapMarker.key,
+                        title = mapMarker.title,
+                        subtitle = mapMarker.subtitle,
                         isDescriptionLoaded = true,
-                        inscription = markerInfo.inscription,
-                        erected = markerInfo.erected,
-                        mainPhotoUrl = markerInfo.mainPhotoUrl,
-                        markerPhotos = markerInfo.markerPhotos,
-                        photoCaptions = markerInfo.photoCaptions,
-                        photoAttributions = markerInfo.photoAttributions,
-                        credits = markerInfo.credits
+                        inscription = parsedMarkerInfo.inscription,
+                        englishInscription = parsedMarkerInfo.englishInscription,
+                        spanishInscription = parsedMarkerInfo.spanishInscription,
+                        erected = parsedMarkerInfo.erected,
+                        mainPhotoUrl = parsedMarkerInfo.mainPhotoUrl,
+                        markerPhotos = parsedMarkerInfo.markerPhotos,
+                        photoCaptions = parsedMarkerInfo.photoCaptions,
+                        photoAttributions = parsedMarkerInfo.photoAttributions,
+                        credits = parsedMarkerInfo.credits
                     )
                 )
             }

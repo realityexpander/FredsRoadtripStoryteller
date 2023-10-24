@@ -366,7 +366,6 @@ fun App() {
 
                         MarkerInfoScreen(
                             bottomSheetScaffoldState,
-//                            (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker,
                             markerDetailsInfo,
                         )
                     }

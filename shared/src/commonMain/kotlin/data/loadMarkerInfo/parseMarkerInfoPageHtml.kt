@@ -11,7 +11,7 @@ import data.loadMarkers.kBaseHmdbDotOrgUrl
 
 fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
 
-    var mapMarkerResult = MapMarker(location = "")
+    var mapMarkerResult = MapMarker()
     val rawMarkerInfoStrings = mutableListOf<String>()
     val spanishInscriptionLines = mutableListOf<String>()
     val englishInscriptionLines = mutableListOf<String>()
@@ -291,10 +291,14 @@ fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
     ksoupHtmlParser.write(rawPageHtml)
     ksoupHtmlParser.end()
 
+    // • Text cleanup for multi-language inscriptions
+
     // Multi-language Inscription - Process the collected lines, if any
-    if(mapMarkerResult.inscription.contains("English translation", ignoreCase=true)) {
-        // • Text cleanup for multi-language inscriptions
-        val finalEnglishInscription =
+//    if(mapMarkerResult.inscription.contains("English translation", ignoreCase=true)) {
+    val finalEnglishInscription =
+        if(englishInscriptionLines.size > 0
+           || mapMarkerResult.inscription.contains("English translation", ignoreCase=true)
+        ) {
             // skip the first line of the inscription (it's the title)
             englishInscriptionLines.subList(1, englishInscriptionLines.size)
                 .joinToString("")
@@ -303,7 +307,13 @@ fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
                 .stripDoublePeriodAndSpace()
                 .ensureSpaceAfterPeriod()
                 .trim()
-        val finalSpanishInscription =
+        } else {
+            ""
+        }
+    val finalSpanishInscription =
+        if(spanishInscriptionLines.size > 0
+            || mapMarkerResult.inscription.contains("English translation", ignoreCase=true)
+        ) {
             // skip the first line of the inscription (it's the title)
             spanishInscriptionLines.subList(1, spanishInscriptionLines.size)
                 .joinToString("")
@@ -312,11 +322,15 @@ fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
                 .stripDoublePeriodAndSpace()
                 .ensureSpaceAfterPeriod()
                 .trim()
-        mapMarkerResult = mapMarkerResult.copy(
-            englishInscription = finalEnglishInscription,
-            spanishInscription = finalSpanishInscription,
-        )
-    }
+        } else {
+            ""
+        }
+    mapMarkerResult = mapMarkerResult.copy(
+        englishInscription = finalEnglishInscription,
+        spanishInscription = finalSpanishInscription,
+    )
+
+    println("mapMarkerResult: $mapMarkerResult")
 
     return Pair(null, mapMarkerResult)
 }

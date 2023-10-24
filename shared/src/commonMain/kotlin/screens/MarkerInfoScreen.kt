@@ -298,14 +298,14 @@ fun MarkerInfoScreen(
 //                )
 //            }
 
-                if(marker.data.inscription.isNotBlank()) {
+                if(marker.data.englishInscription.isNotBlank()) { // todo add spanish translation
                     Text(
-                        marker.data.inscription,
+                        marker.data.englishInscription,
                         fontSize = MaterialTheme.typography.body2.fontSize,
                     )
                 } else {
                     Text(
-                        marker.data.englishInscription,  // todo add spanish translation
+                        marker.data.inscription,
                         fontSize = MaterialTheme.typography.body2.fontSize,
                     )
                 }
