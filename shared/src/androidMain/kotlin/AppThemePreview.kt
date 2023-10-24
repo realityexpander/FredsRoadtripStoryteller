@@ -101,7 +101,24 @@ fun SettingsDark() {
     showSystemUi = false, showBackground = true, name = "Marker Info", group = "Marker Info"
 )
 @Composable
-fun MarkerInfoPreview() {
+fun MarkerInfoPreview(
+ loadingState: LoadingState<MapMarker> = LoadingState.Loaded(
+    MapMarker(
+        key = "test key",
+        position = LatLong(
+            latitude = 0.0,
+            longitude = 0.0
+        ),
+//                    title = "First City Council of Tepoztlan",
+        title = "El Tepozteco National Park",
+        alpha = 1f,
+        subtitle = "Test Subtitle",
+        location = "Location Description",
+        inscription = "Incised inscription",
+        englishInscription = "",
+        spanishInscription = ""
+    ))
+){
     AppTheme {
         Surface {
             MarkerInfoScreen(
@@ -121,23 +138,32 @@ fun MarkerInfoPreview() {
                     ),
                     snackbarHostState = SnackbarHostState()
                 ),
-                marker = LoadingState.Loaded(
-                    MapMarker(
-                        key = "test key",
-                        position = LatLong(
-                            latitude = 0.0,
-                            longitude = 0.0
-                        ),
-    //                    title = "First City Council of Tepoztlan",
-                        title = "El Tepozteco National Park",
-                        alpha = 1f,
-                        subtitle = "Test Subtitle",
-                        location = ""
-                    )
-                )
+                marker = loadingState
             )
         }
     }
+}
+@Preview(
+    uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL,
+    showSystemUi = false, showBackground = true, name = "Marker Info", group = "Marker Info"
+)
+@Composable
+fun MarkerInfoPreviewError() {
+    MarkerInfoPreview(
+        loadingState = LoadingState.Error(
+            errorMessage = "Error loading marker"
+        )
+    )
+}
+@Preview(
+    uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL,
+    showSystemUi = false, showBackground = true, name = "Marker Info", group = "Marker Info"
+)
+@Composable
+fun MarkerInfoPreviewLoading() {
+    MarkerInfoPreview(
+        loadingState = LoadingState.Loading
+    )
 }
 
 @Preview(

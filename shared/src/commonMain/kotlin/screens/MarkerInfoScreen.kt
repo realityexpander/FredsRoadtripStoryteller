@@ -1,4 +1,5 @@
 import androidx.compose.animation.core.TweenSpec
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.BottomSheetScaffoldState
+import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
@@ -39,6 +41,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.graphicsLayer
@@ -48,52 +51,105 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import components.PreviewPlaceholder
 import data.LoadingState
+import io.kamel.core.ExperimentalKamelApi
 import io.kamel.core.Resource
-import io.kamel.image.KamelImage
+import io.kamel.image.KamelImageBox
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch
+import maps.MapMarker
 import org.jetbrains.compose.resources.ExperimentalResourceApi
+import screens.uiComponents.PreviewPlaceholder
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalResourceApi::class)
+const val kMaxWeightOfBottomDrawer = 0.9f
+
+@OptIn(ExperimentalMaterialApi::class, ExperimentalResourceApi::class, ExperimentalKamelApi::class)
 @Composable
 fun MarkerInfoScreen(
     bottomSheetScaffoldState: BottomSheetScaffoldState,
-//    marker: MapMarker,
     marker: LoadingState<MapMarker>,
 ) {
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Show Error
+    // Show Error (if any)
     if(marker is LoadingState.Error) {
-        Text(
-            marker.errorMessage,
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(.9f)
-                .padding(start=16.dp, end=16.dp, bottom = 0.dp, top = 8.dp)
-            ,
-            fontSize = MaterialTheme.typography.h5.fontSize,
-            fontWeight = FontWeight.Bold,
-        )
+                .fillMaxHeight(kMaxWeightOfBottomDrawer)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Spacer(modifier = Modifier.padding(8.dp))
+
+            Text(
+                //marker.errorMessage,
+                "This is an error message that i want to seee",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        MaterialTheme.colors.error,
+                        shape = MaterialTheme.shapes.medium
+                    )
+                ,
+                fontSize = MaterialTheme.typography.h5.fontSize,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colors.onError,
+            )
+            Spacer(modifier = Modifier.padding(16.dp))
+
+            Button(
+                onClick = {
+                    coroutineScope.launch {
+                        bottomSheetScaffoldState.bottomSheetState.collapse()
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .background(
+                        MaterialTheme.colors.primary,
+                        shape = MaterialTheme.shapes.medium
+                    )
+            ) {
+                Text(
+                    "OK",
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .fillMaxWidth(),
+                    fontSize = MaterialTheme.typography.h6.fontSize,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colors.onPrimary,
+                )
+            }
+        }
+
         return
     }
 
     // Show Loading
     if(marker is LoadingState.Loading) {
-        Text(
-            "Loading...",
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(.9f)
-                .padding(start=16.dp, end=16.dp, bottom = 0.dp, top = 8.dp)
-            ,
-            fontSize = MaterialTheme.typography.h5.fontSize,
-            fontWeight = FontWeight.Bold,
-        )
+                .fillMaxHeight(kMaxWeightOfBottomDrawer),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Text(
+                "Loading...",
+                modifier = Modifier.fillMaxWidth(),
+                fontSize = MaterialTheme.typography.h5.fontSize,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+            )
+        }
+
         return
     }
 
@@ -106,12 +162,11 @@ fun MarkerInfoScreen(
                 .fillMaxHeight(.9f)
                 .padding(start = 16.dp, end = 16.dp, bottom = 0.dp, top = 8.dp)
         ) {
-            val painterResource: Resource<Painter> = asyncPainterResource(
-//        data = "https://cdn.pixabay.com/photo/2020/06/13/17/51/milky-way-5295160_1280.jpg",
-//        data = "https://www.hmdb.org/Photos/7/Photo7252.jpg?11252005",
-                data = marker.data.mainPhotoUrl,
-                filterQuality = FilterQuality.Medium,
-            )
+            val painterResource: Resource<Painter> =
+                asyncPainterResource(
+                    data = marker.data.mainPhotoUrl,
+                    filterQuality = FilterQuality.Medium,
+                )
 
             // Title
             Row(
@@ -154,6 +209,7 @@ fun MarkerInfoScreen(
                 fontWeight = FontWeight.Normal,
             )
 
+            // Marker Info Content
             Column(
                 Modifier
                     .verticalScroll(
@@ -164,6 +220,7 @@ fun MarkerInfoScreen(
                 verticalArrangement = Arrangement.Top,
             ) {
 
+                // Main Photo
                 if (LocalInspectionMode.current) {
                     PreviewPlaceholder("Another Image")
                 } else {
@@ -188,6 +245,10 @@ fun MarkerInfoScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .aspectRatio(1280f / 959f)
+                                    .background(
+                                        MaterialTheme.colors.surface,
+                                        shape = MaterialTheme.shapes.medium
+                                    )
                             ) {
 
                                 // Setup pan/zoom (not rotation) transformable state
@@ -216,21 +277,12 @@ fun MarkerInfoScreen(
                                         // rotationZ += rotationChange
                                     }
 
-                                KamelImage(
+                                KamelImageBox(
                                     resource = painterResource,
-                                    contentDescription = marker.data.title,
                                     modifier = Modifier
                                         // .aspectRatio(16f / 9f)
                                         .fillMaxWidth()
-                                        .graphicsLayer {
-                                            scaleX = scale
-                                            scaleY = scale
-                                            translationX = offset.x
-                                            translationY = offset.y
-                                            // this.rotationZ = rotationZ
-                                        }
-                                        .transformable(state, lockRotationOnZoomPan = true),
-                                    contentScale = ContentScale.Crop,
+                                    ,
                                     onLoading = { progress ->
                                         Box(
                                             modifier = Modifier
@@ -239,10 +291,17 @@ fun MarkerInfoScreen(
                                         ) {
                                             if (progress < 0.05f) {
                                                 Text(
-                                                    "Loading image..."
+                                                    "Loading marker image...",
+                                                    color = MaterialTheme.colors.onSurface,
                                                 )
                                             } else {
-                                                CircularProgressIndicator(progress)
+                                                CircularProgressIndicator(
+                                                    progress,
+                                                    color = MaterialTheme.colors.onSurface,
+                                                    backgroundColor = MaterialTheme.colors.onSurface.copy(
+                                                        alpha = 0.4f
+                                                    ),
+                                                )
                                             }
                                         }
                                     },
@@ -254,7 +313,29 @@ fun MarkerInfoScreen(
                                             )
                                         }
                                     },
-                                    animationSpec = TweenSpec(500)
+                                    animationSpec = TweenSpec(800),
+                                    onSuccess = {painter ->
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .clip(MaterialTheme.shapes.medium)
+                                        ) {
+                                            Image(
+                                                painter,
+                                                marker.data.title,
+                                                contentScale = ContentScale.Crop,
+                                                modifier = Modifier.fillMaxHeight()
+                                                    .graphicsLayer {
+                                                        scaleX = scale
+                                                        scaleY = scale
+                                                        translationX = offset.x
+                                                        translationY = offset.y
+                                                        // this.rotationZ = rotationZ
+                                                    }
+                                                    .transformable(state, lockRotationOnZoomPan = true)
+                                            )
+                                        }
+                                    }
                                 )
                             }
                         }
@@ -262,6 +343,8 @@ fun MarkerInfoScreen(
                         PreviewPlaceholder("No image found for this marker", placeholderKind = "")
                     }
                 }
+
+                // Show loading error (if any)
                 SnackbarHost(
                     hostState = snackbarHostState,
                     modifier = Modifier
@@ -284,8 +367,6 @@ fun MarkerInfoScreen(
                 }
 
                 Spacer(modifier = Modifier.padding(8.dp))
-                Divider()
-                Spacer(modifier = Modifier.padding(8.dp))
 
 //            if(LocalInspectionMode.current) {
 //                PreviewPlaceholder("Freds head")
@@ -298,6 +379,7 @@ fun MarkerInfoScreen(
 //                )
 //            }
 
+                // Inscription
                 if(marker.data.englishInscription.isNotBlank()) { // todo add spanish translation
                     Text(
                         marker.data.englishInscription,
@@ -313,10 +395,13 @@ fun MarkerInfoScreen(
                 Divider()
                 Spacer(modifier = Modifier.padding(8.dp))
 
-                Text(
-                    marker.data.erected,
-                    fontSize = MaterialTheme.typography.body1.fontSize,
-                )
+                // Extra Marker Data
+                if(marker.data.erected.isNotBlank()) {
+                    Text(
+                        "Erected " + marker.data.erected,
+                        fontSize = MaterialTheme.typography.body1.fontSize,
+                    )
+                }
                 Text(
                     "Marker Latitude: ${marker.data.position.latitude}",
                     fontSize = MaterialTheme.typography.body1.fontSize,
