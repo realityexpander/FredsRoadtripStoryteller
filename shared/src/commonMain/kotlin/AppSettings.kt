@@ -1,6 +1,6 @@
 import com.russhwolf.settings.Settings
 import kotlinx.serialization.encodeToString
-import loadMarkers.MarkersResult
+import data.loadMarkers.MarkersResult
 import co.touchlab.kermit.Logger as Log
 
 // Settings Keys

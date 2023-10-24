@@ -54,7 +54,7 @@ import com.google.maps.android.heatmaps.HeatmapTileProvider
 import com.google.maps.android.heatmaps.WeightedLatLng
 import components.SwitchWithLabel
 import kotlinx.coroutines.launch
-import loadMarkers.milesToMeters
+import data.loadMarkers.milesToMeters
 import co.touchlab.kermit.Logger as Log
 
 // Android Google Maps implementation
@@ -422,7 +422,8 @@ actual fun GoogleMaps(
                                 clusterItem.position.longitude
                             ),
                             title = clusterItem.title ?: "",
-                            alpha = 1.0f
+                            alpha = 1.0f,
+                            location = ""
                         )
                         onMarkerClick?.let { nativeFun ->
                             nativeFun(selectedMarker)

@@ -14,6 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.Wallpapers
 import components.SettingsSlider
 import components.SettingsSwitch
+import data.LoadingState
 import screens.SettingsScreen
 
 @Preview(name = "switches", group = "Settings")
@@ -117,17 +118,19 @@ fun MarkerInfoPreview() {
                     ),
                     snackbarHostState = SnackbarHostState()
                 ),
-                marker = MapMarker(
-                    key = "test key",
-                    position = LatLong(
-                        latitude = 0.0,
-                        longitude = 0.0
-                    ),
-//                    title = "First City Council of Tepoztlan",
-                    title = "El Tepozteco National Park",
-                    subtitle = "Test Subtitle",
-                    alpha = 1f
-                )
+                marker = LoadingState.Loaded(
+                    MapMarker(
+                        key = "test key",
+                        position = LatLong(
+                            latitude = 0.0,
+                            longitude = 0.0
+                        ),
+    //                    title = "First City Council of Tepoztlan",
+                        title = "El Tepozteco National Park",
+                        alpha = 1f,
+                        subtitle = "Test Subtitle",
+                        location = ""
+                    ))
             )
         }
     }

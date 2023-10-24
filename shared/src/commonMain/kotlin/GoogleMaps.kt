@@ -1,17 +1,32 @@
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class LatLong(val latitude: Double = 0.0, val longitude: Double = 0.0)
 
-open class MapMarker(
+@Serializable
+data class MapMarker(  // todo move to proper package
     val key: String = "",
     val position: LatLong = LatLong(0.0, 0.0),
     val title: String = "",
     val alpha: Float = 1.0f,
-    val subtitle: String = ""
+    val subtitle: String = "",
+    val markerInfoPageUrl: String = "",
+
+    // For MarkerInfoScreen (from markerInfoPageUrl)
+    val isDescriptionLoaded: Boolean = false,
+    val mainPhotoUrl: String = "",
+    val markerPhotos: List<String> = listOf(),
+    val photoCaptions: List<String> = listOf(),
+    val photoAttributions: List<String> = listOf(),
+    val inscription: String = "",
+    val erected: String = "",
+    val credits: String = "",
+    val location: String = "",
 )
 
-class RecentMapMarker(
+class RecentMapMarker( // todo move to proper package
     val marker: MapMarker,
     val timeAddedToRecentList: Long = 0,
     val seenOrder: Int = 0
@@ -20,12 +35,12 @@ class RecentMapMarker(
     fun key() = marker.key
 }
 
-class CameraLocationBounds(
+class CameraLocationBounds( // todo move to proper package
     val coordinates: List<LatLong> = listOf(),
     val padding: Int = 0
 )
 
-class CameraPosition(
+class CameraPosition( // todo move to proper package
     val target: LatLong = LatLong(0.0, 0.0),
     val zoom: Float = 0f
 )

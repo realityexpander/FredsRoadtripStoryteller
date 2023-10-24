@@ -49,6 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import components.PreviewPlaceholder
+import data.LoadingState
 import io.kamel.core.Resource
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
@@ -59,188 +60,232 @@ import org.jetbrains.compose.resources.ExperimentalResourceApi
 @Composable
 fun MarkerInfoScreen(
     bottomSheetScaffoldState: BottomSheetScaffoldState,
-    marker: MapMarker,
-    // onShouldResetMarkerInfoCache: (() -> Unit) = {}
+//    marker: MapMarker,
+    marker: LoadingState<MapMarker>,
 ) {
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    val painterResource: Resource<Painter> = asyncPainterResource(
-//        data = "https://cdn.pixabay.com/photo/2020/06/13/17/51/milky-way-5295160_1280.jpg",
-        data = "https://www.hmdb.org/Photos/7/Photo7252.jpg?11252005",
-        filterQuality = FilterQuality.Medium,
-    )
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(.9f)
-            .padding(start=16.dp, end=16.dp, bottom = 0.dp, top = 8.dp)
-    ) {
-        // Title
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 0.dp, top = 4.dp)
-            ,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Top
-        ) {
-            Text(
-                marker.title,
-                modifier = Modifier
-                    .weight(3f)
-                    .padding(bottom = 0.dp, top = 4.dp)
-                ,
-                fontSize = MaterialTheme.typography.h5.fontSize,
-                fontWeight = FontWeight.Bold,
-            )
-            IconButton(
-                modifier = Modifier
-                    .offset(16.dp, (-8).dp)
-                    .padding(8.dp),
-                onClick = {
-                    coroutineScope.launch {
-                        bottomSheetScaffoldState.bottomSheetState.collapse()
-                    }
-                },
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "Close",
-                )
-            }
-        }
+    // Show Error
+    if(marker is LoadingState.Error) {
         Text(
-            "subtitle", //marker.subtitle,
+            marker.errorMessage,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 0.dp, bottom = 4.dp),
-            fontSize = MaterialTheme.typography.h6.fontSize,
-            fontWeight = FontWeight.Normal,
+                .fillMaxHeight(.9f)
+                .padding(start=16.dp, end=16.dp, bottom = 0.dp, top = 8.dp)
+            ,
+            fontSize = MaterialTheme.typography.h5.fontSize,
+            fontWeight = FontWeight.Bold,
         )
+        return
+    }
+
+    // Show Loading
+    if(marker is LoadingState.Loading) {
+        Text(
+            "Loading...",
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(.9f)
+                .padding(start=16.dp, end=16.dp, bottom = 0.dp, top = 8.dp)
+            ,
+            fontSize = MaterialTheme.typography.h5.fontSize,
+            fontWeight = FontWeight.Bold,
+        )
+        return
+    }
+
+    // Show Loaded Marker Info
+    if(marker is LoadingState.Loaded<MapMarker>) {
 
         Column(
-            Modifier
-                .verticalScroll(
-                    scrollState,
-                    enabled = true,
-                )
-            ,
-            horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.Top,
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(.9f)
+                .padding(start = 16.dp, end = 16.dp, bottom = 0.dp, top = 8.dp)
         ) {
+            val painterResource: Resource<Painter> = asyncPainterResource(
+//        data = "https://cdn.pixabay.com/photo/2020/06/13/17/51/milky-way-5295160_1280.jpg",
+//        data = "https://www.hmdb.org/Photos/7/Photo7252.jpg?11252005",
+                data = marker.data.mainPhotoUrl,
+                filterQuality = FilterQuality.Medium,
+            )
 
-            if(LocalInspectionMode.current) {
-                PreviewPlaceholder("Another Image")
-            } else {
-                Surface(
-                    modifier = Modifier.background(
-                        MaterialTheme.colors.background,
-                        shape = MaterialTheme.shapes.medium,
-                    )
-                ) {
-                    var scale by remember {
-                        mutableStateOf(1f)
-                    }
-                    var offset by remember {
-                        mutableStateOf(Offset.Zero)
-                    }
-                    //    var rotationZ by remember {
-                    //        mutableStateOf(0f)
-                    //    }
-
-                    BoxWithConstraints(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(1280f / 959f)
-                    ) {
-
-                        // Setup pan/zoom (not rotation) transformable state
-                        @Suppress("UNUSED_ANONYMOUS_PARAMETER")
-                        val state =
-                            rememberTransformableState { zoomChange, panChange, rotationChange ->
-                                scale = (scale * zoomChange).coerceIn(1f, 2.5f)
-
-                                val extraWidth = (scale - 1) * constraints.maxWidth
-                                val extraHeight = (scale - 1) * constraints.maxHeight
-
-                                val maxX = extraWidth / 2
-                                val maxY = extraHeight / 2
-
-                                offset = Offset(
-                                    x = (offset.x + scale * panChange.x).coerceIn(-maxX, maxX),
-                                    y = (offset.y + scale * panChange.y).coerceIn(-maxY, maxY),
-                                )
-
-                                // rotationZ += rotationChange
-                            }
-
-                        KamelImage(
-                            resource = painterResource,
-                            contentDescription = marker.title,
-                            modifier = Modifier
-                                // .aspectRatio(16f / 9f)
-                                .fillMaxWidth()
-                                .graphicsLayer {
-                                    scaleX = scale
-                                    scaleY = scale
-                                    translationX = offset.x
-                                    translationY = offset.y
-                                    // this.rotationZ = rotationZ
-                                }
-                                .transformable(state, lockRotationOnZoomPan = true),
-                            contentScale = ContentScale.Crop,
-                            onLoading = { progress ->
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize(),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    if (progress < 0.05f) {
-                                        Text(
-                                            "Loading image..."
-                                        )
-                                    } else {
-                                        CircularProgressIndicator(progress)
-                                    }
-                                }
-                            },
-                            onFailure = { exception: Throwable ->
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        message = "Image loading error: " + exception.message.toString(),
-                                        duration = SnackbarDuration.Long
-                                    )
-                                }
-                            },
-                            animationSpec = TweenSpec(500)
-                        )
-                    }
-                }
-            }
-            SnackbarHost(
-                hostState = snackbarHostState,
+            // Title
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(0.dp, 64.dp)
-            ) { data ->
+                    .padding(bottom = 0.dp, top = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
                 Text(
-                    text = data.message,
+                    marker.data.title,
                     modifier = Modifier
-                        .padding(8.dp)
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colors.error, shape = MaterialTheme.shapes.medium)
-                    ,
-                    color = MaterialTheme.colors.onError,
-                    textAlign = TextAlign.Center
-
+                        .weight(3f)
+                        .padding(bottom = 0.dp, top = 4.dp),
+                    fontSize = MaterialTheme.typography.h5.fontSize,
+                    fontWeight = FontWeight.Bold,
                 )
+                IconButton(
+                    modifier = Modifier
+                        .offset(16.dp, (-8).dp)
+                        .padding(8.dp),
+                    onClick = {
+                        coroutineScope.launch {
+                            bottomSheetScaffoldState.bottomSheetState.collapse()
+                        }
+                    },
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close",
+                    )
+                }
             }
+            Text(
+                marker.data.subtitle,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 0.dp, bottom = 4.dp),
+                fontSize = MaterialTheme.typography.h6.fontSize,
+                fontWeight = FontWeight.Normal,
+            )
 
-            Spacer(modifier = Modifier.padding(8.dp))
-            Divider()
-            Spacer(modifier = Modifier.padding(8.dp))
+            Column(
+                Modifier
+                    .verticalScroll(
+                        scrollState,
+                        enabled = true,
+                    ),
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.Top,
+            ) {
+
+                if (LocalInspectionMode.current) {
+                    PreviewPlaceholder("Another Image")
+                } else {
+                    if (marker.data.mainPhotoUrl.isNotEmpty()) {
+                        Surface(
+                            modifier = Modifier.background(
+                                MaterialTheme.colors.background,
+                                shape = MaterialTheme.shapes.medium,
+                            )
+                        ) {
+                            var scale by remember {
+                                mutableStateOf(1f)
+                            }
+                            var offset by remember {
+                                mutableStateOf(Offset.Zero)
+                            }
+                            //    var rotationZ by remember {
+                            //        mutableStateOf(0f)
+                            //    }
+
+                            BoxWithConstraints(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(1280f / 959f)
+                            ) {
+
+                                // Setup pan/zoom (not rotation) transformable state
+                                @Suppress("UNUSED_ANONYMOUS_PARAMETER")
+                                val state =
+                                    rememberTransformableState { zoomChange, panChange, rotationChange ->
+                                        scale = (scale * zoomChange).coerceIn(1f, 2.5f)
+
+                                        val extraWidth = (scale - 1) * constraints.maxWidth
+                                        val extraHeight = (scale - 1) * constraints.maxHeight
+
+                                        val maxX = extraWidth / 2
+                                        val maxY = extraHeight / 2
+
+                                        offset = Offset(
+                                            x = (offset.x + scale * panChange.x).coerceIn(
+                                                -maxX,
+                                                maxX
+                                            ),
+                                            y = (offset.y + scale * panChange.y).coerceIn(
+                                                -maxY,
+                                                maxY
+                                            ),
+                                        )
+
+                                        // rotationZ += rotationChange
+                                    }
+
+                                KamelImage(
+                                    resource = painterResource,
+                                    contentDescription = marker.data.title,
+                                    modifier = Modifier
+                                        // .aspectRatio(16f / 9f)
+                                        .fillMaxWidth()
+                                        .graphicsLayer {
+                                            scaleX = scale
+                                            scaleY = scale
+                                            translationX = offset.x
+                                            translationY = offset.y
+                                            // this.rotationZ = rotationZ
+                                        }
+                                        .transformable(state, lockRotationOnZoomPan = true),
+                                    contentScale = ContentScale.Crop,
+                                    onLoading = { progress ->
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize(),
+                                            contentAlignment = Alignment.Center,
+                                        ) {
+                                            if (progress < 0.05f) {
+                                                Text(
+                                                    "Loading image..."
+                                                )
+                                            } else {
+                                                CircularProgressIndicator(progress)
+                                            }
+                                        }
+                                    },
+                                    onFailure = { exception: Throwable ->
+                                        coroutineScope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                message = "Image loading error: " + exception.message.toString(),
+                                                duration = SnackbarDuration.Long
+                                            )
+                                        }
+                                    },
+                                    animationSpec = TweenSpec(500)
+                                )
+                            }
+                        }
+                    } else {
+                        PreviewPlaceholder("No image found for this marker", placeholderKind = "")
+                    }
+                }
+                SnackbarHost(
+                    hostState = snackbarHostState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(0.dp, 64.dp)
+                ) { data ->
+                    Text(
+                        text = data.message,
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .fillMaxWidth()
+                            .background(
+                                MaterialTheme.colors.error,
+                                shape = MaterialTheme.shapes.medium
+                            ),
+                        color = MaterialTheme.colors.onError,
+                        textAlign = TextAlign.Center
+
+                    )
+                }
+
+                Spacer(modifier = Modifier.padding(8.dp))
+                Divider()
+                Spacer(modifier = Modifier.padding(8.dp))
 
 //            if(LocalInspectionMode.current) {
 //                PreviewPlaceholder("Freds head")
@@ -253,19 +298,23 @@ fun MarkerInfoScreen(
 //                )
 //            }
 
-            Text(
-                "Marker Latitude: ${marker.position.latitude}",
-                fontSize = MaterialTheme.typography.body1.fontSize,
-                fontWeight = FontWeight.Bold,
-            )
-            Text(
-                "Marker Longitude: ${marker.position.longitude}",
-                fontSize = MaterialTheme.typography.body1.fontSize,
-                fontWeight = FontWeight.Bold,
-            )
+                Text(
+                    "Marker Latitude: ${marker.data.position.latitude}",
+                    fontSize = MaterialTheme.typography.body1.fontSize,
+                    fontWeight = FontWeight.Normal,
+                )
+                Text(
+                    "Marker Longitude: ${marker.data.position.longitude}",
+                    fontSize = MaterialTheme.typography.body1.fontSize,
+                    fontWeight = FontWeight.Normal,
+                )
+//            Text(
+//                marker.description, // todo add
+//                fontSize = MaterialTheme.typography.body2.fontSize,
+//            )
+            }
         }
     }
-
 }
 
 

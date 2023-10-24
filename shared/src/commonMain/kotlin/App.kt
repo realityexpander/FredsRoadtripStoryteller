@@ -3,7 +3,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -59,11 +58,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.serialization.json.Json
-import loadMarkers.LoadingState
-import loadMarkers.MarkersResult
-import loadMarkers.distanceBetween
-import loadMarkers.loadMarkers
-import loadMarkers.sampleData.kUseRealNetwork
+import data.LoadingState
+import data.loadMarkerInfo.loadMapMarkerInfo
+import data.loadMarkers.MarkersResult
+import data.loadMarkers.distanceBetween
+import data.loadMarkers.loadMarkers
+import data.loadMarkers.sampleData.kUseRealNetwork
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import screens.SettingsScreen
@@ -167,7 +167,10 @@ fun App() {
                             marker.value.long
                         ),
                         title = marker.value.title,
-                        alpha = 1.0f
+                        alpha = 1.0f,
+                        subtitle = marker.value.shortDescription,
+                        mainPhotoUrl = marker.value.imageUrl,
+                        location = ""
                     )
                 }
 
@@ -194,6 +197,10 @@ fun App() {
             //        }.toList()
             //    )
             //}
+        }
+
+        var markerDetailsInfo by remember(bottomSheetActiveScreen) {
+            mutableStateOf<LoadingState<MapMarker>>(LoadingState.Loading)
         }
 
         // Update user location & Update Recently Seen Markers
@@ -354,9 +361,13 @@ fun App() {
                         )
                     }
                     is BottomSheetScreen.MarkerDetailsScreen -> {
+                        val marker = (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker
+                        markerDetailsInfo = loadMapMarkerInfo(marker)
+
                         MarkerInfoScreen(
                             bottomSheetScaffoldState,
-                            (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker,
+//                            (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker,
+                            markerDetailsInfo,
                         )
                     }
                 }

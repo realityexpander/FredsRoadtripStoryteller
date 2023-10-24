@@ -1,7 +1,6 @@
-package loadMarkers.sampleData
+package data.loadMarkers.sampleData
 
 import singleItemPageFakeMarkerHtmlPage1
-import loadMarkers.LoadingState
 
 const val kUseRealNetwork = 0
 const val kSunnyvaleFakeDataset = 1

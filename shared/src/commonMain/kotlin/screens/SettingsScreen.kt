@@ -40,7 +40,7 @@ import components.SettingsSwitch
 import getPlatformName
 import isMarkersLastUpdatedLocationVisible
 import kotlinx.coroutines.launch
-import loadMarkers.MarkersResult
+import data.loadMarkers.MarkersResult
 import setCachedMarkersLastUpdatedLocation
 import setCachedMarkersResult
 import setIsMarkersLastUpdatedLocationVisible

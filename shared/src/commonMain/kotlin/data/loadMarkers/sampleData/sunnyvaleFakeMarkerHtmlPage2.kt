@@ -1,4 +1,4 @@
-package loadMarkers.sampleData
+package data.loadMarkers.sampleData
 
 fun sunnyvaleFakeMarkerHtmlPage2() = """
 <!DOCTYPE html>

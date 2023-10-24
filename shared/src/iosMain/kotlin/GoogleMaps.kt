@@ -43,7 +43,7 @@ import cocoapods.GoogleMaps.kGMSTypeSatellite
 import components.SwitchWithLabel
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
-import loadMarkers.milesToMeters
+import data.loadMarkers.milesToMeters
 import platform.CoreLocation.CLLocationCoordinate2D
 import platform.CoreLocation.CLLocationCoordinate2DMake
 import platform.UIKit.UIColor

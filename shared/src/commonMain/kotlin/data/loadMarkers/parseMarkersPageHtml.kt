@@ -1,11 +1,13 @@
-package loadMarkers
+package data.loadMarkers
 
 import com.mohamedrejeb.ksoup.entities.KsoupEntities
 import com.mohamedrejeb.ksoup.html.parser.KsoupHtmlHandler
 import com.mohamedrejeb.ksoup.html.parser.KsoupHtmlParser
 import co.touchlab.kermit.Logger as Log
 
-suspend fun parseMarkerPageHtml(rawPageHtml: String): MarkersResult {
+const val kBaseHmdbDotOrgUrl = "https://www.hmdb.org/"
+
+suspend fun parseMarkersPageHtml(rawPageHtml: String): MarkersResult {
     if (rawPageHtml.isBlank()) {
         Log.w { "htmlResponse is Blank" }
         return MarkersResult()
@@ -22,7 +24,7 @@ suspend fun parseMarkerPageHtml(rawPageHtml: String): MarkersResult {
 
     // Simple scraper that checks if a page is only a single-marker page
     // - If it has a "span" with class "sectionhead", then it's a single-marker page.
-    fun singleItemForPageChecker():  KsoupHtmlHandler {
+    fun checkSingleItemOnPageHandler():  KsoupHtmlHandler {
         return KsoupHtmlHandler.Builder()
             .onOpenTag { tagName, attributes, _ ->
                 if (tagName == "span" && attributes["class"] == "sectionhead") {
@@ -31,9 +33,9 @@ suspend fun parseMarkerPageHtml(rawPageHtml: String): MarkersResult {
             }
             .build()
     }
-    val singleItemForPageCheckerKsoupHtmlParser = KsoupHtmlParser(handler = singleItemForPageChecker())
-    singleItemForPageCheckerKsoupHtmlParser.write(rawPageHtml)
-    singleItemForPageCheckerKsoupHtmlParser.end()
+    val checkSingleItemOnPageKsoupHtmlParser = KsoupHtmlParser(handler = checkSingleItemOnPageHandler())
+    checkSingleItemOnPageKsoupHtmlParser.write(rawPageHtml)
+    checkSingleItemOnPageKsoupHtmlParser.end()
 
     fun singleMarkerPageHandler(): KsoupHtmlHandler {
         return KsoupHtmlHandler.Builder()
@@ -65,11 +67,9 @@ suspend fun parseMarkerPageHtml(rawPageHtml: String): MarkersResult {
 
                     markerInfos[curCapturingMarkerId] = markerInfos[curCapturingMarkerId]?.copy(
                         title = title,
-                        shortDescription = title
                     ) ?: MarkerInfo(
                         id = curCapturingMarkerId,
                         title = title,
-                        shortDescription = title,
                     )
                 }
 
@@ -78,10 +78,10 @@ suspend fun parseMarkerPageHtml(rawPageHtml: String): MarkersResult {
                     val description = attributes["content"] ?: ""
 
                     markerInfos[curCapturingMarkerId] = markerInfos[curCapturingMarkerId]?.copy(
-                        description = description,
+                        shortDescription = description,
                     ) ?: MarkerInfo(
                         id = curCapturingMarkerId,
-                        description = description,
+                        shortDescription = description,
                     )
                 }
 
@@ -127,6 +127,24 @@ suspend fun parseMarkerPageHtml(rawPageHtml: String): MarkersResult {
                         long = long,
                     )
                 }
+
+                // Get the Marker Info page url
+                // <a href="../m.asp?m=218883">Skinner's Seedling</a> -> https://www.hmdb.org/m.asp?m=218883
+                if(tagName == "a" && attributes["href"] == "../m.asp?m=") {
+                    val url = attributes["href"] ?: ""
+
+                    // replace the ".." in the url with the full url
+                    val fullUrl =
+                        kBaseHmdbDotOrgUrl +
+                        url.substringAfterLast("/")
+
+                    markerInfos[curCapturingMarkerId] = markerInfos[curCapturingMarkerId]?.copy(
+                        infoPageUrl = fullUrl,
+                    ) ?: MarkerInfo(
+                        id = curCapturingMarkerId,
+                        infoPageUrl = fullUrl,
+                    )
+                }
             }
             .build()
     }
@@ -150,8 +168,8 @@ suspend fun parseMarkerPageHtml(rawPageHtml: String): MarkersResult {
                             ) + "\n"
                 }
 
-                // First page only
                 // Check for the entry count (239 entries matched your criteria. The first 100 are listed above.)
+                // - This is for First page only
                 if(text.contains("entries matched your criteria.", ignoreCase = true)) {
                     rawMarkerCountFromFirstPageHtmlOfMultiPageResult =
                         text.substringBefore("entries").trim().toIntOrNull() ?: 0
@@ -291,7 +309,6 @@ suspend fun parseMarkerPageHtml(rawPageHtml: String): MarkersResult {
             markerInfos[markerId] = MarkerInfo(
                 id = markerId,
                 title = title,
-                description = description,
                 shortDescription = shortLocation,
                 lat = lat,
                 long = long,

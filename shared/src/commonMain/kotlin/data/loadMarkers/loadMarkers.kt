@@ -1,4 +1,4 @@
-package loadMarkers
+package data.loadMarkers
 
 import Location
 import androidx.compose.foundation.layout.Box
@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import cachedMarkersLastUpdatedLocation
 import cachedMarkersResult
 import com.russhwolf.settings.Settings
+import data.LoadingState
 import network.httpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -34,8 +35,8 @@ import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import loadMarkers.sampleData.generateFakeMarkerPageHtml
-import loadMarkers.sampleData.kUseRealNetwork
+import data.loadMarkers.sampleData.generateFakeMarkerPageHtml
+import data.loadMarkers.sampleData.kUseRealNetwork
 import setCachedMarkersLastUpdatedLocation
 import setCachedMarkersLastUpdatedEpochSeconds
 import setCachedMarkersResult
@@ -45,13 +46,12 @@ import co.touchlab.kermit.Logger as Log
 data class MarkerInfo(
     val id: String,
     val title: String = "",
-    val description: String = "",
     val shortDescription: String = "",
     val lat: Double = 0.0,
     val long: Double = 0.0,
     val infoPageUrl: String = "",
     val imageUrl: String = "",
-    val lastUpdatedEpochSeconds: Long = 0, // for cache expiry // todo add to code
+    val lastUpdatedEpochSeconds: Long = 0, // for cache expiry // todo add to cache update code
 )
 
 @Serializable
@@ -117,7 +117,6 @@ fun loadMarkers(
         if(markersLoadingState !is LoadingState.Idle) return@remember mutableStateOf(markersResultState)
 
         // Step 1 - Check for a cached result in the Settings
-//        if (settings.hasKey(kCachedMarkersResultSetting)) { // todo test
         if (settings.cachedMarkersResult().markerInfos.isNotEmpty()) {
             val cachedMarkers = settings.cachedMarkersResult()
                     .copy(isMarkerPageParseFinished = true) // ensure the cached result is marked as finished // todo needed?
@@ -125,7 +124,7 @@ fun loadMarkers(
             // Log.d("Found cached markers in Settings, count: ${cachedMarkersResult.markerInfos.size}")
             markersResultState = cachedMarkers.copy(isMarkerPageParseFinished = true)
 
-            // Step 1.1 - Check if the cache is expired
+            // Step 1.1 - Check if the cache is expired // todo replace this with a per-marker expiry
             if(settings.hasKey(kCachedMarkersLastUpdatedEpochSecondsSetting)) {
                 val cacheLastUpdatedEpochSeconds =
                     settings.getLong(kCachedMarkersLastUpdatedEpochSecondsSetting, 0)
@@ -241,12 +240,12 @@ fun loadMarkers(
                 // Step 3 - Load the raw HTML from the network (or fake data)
                 val rawHtmlString =
                     if(useFakeDataSetId == kUseRealNetwork) {
-                        val response = httpClient.get(assetUrl)
+                        val response = httpClient.get(assetUrl)  // network load
                         val rawHtml: String = response.body()
                         // Log.d("Loaded page successfully, data length: ${rawHtml.length}, coordinates: ${userLocation.latitude}, ${userLocation.longitude}")
                         rawHtml
                     } else {
-                        // use FAKE loading from network
+                        // use FAKE loading from fakeDataSet
                         generateFakeMarkerPageHtml(curHtmlPageNum, useFakeDataSetId)
                     }
 
@@ -257,7 +256,8 @@ fun loadMarkers(
                     // Guard against blank data
                     if (rawHtmlString.isBlank()) {
                         Log.w("Blank data for page $curHtmlPageNum, location: $userLocation")
-                        networkLoadingState = LoadingState.Error("Blank data for page $curHtmlPageNum, location: $userLocation") // leave for debugging
+                        networkLoadingState =
+                            LoadingState.Error("Blank data for page $curHtmlPageNum, location: $userLocation") // leave for debugging
                         markersResultState = markersResultState.copy(
                             isMarkerPageParseFinished = true,
                             loadingState = LoadingState.Error("Blank data for page $curHtmlPageNum, location: $userLocation")
@@ -267,9 +267,9 @@ fun loadMarkers(
 
                     // 4.1 - Parse the raw page HTML into a list of `MarkerInfo` objects & metadata about the scraped data
                     // Log.d("Parsing HTML.. Current markers in cache (before parsing) count: ${parsedMarkersResultState.markerInfos.size}")
-                    val parsedMarkersResult = parseMarkerPageHtml(rawHtmlString)
+                    val parsedMarkersResult = parseMarkersPageHtml(rawHtmlString)
 
-                    // Check for zero raw html marker entries
+                    // Check for zero `raw html` marker entries
                     if (parsedMarkersResult.rawMarkerCountFromFirstPageHtmlOfMultiPageResult == 0) {
                         Log.w("No raw html marker entries found for page: $curHtmlPageNum, location: $userLocation")
                         markersResultState = markersResultState.copy(isMarkerPageParseFinished = true)
@@ -320,10 +320,12 @@ fun loadMarkers(
                 shouldUpdateCache = false
                 markersResultState = markersResultState.copy(
                     isMarkerPageParseFinished = true,
-                    loadingState = LoadingState.Error(e.cause?.message ?: "Loading error - ${e.message}")
+                    loadingState = LoadingState.Error(
+                        e.cause?.message ?: "Loading error - ${e.message}"
+                    )
                 )
                 Log.w("Failed to load page: $curHtmlPageNum, assetUrl: $assetUrl, error: ${e.cause?.message}")
-                
+
                 LoadingState.Error(e.cause?.message ?: "error")  // leave for debugging
             }
         }
