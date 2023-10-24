@@ -1,6 +1,6 @@
 package data.loadMarkerInfo
 
-import MapMarker
+import maps.MapMarker
 import co.touchlab.kermit.Logger
 import com.mohamedrejeb.ksoup.entities.KsoupEntities
 import com.mohamedrejeb.ksoup.html.parser.KsoupHtmlHandler
@@ -39,7 +39,7 @@ fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
         var isCapturingSpanishInscription = false
 
         var isCapturingEnglishInscription = false
-        var isCapturingEnglishInscriptionPaused = false
+        var isCapturingEnglishInscriptionPaused = false  // skip ad copy/links/scripts in the middle of the english inscription
 
         return KsoupHtmlHandler.Builder()
             .onOpenTag { tagName, attributes, _ ->
@@ -243,8 +243,7 @@ fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
                     // Location - Collect & End collecting
                     if(isCapturingLocationTextPhase1) {
                         // keep collecting until the next `sectionhead` text is found (Other nearby markers.)
-                        if(decodedString.contains("Other nearby markers.", ignoreCase = true)) {
-                            isCapturingLocationTextPhase1 = false
+                        if(decodedString.contains("Other nearby markers.", ignoreCase = true)) { isCapturingLocationTextPhase1 = false
                             isCapturingLocationTextPhase2 = false
                             isCapturingLocationTextComplete = true
                             return@onText
@@ -292,14 +291,10 @@ fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
         if(englishInscriptionLines.size > 0
            || mapMarkerResult.inscription.contains("English translation", ignoreCase=true)
         ) {
-            // skip the first line of the inscription (it's the title)
-            englishInscriptionLines.subList(1, englishInscriptionLines.size)
+            englishInscriptionLines
+                .subList(1, englishInscriptionLines.size)// skip the first line of the inscription (it's the title)
                 .joinToString("")
-                .stripNewlines()
-                .stripDoubleSpace()
-                .stripDoublePeriodAndSpace()
-                .ensureSpaceAfterPeriod()
-                .trim()
+                .processInscriptionString()
         } else {
             ""
         }
@@ -307,14 +302,10 @@ fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
         if(spanishInscriptionLines.size > 0
             || mapMarkerResult.inscription.contains("English translation", ignoreCase=true)
         ) {
-            // skip the first line of the inscription (it's the title)
-            spanishInscriptionLines.subList(1, spanishInscriptionLines.size)
+            spanishInscriptionLines
+                .subList(1, spanishInscriptionLines.size) // skip the first line of the inscription (it's the title)
                 .joinToString("")
-                .stripNewlines()
-                .stripDoubleSpace()
-                .stripDoublePeriodAndSpace()
-                .ensureSpaceAfterPeriod()
-                .trim()
+                .processInscriptionString()
         } else {
             ""
         }
@@ -346,9 +337,16 @@ fun String.stripNewlines(): String {
 fun String.stripLongDash(): String {
     return this.replace("—", "")
 }
+fun String.processInscriptionString(): String {
+    return this
+        .stripNewlines()
+        .stripDoubleSpace()
+        .stripDoublePeriodAndSpace()
+        .ensureSpaceAfterPeriod()
+        .trim()
+}
 
-
-fun fakeLoadingStateForParseMarkerInfoPageHtml(marker: MapMarker): LoadingState<MapMarker> {
+private fun fakeLoadingStateForParseMarkerInfoPageHtml(marker: MapMarker): LoadingState<MapMarker> {
     return LoadingState.Loaded(
         MapMarker(
             key = marker.key,
@@ -371,5 +369,6 @@ fun fakeLoadingStateForParseMarkerInfoPageHtml(marker: MapMarker): LoadingState<
             erected = "Erected 1913 from rubbled stones that were once erected around 2000 BC",
             credits = "Credits",
             location = ""
-        ))
+        )
+    )
 }

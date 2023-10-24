@@ -35,8 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import cachedMarkersResult
 import com.russhwolf.settings.Settings
-import components.SettingsSlider
-import components.SettingsSwitch
+import screens.uiComponents.SettingsSlider
+import screens.uiComponents.SettingsSwitch
 import getPlatformName
 import isMarkersLastUpdatedLocationVisible
 import kotlinx.coroutines.launch

@@ -1,6 +1,6 @@
 package data.loadMarkerInfo
 
-import MapMarker
+import maps.MapMarker
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -15,10 +15,10 @@ import kotlinx.coroutines.yield
 import network.httpClient
 import data.loadMarkers.kBaseHmdbDotOrgUrl
 
-const val kUseFakeData = true
+const val kUseFakeData = false
 
 @Composable
-fun loadMapMarkerInfo(mapMarker: MapMarker): LoadingState<MapMarker> {
+fun loadMapMarkerInfo(mapMarker: MapMarker, useFakeData: Boolean = false): LoadingState<MapMarker> {
     var loadingState by remember {
         mutableStateOf<LoadingState<MapMarker>>(LoadingState.Loading)
     }
@@ -42,13 +42,7 @@ fun loadMapMarkerInfo(mapMarker: MapMarker): LoadingState<MapMarker> {
         yield() // Allow UI to render LoadingState.Loading
 
         try {
-            if(kUseFakeData) {
-//                loadingState = fakeLoadingStateForParseMarkerInfoPageHtml(mapMarker)
-
-//                val markerInfoPageHtml = almadenVineyardsM2580()
-//                val result = parseMarkerInfoPageHtml(markerInfoPageHtml)
-//                loadingState = LoadingState.Loaded(result.second!!)
-            } else {
+            if (!useFakeData) {
                 val response = httpClient.get(markerInfoPageUrl)
                 val markerInfoPageHtml = response.body<String>()
 
@@ -78,6 +72,12 @@ fun loadMapMarkerInfo(mapMarker: MapMarker): LoadingState<MapMarker> {
                         credits = parsedMarkerInfo.credits
                     )
                 )
+            } else {
+                // loadingState = fakeLoadingStateForParseMarkerInfoPageHtml(mapMarker)
+
+                val markerInfoPageHtml = almadenVineyardsM2580()
+                val result = parseMarkerInfoPageHtml(markerInfoPageHtml)
+                loadingState = LoadingState.Loaded(result.second!!)
             }
         } catch (e: Exception) {
             loadingState = LoadingState.Error(e.message ?: e.cause?.message ?: "Loading error")

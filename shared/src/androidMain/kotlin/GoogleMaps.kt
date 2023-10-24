@@ -52,9 +52,13 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberTileOverlayState
 import com.google.maps.android.heatmaps.HeatmapTileProvider
 import com.google.maps.android.heatmaps.WeightedLatLng
-import components.SwitchWithLabel
+import screens.uiComponents.SwitchWithLabel
 import kotlinx.coroutines.launch
 import data.loadMarkers.milesToMeters
+import maps.CameraLocationBounds
+import maps.CameraPosition
+import maps.LatLong
+import maps.MapMarker
 import co.touchlab.kermit.Logger as Log
 
 // Android Google Maps implementation
@@ -152,7 +156,7 @@ actual fun GoogleMaps(
         }
     }
 
-    // Set Camera to LatLong position (doesn't change zoom level)
+    // Set Camera to maps.LatLong position (doesn't change zoom level)
     // Note: only allowed to change the camera position once per change in cameraLocationLatLong.
     //       This is to prevent the screen from locking the location. By only allowing the camera
     //       to change once, the user can pan around the map without the camera jumping back to

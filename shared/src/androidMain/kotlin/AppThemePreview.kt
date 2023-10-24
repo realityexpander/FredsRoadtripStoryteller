@@ -12,9 +12,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.Wallpapers
-import components.SettingsSlider
-import components.SettingsSwitch
+import screens.uiComponents.AppTheme
+import screens.uiComponents.SettingsSlider
+import screens.uiComponents.SettingsSwitch
 import data.LoadingState
+import maps.LatLong
+import maps.MapMarker
 import screens.SettingsScreen
 
 @Preview(name = "switches", group = "Settings")
@@ -130,7 +133,8 @@ fun MarkerInfoPreview() {
                         alpha = 1f,
                         subtitle = "Test Subtitle",
                         location = ""
-                    ))
+                    )
+                )
             )
         }
     }

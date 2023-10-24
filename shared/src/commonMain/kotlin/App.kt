@@ -53,17 +53,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.russhwolf.settings.Settings
-import components.PreviewPlaceholder
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
-import kotlinx.serialization.json.Json
+import screens.uiComponents.AppTheme
+import screens.uiComponents.PreviewPlaceholder
 import data.LoadingState
 import data.loadMarkerInfo.loadMapMarkerInfo
 import data.loadMarkers.MarkersResult
 import data.loadMarkers.distanceBetween
 import data.loadMarkers.loadMarkers
 import data.loadMarkers.sampleData.kUseRealNetwork
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.serialization.json.Json
+import maps.CameraLocationBounds
+import maps.CameraPosition
+import maps.LatLong
+import maps.MapMarker
+import maps.RecentMapMarker
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import screens.SettingsScreen
@@ -98,7 +104,7 @@ fun App() {
 
         val settings = remember {
             Settings().apply {
-                 clear()  // Force clear all settings & stored data
+//                 clear()  // Force clear all settings & stored data
                 // Log.setMinSeverity(Severity.Warn)
                 printAppSettings()
             }
@@ -121,7 +127,7 @@ fun App() {
             mutableStateOf(settings.lastKnownUserLocation())
         }
 
-        // Recently Seen Markers
+        // Recently Seen Markers for UI
         val recentlySeenMarkersSet by remember {
             mutableStateOf(mutableSetOf<RecentMapMarker>())
         }
@@ -606,9 +612,9 @@ fun App() {
                             items(recentlySeenMarkersForUiList.size) {
                                 val marker = recentlySeenMarkersForUiList.elementAt(it)
 //                                    val marker = RecentMapMarker(
-//                                        MapMarker(
+//                                        maps.MapMarker(
 //                                            key = "marker1",
-//                                            position = LatLong(
+//                                            position = maps.LatLong(
 //                                                37.422160,
 //                                                -122.084270
 //                                            ),
@@ -773,8 +779,8 @@ expect fun getPlatformName(): String
 ////                        markers = markers.map { marker ->
 ////                            if (marker.key == "marker4") {
 ////                                Log.d { "marker4, myLocation = ${myLocation.latitude}, ${myLocation.longitude}" }
-////                                MapMarker(
-////                                    position = LatLong(
+////                                maps.MapMarker(
+////                                    position = maps.LatLong(
 ////                                        myLocation.latitude,
 ////                                        myLocation.longitude
 ////                                    ),

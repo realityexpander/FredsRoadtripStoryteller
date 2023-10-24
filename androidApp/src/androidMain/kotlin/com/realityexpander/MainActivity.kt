@@ -1,6 +1,6 @@
 package com.realityexpander
 
-import AppTheme
+import screens.uiComponents.AppTheme
 import GPSLocationService
 import MainView
 import SplashScreenForPermissions
@@ -24,7 +24,6 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.logEvent
 import com.russhwolf.settings.Settings
 import intentFlow
-import isMarkersLastUpdatedLocationVisible
 import isPermissionsGranted
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

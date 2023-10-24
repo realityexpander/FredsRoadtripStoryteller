@@ -19,7 +19,7 @@ class ParseMarkerInfoPageHtmlTest {
         val result = parseMarkerInfoPageHtml(markerInfoPageHtml)
         val markerInfo = result.second!!
 
-        //println(json.encodeToString(MapMarker.serializer(), markerInfo))
+        //println(json.encodeToString(maps.MapMarker.serializer(), markerInfo))
 
         // Title
         assertTrue(
@@ -94,7 +94,7 @@ class ParseMarkerInfoPageHtmlTest {
         val result = parseMarkerInfoPageHtml(markerInfoPageHtml)
         val markerInfo = result.second!!
 
-        // println(json.encodeToString(MapMarker.serializer(), markerInfo))
+        // println(json.encodeToString(maps.MapMarker.serializer(), markerInfo))
 
         // Title
         assertTrue(
@@ -169,7 +169,7 @@ class ParseMarkerInfoPageHtmlTest {
         val result = parseMarkerInfoPageHtml(markerInfoPageHtml)
         val markerInfo = result.second!!
 
-         // println(json.encodeToString(MapMarker.serializer(), markerInfo))
+         // println(json.encodeToString(maps.MapMarker.serializer(), markerInfo))
 
         // Title
         assertTrue(
@@ -256,7 +256,7 @@ class ParseMarkerInfoPageHtmlTest {
         val result = parseMarkerInfoPageHtml(markerInfoPageHtml)
         val markerInfo = result.second!!
 
-         println(json.encodeToString(MapMarker.serializer(), markerInfo))
+        // println(json.encodeToString(maps.MapMarker.serializer(), markerInfo))
 
         // Title
         assertTrue(
