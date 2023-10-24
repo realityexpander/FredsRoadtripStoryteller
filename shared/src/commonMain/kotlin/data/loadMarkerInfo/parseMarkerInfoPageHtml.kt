@@ -155,8 +155,7 @@ fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
                     val decodedString =
                         KsoupEntities
                             .decodeHtml(text)
-                            .stripDoubleSpace()
-                            .trim()
+                            .stripDoubleSpace() + " " // require space at end to conform to text-formatting from site
                     if (decodedString.isBlank()) return@onText
 
                     rawMarkerInfoStrings += decodedString
@@ -187,17 +186,11 @@ fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
                             return@onText
                         }
 
-//                        mapMarkerResult = mapMarkerResult.copy(
-//                            spanishInscription = mapMarkerResult.spanishInscription + decodedString
-//                        )
                         spanishInscriptionLines += decodedString
                     }
 
                     // English Inscription (multi-language text)
                     if(isCapturingEnglishInscription && !isCapturingEnglishInscriptionPaused) {
-//                        mapMarkerResult = mapMarkerResult.copy(
-//                            englishInscription = mapMarkerResult.englishInscription + decodedString
-//                        )
                         englishInscriptionLines += decodedString
                     }
 
@@ -205,7 +198,7 @@ fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
                     if(isCapturingPhotoCaption) {
                         mapMarkerResult = mapMarkerResult.copy(
                             photoCaptions = mapMarkerResult
-                                .photoCaptions.plus(decodedString)
+                                .photoCaptions.plus(decodedString.trim())
                         )
                         isCapturingText = false
                         isCapturingPhotoCaption = false
@@ -215,7 +208,7 @@ fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
                     if(isCapturingPhotoAttribution) {
                         mapMarkerResult = mapMarkerResult.copy(
                             photoAttributions = mapMarkerResult
-                                .photoAttributions.plus(decodedString)
+                                .photoAttributions.plus(decodedString.trim())
                         )
                         isCapturingText = false
                         isCapturingPhotoAttribution = false
@@ -242,7 +235,7 @@ fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
                     }
                     if(isCapturingErectedTextPhase2) {
                         mapMarkerResult = mapMarkerResult.copy(
-                            erected = mapMarkerResult.erected + decodedString
+                            erected = mapMarkerResult.erected + decodedString.trim()
                         )
                         return@onText
                     }
@@ -328,6 +321,7 @@ fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
     mapMarkerResult = mapMarkerResult.copy(
         englishInscription = finalEnglishInscription,
         spanishInscription = finalSpanishInscription,
+        subtitle = mapMarkerResult.subtitle.stripLongDash()
     )
 
     return Pair(null, mapMarkerResult)
@@ -348,6 +342,9 @@ fun String.ensureSpaceAfterPeriod(): String {
 }
 fun String.stripNewlines(): String {
     return this.replace("\n", "")
+}
+fun String.stripLongDash(): String {
+    return this.replace("—", "")
 }
 
 

@@ -334,5 +334,11 @@ class ParseMarkerInfoPageHtmlTest {
             markerInfo.erected.contains("2020."),
             "Erected was not found"
         )
+
+        // Check that inscription has proper spaces between words
+        assertTrue(
+            markerInfo.englishInscription == "In 1820, on September 8, the day on which Tepuztecatl was celebrated, the town of Tepoztlan installed its first town hall. In 1826 the municipality of Tepoztlán, as part of the State of Mexico, was ratified. Honorable City Council of Tepoztlan Rogelio Torres Ortega, Municipal President of Tepoztlan 2019-2021 Government of the State of Morelos Cuauhtemoc Blanco Bravo, Governor of the State of Photographed By J. Makali Bruton, August 6, 2022 2. Additional tablets near the First City Council of Tepotzlán Marker Erected 2020.",
+            "Inscription has improper spaces between words"
+        )
     }
 }

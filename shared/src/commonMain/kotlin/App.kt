@@ -98,7 +98,7 @@ fun App() {
 
         val settings = remember {
             Settings().apply {
-                // clear()  // Force clear all settings & stored data
+                 clear()  // Force clear all settings & stored data
                 // Log.setMinSeverity(Severity.Warn)
                 printAppSettings()
             }
@@ -204,7 +204,7 @@ fun App() {
         }
 
         // Update user location & Update Recently Seen Markers
-        LaunchedEffect(Unit) {
+        LaunchedEffect(Unit, markersLoadResult.loadingState) {
             // Set the last known location to the current location in settings
             gpsLocationService.onUpdatedGPSLocation(
                 errorCallback = { errorMessage ->
