@@ -21,7 +21,6 @@ kotlin {
     }
 }
 
-
 android {
     compileSdk = (findProperty("android.compileSdk") as String).toInt()
     namespace = "com.realityexpander"
@@ -32,8 +31,8 @@ android {
         applicationId = "com.realityexpander.talkinghistoricalmarkers"
         minSdk = (findProperty("android.minSdk") as String).toInt()
         targetSdk = (findProperty("android.targetSdk") as String).toInt()
-        versionCode = 3
-        versionName = "1.0"
+        versionCode = (findProperty("android.versionCode") as String).toInt()
+        versionName = findProperty("android.versionName") as String
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

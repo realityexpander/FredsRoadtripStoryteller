@@ -1,5 +1,3 @@
-//enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
-
 rootProject.name = "TalkingHistoricalMarkers"
 include(":androidApp")
 include(":shared")
