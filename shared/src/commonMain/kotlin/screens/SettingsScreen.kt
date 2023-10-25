@@ -33,20 +33,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
-import cachedMarkersResult
+import data.cachedMarkersResult
 import com.russhwolf.settings.Settings
 import screens.uiComponents.SettingsSlider
 import screens.uiComponents.SettingsSwitch
 import getPlatformName
-import isMarkersLastUpdatedLocationVisible
+import data.isMarkersLastUpdatedLocationVisible
 import kotlinx.coroutines.launch
 import data.loadMarkers.MarkersResult
-import setCachedMarkersLastUpdatedLocation
-import setCachedMarkersResult
-import setIsMarkersLastUpdatedLocationVisible
-import setShouldAutomaticallyStartTrackingWhenAppLaunches
-import setTalkRadiusMiles
-import shouldAutomaticallyStartTrackingWhenAppLaunches
+import data.setCachedMarkersLastUpdatedLocation
+import data.setCachedMarkersResult
+import data.setIsMarkersLastUpdatedLocationVisible
+import data.setShouldAutomaticallyStartTrackingWhenAppLaunches
+import data.setTalkRadiusMiles
+import data.shouldAutomaticallyStartTrackingWhenAppLaunches
 import triggerDeveloperFeedback
 
 @OptIn(ExperimentalMaterialApi::class)

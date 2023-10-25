@@ -24,13 +24,13 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.logEvent
 import com.russhwolf.settings.Settings
 import intentFlow
-import isPermissionsGranted
+import data.isPermissionsGranted
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import setIsPermissionsGranted
+import data.setIsPermissionsGranted
 
 class MainActivity : AppCompatActivity() {
 

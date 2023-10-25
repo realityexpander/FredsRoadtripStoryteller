@@ -17,16 +17,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cachedMarkersLastUpdatedLocation
-import cachedMarkersResult
+import data.cachedMarkersLastUpdatedLocation
+import data.cachedMarkersResult
 import com.russhwolf.settings.Settings
 import data.LoadingState
 import network.httpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import kCachedMarkersLastLoadLocationSetting
-import kCachedMarkersLastUpdatedEpochSecondsSetting
-import kCachedMarkersResultSetting
+import data.kCachedMarkersLastLoadLocationSetting
+import data.kCachedMarkersLastUpdatedEpochSecondsSetting
+import data.kCachedMarkersResultSetting
 import kMaxMarkerCacheAgeSeconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,9 +37,9 @@ import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import data.loadMarkers.sampleData.simpleMarkersPageHtml
 import data.loadMarkers.sampleData.kUseRealNetwork
-import setCachedMarkersLastUpdatedLocation
-import setCachedMarkersLastUpdatedEpochSeconds
-import setCachedMarkersResult
+import data.setCachedMarkersLastUpdatedLocation
+import data.setCachedMarkersLastUpdatedEpochSeconds
+import data.setCachedMarkersResult
 import co.touchlab.kermit.Logger as Log
 
 @Serializable
