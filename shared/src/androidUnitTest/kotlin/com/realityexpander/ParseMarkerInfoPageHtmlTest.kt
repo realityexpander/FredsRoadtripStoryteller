@@ -1,6 +1,6 @@
 package com.realityexpander
 
-import data.loadMarkerDetails.parseMarkerInfoPageHtml
+import data.loadMarkerDetails.parseMarkerDetailsPageHtml
 import data.loadMarkerDetails.sampleData.almadenVineyardsM2580
 import data.loadMarkerDetails.sampleData.deAnzaExpeditionM38342
 import data.loadMarkerDetails.sampleData.elTepoztecoNationalParkM207314
@@ -16,7 +16,7 @@ class ParseMarkerInfoPageHtmlTest {
     fun `Parse MarkerInfo Page Html for almadenVineyardsM2580 is Successful`() {
         val markerInfoPageHtml = almadenVineyardsM2580()
 
-        val result = parseMarkerInfoPageHtml(markerInfoPageHtml)
+        val result = parseMarkerDetailsPageHtml(markerInfoPageHtml)
         val markerInfo = result.second!!
 
         //println(json.encodeToString(maps.MapMarker.serializer(), markerInfo))
@@ -91,7 +91,7 @@ class ParseMarkerInfoPageHtmlTest {
     fun `Parse MarkerInfo Page Html for deAnzaExpeditionM38342 is Successful`() {
         val markerInfoPageHtml = deAnzaExpeditionM38342()
 
-        val result = parseMarkerInfoPageHtml(markerInfoPageHtml)
+        val result = parseMarkerDetailsPageHtml(markerInfoPageHtml)
         val markerInfo = result.second!!
 
         // println(json.encodeToString(maps.MapMarker.serializer(), markerInfo))
@@ -166,7 +166,7 @@ class ParseMarkerInfoPageHtmlTest {
     fun `Parse MarkerInfo Page Html for elTepoztecoNationalParkM207314 is Successful`() {
         val markerInfoPageHtml = elTepoztecoNationalParkM207314()
 
-        val result = parseMarkerInfoPageHtml(markerInfoPageHtml)
+        val result = parseMarkerDetailsPageHtml(markerInfoPageHtml)
         val markerInfo = result.second!!
 
          // println(json.encodeToString(maps.MapMarker.serializer(), markerInfo))
@@ -259,7 +259,7 @@ class ParseMarkerInfoPageHtmlTest {
     fun `Parse MarkerInfo Page Html for firstCityCouncilOfTepoztlanM207310 is Successful`() {
         val markerInfoPageHtml = firstCityCouncilOfTepoztlanM207310()
 
-        val result = parseMarkerInfoPageHtml(markerInfoPageHtml)
+        val result = parseMarkerDetailsPageHtml(markerInfoPageHtml)
         val markerInfo = result.second!!
 
          println(json.encodeToString(maps.MapMarker.serializer(), markerInfo))

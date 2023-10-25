@@ -57,7 +57,9 @@ import io.kamel.core.Resource
 import io.kamel.image.KamelImage
 import io.kamel.image.KamelImageBox
 import io.kamel.image.asyncPainterResource
+import kotlinx.coroutines.NonCancellable.isCompleted
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 import maps.MapMarker
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
@@ -242,6 +244,9 @@ fun MarkerDetailsScreen(
                             //    var rotationZ by remember {
                             //        mutableStateOf(0f)
                             //    }
+                            var isFinishedLoading by remember {
+                                mutableStateOf(false)
+                            }
 
                             BoxWithConstraints(
                                 modifier = Modifier
@@ -305,6 +310,11 @@ fun MarkerDetailsScreen(
                                                     ),
                                                 )
                                             }
+
+                                            // Prevent flicker of progress indicator (ugh)
+                                            if(progress > 0.85f) {
+                                                isFinishedLoading = true
+                                            }
                                         }
                                     },
                                     onFailure = { exception: Throwable ->
@@ -315,7 +325,10 @@ fun MarkerDetailsScreen(
                                             )
                                         }
                                     },
-                                    animationSpec = TweenSpec(800),
+                                    animationSpec = if(isFinishedLoading)
+                                            TweenSpec(800)
+                                        else
+                                            null,
                                     onSuccess = {painter ->
                                         Box(
                                             modifier = Modifier
@@ -342,7 +355,10 @@ fun MarkerDetailsScreen(
                             }
                         }
                     } else {
-                        PreviewPlaceholder("No image found for this marker", placeholderKind = "")
+                        PreviewPlaceholder(
+                            "No image found for this marker",
+                            placeholderKind = ""
+                        )
                     }
                 }
 

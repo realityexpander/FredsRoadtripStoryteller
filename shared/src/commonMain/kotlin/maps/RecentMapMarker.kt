@@ -6,5 +6,5 @@ class RecentMapMarker( // todo move to proper package
     val seenOrder: Int = 0
 ) {
     fun mapMarker() = marker
-    fun key() = marker.key
+    fun key() = marker.id
 }

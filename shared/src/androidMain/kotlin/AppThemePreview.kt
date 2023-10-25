@@ -104,7 +104,7 @@ fun SettingsDark() {
 fun MarkerInfoPreview(
  loadingState: LoadingState<MapMarker> = LoadingState.Loaded(
     MapMarker(
-        key = "test key",
+        id = "test key",
         position = LatLong(
             latitude = 0.0,
             longitude = 0.0

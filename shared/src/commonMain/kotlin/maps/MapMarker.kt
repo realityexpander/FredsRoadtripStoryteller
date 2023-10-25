@@ -2,14 +2,16 @@ package maps
 
 import kotlinx.serialization.Serializable
 
+typealias MarkerIdStr = String // e.g. "M2580"
+
 @Serializable
-data class MapMarker(  // todo move to proper package
-    val key: String = "",
+data class MapMarker(
+    val id: MarkerIdStr = "",
     val position: LatLong = LatLong(0.0, 0.0),
     val title: String = "",
     val alpha: Float = 1.0f,
     val subtitle: String = "",
-    val markerInfoPageUrl: String = "",
+    val markerDetailPageUrl: String = "",
 
     // For MarkerInfoScreen (fetched from markerInfoPageUrl)
     val isDescriptionLoaded: Boolean = false,
@@ -24,5 +26,6 @@ data class MapMarker(  // todo move to proper package
     val credits: String = "",
     val location: String = "",
 
-    val markerPhotos2: List<MarkerPhoto> = listOf(),
+    val markerPhotos2: List<MarkerPhoto> = listOf(), // todo consolidate with markerPhotos, photoCaptions, photoAttributions
+    val lastUpdatedEpochSeconds: Long = 0, // for cache expiry
 )

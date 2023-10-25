@@ -40,26 +40,16 @@ import data.loadMarkers.sampleData.kUseRealNetwork
 import data.setCachedMarkersLastUpdatedLocation
 import data.setCachedMarkersLastUpdatedEpochSeconds
 import data.setCachedMarkersResult
+import maps.MapMarker
+import maps.MarkerIdStr
 import co.touchlab.kermit.Logger as Log
 
 @Serializable
-data class MarkerInfo(
-    val id: String,
-    val title: String = "",
-    val shortDescription: String = "",
-    val lat: Double = 0.0,
-    val long: Double = 0.0,
-    val infoPageUrl: String = "",
-    val imageUrl: String = "",
-    val lastUpdatedEpochSeconds: Long = 0, // for cache expiry // todo add to cache update code
-)
-
-@Serializable
 data class MarkersResult(
-    val markerIdToRawMarkerInfoStrings: MutableMap<String, String> = mutableMapOf(),
-    val markerInfos: Map<String, MarkerInfo> = mutableMapOf(),
+    val markerIdToRawMarkerDetailStrings: MutableMap<MarkerIdStr, String> = mutableMapOf(),
+    val markerIdToMapMarker: Map<MarkerIdStr, MapMarker> = mutableMapOf(),
     val rawMarkerCountFromFirstPageHtmlOfMultiPageResult: Int = 0,
-    val isMarkerPageParseFinished: Boolean = false,
+    val isParseMarkersPageFinished: Boolean = false,
 
     @Contextual
     val loadingState: LoadingState<String> = LoadingState.Idle,
@@ -75,13 +65,13 @@ data class MarkersResult(
 // 2 - Initiate Load from network
 // 3 - Perform Load & Error checking
 // 4 - Parse the HTML
-//   4.1 - Parse the raw page HTML into a list of `MarkerInfo` objects & metadata about the scraped data
+//   4.1 - Parse the raw page HTML into a list of `MapMarker` objects & metadata about the scraped data
 //   4.2 - Load more pages, if needed (goto step 2)
 // 5 - Save the MarkerInfo objects to cache & settings (if they were updated from the network)
 // 6 - PROCESS COMPLETE
 //
 // Note: yes! this code is goofy looking & hops around a lot... this is because to I'm avoid using
-//       a viewModel as this works as a pure composable function.
+//       a viewModel as this works as a pure composable function. There is no ping-pong between files. Its all here.
 //       I'm Experimenting with a pure compose architecture with no android idiom remnants.
 @Composable
 fun loadMarkers(
@@ -113,16 +103,16 @@ fun loadMarkers(
          // Log.d("userLocation update, currentlyLoadingState: $markersLoadingState, location: $userLocation")
 
         // Guard - If currently loading/parsing markers, return the current parseResultState upon location change
-        if(!markersResultState.isMarkerPageParseFinished) return@remember mutableStateOf(markersResultState)
+        if(!markersResultState.isParseMarkersPageFinished) return@remember mutableStateOf(markersResultState)
         if(markersLoadingState !is LoadingState.Idle) return@remember mutableStateOf(markersResultState)
 
         // Step 1 - Check for a cached result in the Settings
-        if (settings.cachedMarkersResult().markerInfos.isNotEmpty()) {
+        if (settings.cachedMarkersResult().markerIdToMapMarker.isNotEmpty()) {
             val cachedMarkers = settings.cachedMarkersResult()
-                    .copy(isMarkerPageParseFinished = true) // ensure the cached result is marked as finished // todo needed?
+                    .copy(isParseMarkersPageFinished = true) // ensure the cached result is marked as finished // todo needed?
 
             // Log.d("Found cached markers in Settings, count: ${cachedMarkersResult.markerInfos.size}")
-            markersResultState = cachedMarkers.copy(isMarkerPageParseFinished = true)
+            markersResultState = cachedMarkers.copy(isParseMarkersPageFinished = true)
 
             // Step 1.1 - Check if the cache is expired // todo replace this with a per-marker expiry
             if(settings.hasKey(kCachedMarkersLastUpdatedEpochSecondsSetting)) {
@@ -135,7 +125,7 @@ fun loadMarkers(
                     Log.d("Cached markers are expired, dumping entire cache, attempting load from network..." ) // todo make this more sophisticated
 
                     // return current cached result, and also trigger network load, which will refresh the cache.
-                    markersResultState = MarkersResult(isMarkerPageParseFinished = false)
+                    markersResultState = MarkersResult(isParseMarkersPageFinished = false)
 
                     // Clear the cache in the settings
                     coroutineScope.launch {
@@ -161,11 +151,11 @@ fun loadMarkers(
                 )
 
                 // Log.d("userDistanceFromCachedLastLocationMiles: $userDistanceFromCachedLastLocationMiles")
-                if (userDistanceFromCachedLastLocationMiles > maxReloadDistanceMiles && markersResultState.isMarkerPageParseFinished) {
+                if (userDistanceFromCachedLastLocationMiles > maxReloadDistanceMiles && markersResultState.isParseMarkersPageFinished) {
                     Log.d("User is outside the max re-load radius, attempting load from network..." )
 
                     // return current cached result, and also trigger network load, which will refresh the cache.
-                    markersResultState = cachedMarkers.copy(isMarkerPageParseFinished = false)
+                    markersResultState = cachedMarkers.copy(isParseMarkersPageFinished = false)
                 }
             }
 
@@ -179,9 +169,9 @@ fun loadMarkers(
     var markerHtmlPageUrl by remember { mutableStateOf<String?>(null) }
     var curHtmlPageNum by remember { mutableStateOf(1) }
     var shouldUpdateCache by remember { mutableStateOf(false) }
-    var networkLoadingState by remember(markersResultState.isMarkerPageParseFinished, curHtmlPageNum) {
+    var networkLoadingState by remember(markersResultState.isParseMarkersPageFinished, curHtmlPageNum) {
         // Step 2 - Initiate Load a page of raw marker HTML from the network
-        if (!markersResultState.isMarkerPageParseFinished) {
+        if (!markersResultState.isParseMarkersPageFinished) {
             // Log.d("Loading page $curHtmlPageNum")
             markersLoadingState = LoadingState.Loading
             shouldUpdateCache = true
@@ -204,7 +194,7 @@ fun loadMarkers(
 
         // Step 5 - Finished loading pages, now Save result to cache
         cachedMarkersResultState = markersResultState.copy(
-            markerIdToRawMarkerInfoStrings = mutableMapOf(), // Clear the strings (they are no longer needed)
+            markerIdToRawMarkerDetailStrings = mutableMapOf(), // Clear the strings (they are no longer needed)
         )
 
         // Save the cachedResultState to persistent storage (Settings) (if it was updated from the network)
@@ -259,7 +249,7 @@ fun loadMarkers(
                         networkLoadingState =
                             LoadingState.Error("Blank data for page $curHtmlPageNum, location: $userLocation") // leave for debugging
                         markersResultState = markersResultState.copy(
-                            isMarkerPageParseFinished = true,
+                            isParseMarkersPageFinished = true,
                             loadingState = LoadingState.Error("Blank data for page $curHtmlPageNum, location: $userLocation")
                         )
                         return@withContext
@@ -272,20 +262,20 @@ fun loadMarkers(
                     // Check for zero `raw html` marker entries
                     if (parsedMarkersResult.rawMarkerCountFromFirstPageHtmlOfMultiPageResult == 0) {
                         Log.w("No raw html marker entries found for page: $curHtmlPageNum, location: $userLocation")
-                        markersResultState = markersResultState.copy(isMarkerPageParseFinished = true)
+                        markersResultState = markersResultState.copy(isParseMarkersPageFinished = true)
                         return@withContext
                     }
 
                     // Update the marker result state with the new parsed data
                     // Note: preserves cached results
                     markersResultState = markersResultState.copy(
-                        markerIdToRawMarkerInfoStrings = (
-                            markersResultState.markerIdToRawMarkerInfoStrings +
-                                parsedMarkersResult.markerIdToRawMarkerInfoStrings
+                        markerIdToRawMarkerDetailStrings = (
+                            markersResultState.markerIdToRawMarkerDetailStrings +
+                                parsedMarkersResult.markerIdToRawMarkerDetailStrings
                             ).toMutableMap(),
-                        markerInfos = (
-                            markersResultState.markerInfos +
-                                parsedMarkersResult.markerInfos
+                        markerIdToMapMarker = (
+                            markersResultState.markerIdToMapMarker +
+                                parsedMarkersResult.markerIdToMapMarker
                             ).toMap(),
                     )
                     if (curHtmlPageNum == 1) {
@@ -294,19 +284,19 @@ fun loadMarkers(
                                 parsedMarkersResult.rawMarkerCountFromFirstPageHtmlOfMultiPageResult
                         )
                     }
-                    Log.d("Total drivable markerInfos.size after parse: ${markersResultState.markerInfos.size}, Parsed markerIdToRawMarkerInfoStrings count: ${markersResultState.markerIdToRawMarkerInfoStrings.size}")
+                    Log.d("Total drivable markerInfos.size after parse: ${markersResultState.markerIdToMapMarker.size}, Parsed markerIdToRawMarkerInfoStrings count: ${markersResultState.markerIdToRawMarkerDetailStrings.size}")
 
                     // 4.2 - Load more pages, if needed.
                     // - Marker list size comparison is based on the number of `markerIdToRawMarkerInfoStrings`, not the parsed
                     //   `markerInfos` because some of the markers from the page may have been rejected, and we just want
                     //   to know when the raw html is completely loaded, not how many markers were parsed.
-                    if (markersResultState.markerIdToRawMarkerInfoStrings.size < markersResultState.rawMarkerCountFromFirstPageHtmlOfMultiPageResult) {
-                        Log.d("Loading next page..., markerIdToRawMarkerInfoStrings.size: ${markersResultState.markerIdToRawMarkerInfoStrings.size}, rawMarkerCountFromFirstHtmlPage: ${markersResultState.rawMarkerCountFromFirstPageHtmlOfMultiPageResult}")
+                    if (markersResultState.markerIdToRawMarkerDetailStrings.size < markersResultState.rawMarkerCountFromFirstPageHtmlOfMultiPageResult) {
+                        Log.d("Loading next page..., markerIdToRawMarkerDetailStrings.size: ${markersResultState.markerIdToRawMarkerDetailStrings.size}, rawMarkerCountFromFirstHtmlPage: ${markersResultState.rawMarkerCountFromFirstPageHtmlOfMultiPageResult}")
                         curHtmlPageNum++  // trigger the next page load
                     } else {
                         //Log.d("Finished processing all pages, total markers: ${markersResultState.markerInfos.size}")
                         markersResultState = markersResultState.copy(
-                            isMarkerPageParseFinished = true,
+                            isParseMarkersPageFinished = true,
                             loadingState = LoadingState.Idle
                         )
 
@@ -319,7 +309,7 @@ fun loadMarkers(
             } catch (e: Exception) {
                 shouldUpdateCache = false
                 markersResultState = markersResultState.copy(
-                    isMarkerPageParseFinished = true,
+                    isParseMarkersPageFinished = true,
                     loadingState = LoadingState.Error(
                         e.cause?.message ?: "Loading error - ${e.message}"
                     )
@@ -348,8 +338,8 @@ fun loadMarkers(
                 is LoadingState.Loaded<String> -> {
                     Text(
                         fontSize = 18.sp,
-                        text = "Loaded: ${markersResultState.markerIdToRawMarkerInfoStrings.size} / ${markersResultState.rawMarkerCountFromFirstPageHtmlOfMultiPageResult} entries\n" +
-                                "Parsed: ${markersResultState.markerInfos.size}\n" +
+                        text = "Loaded: ${markersResultState.markerIdToRawMarkerDetailStrings.size} / ${markersResultState.rawMarkerCountFromFirstPageHtmlOfMultiPageResult} entries\n" +
+                                "Parsed: ${markersResultState.markerIdToMapMarker.size}\n" +
                                 "Data size: ${state.data.length} chars"
                     )
                 }

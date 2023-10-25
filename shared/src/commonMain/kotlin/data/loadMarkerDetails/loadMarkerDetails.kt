@@ -14,69 +14,82 @@ import io.ktor.client.request.get
 import kotlinx.coroutines.yield
 import network.httpClient
 import data.loadMarkers.kBaseHmdbDotOrgUrl
+import kMaxMarkerCacheAgeSeconds
+import kotlinx.datetime.Clock
+import co.touchlab.kermit.Logger as Log
 
 const val kUseFakeData = false
 
 @Composable
-fun loadMapMarkerDetails(mapMarker: MapMarker, useFakeData: Boolean = false): LoadingState<MapMarker> {
-    var loadingState by remember {
+fun loadMapMarkerDetails(mapMarkerToUpdate: MapMarker, useFakeData: Boolean = false): LoadingState<MapMarker> {
+    var loadingState by remember(mapMarkerToUpdate) {
+
+        if(isMarkerIsAlreadyCachedAndNotExpired(mapMarkerToUpdate)) {
+            Log.d("mapMarker.isDescriptionLoaded is true, returning Loaded(mapMarker)")
+            LoadingState.Loaded(mapMarkerToUpdate)
+        }
+
         mutableStateOf<LoadingState<MapMarker>>(LoadingState.Loading)
     }
 
-    fun String.calculateMarkerInfoPageUrl(): String {
+    fun String.calculateMarkerDetailsPageUrl(): String {
         val markerKeyNumber = this.substringAfter ("M").toInt()
         return kBaseHmdbDotOrgUrl + "m.asp?m=$markerKeyNumber"
     }
-    val markerInfoPageUrl by remember(mapMarker.key) {
-        mutableStateOf(mapMarker.key.calculateMarkerInfoPageUrl())
+    val markerDetailsPageUrl by remember(mapMarkerToUpdate.id) {
+        mutableStateOf(mapMarkerToUpdate.id.calculateMarkerDetailsPageUrl())
     }
 
-    LaunchedEffect(markerInfoPageUrl) {
-        println("loadMapMarkerInfo $markerInfoPageUrl")
-        if(markerInfoPageUrl == "") {
-            //loadingState = LoadingState.Error("MarkerInfoPageUrl is empty")
+    LaunchedEffect(markerDetailsPageUrl) {
+        if(isMarkerIsAlreadyCachedAndNotExpired(mapMarkerToUpdate)) {
+            loadingState = LoadingState.Loaded(mapMarkerToUpdate)
             return@LaunchedEffect
         }
 
+        if(markerDetailsPageUrl == "") {
+            loadingState = LoadingState.Error("MarkerDetailsPageUrl is empty")
+            return@LaunchedEffect
+        }
+
+        Log.d("loading loadMapMarkerDetails from network: $markerDetailsPageUrl")
         loadingState = LoadingState.Loading
         yield() // Allow UI to render LoadingState.Loading state
 
         try {
             if (!useFakeData) {
-                val response = httpClient.get(markerInfoPageUrl)
+                val response = httpClient.get(markerDetailsPageUrl)
                 val markerInfoPageHtml = response.body<String>()
 
                 // parse the page html into a MarkerInfo object
-                val parsedMarkerResult = parseMarkerInfoPageHtml(markerInfoPageHtml)
+                val parsedMarkerResult = parseMarkerDetailsPageHtml(markerInfoPageHtml)
                 parsedMarkerResult.second ?: throw Exception(parsedMarkerResult.first)
 
                 // update the passed-in marker with the parsed info and return it
-                val parsedMarkerInfo = parsedMarkerResult.second!!
-                println("parsedMarkerInfo: $parsedMarkerInfo")
+                val parsedMarkerDetails = parsedMarkerResult.second!!
 
                 loadingState = LoadingState.Loaded(
-                    mapMarker.copy(
-                        location = mapMarker.location,
-                        key = mapMarker.key,
-                        title = mapMarker.title,
-                        subtitle = mapMarker.subtitle,
+                    mapMarkerToUpdate.copy(
+                        location = mapMarkerToUpdate.location,
+                        id = mapMarkerToUpdate.id,
+                        title = mapMarkerToUpdate.title,
+                        subtitle = mapMarkerToUpdate.subtitle,
                         isDescriptionLoaded = true,
-                        inscription = parsedMarkerInfo.inscription,
-                        englishInscription = parsedMarkerInfo.englishInscription,
-                        spanishInscription = parsedMarkerInfo.spanishInscription,
-                        erected = parsedMarkerInfo.erected,
-                        mainPhotoUrl = parsedMarkerInfo.mainPhotoUrl,
-                        markerPhotos = parsedMarkerInfo.markerPhotos,
-                        photoCaptions = parsedMarkerInfo.photoCaptions,
-                        photoAttributions = parsedMarkerInfo.photoAttributions,
-                        credits = parsedMarkerInfo.credits
+                        inscription = parsedMarkerDetails.inscription,
+                        englishInscription = parsedMarkerDetails.englishInscription,
+                        spanishInscription = parsedMarkerDetails.spanishInscription,
+                        erected = parsedMarkerDetails.erected,
+                        mainPhotoUrl = parsedMarkerDetails.mainPhotoUrl,
+                        markerPhotos = parsedMarkerDetails.markerPhotos,
+                        photoCaptions = parsedMarkerDetails.photoCaptions,
+                        photoAttributions = parsedMarkerDetails.photoAttributions,
+                        credits = parsedMarkerDetails.credits
                     )
                 )
             } else {
-                // loadingState = fakeLoadingStateForParseMarkerInfoPageHtml(mapMarker)
+                // loadingState = fakeLoadingStateForParseMarkerInfoPageHtml(mapMarker)  // LEAVE FOR REFERENCE
 
-                val markerInfoPageHtml = almadenVineyardsM2580()
-                val result = parseMarkerInfoPageHtml(markerInfoPageHtml)
+                val markerDetailsPageHtml = almadenVineyardsM2580()
+                val result = parseMarkerDetailsPageHtml(markerDetailsPageHtml)
                 loadingState = LoadingState.Loaded(result.second!!)
             }
         } catch (e: Exception) {
@@ -86,5 +99,9 @@ fun loadMapMarkerDetails(mapMarker: MapMarker, useFakeData: Boolean = false): Lo
 
     return loadingState
 }
+
+private fun isMarkerIsAlreadyCachedAndNotExpired(mapMarkerToUpdate: MapMarker) =
+    mapMarkerToUpdate.isDescriptionLoaded &&
+        mapMarkerToUpdate.lastUpdatedEpochSeconds + kMaxMarkerCacheAgeSeconds < Clock.System.now().epochSeconds
 
 

@@ -68,6 +68,7 @@ import data.loadMarkers.sampleData.kUseRealNetwork
 import data.printAppSettings
 import data.setCachedMarkersLastUpdatedEpochSeconds
 import data.setCachedMarkersLastUpdatedLocation
+import data.setCachedMarkersResult
 import data.setIsRecentlySeenMarkersPanelVisible
 import data.setLastKnownUserLocation
 import data.shouldAutomaticallyStartTrackingWhenAppLaunches
@@ -80,6 +81,7 @@ import maps.CameraLocationBounds
 import maps.CameraPosition
 import maps.LatLong
 import maps.MapMarker
+import maps.MarkerIdStr
 import maps.RecentMapMarker
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
@@ -153,7 +155,7 @@ fun App() {
         var isShowingError by remember { mutableStateOf<String?>(null) }
 
         // Load markers
-        val markersLoadResult: MarkersResult = loadMarkers(
+        var markersLoadResult: MarkersResult = loadMarkers(
             settings,
             userLocation = userLocation, // when user location changes, triggers potential load markers from server
             maxReloadDistanceMiles = kMaxReloadDistanceMiles.toInt(),
@@ -166,27 +168,26 @@ fun App() {
         val cachedMapMarkers =
             remember { mutableStateListOf<MapMarker>() } // prevents flicker when loading new markers
         var shouldRedrawMapMarkers by remember { mutableStateOf(true) }
-        val mapMarkers = remember(markersLoadResult.isMarkerPageParseFinished) {
+
+        // Update the markers AFTER the page has finished parsing
+        val mapMarkers = remember(markersLoadResult.isParseMarkersPageFinished) {
 
             // More pages to load?
-            if (!markersLoadResult.isMarkerPageParseFinished) {
+            if (!markersLoadResult.isParseMarkersPageFinished) {
                 // While loading new markers, use the cached markers to prevent flicker
                 return@remember cachedMapMarkers
             }
 
-            // Log.d("Updating markers, markersData.markerInfos.size: ${markersLoadResult.markerInfos.size}")
+            // Update the markers
             val markers =
-                markersLoadResult.markerInfos.map { marker ->
+                markersLoadResult.markerIdToMapMarker.map { marker ->
                     MapMarker(
-                        key = marker.key,
-                        position = LatLong(
-                            marker.value.lat,
-                            marker.value.long
-                        ),
+                        id = marker.key,
+                        position = marker.value.position,
                         title = marker.value.title,
                         alpha = 1.0f,
-                        subtitle = marker.value.shortDescription,
-                        mainPhotoUrl = marker.value.imageUrl,
+                        subtitle = marker.value.subtitle,
+                        mainPhotoUrl = marker.value.mainPhotoUrl,
                         location = ""
                     )
                 }
@@ -198,6 +199,7 @@ fun App() {
                 cachedMapMarkers.clear()
                 cachedMapMarkers.addAll(markers)
 
+                // Force a redraw of the map & markers
                 coroutineScope.launch {
                     shouldRedrawMapMarkers = true
                 }
@@ -216,7 +218,7 @@ fun App() {
             //}
         }
 
-        var markerDetailsInfo by remember(bottomSheetActiveScreen) {
+        var markerDetailsFetchResult by remember(bottomSheetActiveScreen) {
             mutableStateOf<LoadingState<MapMarker>>(LoadingState.Loading)
         }
 
@@ -263,7 +265,7 @@ fun App() {
 
                         fun MutableSet<RecentMapMarker>.containsMarker(marker: MapMarker): Boolean {
                             return recentlySeenMarkersSet.any {
-                                it.key() == marker.key
+                                it.key() == marker.id
                             }
                         }
 
@@ -279,7 +281,7 @@ fun App() {
                                 )
                                 recentlySeenMarkersSet.add(newlySeenMarker)
                                 recentlySeenMarkersForUiList.add(newlySeenMarker)
-                                Log.d("Added Marker ${marker.key} is within talk radius of $talkRadiusMiles miles, distance=$distanceFromMarkerToUserLocationMiles miles, total recentlySeenMarkers=${recentlySeenMarkersSet.size}")
+                                Log.d("Added Marker ${marker.id} is within talk radius of $talkRadiusMiles miles, distance=$distanceFromMarkerToUserLocationMiles miles, total recentlySeenMarkers=${recentlySeenMarkersSet.size}")
 
                                 // Trim the UI list to 5 items
                                 if (recentlySeenMarkersForUiList.size > 5) {
@@ -357,7 +359,7 @@ fun App() {
                             onShouldShowMarkerDataLastSearchedLocationChange = {
                                 isMarkersLastUpdatedLocationVisible = it
                             },
-                            onShouldResetMarkerInfoCache = {
+                            onShouldResetMarkerSettingsCache = {
                                 // Reset Marker Info Cache & reset the `seen markers` list
                                 recentlySeenMarkersSet.clear()
                                 recentlySeenMarkersForUiList.clear()
@@ -378,12 +380,52 @@ fun App() {
                         )
                     }
                     is BottomSheetScreen.MarkerDetailsScreen -> {
-                        val marker = (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker
-                        markerDetailsInfo = loadMapMarkerDetails(marker)
+                        val marker =  remember((bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker.id) {
+                            val markerId: MarkerIdStr =
+                                (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker.id
+
+                            markersLoadResult.markerIdToMapMarker[markerId] ?: run {
+                                println("Error: Unable to find marker with id=$markerId")
+                                return@remember (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker
+                            }
+                        }
+
+                        markerDetailsFetchResult = loadMapMarkerDetails(marker)
+
+                        // Update the marker with the latest info after it loads
+                        LaunchedEffect(markerDetailsFetchResult) {
+                            // todo make this a func
+                            if (markerDetailsFetchResult is LoadingState.Loaded) {
+                                val updatedMapMarker =
+                                    (markerDetailsFetchResult as LoadingState.Loaded<MapMarker>).data
+
+                                // Update the marker in the mapMarkers list with the new data
+                                val index = mapMarkers.indexOfFirst { marker ->
+                                    marker.id == updatedMapMarker.id
+                                }
+                                if (index >= 0) {
+                                    mapMarkers[index] = updatedMapMarker.copy(
+                                        isDescriptionLoaded = true
+                                    )
+                                }
+
+                                // Update the markers list with the updated marker data
+                                markersLoadResult = markersLoadResult.copy(
+                                    markerIdToMapMarker = mapMarkers.associateBy { mapMarker ->
+                                        mapMarker.id
+                                    }
+                                )
+
+                                // Update the settings with the updated marker data
+                                settings.setCachedMarkersResult(markersLoadResult)
+
+                                // todo Update the recently seen markers list
+                            }
+                        }
 
                         MarkerDetailsScreen(
                             bottomSheetScaffoldState,
-                            markerDetailsInfo,
+                            markerDetailsFetchResult,
                         )
                     }
                 }
@@ -493,7 +535,7 @@ fun App() {
                                 Text(
                                     modifier = Modifier.fillMaxWidth()
                                         .background(MaterialTheme.colors.error),
-                                    text = "Error: ${markersLoadResult.loadingState.errorMessage}",
+                                    text = "Error: ${(markersLoadResult.loadingState as LoadingState.Error).errorMessage}",
                                     fontStyle = FontStyle.Normal,
                                     fontWeight = FontWeight.Medium,
                                     color = MaterialTheme.colors.onError
@@ -534,7 +576,7 @@ fun App() {
                             MapContent(
                                 modifier = Modifier
                                     .fillMaxHeight(1.0f - transitionRecentMarkersPanel),
-                                isFinishedLoadingMarkerData = markersLoadResult.isMarkerPageParseFinished,
+                                isFinishedLoadingMarkerData = markersLoadResult.isParseMarkersPageFinished,
                                 initialUserLocation = settings.lastKnownUserLocation(),
                                 userLocation = userLocation,
                                 mapMarkers = mapMarkers,
@@ -589,6 +631,7 @@ fun App() {
                             modifier = Modifier
                                 .background(MaterialTheme.colors.surface)
                         ) {
+                            // Header
                             item {
                                 Text(
                                     text = "RECENTLY SEEN MARKERS",
@@ -602,10 +645,12 @@ fun App() {
                                         .padding(start = 8.dp, bottom = 8.dp)
                                 )
                             }
+
+                            // Show "empty" placeholder if no markers
                             if (recentlySeenMarkersForUiList.isEmpty()) {
                                 item {
-
                                     Spacer(modifier = Modifier.height(48.dp))
+
                                     Text(
                                         text = "No recently seen markers, drive around to see some!",
                                         color = MaterialTheme.colors.onBackground,
@@ -621,7 +666,7 @@ fun App() {
                             }
 
                             items(recentlySeenMarkersForUiList.size) {
-                                val marker = recentlySeenMarkersForUiList.elementAt(it)
+                                val recentMarker = recentlySeenMarkersForUiList.elementAt(it)
 //                                    val marker = RecentMapMarker(
 //                                        maps.MapMarker(
 //                                            key = "marker1",
@@ -635,7 +680,7 @@ fun App() {
 //                                        Clock.System.now().toEpochMilliseconds()
 //                                    )
                                 Text(
-                                    text = marker.seenOrder.toString() + ":" + marker.key() + ":" + marker.marker.title,
+                                    text = recentMarker.seenOrder.toString() + ":" + recentMarker.key() + ":" + recentMarker.marker.title,
                                     color = MaterialTheme.colors.onPrimary,
                                     fontStyle = FontStyle.Normal,
                                     fontSize = MaterialTheme.typography.h6.fontSize,
@@ -660,7 +705,8 @@ fun App() {
                                             // Show marker details
                                             bottomSheetActiveScreen =
                                                 BottomSheetScreen.MarkerDetailsScreen(
-                                                    marker.marker
+//                                                    marker.marker.id
+                                                    recentMarker.marker
                                                 )
                                             coroutineScope.launch {
                                                 bottomSheetScaffoldState.bottomSheetState.apply {

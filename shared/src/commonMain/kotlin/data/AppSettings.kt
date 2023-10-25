@@ -21,8 +21,8 @@ const val kIsPermissionsGranted =                          "isPermissionsGranted
 fun Settings.printAppSettings() {
     // Show current settings
     Log.d { "keys from settings: $keys" }
-    Log.d("Settings: cachedMarkersResult markerInfos.size= " +
-            cachedMarkersResult().markerInfos.size.toString())
+    Log.d("Settings: cachedMarkersResult mapMarkers.size= " +
+            cachedMarkersResult().markerIdToMapMarker.size.toString())
     Log.d("Settings: cachedMarkersLastUpdatedEpochSeconds= " +
             getLong(kCachedMarkersLastUpdatedEpochSecondsSetting, 0L).toString())
     Log.d("Settings: cachedMarkersLastLocation= " +

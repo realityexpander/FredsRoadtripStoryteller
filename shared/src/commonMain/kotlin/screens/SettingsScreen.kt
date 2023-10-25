@@ -57,7 +57,7 @@ fun SettingsScreen(
     talkRadiusMiles: Double,
     onTalkRadiusChange: (Double) -> Unit = {},
     onShouldShowMarkerDataLastSearchedLocationChange: ((Boolean) -> Unit) = {},
-    onShouldResetMarkerInfoCache: (() -> Unit) = {}
+    onShouldResetMarkerSettingsCache: (() -> Unit) = {}
 ) {
     val scrollState = rememberScrollState()
     var isResetCacheAlertDialogVisible by remember { mutableStateOf(false) }
@@ -165,7 +165,7 @@ fun SettingsScreen(
                 Text("Reset Marker Info Cache")
             }
         Text(
-            "Cache size: ${settings?.cachedMarkersResult()?.markerInfos?.size} markers",
+            "Cache size: ${settings?.cachedMarkersResult()?.markerIdToMapMarker?.size} markers",
             modifier = Modifier
                 .align(Alignment.CenterHorizontally),
         )
@@ -184,7 +184,7 @@ fun SettingsScreen(
                         // reset cache
                         settings?.setCachedMarkersResult(MarkersResult())
                         settings?.setCachedMarkersLastUpdatedLocation(Location(0.0,0.0))
-                        onShouldResetMarkerInfoCache()
+                        onShouldResetMarkerSettingsCache()
                     }
                 }
             )

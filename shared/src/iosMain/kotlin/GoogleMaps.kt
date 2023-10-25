@@ -311,7 +311,7 @@ actual fun GoogleMaps(
                                     marker.position.longitude
                                 )
                                 title = marker.title
-                                userData = marker.key
+                                userData = marker.id
                                 icon = markerImageWithColor(UIColor.blueColor())
                                 map = view
                             }

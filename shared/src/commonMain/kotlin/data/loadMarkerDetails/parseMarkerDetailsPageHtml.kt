@@ -9,7 +9,7 @@ import data.LoadingState
 import data.loadMarkers.kBaseHmdbDotOrgUrl
 
 
-fun parseMarkerInfoPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
+fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
 
     var mapMarkerResult = MapMarker()
     val rawMarkerInfoStrings = mutableListOf<String>()
@@ -349,13 +349,13 @@ fun String.processInscriptionString(): String {
 private fun fakeLoadingStateForParseMarkerInfoPageHtml(marker: MapMarker): LoadingState<MapMarker> {
     return LoadingState.Loaded(
         MapMarker(
-            key = marker.key,
+            id = marker.id,
             position = marker.position,
             title = marker.title,
             alpha = marker.alpha,
             subtitle = marker.subtitle,
 
-            markerInfoPageUrl = marker.markerInfoPageUrl,
+            markerDetailPageUrl = marker.markerDetailPageUrl,
             isDescriptionLoaded = true,
             mainPhotoUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Stonehenge.jpg/640px-Stonehenge.jpg",
             markerPhotos = listOf(

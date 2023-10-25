@@ -420,7 +420,7 @@ actual fun GoogleMaps(
                     Log.d { "cluster item clicked" }
                     coroutineScope.launch {
                         val selectedMarker = MapMarker(
-                            key = clusterItem.position.toString(),
+                            id = clusterItem.position.toString(),
                             position = LatLong(
                                 clusterItem.position.latitude,
                                 clusterItem.position.longitude
