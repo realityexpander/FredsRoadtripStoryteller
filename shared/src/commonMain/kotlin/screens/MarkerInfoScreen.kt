@@ -54,11 +54,13 @@ import androidx.compose.ui.unit.dp
 import data.LoadingState
 import io.kamel.core.ExperimentalKamelApi
 import io.kamel.core.Resource
+import io.kamel.image.KamelImage
 import io.kamel.image.KamelImageBox
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch
 import maps.MapMarker
 import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.painterResource
 import screens.uiComponents.PreviewPlaceholder
 
 const val kMaxWeightOfBottomDrawer = 0.9f
@@ -394,6 +396,21 @@ fun MarkerDetailsScreen(
                 Spacer(modifier = Modifier.padding(8.dp))
                 Divider()
                 Spacer(modifier = Modifier.padding(8.dp))
+
+                // More Photos
+                marker.data.markerPhotos.forEachIndexed { index, it ->
+                    if(index>0) {
+                        KamelImage(
+                            resource = asyncPainterResource(
+                                    data = it,
+                                    filterQuality = FilterQuality.Medium,
+                                )
+                            ,
+                            contentDescription = null
+                        )
+                        Spacer(modifier = Modifier.padding(8.dp))
+                    }
+                }
 
                 // Extra Marker Data
                 if(marker.data.erected.isNotBlank()) {

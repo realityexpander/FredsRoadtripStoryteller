@@ -32,7 +32,7 @@ android {
         applicationId = "com.realityexpander.talkinghistoricalmarkers"
         minSdk = (findProperty("android.minSdk") as String).toInt()
         targetSdk = (findProperty("android.targetSdk") as String).toInt()
-        versionCode = 2
+        versionCode = 3
         versionName = "1.0"
     }
     compileOptions {
