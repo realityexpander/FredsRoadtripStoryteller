@@ -22,10 +22,10 @@ const val kUseFakeData = false
 
 @Composable
 fun loadMapMarkerDetails(mapMarkerToUpdate: MapMarker, useFakeData: Boolean = false): LoadingState<MapMarker> {
-    var loadingState by remember(mapMarkerToUpdate) {
 
+    var loadingState by remember(mapMarkerToUpdate) {
         if(isMarkerIsAlreadyCachedAndNotExpired(mapMarkerToUpdate)) {
-            Log.d("mapMarker.isDescriptionLoaded is true, returning Loaded(mapMarker)")
+            // Log.d("mapMarker.isDescriptionLoaded is true, returning Loaded(mapMarker)")
             LoadingState.Loaded(mapMarkerToUpdate)
         }
 
@@ -36,6 +36,7 @@ fun loadMapMarkerDetails(mapMarkerToUpdate: MapMarker, useFakeData: Boolean = fa
         val markerKeyNumber = this.substringAfter ("M").toInt()
         return kBaseHmdbDotOrgUrl + "m.asp?m=$markerKeyNumber"
     }
+    // load markerDetailsPageUrl from markerId
     val markerDetailsPageUrl by remember(mapMarkerToUpdate.id) {
         mutableStateOf(mapMarkerToUpdate.id.calculateMarkerDetailsPageUrl())
     }
@@ -66,7 +67,6 @@ fun loadMapMarkerDetails(mapMarkerToUpdate: MapMarker, useFakeData: Boolean = fa
 
                 // update the passed-in marker with the parsed info and return it
                 val parsedMarkerDetails = parsedMarkerResult.second!!
-
                 loadingState = LoadingState.Loaded(
                     mapMarkerToUpdate.copy(
                         location = mapMarkerToUpdate.location,
