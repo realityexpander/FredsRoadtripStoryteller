@@ -2,6 +2,7 @@ package data
 
 import Location
 import com.russhwolf.settings.Settings
+import com.russhwolf.settings.set
 import kotlinx.serialization.encodeToString
 import data.loadMarkers.MarkersResult
 import json
@@ -9,8 +10,8 @@ import co.touchlab.kermit.Logger as Log
 
 // Settings Keys
 const val kCachedMarkersResultSetting =                    "cachedMarkersResult"
-const val kCachedMarkersLastUpdatedEpochSecondsSetting =   "cachedMarkersLastUpdatedEpochSeconds"
-const val kCachedMarkersLastLoadLocationSetting =          "cachedMarkersLastLocation"
+const val kcachedMarkersLastUpdateEpochSecondsSetting =   "cachedMarkersLastUpdateEpochSeconds"
+const val kCachedMarkersLastLoadLocationSetting =          "cachedMarkersLastUpdateLocation"
 const val kLastKnownUserLocationSetting =                  "lastKnownUserLocation"
 const val kStartBackgroundUpdatesWhenAppLaunchesSetting =  "startBackgroundUpdatesWhenAppLaunches"
 const val kTalkRadiusMilesSetting =                        "talkRadiusMiles"
@@ -23,9 +24,9 @@ fun Settings.printAppSettings() {
     Log.d { "keys from settings: $keys" }
     Log.d("Settings: cachedMarkersResult mapMarkers.size= " +
             cachedMarkersResult().markerIdToMapMarker.size.toString())
-    Log.d("Settings: cachedMarkersLastUpdatedEpochSeconds= " +
-            getLong(kCachedMarkersLastUpdatedEpochSecondsSetting, 0L).toString())
-    Log.d("Settings: cachedMarkersLastLocation= " +
+    Log.d("Settings: cachedMarkersLastUpdateEpochSeconds= " +
+            getLong(kcachedMarkersLastUpdateEpochSecondsSetting, 0L).toString())
+    Log.d("Settings: cachedMarkersLastUpdateLocation= " +
             getString(kCachedMarkersLastLoadLocationSetting, "{latitude:0.0, longitude:0.0}"))
     Log.d("Settings: LastKnownUserLocation= " +
             getString(kLastKnownUserLocationSetting, "{latitude:0.0, longitude:0.0}"))
@@ -46,13 +47,19 @@ fun Settings.setCachedMarkersResult(markersResult: MarkersResult) {
 fun Settings.cachedMarkersResult(): MarkersResult {
     return json.decodeFromString(getString(kCachedMarkersResultSetting, "{}"))
 }
+fun Settings.clearCachedMarkersResult() {
+    set(kCachedMarkersResultSetting, null)
+}
 
 // Cached Markers Last Updated
-fun Settings.setCachedMarkersLastUpdatedEpochSeconds(epochSeconds: Long) {
-    putLong(kCachedMarkersLastUpdatedEpochSecondsSetting, epochSeconds)
+fun Settings.setCachedMarkersLastUpdateEpochSeconds(epochSeconds: Long) {
+    putLong(kcachedMarkersLastUpdateEpochSecondsSetting, epochSeconds)
 }
-fun Settings.cachedMarkersLastUpdatedEpochSeconds(): Long {
-    return getLong(kCachedMarkersLastUpdatedEpochSecondsSetting, 0L)
+fun Settings.cachedMarkersLastUpdateEpochSeconds(): Long {
+    return getLong(kcachedMarkersLastUpdateEpochSecondsSetting, 0L)
+}
+fun Settings.clearCachedMarkersLastUpdateEpochSeconds() {
+    set(kcachedMarkersLastUpdateEpochSecondsSetting, null)
 }
 
 // Cached Markers Last Loaded Location
@@ -61,6 +68,9 @@ fun Settings.setCachedMarkersLastUpdatedLocation(location: Location) {
 }
 fun Settings.cachedMarkersLastUpdatedLocation(): Location {
     return json.decodeFromString(getString(kCachedMarkersLastLoadLocationSetting, "{latitude:0.0, longitude:0.0}"))
+}
+fun Settings.clearCachedMarkersLastUpdatedLocation() {
+    set(kCachedMarkersLastLoadLocationSetting, null)
 }
 
 // Last Known User Location

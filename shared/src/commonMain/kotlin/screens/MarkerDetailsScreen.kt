@@ -96,7 +96,7 @@ fun MarkerDetailsScreen(
 
             Text(
                 //marker.errorMessage,
-                "This is an error message that i want to seee",
+                "This is an error message that i want to see",
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(

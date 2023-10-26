@@ -17,7 +17,9 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.BottomSheetScaffold
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
@@ -51,6 +53,7 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.russhwolf.settings.Settings
 import screens.uiComponents.AppTheme
@@ -66,7 +69,7 @@ import data.loadMarkers.distanceBetween
 import data.loadMarkers.loadMarkers
 import data.loadMarkers.sampleData.kUseRealNetwork
 import data.printAppSettings
-import data.setCachedMarkersLastUpdatedEpochSeconds
+import data.setCachedMarkersLastUpdateEpochSeconds
 import data.setCachedMarkersLastUpdatedLocation
 import data.setCachedMarkersResult
 import data.setIsRecentlySeenMarkersPanelVisible
@@ -123,9 +126,9 @@ fun App() {
             }
         }
         var talkRadiusMiles by remember { mutableStateOf(settings.talkRadiusMiles()) }
-        val cachedMarkersLastUpdatedLocation by remember(settings.cachedMarkersLastUpdatedLocation()) {
-            mutableStateOf(settings.cachedMarkersLastUpdatedLocation())
-        }
+//        val cachedMarkersLastUpdatedLocation by remember(settings.cachedMarkersLastUpdatedLocation()) {
+//        mutableStateOf(settings.cachedMarkersLastUpdatedLocation())
+//    }
         var isMarkersLastUpdatedLocationVisible by remember(settings.isMarkersLastUpdatedLocationVisible()) {
             mutableStateOf(settings.isMarkersLastUpdatedLocationVisible())
         }
@@ -155,7 +158,7 @@ fun App() {
         var isShowingError by remember { mutableStateOf<String?>(null) }
 
         // Load markers
-        var markersFetchResult: MarkersResult = loadMarkers(
+        var fetchedMarkersResult: MarkersResult = loadMarkers(
             settings,
             userLocation = userLocation, // when user location changes, triggers potential load markers from server
             maxReloadDistanceMiles = kMaxReloadDistanceMiles.toInt(),
@@ -165,22 +168,29 @@ fun App() {
             //    kTepoztlanFakeDataset,
             //    kSingleItemPageFakeDataset
         )
-        val cachedMapMarkers =
-            remember { mutableStateListOf<MapMarker>() } // prevents flicker when loading new markers
+
+        // Set last `loaded markers at` location
+        val cachedMarkersLastUpdatedLocation by remember(fetchedMarkersResult.isParseMarkersPageFinished) {
+            mutableStateOf(settings.cachedMarkersLastUpdatedLocation())
+        }
+        val cachedMapMarkers = remember { mutableStateListOf<MapMarker>() } // prevents flicker when loading new markers
         var shouldRedrawMapMarkers by remember { mutableStateOf(true) }
 
         // Update the markers AFTER the page has finished parsing
-        val mapMarkers = remember(markersFetchResult.isParseMarkersPageFinished) {
+        val mapMarkers = remember(fetchedMarkersResult.isParseMarkersPageFinished) {
+
+            Log.d { "in mapmarkers, markersFetchResult.isParseMarkersPageFinished=${fetchedMarkersResult.isParseMarkersPageFinished}" }
+            Log.d { "in mapmarkers, markersFetchResult.loadingState=${fetchedMarkersResult.loadingState}" }
 
             // More pages to load?
-            if (!markersFetchResult.isParseMarkersPageFinished) {
+            if (!fetchedMarkersResult.isParseMarkersPageFinished) {
                 // While loading new markers, use the cached markers to prevent flicker
                 return@remember cachedMapMarkers
             }
 
             // Update the markers
             val markers =
-                markersFetchResult.markerIdToMapMarker.map { marker ->
+                fetchedMarkersResult.markerIdToMapMarker.map { marker ->
                     MapMarker(
                         id = marker.key,
                         position = marker.value.position,
@@ -201,10 +211,11 @@ fun App() {
 
                 // Force a redraw of the map & markers
                 coroutineScope.launch {
+                    delay(500)
                     shouldRedrawMapMarkers = true
                 }
 
-                // Log.d { "Final map-applied marker count = ${snapShot.size}" }
+                 Log.d { "Final map-applied marker count = ${snapShot.size}" }
             }
         }
         if (false) {
@@ -223,7 +234,7 @@ fun App() {
         }
 
         // Update user location & Update Recently Seen Markers
-        LaunchedEffect(Unit, markersFetchResult.loadingState) {
+        LaunchedEffect(Unit, fetchedMarkersResult.loadingState) {
             // Set the last known location to the current location in settings
             gpsLocationService.onUpdatedGPSLocation(
                 errorCallback = { errorMessage ->
@@ -355,7 +366,7 @@ fun App() {
                             settings,
                             bottomSheetScaffoldState,
                             talkRadiusMiles,
-                            onTalkRadiusChange = { talkRadiusMiles = it },
+                            onTalkRadiusChange = { updatedRadiusMiles -> talkRadiusMiles = updatedRadiusMiles },
                             onShouldShowMarkerDataLastSearchedLocationChange = {
                                 isMarkersLastUpdatedLocationVisible = it
                             },
@@ -368,17 +379,21 @@ fun App() {
 
                                 // Trigger a reload of the markers from the server
                                 settings.setCachedMarkersLastUpdatedLocation(Location(0.1, 0.1))
-                                settings.setCachedMarkersLastUpdatedEpochSeconds(0L)
-                                markersFetchResult = markersFetchResult.copy(
+                                settings.setCachedMarkersLastUpdateEpochSeconds(0L)
+                                fetchedMarkersResult = fetchedMarkersResult.copy(
                                     isParseMarkersPageFinished = false
                                 )
-//                                coroutineScope.launch {
-//                                    delay(500)
-//                                    userLocation = Location(
-//                                        userLocation.latitude + 0.01,
-//                                        userLocation.longitude + 0.01
-//                                    )
-//                                }
+
+//                                settings.clearCachedMarkersResult() // clear the cache of markers
+//                                settings.clearCachedMarkersLastUpdatedLocation()
+//                                settings.clearCachedMarkersLastUpdateEpochSeconds()
+//                                settings.setCachedMarkersLastUpdatedLocation(userLocation)
+//
+//                                userLocation = Location(
+//                                    userLocation.latitude + 0.0001,  // force a change in location
+//                                    userLocation.longitude + 0.0001
+//                                )
+
                             }
                         )
                     }
@@ -387,7 +402,7 @@ fun App() {
                             val markerId: MarkerIdStr =
                                 (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker.id
 
-                            markersFetchResult.markerIdToMapMarker[markerId] ?: run {
+                            fetchedMarkersResult.markerIdToMapMarker[markerId] ?: run {
                                 println("Error: Unable to find marker with id=$markerId")
                                 return@remember (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker
                             }
@@ -413,14 +428,14 @@ fun App() {
                                 }
 
                                 // Update the markers list with the updated marker data
-                                markersFetchResult = markersFetchResult.copy(
+                                fetchedMarkersResult = fetchedMarkersResult.copy(
                                     markerIdToMapMarker = mapMarkers.associateBy { mapMarker ->
                                         mapMarker.id
                                     }
                                 )
 
                                 // Update the settings with the updated marker data
-                                settings.setCachedMarkersResult(markersFetchResult)
+                                settings.setCachedMarkersResult(fetchedMarkersResult)
 
                                 // todo Update the recently seen markers list
                             }
@@ -437,6 +452,7 @@ fun App() {
             drawerScrimColor = Color.Black.copy(alpha = 0.5f),
             drawerGesturesEnabled = !bottomSheetScaffoldState.drawerState.isClosed,
             drawerContent = {
+                // Header
                 Row(
                     Modifier
                         .fillMaxWidth()
@@ -462,6 +478,48 @@ fun App() {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close"
+                        )
+                    }
+
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Show all loaded markers
+                Text("Loaded Markers",
+                    modifier = Modifier.padding(start=8.dp),
+                    fontStyle = FontStyle.Italic,
+                    fontSize = MaterialTheme.typography.body2.fontSize,
+                    fontWeight = FontWeight.Bold,
+                )
+
+                // List all loaded markers
+                Column(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .verticalScroll(
+                            state = rememberScrollState(),
+                            enabled = true,
+                        ),
+
+                ) {
+                    fetchedMarkersResult.markerIdToMapMarker.entries.forEach { marker ->
+                        Text(
+                            text = marker.key + " - " + marker.value.title,
+                            softWrap = false,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier
+                                .clickable {
+                                    coroutineScope.launch {
+                                        bottomSheetScaffoldState.drawerState.close()
+                                        bottomSheetActiveScreen =
+                                            BottomSheetScreen.MarkerDetailsScreen(marker.value)
+                                        bottomSheetScaffoldState.bottomSheetState.expand()
+                                    }
+                                }
+                                .padding(8.dp),
+                            fontStyle = FontStyle.Normal,
+                            fontSize = MaterialTheme.typography.body1.fontSize,
                         )
                     }
                 }
@@ -532,13 +590,13 @@ fun App() {
 
                         // Show loading error
                         AnimatedVisibility(
-                            visible = markersFetchResult.loadingState is LoadingState.Error,
+                            visible = fetchedMarkersResult.loadingState is LoadingState.Error,
                         ) {
-                            if (markersFetchResult.loadingState is LoadingState.Error) {
+                            if (fetchedMarkersResult.loadingState is LoadingState.Error) {
                                 Text(
                                     modifier = Modifier.fillMaxWidth()
                                         .background(MaterialTheme.colors.error),
-                                    text = "Error: ${(markersFetchResult.loadingState as LoadingState.Error).errorMessage}",
+                                    text = "Error: ${(fetchedMarkersResult.loadingState as LoadingState.Error).errorMessage}",
                                     fontStyle = FontStyle.Normal,
                                     fontWeight = FontWeight.Medium,
                                     color = MaterialTheme.colors.onError
@@ -579,7 +637,7 @@ fun App() {
                             MapContent(
                                 modifier = Modifier
                                     .fillMaxHeight(1.0f - transitionRecentMarkersPanel),
-                                isFinishedLoadingMarkerData = markersFetchResult.isParseMarkersPageFinished,
+                                isFinishedLoadingMarkerData = fetchedMarkersResult.isParseMarkersPageFinished,
                                 initialUserLocation = settings.lastKnownUserLocation(),
                                 userLocation = userLocation,
                                 mapMarkers = mapMarkers,
