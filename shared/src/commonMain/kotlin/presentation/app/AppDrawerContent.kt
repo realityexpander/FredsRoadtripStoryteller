@@ -110,7 +110,6 @@ fun AppDrawerContent(
                                         marker.value
                                     )
                                 )
-                                yield()
                                 bottomSheetScaffoldState.drawerState.close()
                                 bottomSheetScaffoldState.bottomSheetState.expand()
                             }
