@@ -56,6 +56,8 @@ data class MarkersResult(
     val loadingState: LoadingState<String> = LoadingState.Idle,
 )
 
+// Loads marker info from the markers page html. Can by multiple pages.
+//
 // Strategy:
 // 1 - Check for cached data
 //   - if not cached, attempt load from network (go to step 2)
@@ -72,7 +74,8 @@ data class MarkersResult(
 // 6 - PROCESS COMPLETE
 //
 // Note: yes! this code is goofy looking & hops around a lot... this is because to I'm avoid using
-//       a ViewModel as this works as a pure composable function. There is no ping-pong between files. Its all here.
+//       a ViewModel as this works as a pure composable function. And its all reactive.
+//       Plus side - there is no ping-pong between files. Its all here.
 //       I'm Experimenting with a pure compose architecture with no android idiom remnants.
 @Composable
 fun loadMarkers(
