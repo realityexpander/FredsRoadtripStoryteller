@@ -12,7 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.Wallpapers
-import presentation.uiComponents.AppTheme
+import presentation.app.AppTheme
 import presentation.uiComponents.SettingsSlider
 import presentation.uiComponents.SettingsSwitch
 import data.LoadingState
@@ -38,7 +38,7 @@ fun SettingsSwitchPreviews() {
                 )
                 SettingsSlider(
                     title = "Talk Radius",
-                    currentValue = 1.0,
+                    currentValue = 0.5,
                     onValueChange = {}
                 )
             }
@@ -56,7 +56,9 @@ fun SettingsSwitchPreviewsDark() {
 
 @OptIn(ExperimentalMaterialApi::class)
 @Preview(
-    showBackground = false, showSystemUi = false, backgroundColor = 0xFF8F8F8F,
+    showBackground = false,
+    showSystemUi = false,
+    backgroundColor = 0xFF8F8F8F,
     uiMode = Configuration.UI_MODE_NIGHT_NO or Configuration.UI_MODE_TYPE_NORMAL, group = "Settings",
     name = "Settings"
 )
@@ -71,7 +73,7 @@ fun SettingsPreview() {
                         initialValue = BottomSheetValue.Collapsed,
                         density = LocalDensity.current,
                         confirmValueChange = {
-                            true
+                            false
                         },
                     ),
                     drawerState = DrawerState(
@@ -82,7 +84,7 @@ fun SettingsPreview() {
                     ),
                     snackbarHostState = SnackbarHostState()
                 ),
-                talkRadiusMiles = 1.0,
+                talkRadiusMiles = .5,
             )
         }
     }

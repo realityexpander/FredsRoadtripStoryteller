@@ -51,7 +51,7 @@ fun SettingsSlider(
         )
         Spacer(modifier = Modifier.weight(.1f))
         Text(
-            text = currentValueAsString,
+            text = "$currentValueAsString mi",
             modifier = Modifier
                 .weight(.5f)
                 .align(Alignment.CenterVertically),

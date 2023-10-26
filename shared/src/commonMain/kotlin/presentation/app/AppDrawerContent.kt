@@ -1,4 +1,4 @@
-package presentation.App
+package presentation.app
 
 import BottomSheetScreen
 import androidx.compose.foundation.clickable

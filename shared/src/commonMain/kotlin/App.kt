@@ -52,7 +52,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.russhwolf.settings.Settings
-import presentation.uiComponents.AppTheme
+import presentation.app.AppTheme
 import presentation.uiComponents.PreviewPlaceholder
 import data.LoadingState
 import data.markersLastUpdatedLocation
@@ -85,7 +85,7 @@ import maps.MarkerIdStr
 import maps.RecentMapMarker
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
-import presentation.App.AppDrawerContent
+import presentation.app.AppDrawerContent
 import presentation.SettingsScreen
 import kotlin.random.Random
 import co.touchlab.kermit.Logger as Log
@@ -470,6 +470,8 @@ fun App() {
                     verticalArrangement = Arrangement.SpaceBetween,
                     horizontalAlignment = Alignment.Start
                 ) {
+
+                    // Map Content
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
@@ -533,7 +535,7 @@ fun App() {
                         }
                     }
 
-                    // Show `recently seen markers` list
+                    // Recently Seen Markers
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
