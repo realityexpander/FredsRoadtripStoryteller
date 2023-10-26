@@ -111,6 +111,7 @@ fun loadMarkers(
     }
 
     var markersLoadingState: LoadingState<String> by remember { mutableStateOf(LoadingState.Idle) }
+    var curHtmlPageNum by remember { mutableStateOf(0) }
     var cachedMarkersResultState by remember(userLocation) {
          // Log.d("userLocation update, currentlyLoadingState: $markersLoadingState, location: $userLocation")
 
@@ -184,6 +185,9 @@ fun loadMarkers(
     var curHtmlPageNum by remember { mutableStateOf(1) }
     var shouldUpdateCache by remember { mutableStateOf(false) }
     var networkLoadingState by remember(markersResultState.isParseMarkersPageFinished, curHtmlPageNum) {
+        // Guard
+        if(curHtmlPageNum == 0) return@remember mutableStateOf<LoadingState<String>>(LoadingState.Idle)
+
         // Step 2 - Initiate Load a page of raw marker HTML from the network
         if (!markersResultState.isParseMarkersPageFinished) {
             Log.d("Loading page number $curHtmlPageNum")
@@ -225,6 +229,7 @@ fun loadMarkers(
         // 6 PROCESS COMPLETE
         Log.d("Finished loading all pages, total markers:${cachedMarkersResultState.markerIdToMapMarker.size}")
         markersLoadingState = LoadingState.Idle
+        curHtmlPageNum = 0
         mutableStateOf<LoadingState<String>>(LoadingState.Idle)
     }
 
