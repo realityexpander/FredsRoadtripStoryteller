@@ -79,6 +79,7 @@ import data.shouldAutomaticallyStartTrackingWhenAppLaunches
 import data.talkRadiusMiles
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
 import kotlinx.serialization.json.Json
 import maps.CameraLocationBounds
@@ -186,7 +187,7 @@ fun App() {
                 return@remember cachedMapMarkers
             }
 
-            // Update the markers
+            // Update the markers with the latest info (after it's loaded)
             val markers =
                 fetchedMarkersResult.markerIdToMapMarker.map { marker ->
                     MapMarker(
@@ -200,16 +201,19 @@ fun App() {
                     )
                 }
 
+            // Update the markers list with the updated marker data
             mutableStateListOf<MapMarker>().also { snapShot ->
                 // Log.d("pre-snapshot markersData.markerInfos.size: ${markersLoadResult.markerInfos.size}")
                 snapShot.clear()
                 snapShot.addAll(markers)
+
+                // Load the UI with the new markers
                 cachedMapMarkers.clear()
                 cachedMapMarkers.addAll(markers)
 
                 // Force a redraw of the map & markers
                 coroutineScope.launch {
-                    delay(500)
+                    yield()
                     shouldRedrawMapMarkers = true
                 }
 
