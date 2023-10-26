@@ -325,23 +325,14 @@ fun App() {
                             },
                             onResetMarkerSettings = {
                                 coroutineScope.launch {
-                                    // Reset the `seen markers` list, UI elements
-                                    recentlySeenMarkersSet.clear()
-                                    recentlySeenMarkersForUiList.clear()
-                                    mapMarkers.clear()
-                                    cachedMapMarkers.clear()
-
-                                    // Reset the settings cache of markers
-                                    settings.clearMarkersResult()
-                                    settings.clearMarkersLastUpdatedLocation()
-                                    settings.clearMarkersLastUpdateEpochSeconds()
-
-                                    // force a change in location to trigger a reload of the markers
-                                    userLocation = Location(
-                                        userLocation.latitude + 0.0001,
-                                        userLocation.longitude + 0.0001 +
-                                                Random.nextDouble(0.0001, 0.0002)
+                                    resetMarkerSettings(
+                                        settings,
+                                        mapMarkers,
+                                        recentlySeenMarkersSet,
+                                        recentlySeenMarkersForUiList,
+                                        cachedMapMarkers
                                     )
+                                    userLocation = jiggleLocationToForceUpdate(userLocation)
                                 }
                             },
                         )
@@ -359,34 +350,14 @@ fun App() {
 
                         fetchMarkerDetailsResult = loadMapMarkerDetails(marker)
 
-                        // Update the marker with the latest info after it loads
+                        // Update the MapMarker with Marker Details after it's loaded
                         LaunchedEffect(fetchMarkerDetailsResult) {
-                            // todo make this a func
-                            if (fetchMarkerDetailsResult is LoadingState.Loaded) {
-                                val updatedMapMarker =
-                                    (fetchMarkerDetailsResult as LoadingState.Loaded<MapMarker>).data
-
-                                // Update the marker in the mapMarkers list with the new data
-                                val index = mapMarkers.indexOfFirst { marker ->
-                                    marker.id == updatedMapMarker.id
-                                }
-                                if (index >= 0) {
-                                    mapMarkers[index] = updatedMapMarker.copy(
-                                        isDescriptionLoaded = true
-                                    )
-                                }
-
-                                // Update the markers list with the updated marker data
-                                fetchedMarkersResult = fetchedMarkersResult.copy(
-                                    markerIdToMapMarker = mapMarkers.associateBy { mapMarker ->
-                                        mapMarker.id
-                                    }
-                                )
-
-                                // Update the settings with the updated marker data
-                                settings.setMarkersResult(fetchedMarkersResult)
-                                // todo Update the recently seen markers list
-                            }
+                            fetchedMarkersResult = updateMapMarkerWithFetchedMarkerDetails(
+                                fetchedMarkersResult,
+                                fetchMarkerDetailsResult,
+                                mapMarkers,
+                                settings
+                            )
                         }
 
                         MarkerDetailsScreen(
@@ -718,6 +689,71 @@ fun App() {
             }
         }
     }
+}
+
+private fun updateMapMarkerWithFetchedMarkerDetails(
+    fetchedMarkersResult: MarkersResult,
+    fetchMarkerDetailsResult: LoadingState<MapMarker>,
+    mapMarkers: SnapshotStateList<MapMarker>,
+    settings: Settings
+): MarkersResult {
+    var localFetchedMarkersResult = fetchedMarkersResult
+
+    if (fetchMarkerDetailsResult is LoadingState.Loaded) {
+        val updatedMapMarker =
+            (fetchMarkerDetailsResult as LoadingState.Loaded<MapMarker>).data
+
+        // Update the marker in the mapMarkers list with the new data
+        val index = mapMarkers.indexOfFirst { marker ->
+            marker.id == updatedMapMarker.id
+        }
+        if (index >= 0) {
+            mapMarkers[index] = updatedMapMarker.copy(
+                isDescriptionLoaded = true
+            )
+        }
+
+        // Update the markers list with the updated marker data
+        localFetchedMarkersResult = localFetchedMarkersResult.copy(
+            markerIdToMapMarker = mapMarkers.associateBy { mapMarker ->
+                mapMarker.id
+            }
+        )
+
+        // Update the settings with the updated marker data
+        settings.setMarkersResult(localFetchedMarkersResult)
+
+        // todo Update the recently seen markers list
+    }
+
+    return localFetchedMarkersResult
+}
+
+// force a change in location to trigger a reload of the markers
+private fun jiggleLocationToForceUpdate(userLocation: Location) = Location(
+    userLocation.latitude +
+            Random.nextDouble(0.0001, 0.0002),
+    userLocation.longitude +
+            Random.nextDouble(0.0001, 0.0002)
+)
+
+private fun resetMarkerSettings(
+    settings: Settings,
+    mapMarkers: SnapshotStateList<MapMarker>,
+    recentlySeenMarkersSet: MutableSet<RecentMapMarker>,
+    recentlySeenMarkersForUiList: SnapshotStateList<RecentMapMarker>,
+    cachedMapMarkers: SnapshotStateList<MapMarker>
+) {
+    // Reset the `seen markers` list, UI elements
+    recentlySeenMarkersSet.clear()
+    recentlySeenMarkersForUiList.clear()
+    mapMarkers.clear()
+    cachedMapMarkers.clear()
+
+    // Reset the settings cache of markers
+    settings.clearMarkersResult()
+    settings.clearMarkersLastUpdatedLocation()
+    settings.clearMarkersLastUpdateEpochSeconds()
 }
 
 // Check for new markers inside talk radius & add to recentlySeen list
