@@ -84,13 +84,11 @@ fun loadMarkers(
     maxReloadDistanceMiles: Int = 10,
     onSetMarkersLastUpdatedLocation: (Location) -> Unit = {},
 
-    // Debugging parameters
+    // Debugging/Testing parameters
     showLoadingState: Boolean = false,
     useFakeDataSetId: Int = 0,  // 0 = use real data, >1 = use fake data (1 = 3 pages around googleplex, 2 = 1 page around tepoztlan)
 
 ): MarkersResult {
-    println("loadMarkers() called,\n" +
-            "  userLocation: $userLocation,\n")
 
     // If the user location is not set, return an empty result
     if (userLocation.latitude == 0.0 && userLocation.longitude == 0.0)
@@ -108,8 +106,10 @@ fun loadMarkers(
     var curHtmlPageNum by remember { mutableStateOf(1) }
     var cachedMarkersResultState by remember(userLocation) {
 
-        // Guard - If currently parsing markers (after network load), return the previous result until its finished.
+        // Guards - If currently parsing markers (after network load)
+        //          return the PREVIOUS result until its finished.
         if(!markersResultState.isParseMarkersPageFinished) return@remember mutableStateOf(markersResultState)
+        //        - If parsing and loading are complete (idle), return the current result.
         if(markersLoadingState !is LoadingState.Idle) return@remember mutableStateOf(markersResultState)
 
         // Step 1 - Check for a cached result in the Settings
@@ -121,7 +121,7 @@ fun loadMarkers(
             // Log.d("Found cached markers in Settings, count: ${cachedMarkersResult.markerInfos.size}")
             markersResultState = cachedMarkersResult.copy(isParseMarkersPageFinished = true)
 
-            // Step 1.1 - Check if the cache is expired // todo replace this with a per-marker expiry
+            // Step 1.1 - Check if the cache is expired // todo replace this with a per-marker details loaded expiry
             if(settings.hasKey(kSettingMarkersLastUpdateEpochSeconds)) {
                 val cacheLastUpdatedEpochSeconds = settings.markersLastUpdateEpochSeconds()
                 // Log.d("Days since last cache update: $(Clock.System.now().epochSeconds - cacheLastUpdatedEpochSeconds) / (60 * 60 * 24)")
@@ -159,7 +159,6 @@ fun loadMarkers(
                 if (userDistanceFromCachedLastLocationMiles > maxReloadDistanceMiles &&
                     markersResultState.isParseMarkersPageFinished
                 ) {
-                    // return current cached result, and also trigger network load, which will refresh the cache.
                     // Log.d("User is outside the max re-load radius, attempting load from network..." )
                     markersResultState = cachedMarkersResult.copy(isParseMarkersPageFinished = false)
                     curHtmlPageNum = 1 // reset the page number to 1
