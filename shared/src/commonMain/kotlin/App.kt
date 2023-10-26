@@ -14,12 +14,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.BottomSheetScaffold
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
@@ -29,7 +26,6 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
@@ -54,7 +50,6 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.russhwolf.settings.Settings
 import presentation.uiComponents.AppTheme
@@ -90,6 +85,7 @@ import maps.MarkerIdStr
 import maps.RecentMapMarker
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
+import presentation.App.AppDrawerContent
 import presentation.SettingsScreen
 import kotlin.random.Random
 import co.touchlab.kermit.Logger as Log
@@ -100,6 +96,7 @@ val json = Json {
     ignoreUnknownKeys = true
 }
 
+const val kForceClearSettingsAtLaunch = false
 const val kMaxReloadDistanceMiles = 2.0
 const val kMaxMarkerCacheAgeSeconds = 60 * 60 * 24 * 30  // 30 days
 
@@ -123,7 +120,7 @@ fun App() {
         // Settings
         val settings = remember {
             Settings().apply {
-//                 clear()  // Force clear all settings & stored data
+                if(kForceClearSettingsAtLaunch) { clear() }
                 // Log.setMinSeverity(Severity.Warn)
                 printAppSettings()
             }
@@ -296,7 +293,7 @@ fun App() {
             gpsLocationService.preventBackgroundLocationUpdates()
         }
 
-        // Turn on tracking automatically, depending on settings
+        // Turn on tracking automatically?
         LaunchedEffect(Unit) {
             val shouldStart = settings.isAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn()
             if (shouldStart) {
@@ -338,16 +335,18 @@ fun App() {
                         )
                     }
                     is BottomSheetScreen.MarkerDetailsScreen -> {
+                        // Extract marker using the id parameter
                         val marker =  remember((bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker.id) {
                             val markerId: MarkerIdStr =
                                 (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker.id
 
                             fetchedMarkersResult.markerIdToMapMarker[markerId] ?: run {
-                                println("Error: Unable to find marker with id=$markerId")
+                                isShowingError = "Error: Unable to find marker with id=$markerId"
+
+                                // Just return the marker that was passed in
                                 return@remember (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker
                             }
                         }
-
                         fetchMarkerDetailsResult = loadMapMarkerDetails(marker)
 
                         // Update the MapMarker with Marker Details after it's loaded
@@ -371,80 +370,13 @@ fun App() {
             drawerScrimColor = Color.Black.copy(alpha = 0.5f),
             drawerGesturesEnabled = !bottomSheetScaffoldState.drawerState.isClosed,
             drawerContent = {
-                // Header
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        "Fred's Talking Markers",
-                        fontSize = MaterialTheme.typography.h5.fontSize,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .weight(3f)
-                    )
-                    IconButton(
-                        modifier = Modifier
-                            .offset(16.dp, (-16).dp),
-                        onClick = {
-                            coroutineScope.launch {
-                                bottomSheetScaffoldState.drawerState.close()
-                            }
-                        }) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Close"
-                        )
-                    }
-
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Show all loaded markers
-                Text("Loaded Markers",
-                    modifier = Modifier.padding(start=8.dp),
-                    fontStyle = FontStyle.Italic,
-                    fontSize = MaterialTheme.typography.body2.fontSize,
-                    fontWeight = FontWeight.Bold,
+                AppDrawerContent(
+                    bottomSheetScaffoldState,
+                    fetchedMarkersResult,
+                    onSetBottomSheetActiveScreen = { screen ->
+                        bottomSheetActiveScreen = screen
+                    },
                 )
-
-                // List all loaded markers
-                Column(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .verticalScroll(
-                            state = rememberScrollState(),
-                            enabled = true,
-                        ),
-
-                ) {
-                    fetchedMarkersResult.markerIdToMapMarker
-                        .entries
-                        .reversed()
-                        .forEach { marker ->
-                            Text(
-                                text = marker.key + " - " + marker.value.title,
-                                softWrap = false,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier
-                                    .clickable {
-                                        coroutineScope.launch {
-                                            bottomSheetScaffoldState.drawerState.close()
-                                            bottomSheetActiveScreen =
-                                                BottomSheetScreen.MarkerDetailsScreen(marker.value)
-                                            bottomSheetScaffoldState.bottomSheetState.expand()
-                                        }
-                                    }
-                                    .padding(8.dp),
-                                fontStyle = FontStyle.Normal,
-                                fontSize = MaterialTheme.typography.body1.fontSize,
-                            )
-                        }
-                }
             }
         ) {
             Scaffold(
@@ -906,53 +838,6 @@ fun MapContent(
 }
 
 expect fun getPlatformName(): String
-
-//    MaterialTheme {
-//        var greetingText by remember { mutableStateOf("Hello, World!") }
-//        var showImage by remember { mutableStateOf(false) }
-//        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-//            Button(onClick = {
-//                greetingText = "Hello, ${getPlatformName()}"
-//                showImage = !showImage
-//            }) {
-//                Text(greetingText)
-//            }
-//            AnimatedVisibility(showImage) {
-//                Image(
-//                    painterResource("compose-multiplatform.xml"),
-//                    null
-//                )
-//            }
-//        }
-//    }
-
-// LEAVE FOR REFERENCE
-//                // uses a marker to show current location
-////                try {
-////                    locationService.getCurrentLocation().let {
-////                        myLocation = it
-////
-////                        // Update the marker position
-////                        markers = markers.map { marker ->
-////                            if (marker.key == "marker4") {
-////                                Log.d { "marker4, myLocation = ${myLocation.latitude}, ${myLocation.longitude}" }
-////                                maps.MapMarker(
-////                                    position = maps.LatLong(
-////                                        myLocation.latitude,
-////                                        myLocation.longitude
-////                                    ),
-////                                    key = marker.key,
-////                                    title = marker.title
-////                                )
-////                            } else {
-////                                marker
-////                            }
-////                        }.toMutableList()
-////                    }
-////                } catch (e: Exception) {
-////                    Log.d { "Error: ${e.message}" }
-////                }
-
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
