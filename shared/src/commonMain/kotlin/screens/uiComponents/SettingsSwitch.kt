@@ -8,7 +8,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 
 @Composable
 fun SettingsSwitch(
@@ -30,10 +29,10 @@ fun SettingsSwitch(
             checked = isChecked,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
-                checkedThumbColor = MaterialTheme.colors.primary,
-                checkedTrackColor = MaterialTheme.colors.primary,
-                uncheckedThumbColor = Color.Gray, // MaterialTheme.colors.primary,
-                uncheckedTrackColor = Color.Gray, // MaterialTheme.colors.primary,
+                checkedThumbColor = MaterialTheme.colors.onSurface,
+                checkedTrackColor = MaterialTheme.colors.onSurface.copy(alpha = 0.5f),
+                uncheckedThumbColor = MaterialTheme.colors.onSurface.copy(alpha = 0.35f),
+                uncheckedTrackColor = MaterialTheme.colors.onSurface.copy(alpha = 0.25f),
             )
         )
     }

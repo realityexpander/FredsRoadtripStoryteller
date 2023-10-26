@@ -112,7 +112,7 @@ fun loadMarkers(
         if (settings.cachedMarkersResult().markerIdToMapMarker.isNotEmpty()) {
             val cachedMarkersResult =
                 settings.cachedMarkersResult()
-                    .copy(isParseMarkersPageFinished = true) // ensure the cached result is marked as finished // todo needed?
+                    .copy(isParseMarkersPageFinished = true) // ensure the cached result is marked as finished
 
             // Log.d("Found cached markers in Settings, count: ${cachedMarkersResult.markerInfos.size}")
             markersResultState = cachedMarkersResult.copy(isParseMarkersPageFinished = true)
