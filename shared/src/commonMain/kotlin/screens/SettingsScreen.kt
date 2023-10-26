@@ -56,8 +56,8 @@ fun SettingsScreen(
     bottomSheetScaffoldState: BottomSheetScaffoldState,
     talkRadiusMiles: Double,
     onTalkRadiusChange: (Double) -> Unit = {},
-    onShouldShowMarkerDataLastSearchedLocationChange: ((Boolean) -> Unit) = {},
-    onShouldResetMarkerSettingsCache: (() -> Unit) = {}
+    onIsCachedMarkersLastUpdatedLocationVisibleChange: ((Boolean) -> Unit) = {},
+    onResetMarkerSettingsCache: (() -> Unit) = {}
 ) {
     val scrollState = rememberScrollState()
     var isResetCacheAlertDialogVisible by remember { mutableStateOf(false) }
@@ -123,7 +123,7 @@ fun SettingsScreen(
             onCheckedChange = {
                 settings?.setIsMarkersLastUpdatedLocationVisible(it)
                 shouldShowMarkerDataLastSearchedLocation = it
-                onShouldShowMarkerDataLastSearchedLocationChange(it)
+                onIsCachedMarkersLastUpdatedLocationVisibleChange(it)
             }
         )
 
@@ -184,7 +184,7 @@ fun SettingsScreen(
                         // reset cache
                         settings?.setCachedMarkersResult(MarkersResult())
                         settings?.setCachedMarkersLastUpdatedLocation(Location(0.0,0.0))
-                        onShouldResetMarkerSettingsCache()
+                        onResetMarkerSettingsCache()
                     }
                 }
             )

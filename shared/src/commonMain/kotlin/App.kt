@@ -60,6 +60,9 @@ import screens.uiComponents.AppTheme
 import screens.uiComponents.PreviewPlaceholder
 import data.LoadingState
 import data.cachedMarkersLastUpdatedLocation
+import data.clearCachedMarkersLastUpdateEpochSeconds
+import data.clearCachedMarkersLastUpdatedLocation
+import data.clearCachedMarkersResult
 import data.isMarkersLastUpdatedLocationVisible
 import data.isRecentlySeenMarkersPanelVisible
 import data.lastKnownUserLocation
@@ -69,8 +72,6 @@ import data.loadMarkers.distanceBetween
 import data.loadMarkers.loadMarkers
 import data.loadMarkers.sampleData.kUseRealNetwork
 import data.printAppSettings
-import data.setCachedMarkersLastUpdateEpochSeconds
-import data.setCachedMarkersLastUpdatedLocation
 import data.setCachedMarkersResult
 import data.setIsRecentlySeenMarkersPanelVisible
 import data.setLastKnownUserLocation
@@ -89,6 +90,7 @@ import maps.RecentMapMarker
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import screens.SettingsScreen
+import kotlin.random.Random
 import co.touchlab.kermit.Logger as Log
 
 val json = Json {
@@ -118,6 +120,7 @@ fun App() {
             mutableStateOf<BottomSheetScreen>(BottomSheetScreen.SettingsScreen)
         }
 
+        // Settings
         val settings = remember {
             Settings().apply {
 //                 clear()  // Force clear all settings & stored data
@@ -126,9 +129,6 @@ fun App() {
             }
         }
         var talkRadiusMiles by remember { mutableStateOf(settings.talkRadiusMiles()) }
-//        val cachedMarkersLastUpdatedLocation by remember(settings.cachedMarkersLastUpdatedLocation()) {
-//        mutableStateOf(settings.cachedMarkersLastUpdatedLocation())
-//    }
         var isMarkersLastUpdatedLocationVisible by remember(settings.isMarkersLastUpdatedLocationVisible()) {
             mutableStateOf(settings.isMarkersLastUpdatedLocationVisible())
         }
@@ -143,7 +143,7 @@ fun App() {
             mutableStateOf(settings.lastKnownUserLocation())
         }
 
-        // Recently Seen Markers for UI
+        // Recently Seen Markers
         val recentlySeenMarkersSet by remember {
             mutableStateOf(mutableSetOf<RecentMapMarker>())
         }
@@ -157,31 +157,31 @@ fun App() {
         // Error state
         var isShowingError by remember { mutableStateOf<String?>(null) }
 
+        // Last markers update location
+        var cachedMarkersLastUpdatedLocation by remember {
+            mutableStateOf(settings.cachedMarkersLastUpdatedLocation())
+        }
+
         // Load markers
         var fetchedMarkersResult: MarkersResult = loadMarkers(
             settings,
             userLocation = userLocation, // when user location changes, triggers potential load markers from server
             maxReloadDistanceMiles = kMaxReloadDistanceMiles.toInt(),
             showLoadingState = false,
+            onSetCachedMarkersLastUpdatedLocation = { location ->
+                cachedMarkersLastUpdatedLocation = location //settings.cachedMarkersLastUpdatedLocation()
+            },
             useFakeDataSetId = kUseRealNetwork,
             //    kSunnyvaleFakeDataset,
             //    kTepoztlanFakeDataset,
             //    kSingleItemPageFakeDataset
         )
 
-        // Set last `loaded markers at` location
-        val cachedMarkersLastUpdatedLocation by remember(fetchedMarkersResult.isParseMarkersPageFinished) {
-            mutableStateOf(settings.cachedMarkersLastUpdatedLocation())
-        }
         val cachedMapMarkers = remember { mutableStateListOf<MapMarker>() } // prevents flicker when loading new markers
         var shouldRedrawMapMarkers by remember { mutableStateOf(true) }
 
         // Update the markers AFTER the page has finished parsing
         val mapMarkers = remember(fetchedMarkersResult.isParseMarkersPageFinished) {
-
-            Log.d { "in mapmarkers, markersFetchResult.isParseMarkersPageFinished=${fetchedMarkersResult.isParseMarkersPageFinished}" }
-            Log.d { "in mapmarkers, markersFetchResult.loadingState=${fetchedMarkersResult.loadingState}" }
-
             // More pages to load?
             if (!fetchedMarkersResult.isParseMarkersPageFinished) {
                 // While loading new markers, use the cached markers to prevent flicker
@@ -215,7 +215,7 @@ fun App() {
                     shouldRedrawMapMarkers = true
                 }
 
-                 Log.d { "Final map-applied marker count = ${snapShot.size}" }
+                // Log.d { "Final map-applied marker count = ${snapShot.size}" }
             }
         }
         if (false) {
@@ -229,7 +229,8 @@ fun App() {
             //}
         }
 
-        var markerDetailsFetchResult by remember(bottomSheetActiveScreen) {
+        // For Marker Details Bottom Sheet
+        var fetchMarkerDetailsResult by remember(bottomSheetActiveScreen) {
             mutableStateOf<LoadingState<MapMarker>>(LoadingState.Loading)
         }
 
@@ -367,34 +368,30 @@ fun App() {
                             bottomSheetScaffoldState,
                             talkRadiusMiles,
                             onTalkRadiusChange = { updatedRadiusMiles -> talkRadiusMiles = updatedRadiusMiles },
-                            onShouldShowMarkerDataLastSearchedLocationChange = {
+                            onIsCachedMarkersLastUpdatedLocationVisibleChange = {
                                 isMarkersLastUpdatedLocationVisible = it
                             },
-                            onShouldResetMarkerSettingsCache = {
+                            onResetMarkerSettingsCache = {
                                 // Reset Marker Info Cache & reset the `seen markers` list
                                 recentlySeenMarkersSet.clear()
                                 recentlySeenMarkersForUiList.clear()
                                 mapMarkers.clear()
                                 cachedMapMarkers.clear()
 
-                                // Trigger a reload of the markers from the server
-                                settings.setCachedMarkersLastUpdatedLocation(Location(0.1, 0.1))
-                                settings.setCachedMarkersLastUpdateEpochSeconds(0L)
-                                fetchedMarkersResult = fetchedMarkersResult.copy(
-                                    isParseMarkersPageFinished = false
-                                )
+                                coroutineScope.launch {
+                                    // clear the cache of markers
+                                    settings.clearCachedMarkersResult()
+                                    settings.clearCachedMarkersLastUpdatedLocation()
+                                    settings.clearCachedMarkersLastUpdateEpochSeconds()
 
-//                                settings.clearCachedMarkersResult() // clear the cache of markers
-//                                settings.clearCachedMarkersLastUpdatedLocation()
-//                                settings.clearCachedMarkersLastUpdateEpochSeconds()
-//                                settings.setCachedMarkersLastUpdatedLocation(userLocation)
-//
-//                                userLocation = Location(
-//                                    userLocation.latitude + 0.0001,  // force a change in location
-//                                    userLocation.longitude + 0.0001
-//                                )
-
-                            }
+                                    // force a change in location to trigger a reload of the markers
+                                    userLocation = Location(
+                                        userLocation.latitude + 0.0001,
+                                        userLocation.longitude + 0.0001 +
+                                                Random.nextDouble(0.0001, 0.0002)
+                                    )
+                                }
+                            },
                         )
                     }
                     is BottomSheetScreen.MarkerDetailsScreen -> {
@@ -408,14 +405,14 @@ fun App() {
                             }
                         }
 
-                        markerDetailsFetchResult = loadMapMarkerDetails(marker)
+                        fetchMarkerDetailsResult = loadMapMarkerDetails(marker)
 
                         // Update the marker with the latest info after it loads
-                        LaunchedEffect(markerDetailsFetchResult) {
+                        LaunchedEffect(fetchMarkerDetailsResult) {
                             // todo make this a func
-                            if (markerDetailsFetchResult is LoadingState.Loaded) {
+                            if (fetchMarkerDetailsResult is LoadingState.Loaded) {
                                 val updatedMapMarker =
-                                    (markerDetailsFetchResult as LoadingState.Loaded<MapMarker>).data
+                                    (fetchMarkerDetailsResult as LoadingState.Loaded<MapMarker>).data
 
                                 // Update the marker in the mapMarkers list with the new data
                                 val index = mapMarkers.indexOfFirst { marker ->
@@ -443,7 +440,7 @@ fun App() {
 
                         MarkerDetailsScreen(
                             bottomSheetScaffoldState,
-                            markerDetailsFetchResult,
+                            fetchMarkerDetailsResult,
                         )
                     }
                 }
@@ -647,15 +644,15 @@ fun App() {
                                 centerOnUserCameraLocation = centerOnUserCameraLocation,
                                 talkRadiusMiles = talkRadiusMiles,
                                 cachedMarkersLastUpdatedLocation =
-                                remember(
-                                    settings.isMarkersLastUpdatedLocationVisible(),
-                                    cachedMarkersLastUpdatedLocation
-                                ) {
-                                    if (settings.isMarkersLastUpdatedLocationVisible())
+                                    remember(
+                                        settings.isMarkersLastUpdatedLocationVisible(),
                                         cachedMarkersLastUpdatedLocation
-                                    else
-                                        null
-                                },
+                                    ) {
+                                        if (settings.isMarkersLastUpdatedLocationVisible())
+                                            cachedMarkersLastUpdatedLocation
+                                        else
+                                            null
+                                    },
                                 onToggleIsTrackingEnabled = {
                                     isTrackingEnabled = !isTrackingEnabled
                                     coroutineScope.launch {

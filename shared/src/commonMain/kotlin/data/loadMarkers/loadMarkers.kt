@@ -82,10 +82,12 @@ fun loadMarkers(
     // Map Marker loading parameters
     userLocation: Location = Location(37.422160, -122.084270),
     maxReloadDistanceMiles: Int = 10,
+    onSetCachedMarkersLastUpdatedLocation: (Location) -> Unit = {},
 
     // Debugging parameters
     showLoadingState: Boolean = false,
     useFakeDataSetId: Int = 0,  // 0 = use real data, >1 = use fake data (1 = 3 pages around googleplex, 2 = 1 page around tepoztlan)
+
 ): MarkersResult {
     val cachedMarkersLastLoadLocation1 = settings.cachedMarkersLastUpdatedLocation()
     val userDistanceFromCachedLastLocationMiles1 = distanceBetween(
@@ -94,11 +96,9 @@ fun loadMarkers(
         cachedMarkersLastLoadLocation1.latitude,
         cachedMarkersLastLoadLocation1.longitude
     )
-    println("loadMarkers() called, distanceFromReloadLocation: $userDistanceFromCachedLastLocationMiles1")
-
+    // Log.d("loadMarkers() called, distanceFromReloadLocation: $userDistanceFromCachedLastLocationMiles1")
 
     // If the user location is not set, return an empty result
-    println("userLocation == 0.0,0.0 = ${userLocation.latitude == 0.0 && userLocation.longitude == 0.0}")
     if (userLocation.latitude == 0.0 && userLocation.longitude == 0.0)
         return MarkersResult()
 
@@ -106,23 +106,21 @@ fun loadMarkers(
 
     // Holds the current processing state of the parsed markers
     var markersResultState by remember {
-        // Load the cached result from persistent storage (Settings) as the initial state
-        mutableStateOf(settings.cachedMarkersResult())
+        mutableStateOf(settings.cachedMarkersResult()) // Load the cached result from persistent storage (Settings) as the initial state
     }
 
     var markersLoadingState: LoadingState<String> by remember { mutableStateOf(LoadingState.Idle) }
     var curHtmlPageNum by remember { mutableStateOf(0) }
     var cachedMarkersResultState by remember(userLocation) {
-         // Log.d("userLocation update, currentlyLoadingState: $markersLoadingState, location: $userLocation")
 
         // Guard - If currently loading/parsing markers, return the current parseResultState upon location change
         if(!markersResultState.isParseMarkersPageFinished) return@remember mutableStateOf(markersResultState)
         if(markersLoadingState !is LoadingState.Idle) return@remember mutableStateOf(markersResultState)
 
         // Step 1 - Check for a cached result in the Settings
-        println("settings.cachedMarkersResult().markerIdToMapMarker.isEmpty() = ${settings.cachedMarkersResult().markerIdToMapMarker.isEmpty()}")
         if (settings.cachedMarkersResult().markerIdToMapMarker.isNotEmpty()) {
-            val cachedMarkersResult = settings.cachedMarkersResult()
+            val cachedMarkersResult =
+                settings.cachedMarkersResult()
                     .copy(isParseMarkersPageFinished = true) // ensure the cached result is marked as finished // todo needed?
 
             // Log.d("Found cached markers in Settings, count: ${cachedMarkersResult.markerInfos.size}")
@@ -165,24 +163,29 @@ fun loadMarkers(
                     cachedMarkersLastLoadLocation.longitude
                 )
 
-                // Log.d("userDistanceFromCachedLastLocationMiles: $userDistanceFromCachedLastLocationMiles")
-                if (userDistanceFromCachedLastLocationMiles > maxReloadDistanceMiles && markersResultState.isParseMarkersPageFinished) {
-                    Log.d("User is outside the max re-load radius, attempting load from network..." )
-
+                if (userDistanceFromCachedLastLocationMiles > maxReloadDistanceMiles &&
+                    markersResultState.isParseMarkersPageFinished
+                ) {
                     // return current cached result, and also trigger network load, which will refresh the cache.
+                    // Log.d("User is outside the max re-load radius, attempting load from network..." )
                     markersResultState = cachedMarkersResult.copy(isParseMarkersPageFinished = false)
+                    curHtmlPageNum = 1 // reset the page number to 1
                 }
             }
 
             mutableStateOf(markersResultState) // return the cached result
         } else {
             Log.d { "No cached markers found. Attempting load from network..." }
+            markersResultState = markersResultState.copy(
+                isParseMarkersPageFinished = false,
+                loadingState = LoadingState.Loading
+            )
+            curHtmlPageNum = 1
             mutableStateOf(MarkersResult())// return empty result, trigger network load
         }
     }
 
     var markerHtmlPageUrl by remember { mutableStateOf<String?>(null) }
-    var curHtmlPageNum by remember { mutableStateOf(1) }
     var shouldUpdateCache by remember { mutableStateOf(false) }
     var networkLoadingState by remember(markersResultState.isParseMarkersPageFinished, curHtmlPageNum) {
         // Guard
@@ -221,8 +224,11 @@ fun loadMarkers(
             coroutineScope.launch {
                 settings.setCachedMarkersResult(cachedMarkersResultState)
                 settings.setCachedMarkersLastUpdateEpochSeconds(Clock.System.now().epochSeconds)
-                settings.setCachedMarkersLastUpdatedLocation(userLocation)
-                // Log.d("Saved markers to Settings, total count: ${cachedMarkersResultState.markerInfos.size}")
+
+                settings.setCachedMarkersLastUpdatedLocation(userLocation).also {
+                    onSetCachedMarkersLastUpdatedLocation(userLocation)
+                }
+                // Log.d("Saved markers to Settings, total count: ${cachedMarkersResultState.markerIdToMapMarker.size}")
             }
         }
 
@@ -231,6 +237,7 @@ fun loadMarkers(
         markersLoadingState = LoadingState.Idle
         curHtmlPageNum = 0
         mutableStateOf<LoadingState<String>>(LoadingState.Idle)
+
     }
 
     // Load the data from the network when `markerHtmlPageUrl` is changed
