@@ -1,4 +1,4 @@
-package screens.uiComponents
+package presentation.uiComponents
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource

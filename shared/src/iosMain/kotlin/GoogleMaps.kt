@@ -39,7 +39,7 @@ import cocoapods.GoogleMaps.GMSPolyline
 import cocoapods.GoogleMaps.animateWithCameraUpdate
 import cocoapods.GoogleMaps.kGMSTypeNormal
 import cocoapods.GoogleMaps.kGMSTypeSatellite
-import screens.uiComponents.SwitchWithLabel
+import presentation.uiComponents.SwitchWithLabel
 import kotlinx.cinterop.ExperimentalForeignApi
 import data.loadMarkers.milesToMeters
 import maps.CameraLocationBounds
@@ -293,7 +293,7 @@ actual fun GoogleMaps(
                                     cachedMarkersLastUpdatedLocation.latitude,
                                     cachedMarkersLastUpdatedLocation.longitude
                                 )
-                                radius = kMaxReloadDistanceMiles.milesToMeters()
+                                radius = kMaxReloadDistanceMiles.milesToMeters() * 2
                                 fillColor = UIColor.yellowColor().colorWithAlphaComponent(0.1)
                                 strokeColor = UIColor.whiteColor().colorWithAlphaComponent(0.3)
                                 strokeWidth = 2.0

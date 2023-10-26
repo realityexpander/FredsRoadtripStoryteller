@@ -34,7 +34,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,20 +54,13 @@ import androidx.compose.ui.unit.dp
 import data.LoadingState
 import io.kamel.core.ExperimentalKamelApi
 import io.kamel.core.Resource
-import io.kamel.core.config.KamelConfig
-import io.kamel.core.config.fileFetcher
-import io.kamel.core.config.httpFetcher
-import io.kamel.core.config.takeFrom
 import io.kamel.image.KamelImage
 import io.kamel.image.KamelImageBox
 import io.kamel.image.asyncPainterResource
-import io.kamel.image.config.Default
-import io.kamel.image.config.LocalKamelConfig
 import kotlinx.coroutines.launch
 import maps.MapMarker
-import network.httpClient
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import screens.uiComponents.PreviewPlaceholder
+import presentation.uiComponents.PreviewPlaceholder
 
 const val kMaxWeightOfBottomDrawer = 0.9f
 

@@ -56,8 +56,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.russhwolf.settings.Settings
-import screens.uiComponents.AppTheme
-import screens.uiComponents.PreviewPlaceholder
+import presentation.uiComponents.AppTheme
+import presentation.uiComponents.PreviewPlaceholder
 import data.LoadingState
 import data.cachedMarkersLastUpdatedLocation
 import data.clearCachedMarkersLastUpdateEpochSeconds
@@ -89,7 +89,7 @@ import maps.MarkerIdStr
 import maps.RecentMapMarker
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
-import screens.SettingsScreen
+import presentation.SettingsScreen
 import kotlin.random.Random
 import co.touchlab.kermit.Logger as Log
 
@@ -433,7 +433,6 @@ fun App() {
 
                                 // Update the settings with the updated marker data
                                 settings.setCachedMarkersResult(fetchedMarkersResult)
-ove
                                 // todo Update the recently seen markers list
                             }
                         }

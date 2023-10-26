@@ -12,13 +12,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.Wallpapers
-import screens.uiComponents.AppTheme
-import screens.uiComponents.SettingsSlider
-import screens.uiComponents.SettingsSwitch
+import presentation.uiComponents.AppTheme
+import presentation.uiComponents.SettingsSlider
+import presentation.uiComponents.SettingsSwitch
 import data.LoadingState
 import maps.LatLong
 import maps.MapMarker
-import screens.SettingsScreen
+import presentation.SettingsScreen
 
 @Preview(name = "switches", group = "Settings")
 @Composable

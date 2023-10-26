@@ -1,4 +1,4 @@
-package screens
+package presentation
 
 import Location
 import androidx.compose.foundation.gestures.Orientation
@@ -35,8 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import data.cachedMarkersResult
 import com.russhwolf.settings.Settings
-import screens.uiComponents.SettingsSlider
-import screens.uiComponents.SettingsSwitch
+import presentation.uiComponents.SettingsSlider
+import presentation.uiComponents.SettingsSwitch
 import getPlatformName
 import data.isMarkersLastUpdatedLocationVisible
 import kotlinx.coroutines.launch

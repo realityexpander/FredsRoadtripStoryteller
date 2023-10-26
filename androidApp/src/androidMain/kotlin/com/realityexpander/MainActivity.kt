@@ -1,6 +1,6 @@
 package com.realityexpander
 
-import screens.uiComponents.AppTheme
+import presentation.uiComponents.AppTheme
 import GPSLocationService
 import MainView
 import SplashScreenForPermissions

@@ -1,4 +1,4 @@
-package screens.uiComponents
+package presentation.uiComponents
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape

@@ -52,7 +52,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberTileOverlayState
 import com.google.maps.android.heatmaps.HeatmapTileProvider
 import com.google.maps.android.heatmaps.WeightedLatLng
-import screens.uiComponents.SwitchWithLabel
+import presentation.uiComponents.SwitchWithLabel
 import kotlinx.coroutines.launch
 import data.loadMarkers.milesToMeters
 import maps.CameraLocationBounds
@@ -342,13 +342,13 @@ actual fun GoogleMaps(
                             cachedMarkersLastUpdatedLocation.latitude,
                             cachedMarkersLastUpdatedLocation.longitude
                         ),
-                        radius = kMaxReloadDistanceMiles.milesToMeters(),
+                        radius = kMaxReloadDistanceMiles.milesToMeters() * 2,
                         fillColor = Color.Yellow.copy(alpha = 0.1f),
                         strokeColor = Color.White.copy(alpha = 0.3f),
                         strokeWidth = 2.0f
                     )
 
-                    //    // Show using a rectangle - todo distance estimates are a bit off
+                    //    // Show using a rectangle - todo distance estimates are a bit off - why?
                     //    val lastLoc = cachedMarkersLastUpdatedLocation
                     //    val searchDistanceLngDegrees = distanceBetween(
                     //        lastLoc.latitude, lastLoc.longitude,
