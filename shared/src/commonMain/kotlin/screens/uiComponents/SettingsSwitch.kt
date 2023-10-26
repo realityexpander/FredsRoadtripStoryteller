@@ -1,5 +1,6 @@
 package screens.uiComponents
 
+import androidx.compose.animation.VectorConverter
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Switch
@@ -8,6 +9,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+
 
 @Composable
 fun SettingsSwitch(
@@ -31,8 +33,8 @@ fun SettingsSwitch(
             colors = SwitchDefaults.colors(
                 checkedThumbColor = MaterialTheme.colors.onSurface,
                 checkedTrackColor = MaterialTheme.colors.onSurface.copy(alpha = 0.5f),
-                uncheckedThumbColor = MaterialTheme.colors.onSurface.copy(alpha = 0.35f),
-                uncheckedTrackColor = MaterialTheme.colors.onSurface.copy(alpha = 0.25f),
+                uncheckedThumbColor = androidx.compose.ui.graphics.Color.DarkGray,
+                uncheckedTrackColor = MaterialTheme.colors.onSurface.copy(alpha = 0.5f),
             )
         )
     }

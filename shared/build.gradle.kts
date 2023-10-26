@@ -120,6 +120,7 @@ kotlin {
     }
 }
 
+// For the Final Application
 android {
     compileSdk = (findProperty("android.compileSdk") as String).toInt()
     namespace = "com.realityexpander.common"

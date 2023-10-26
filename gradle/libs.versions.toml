@@ -3,6 +3,7 @@ agp = "8.1.2"
 androidx-activityCompose = "1.8.0"
 androidx-coreSplashscreen = "1.0.1"
 androidx-appcompat = "1.6.1"
+androidx-core = "1.12.0"
 compose = "1.5.3"
 compose-compiler = "1.5.3"  # usually the same as `compose`
 compose-material3 = "1.5.10-rc01" # usually the same as compose
@@ -69,7 +70,9 @@ multiplatform-settings = { module = "com.russhwolf:multiplatform-settings", vers
 multiplatform-settings-no-arg = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "kMutliplatformSettingsVersion" }
 multiplatform-settings-test = { module = "com.russhwolf:multiplatform-settings-test", version.ref = "kMutliplatformSettingsVersion" }
 logger-slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "logger-Slf4jNop" }
-androidx-ui-tooling-preview-android = { group = "androidx.compose.ui", name = "ui-tooling-preview-android", version = "1.5.4" }
+androidx-ui-tooling-preview-android = { group = "androidx.compose.ui", name = "ui-tooling-preview-android", version.ref = "compose" }
+androidx-ui-graphics-android = { group = "androidx.compose.ui", name = "ui-graphics-android", version.ref = "compose" }
+androidx-core = { group = "androidx.core", name = "core", version.ref = "androidx-core" }
 
 
 [plugins]

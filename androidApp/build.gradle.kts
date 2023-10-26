@@ -55,6 +55,7 @@ android {
         implementation(libs.androidx.compose.ui.tooling.preview)
         implementation(libs.androidx.activity.compose)
         implementation(libs.androidx.compose.material)
+        implementation(libs.androidx.ui.graphics.android)
 
         // Android-only Components
         implementation(libs.androidx.appcompat)

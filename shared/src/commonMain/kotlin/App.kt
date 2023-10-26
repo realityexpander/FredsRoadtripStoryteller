@@ -433,7 +433,7 @@ fun App() {
 
                                 // Update the settings with the updated marker data
                                 settings.setCachedMarkersResult(fetchedMarkersResult)
-
+ove
                                 // todo Update the recently seen markers list
                             }
                         }
