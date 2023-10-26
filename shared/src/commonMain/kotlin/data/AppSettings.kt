@@ -9,110 +9,108 @@ import json
 import co.touchlab.kermit.Logger as Log
 
 // Settings Keys
-const val kCachedMarkersResultSetting =                    "cachedMarkersResult"
-const val kcachedMarkersLastUpdateEpochSecondsSetting =   "cachedMarkersLastUpdateEpochSeconds"
-const val kCachedMarkersLastLoadLocationSetting =          "cachedMarkersLastUpdateLocation"
-const val kLastKnownUserLocationSetting =                  "lastKnownUserLocation"
-const val kStartBackgroundUpdatesWhenAppLaunchesSetting =  "startBackgroundUpdatesWhenAppLaunches"
-const val kTalkRadiusMilesSetting =                        "talkRadiusMiles"
-const val kIsMarkersLastUpdatedLocationVisibleSetting =    "isMarkersLastUpdatedLocationVisible"
-const val kIsRecentlySeenMarkersPanelVisibleSetting =      "isRecentlySeenMarkersPanelVisible"
-const val kIsPermissionsGranted =                          "isPermissionsGranted"
+const val kSettingMarkersResult =                         "kSettingMarkersResult"
+const val kSettingMarkersLastUpdateEpochSeconds =         "kSettingMarkersLastUpdateEpochSeconds"
+const val kSettingMarkersLastLoadLocation =               "kSettingMarkersLastLoadLocation"
+const val kSettingLastKnownUserLocation =                 "kSettingLastKnownUserLocation"
+const val kSettingStartBackgroundUpdatesWhenAppLaunches = "kSettingStartBackgroundUpdatesWhenAppLaunches"
+const val kSettingTalkRadiusMiles =                       "kSettingTalkRadiusMiles"
+const val kSettingIsMarkersLastUpdatedLocationVisible =   "kSettingIsMarkersLastUpdatedLocationVisible"
+const val kSettingIsRecentlySeenMarkersPanelVisible =     "kSettingIsRecentlySeenMarkersPanelVisible"
+const val kSettingIsPermissionsGranted =                  "kSettingIsPermissionsGranted"
 
 fun Settings.printAppSettings() {
     // Show current settings
-    Log.d { "keys from settings: $keys" }
-    Log.d("Settings: cachedMarkersResult mapMarkers.size= " +
-            cachedMarkersResult().markerIdToMapMarker.size.toString())
-    Log.d("Settings: cachedMarkersLastUpdateEpochSeconds= " +
-            getLong(kcachedMarkersLastUpdateEpochSecondsSetting, 0L).toString())
-    Log.d("Settings: cachedMarkersLastUpdateLocation= " +
-            getString(kCachedMarkersLastLoadLocationSetting, "{latitude:0.0, longitude:0.0}"))
-    Log.d("Settings: LastKnownUserLocation= " +
-            getString(kLastKnownUserLocationSetting, "{latitude:0.0, longitude:0.0}"))
-    Log.d("Settings: startBackgroundUpdatesWhenAppLaunches= " +
-            getBoolean(kStartBackgroundUpdatesWhenAppLaunchesSetting, false).toString())
+    Log.d { "All keys from settings: ${keys.joinToString { it + "\n" }}" }
+    Log.d("Settings: markersResult markerIdToMapMarker.size= " +
+            markersResult().markerIdToMapMarker.size.toString())
+    Log.d("Settings: markersLastUpdateEpochSeconds= " +
+            markersLastUpdateEpochSeconds().toString())
+    Log.d("Settings: markersLastUpdatedLocation= " +
+            markersLastUpdatedLocation().toString())
+    Log.d("Settings: lastKnownUserLocation= " +
+            lastKnownUserLocation().toString())
+    Log.d("Settings: isAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn= " +
+            isAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn().toString())
     Log.d("Settings: talkRadiusMiles= " +
-            getDouble(kTalkRadiusMilesSetting, 0.5).toString())
+           talkRadiusMiles().toString())
     Log.d("Settings: isMarkersLastUpdatedLocationVisible= " +
-            getBoolean(kIsMarkersLastUpdatedLocationVisibleSetting, false).toString())
+            isMarkersLastUpdatedLocationVisible().toString())
     Log.d("Settings: isRecentlySeenMarkersPanelVisible= " +
-            getBoolean(kIsRecentlySeenMarkersPanelVisibleSetting, false).toString())
+            isRecentlySeenMarkersPanelVisible().toString())
 }
 
-// Cached Markers
-fun Settings.setCachedMarkersResult(markersResult: MarkersResult) {
-    putString(kCachedMarkersResultSetting, json.encodeToString(markersResult))
+fun Settings.setMarkersResult(markersResult: MarkersResult) {
+    putString(kSettingMarkersResult, json.encodeToString(markersResult))
 }
-fun Settings.cachedMarkersResult(): MarkersResult {
-    return json.decodeFromString(getString(kCachedMarkersResultSetting, "{}"))
+fun Settings.markersResult(): MarkersResult {
+    return json.decodeFromString(getString(kSettingMarkersResult, "{}"))
 }
-fun Settings.clearCachedMarkersResult() {
-    set(kCachedMarkersResultSetting, null)
-}
-
-// Cached Markers Last Updated
-fun Settings.setCachedMarkersLastUpdateEpochSeconds(epochSeconds: Long) {
-    putLong(kcachedMarkersLastUpdateEpochSecondsSetting, epochSeconds)
-}
-fun Settings.cachedMarkersLastUpdateEpochSeconds(): Long {
-    return getLong(kcachedMarkersLastUpdateEpochSecondsSetting, 0L)
-}
-fun Settings.clearCachedMarkersLastUpdateEpochSeconds() {
-    set(kcachedMarkersLastUpdateEpochSecondsSetting, null)
+fun Settings.clearMarkersResult() {
+    set(kSettingMarkersResult, null)
 }
 
-// Cached Markers Last Loaded Location
-fun Settings.setCachedMarkersLastUpdatedLocation(location: Location) {
-    putString(kCachedMarkersLastLoadLocationSetting, json.encodeToString(location))
+fun Settings.setMarkersLastUpdateEpochSeconds(epochSeconds: Long) {
+    putLong(kSettingMarkersLastUpdateEpochSeconds, epochSeconds)
 }
-fun Settings.cachedMarkersLastUpdatedLocation(): Location {
-    return json.decodeFromString(getString(kCachedMarkersLastLoadLocationSetting, "{latitude:0.0, longitude:0.0}"))
+fun Settings.markersLastUpdateEpochSeconds(): Long {
+    return getLong(kSettingMarkersLastUpdateEpochSeconds, 0L)
 }
-fun Settings.clearCachedMarkersLastUpdatedLocation() {
-    set(kCachedMarkersLastLoadLocationSetting, null)
+fun Settings.clearMarkersLastUpdateEpochSeconds() {
+    set(kSettingMarkersLastUpdateEpochSeconds, null)
 }
 
-// Last Known User Location
+fun Settings.setMarkersLastUpdatedLocation(location: Location) {
+    putString(kSettingMarkersLastLoadLocation, json.encodeToString(location))
+}
+fun Settings.markersLastUpdatedLocation(): Location {
+    return json.decodeFromString(getString(kSettingMarkersLastLoadLocation, "{latitude:0.0, longitude:0.0}"))
+}
+fun Settings.clearMarkersLastUpdatedLocation() {
+    set(kSettingMarkersLastLoadLocation, null)
+}
+
 fun Settings.setLastKnownUserLocation(location: Location) {
-    putString(kLastKnownUserLocationSetting, json.encodeToString(location))
+    putString(kSettingLastKnownUserLocation, json.encodeToString(location))
 }
 fun Settings.lastKnownUserLocation(): Location {
-    return json.decodeFromString(getString(kLastKnownUserLocationSetting, "{latitude:0.0, longitude:0.0}"))
+    return json.decodeFromString(getString(kSettingLastKnownUserLocation, "{latitude:0.0, longitude:0.0}"))
 }
 
+
 // • For Settings panel
-fun Settings.setShouldAutomaticallyStartTrackingWhenAppLaunches(shouldStartBackgroundUpdatesWhenAppLaunches: Boolean) {
-    putBoolean(kStartBackgroundUpdatesWhenAppLaunchesSetting, shouldStartBackgroundUpdatesWhenAppLaunches)
+
+fun Settings.setIsAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn(shouldStartBackgroundUpdatesWhenAppLaunches: Boolean) {
+    putBoolean(kSettingStartBackgroundUpdatesWhenAppLaunches, shouldStartBackgroundUpdatesWhenAppLaunches)
 }
-fun Settings.shouldAutomaticallyStartTrackingWhenAppLaunches(): Boolean {
-    return getBoolean(kStartBackgroundUpdatesWhenAppLaunchesSetting, false)
+fun Settings.isAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn(): Boolean {
+    return getBoolean(kSettingStartBackgroundUpdatesWhenAppLaunches, false)
 }
 
 fun Settings.setTalkRadiusMiles(talkRadiusMiles: Double) {
-    putDouble(kTalkRadiusMilesSetting, talkRadiusMiles)
+    putDouble(kSettingTalkRadiusMiles, talkRadiusMiles)
 }
 fun Settings.talkRadiusMiles(): Double {
-    return getDouble(kTalkRadiusMilesSetting, 0.5)
+    return getDouble(kSettingTalkRadiusMiles, 0.5)
 }
 
 fun Settings.isMarkersLastUpdatedLocationVisible(): Boolean {
-    return getBoolean(kIsMarkersLastUpdatedLocationVisibleSetting, false)
+    return getBoolean(kSettingIsMarkersLastUpdatedLocationVisible, false)
 }
 fun Settings.setIsMarkersLastUpdatedLocationVisible(isMarkersLastUpdatedLocationVisible: Boolean) {
-    putBoolean(kIsMarkersLastUpdatedLocationVisibleSetting, isMarkersLastUpdatedLocationVisible)
+    putBoolean(kSettingIsMarkersLastUpdatedLocationVisible, isMarkersLastUpdatedLocationVisible)
 }
 
 fun Settings.isRecentlySeenMarkersPanelVisible(): Boolean {
-    return getBoolean(kIsRecentlySeenMarkersPanelVisibleSetting, false)
+    return getBoolean(kSettingIsRecentlySeenMarkersPanelVisible, false)
 }
 fun Settings.setIsRecentlySeenMarkersPanelVisible(isRecentlySeenMarkersPanelVisible: Boolean) {
-    putBoolean(kIsRecentlySeenMarkersPanelVisibleSetting, isRecentlySeenMarkersPanelVisible)
+    putBoolean(kSettingIsRecentlySeenMarkersPanelVisible, isRecentlySeenMarkersPanelVisible)
 }
 
 fun Settings.isPermissionsGranted(): Boolean {
-    return getBoolean(kIsPermissionsGranted, false)
+    return getBoolean(kSettingIsPermissionsGranted, false)
 }
 fun Settings.setIsPermissionsGranted(isPermissionsGranted: Boolean) {
-    putBoolean(kIsPermissionsGranted, isPermissionsGranted)
+    putBoolean(kSettingIsPermissionsGranted, isPermissionsGranted)
 }

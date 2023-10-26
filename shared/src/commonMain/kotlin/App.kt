@@ -44,6 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,10 +60,10 @@ import com.russhwolf.settings.Settings
 import presentation.uiComponents.AppTheme
 import presentation.uiComponents.PreviewPlaceholder
 import data.LoadingState
-import data.cachedMarkersLastUpdatedLocation
-import data.clearCachedMarkersLastUpdateEpochSeconds
-import data.clearCachedMarkersLastUpdatedLocation
-import data.clearCachedMarkersResult
+import data.markersLastUpdatedLocation
+import data.clearMarkersLastUpdateEpochSeconds
+import data.clearMarkersLastUpdatedLocation
+import data.clearMarkersResult
 import data.isMarkersLastUpdatedLocationVisible
 import data.isRecentlySeenMarkersPanelVisible
 import data.lastKnownUserLocation
@@ -72,12 +73,11 @@ import data.loadMarkers.distanceBetween
 import data.loadMarkers.loadMarkers
 import data.loadMarkers.sampleData.kUseRealNetwork
 import data.printAppSettings
-import data.setCachedMarkersResult
+import data.setMarkersResult
 import data.setIsRecentlySeenMarkersPanelVisible
 import data.setLastKnownUserLocation
-import data.shouldAutomaticallyStartTrackingWhenAppLaunches
+import data.isAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn
 import data.talkRadiusMiles
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
@@ -143,7 +143,7 @@ fun App() {
 
         // Recently Seen Markers
         val recentlySeenMarkersSet by remember {
-            mutableStateOf(mutableSetOf<RecentMapMarker>())
+            mutableStateOf(mutableSetOf<RecentMapMarker>()) // todo add to settings
         }
         val recentlySeenMarkersForUiList by remember {
             mutableStateOf(recentlySeenMarkersSet.toMutableStateList())
@@ -152,12 +152,12 @@ fun App() {
             mutableStateOf(settings.isRecentlySeenMarkersPanelVisible())
         }
 
-        // Error Message
+        // Error Message state & value
         var isShowingError by remember { mutableStateOf<String?>(null) }
 
-        // Last markers update location
+        // Last "markers updated" location
         var cachedMarkersLastUpdatedLocation by remember {
-            mutableStateOf(settings.cachedMarkersLastUpdatedLocation())
+            mutableStateOf(settings.markersLastUpdatedLocation())
         }
 
         // Load markers
@@ -166,8 +166,9 @@ fun App() {
             userLocation = userLocation, // when user location changes, triggers potential load markers from server
             maxReloadDistanceMiles = kMaxReloadDistanceMiles.toInt(),
             showLoadingState = false,
-            onSetCachedMarkersLastUpdatedLocation = { location ->
-                cachedMarkersLastUpdatedLocation = location //settings.cachedMarkersLastUpdatedLocation()
+            onSetMarkersLastUpdatedLocation = { location ->
+                // Update the UI with the latest location
+                cachedMarkersLastUpdatedLocation = location
             },
             useFakeDataSetId = kUseRealNetwork,
             //    kSunnyvaleFakeDataset,
@@ -213,7 +214,7 @@ fun App() {
 
                 // Force a redraw of the map & markers
                 coroutineScope.launch {
-                    yield()
+                    yield() // allow the UI to update // todo test if needed
                     shouldRedrawMapMarkers = true
                 }
 
@@ -266,64 +267,13 @@ fun App() {
                     settings.setLastKnownUserLocation(location)
 
                     // Check for new markers inside talk radius & add to recentlySeen list
-                    mapMarkers.map { marker ->
-                        // if marker is within talk radius, add to recently seen list
-                        val markerLat = marker.position.latitude
-                        val markerLong = marker.position.longitude
-                        val distanceFromMarkerToUserLocationMiles = distanceBetween(
-                            userLocation.latitude,
-                            userLocation.longitude,
-                            markerLat,
-                            markerLong
-                        )
-
-                        fun MutableSet<RecentMapMarker>.containsMarker(marker: MapMarker): Boolean {
-                            return recentlySeenMarkersSet.any {
-                                it.key() == marker.id
-                            }
-                        }
-
-                        // add marker to recently seen set?
-                        if (distanceFromMarkerToUserLocationMiles < talkRadiusMiles * 1.75) {
-                            // Not already in the `seen` set?
-                            if (!recentlySeenMarkersSet.containsMarker(marker)) {
-                                // Add to the `seen` set
-                                val newlySeenMarker = RecentMapMarker(
-                                    marker,
-                                    Clock.System.now().toEpochMilliseconds(),
-                                    recentlySeenMarkersSet.size + 1
-                                )
-                                recentlySeenMarkersSet.add(newlySeenMarker)
-                                recentlySeenMarkersForUiList.add(newlySeenMarker)
-                                Log.d("Added Marker ${marker.id} is within talk radius of $talkRadiusMiles miles, distance=$distanceFromMarkerToUserLocationMiles miles, total recentlySeenMarkers=${recentlySeenMarkersSet.size}")
-
-                                // Trim the UI list to 5 items
-                                if (recentlySeenMarkersForUiList.size > 5) {
-                                    Log.d("Trimming recentlySeenMarkersForUiList.size=${recentlySeenMarkersForUiList.size}")
-                                    // remove old markers until there are only 5
-                                    do {
-                                        val oldestMarker =
-                                            recentlySeenMarkersForUiList.minByOrNull { recentMarker ->
-                                                recentMarker.timeAddedToRecentList
-                                            }
-
-                                        // remove the oldest marker
-                                        oldestMarker?.let { oldMarker ->
-                                            recentlySeenMarkersForUiList.remove(oldMarker)
-                                        }
-                                        Log.d("Removed oldest marker, recentlySeenMarkersList.size=${recentlySeenMarkersForUiList.size}")
-                                    } while (recentlySeenMarkersForUiList.size > 5)
-                                }
-                            }
-                        }
-                    }
-
-                    // Update the UI list of recently seen markers
-                    val oldList = recentlySeenMarkersForUiList.toList()
-                    recentlySeenMarkersForUiList.clear()
-                    recentlySeenMarkersForUiList.addAll(oldList.sortedByDescending { recentMarker ->
-                        recentMarker.timeAddedToRecentList
-                    }.toMutableStateList())
+                    addMarkersToRecentlySeenList(
+                        mapMarkers,
+                        userLocation,
+                        talkRadiusMiles,
+                        recentlySeenMarkersSet,
+                        recentlySeenMarkersForUiList
+                    )
                 }
 
             if (false) {
@@ -348,7 +298,7 @@ fun App() {
 
         // Turn on tracking automatically, depending on settings
         LaunchedEffect(Unit) {
-            val shouldStart = settings.shouldAutomaticallyStartTrackingWhenAppLaunches()
+            val shouldStart = settings.isAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn()
             if (shouldStart) {
                 startTracking()
             }
@@ -373,18 +323,18 @@ fun App() {
                             onIsCachedMarkersLastUpdatedLocationVisibleChange = {
                                 isMarkersLastUpdatedLocationVisible = it
                             },
-                            onResetMarkerSettingsCache = {
-                                // Reset Marker Info Cache & reset the `seen markers` list
-                                recentlySeenMarkersSet.clear()
-                                recentlySeenMarkersForUiList.clear()
-                                mapMarkers.clear()
-                                cachedMapMarkers.clear()
-
+                            onResetMarkerSettings = {
                                 coroutineScope.launch {
-                                    // clear the cache of markers
-                                    settings.clearCachedMarkersResult()
-                                    settings.clearCachedMarkersLastUpdatedLocation()
-                                    settings.clearCachedMarkersLastUpdateEpochSeconds()
+                                    // Reset the `seen markers` list, UI elements
+                                    recentlySeenMarkersSet.clear()
+                                    recentlySeenMarkersForUiList.clear()
+                                    mapMarkers.clear()
+                                    cachedMapMarkers.clear()
+
+                                    // Reset the settings cache of markers
+                                    settings.clearMarkersResult()
+                                    settings.clearMarkersLastUpdatedLocation()
+                                    settings.clearMarkersLastUpdateEpochSeconds()
 
                                     // force a change in location to trigger a reload of the markers
                                     userLocation = Location(
@@ -434,7 +384,7 @@ fun App() {
                                 )
 
                                 // Update the settings with the updated marker data
-                                settings.setCachedMarkersResult(fetchedMarkersResult)
+                                settings.setMarkersResult(fetchedMarkersResult)
                                 // todo Update the recently seen markers list
                             }
                         }
@@ -768,6 +718,74 @@ fun App() {
             }
         }
     }
+}
+
+// Check for new markers inside talk radius & add to recentlySeen list
+private fun addMarkersToRecentlySeenList(
+    mapMarkers: SnapshotStateList<MapMarker>,
+    userLocation: Location,
+    talkRadiusMiles: Double,
+    recentlySeenMarkersSet: MutableSet<RecentMapMarker>,
+    recentlySeenMarkersForUiList: SnapshotStateList<RecentMapMarker>
+) {
+    mapMarkers.map { marker ->
+        // if marker is within talk radius, add to recently seen list
+        val markerLat = marker.position.latitude
+        val markerLong = marker.position.longitude
+        val distanceFromMarkerToUserLocationMiles = distanceBetween(
+            userLocation.latitude,
+            userLocation.longitude,
+            markerLat,
+            markerLong
+        )
+
+        fun MutableSet<RecentMapMarker>.containsMarker(marker: MapMarker): Boolean {
+            return recentlySeenMarkersSet.any {
+                it.key() == marker.id
+            }
+        }
+
+        // add marker to recently seen set?
+        if (distanceFromMarkerToUserLocationMiles < talkRadiusMiles * 1.75) {
+            // Not already in the `seen` set?
+            if (!recentlySeenMarkersSet.containsMarker(marker)) {
+                // Add to the `seen` set
+                val newlySeenMarker = RecentMapMarker(
+                    marker,
+                    Clock.System.now().toEpochMilliseconds(),
+                    recentlySeenMarkersSet.size + 1
+                )
+                recentlySeenMarkersSet.add(newlySeenMarker)
+                recentlySeenMarkersForUiList.add(newlySeenMarker)
+                Log.d("Added Marker ${marker.id} is within talk radius of $talkRadiusMiles miles, distance=$distanceFromMarkerToUserLocationMiles miles, total recentlySeenMarkers=${recentlySeenMarkersSet.size}")
+
+                // Trim the UI list to 5 items
+                if (recentlySeenMarkersForUiList.size > 5) {
+                    Log.d("Trimming recentlySeenMarkersForUiList.size=${recentlySeenMarkersForUiList.size}")
+                    // remove old markers until there are only 5
+                    do {
+                        val oldestMarker =
+                            recentlySeenMarkersForUiList.minByOrNull { recentMarker ->
+                                recentMarker.timeAddedToRecentList
+                            }
+
+                        // remove the oldest marker
+                        oldestMarker?.let { oldMarker ->
+                            recentlySeenMarkersForUiList.remove(oldMarker)
+                        }
+                        Log.d("Removed oldest marker, recentlySeenMarkersList.size=${recentlySeenMarkersForUiList.size}")
+                    } while (recentlySeenMarkersForUiList.size > 5)
+                }
+            }
+        }
+    }
+
+    // Update the UI list of recently seen markers
+    val oldList = recentlySeenMarkersForUiList.toList()
+    recentlySeenMarkersForUiList.clear()
+    recentlySeenMarkersForUiList.addAll(oldList.sortedByDescending { recentMarker ->
+        recentMarker.timeAddedToRecentList
+    }.toMutableStateList())
 }
 
 @Composable
