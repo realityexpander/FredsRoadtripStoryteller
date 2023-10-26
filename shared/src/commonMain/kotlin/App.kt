@@ -151,7 +151,7 @@ fun App() {
             mutableStateOf(settings.isRecentlySeenMarkersPanelVisible())
         }
 
-        // Error Messsage
+        // Error Message
         var isShowingError by remember { mutableStateOf<String?>(null) }
 
         // Last markers update location
@@ -496,26 +496,29 @@ fun App() {
                         ),
 
                 ) {
-                    fetchedMarkersResult.markerIdToMapMarker.entries.forEach { marker ->
-                        Text(
-                            text = marker.key + " - " + marker.value.title,
-                            softWrap = false,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier
-                                .clickable {
-                                    coroutineScope.launch {
-                                        bottomSheetScaffoldState.drawerState.close()
-                                        bottomSheetActiveScreen =
-                                            BottomSheetScreen.MarkerDetailsScreen(marker.value)
-                                        bottomSheetScaffoldState.bottomSheetState.expand()
+                    fetchedMarkersResult.markerIdToMapMarker
+                        .entries
+                        .reversed()
+                        .forEach { marker ->
+                            Text(
+                                text = marker.key + " - " + marker.value.title,
+                                softWrap = false,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier
+                                    .clickable {
+                                        coroutineScope.launch {
+                                            bottomSheetScaffoldState.drawerState.close()
+                                            bottomSheetActiveScreen =
+                                                BottomSheetScreen.MarkerDetailsScreen(marker.value)
+                                            bottomSheetScaffoldState.bottomSheetState.expand()
+                                        }
                                     }
-                                }
-                                .padding(8.dp),
-                            fontStyle = FontStyle.Normal,
-                            fontSize = MaterialTheme.typography.body1.fontSize,
-                        )
-                    }
+                                    .padding(8.dp),
+                                fontStyle = FontStyle.Normal,
+                                fontSize = MaterialTheme.typography.body1.fontSize,
+                            )
+                        }
                 }
             }
         ) {
