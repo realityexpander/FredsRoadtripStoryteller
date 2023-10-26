@@ -110,7 +110,6 @@ sealed class BottomSheetScreen {
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun App() {
-
     AppTheme {
         val coroutineScope = rememberCoroutineScope()
 
@@ -137,11 +136,9 @@ fun App() {
         var isTrackingEnabled by remember { mutableStateOf(false) }
         var centerOnUserCameraLocation by remember { mutableStateOf<Location?>(null) } // used to center map on user
 
-        // GPS Location
+        // GPS Location Service
         val gpsLocationService by remember { mutableStateOf(GPSLocationService()) }
-        var userLocation: Location by remember {
-            mutableStateOf(settings.lastKnownUserLocation())
-        }
+        var userLocation: Location by remember { mutableStateOf(settings.lastKnownUserLocation()) }
 
         // Recently Seen Markers
         val recentlySeenMarkersSet by remember {
@@ -154,7 +151,7 @@ fun App() {
             mutableStateOf(settings.isRecentlySeenMarkersPanelVisible())
         }
 
-        // Error state
+        // Error Messsage
         var isShowingError by remember { mutableStateOf<String?>(null) }
 
         // Last markers update location
@@ -177,7 +174,8 @@ fun App() {
             //    kSingleItemPageFakeDataset
         )
 
-        val cachedMapMarkers = remember { mutableStateListOf<MapMarker>() } // prevents flicker when loading new markers
+        // Holds the set of saved markers, this prevents flicker when loading new markers
+        val cachedMapMarkers = remember { mutableStateListOf<MapMarker>() }
         var shouldRedrawMapMarkers by remember { mutableStateOf(true) }
 
         // Update the markers AFTER the page has finished parsing
@@ -316,7 +314,7 @@ fun App() {
                         }
                     }
 
-                    // Update the UI list
+                    // Update the UI list of recently seen markers
                     val oldList = recentlySeenMarkersForUiList.toList()
                     recentlySeenMarkersForUiList.clear()
                     recentlySeenMarkersForUiList.addAll(oldList.sortedByDescending { recentMarker ->
@@ -724,18 +722,7 @@ fun App() {
 
                             items(recentlySeenMarkersForUiList.size) {
                                 val recentMarker = recentlySeenMarkersForUiList.elementAt(it)
-//                                    val marker = RecentMapMarker(
-//                                        maps.MapMarker(
-//                                            key = "marker1",
-//                                            position = maps.LatLong(
-//                                                37.422160,
-//                                                -122.084270
-//                                            ),
-//                                            title = "Googleplex",
-//                                            alpha = 1.0f
-//                                        ),
-//                                        Clock.System.now().toEpochMilliseconds()
-//                                    )
+
                                 Text(
                                     text = recentMarker.seenOrder.toString() + ":" + recentMarker.key() + ":" + recentMarker.marker.title,
                                     color = MaterialTheme.colors.onPrimary,
@@ -744,12 +731,7 @@ fun App() {
                                     fontWeight = FontWeight.Medium,
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(
-                                            start = 8.dp,
-                                            top = 0.dp,
-                                            bottom = 8.dp,
-                                            end = 8.dp
-                                        )
+                                        .padding(start = 8.dp, top = 0.dp, bottom = 8.dp, end = 8.dp)
                                         .background(
                                             color = MaterialTheme.colors.primary.copy(
                                                 alpha = 0.75f

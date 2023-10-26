@@ -68,11 +68,11 @@ data class MarkersResult(
 // 4 - Parse the HTML
 //   4.1 - Parse the raw page HTML into a list of `MapMarker` objects & metadata about the scraped data
 //   4.2 - Load more pages, if needed (goto step 2)
-// 5 - Save the MarkerInfo objects to cache & settings (if they were updated from the network)
+// 5 - Save the MapMarker objects to cache & settings (if they were updated from the network)
 // 6 - PROCESS COMPLETE
 //
 // Note: yes! this code is goofy looking & hops around a lot... this is because to I'm avoid using
-//       a viewModel as this works as a pure composable function. There is no ping-pong between files. Its all here.
+//       a ViewModel as this works as a pure composable function. There is no ping-pong between files. Its all here.
 //       I'm Experimenting with a pure compose architecture with no android idiom remnants.
 @Composable
 fun loadMarkers(
@@ -100,10 +100,10 @@ fun loadMarkers(
         mutableStateOf(settings.cachedMarkersResult()) // Load the cached result from persistent storage (Settings) as the initial state
     }
 
+    // Overall state of the load & parse
     var markersLoadingState: LoadingState<String> by remember { mutableStateOf(LoadingState.Idle) }
     var curHtmlPageNum by remember { mutableStateOf(0) }
     var cachedMarkersResultState by remember(userLocation) {
-
         // Guard - If currently loading/parsing markers, return the current parseResultState upon location change
         if(!markersResultState.isParseMarkersPageFinished) return@remember mutableStateOf(markersResultState)
         if(markersLoadingState !is LoadingState.Idle) return@remember mutableStateOf(markersResultState)
