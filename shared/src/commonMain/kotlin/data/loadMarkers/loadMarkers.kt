@@ -128,8 +128,6 @@ fun loadMarkers(
 
             // Step 1.1 - Check if the cache is expired // todo replace this with a per-marker expiry
             if(settings.hasKey(kcachedMarkersLastUpdateEpochSecondsSetting)) {
-//                val cacheLastUpdatedEpochSeconds =
-//                    settings.getLong(kcachedMarkersLastUpdateEpochSecondsSetting, 0)
                 val cacheLastUpdatedEpochSeconds = settings.cachedMarkersLastUpdateEpochSeconds()
                 // Log.d("Days since last cache update: $(Clock.System.now().epochSeconds - cacheLastUpdatedEpochSeconds) / (60 * 60 * 24)")
 
