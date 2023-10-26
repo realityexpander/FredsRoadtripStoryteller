@@ -51,7 +51,7 @@ fun AppDrawerContent(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            "Fred's Talking Markers",
+            "Mystery Marker Madness",
             fontSize = MaterialTheme.typography.h5.fontSize,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
