@@ -168,7 +168,7 @@ fun MarkerDetailsScreen(
                         filterQuality = FilterQuality.Medium,
                     )
 
-                // Title
+                // Title & Close Button
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -360,6 +360,15 @@ fun MarkerDetailsScreen(
                         }
                     }
 
+                    // Attributions for photo
+                    if (marker.data.photoAttributions[0].isNotBlank()) {
+                        Text(
+                            "Photo Credit: " + marker.data.photoAttributions[0],
+                            fontSize = MaterialTheme.typography.overline.fontSize,
+                            textAlign = TextAlign.End,
+                        )
+                    }
+
                     // Show loading error (if any)
                     SnackbarHost(
                         hostState = snackbarHostState,
@@ -399,7 +408,7 @@ fun MarkerDetailsScreen(
                     Text(
                         "ID: ${marker.data.id}",
                         fontSize = MaterialTheme.typography.body1.fontSize,
-                        fontWeight = FontWeight.Normal,
+                        fontWeight = FontWeight.Bold,
                     )
 
                     // Inscription
@@ -428,6 +437,24 @@ fun MarkerDetailsScreen(
                                 ),
                                 contentDescription = null
                             )
+                            // Caption for photo
+                            if (marker.data.photoCaptions[index].isNotBlank()) {
+                                Text(
+                                    marker.data.photoCaptions[index],
+                                    fontSize = MaterialTheme.typography.caption.fontSize,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                            // Attributions for photo
+                            if (marker.data.photoAttributions[index].isNotBlank()) {
+                                Text(
+                                    "Photo Credit: " + marker.data.photoAttributions[index],
+                                    fontSize = MaterialTheme.typography.overline.fontSize,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
                             Spacer(modifier = Modifier.padding(8.dp))
                         }
                     }
