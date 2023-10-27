@@ -470,10 +470,10 @@ actual fun GoogleMaps(
                                 PreviewPlaceholder("Location marker.png")
                             } else {
                                 Image(
-                                    painter = painterResource("locationMarker.png"),
+                                    painter = painterResource("marker_red.png"),
                                     contentDescription = "location marker",
-                                    modifier = Modifier.fillMaxWidth(),
-                                    contentScale = ContentScale.FillWidth,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Fit,
                                     // colorFilter = ColorFilter.tint(Color.Green, BlendMode.SrcAtop) // changes color and blows away alpha
                                 )
                             }

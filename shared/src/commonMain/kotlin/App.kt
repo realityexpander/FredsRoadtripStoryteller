@@ -3,7 +3,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,10 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomSheetScaffold
 import androidx.compose.material.ExperimentalMaterialApi
@@ -87,6 +83,7 @@ import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import presentation.app.AppDrawerContent
 import presentation.SettingsScreen
+import presentation.app.RecentlySeenMarkers
 import kotlin.random.Random
 import co.touchlab.kermit.Logger as Log
 
@@ -337,10 +334,10 @@ fun App() {
                         )
                     }
                     is BottomSheetScreen.MarkerDetailsScreen -> {
-                        // Extract marker using the id parameter
+                        // Find the marker to show
                         val localMarker = (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker
-                        val markerIdFromMarker = (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker?.id
-                        val markerIdFromId = (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).id
+                        val markerIdFromMarker = localMarker?.id
+                        val markerIdFromId = localMarker?.id
                         // Guard
                         if(markerIdFromId == null && markerIdFromMarker == null) {
                             throw IllegalStateException("Error: Both markerIdFromId and markerIdFromMarker are null, need to have at least one")
@@ -349,11 +346,11 @@ fun App() {
                         val marker =  remember(markerIdFromMarker, markerIdFromId) {
                             val markerId: MarkerIdStr =
                                 markerIdFromId
-                                    ?: markerIdFromMarker
-                                    ?: run {
-                                        isShowingError = "Error: Unable to find marker id=$markerIdFromMarker"
-                                        return@remember (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker
-                                    }
+                                ?: markerIdFromMarker
+                                ?: run {
+                                    isShowingError = "Error: Unable to find marker id=$markerIdFromMarker"
+                                    return@remember localMarker
+                                }
 
                             fetchedMarkersResult.markerIdToMapMarker[markerId] ?: run {
                                 isShowingError = "Error: Unable to find marker with id=$markerId"
@@ -362,7 +359,7 @@ fun App() {
                                 return@remember localMarker
                             }
                         }
-                        fetchMarkerDetailsResult = loadMapMarkerDetails(marker!!)
+                        fetchMarkerDetailsResult = loadMapMarkerDetails(marker)
 
                         // Update the MapMarker with Marker Details after it's loaded
                         LaunchedEffect(fetchMarkerDetailsResult) {
@@ -561,97 +558,19 @@ fun App() {
                     }
 
                     // Recently Seen Markers
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(MaterialTheme.colors.surface)
-                        ,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        LazyColumn(
-                            userScrollEnabled = true,
-                            modifier = Modifier
-                                .background(MaterialTheme.colors.surface)
-                        ) {
-                            // Header
-                            item {
-                                Text(
-                                    text = "RECENTLY SEEN MARKERS",
-                                    color = MaterialTheme.colors.onSurface,
-                                    fontStyle = FontStyle.Normal,
-                                    fontSize = MaterialTheme.typography.subtitle2.fontSize,
-                                    fontWeight = FontWeight.Medium,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(start = 8.dp, bottom = 8.dp)
-                                )
-                            }
-
-                            // Show "empty" placeholder if no markers
-                            if (recentlySeenMarkersForUiList.isEmpty()) {
-                                item {
-                                    Spacer(modifier = Modifier.height(48.dp))
-
-                                    Text(
-                                        text = "No recently seen markers, drive around to see some!",
-                                        color = MaterialTheme.colors.onBackground,
-                                        fontStyle = FontStyle.Normal,
-                                        fontSize = MaterialTheme.typography.h6.fontSize,
-                                        fontWeight = FontWeight.Medium,
-                                        textAlign = TextAlign.Center,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(start = 8.dp)
-                                    )
-                                }
-                            }
-
-                            items(recentlySeenMarkersForUiList.size) {
-                                val recentMarker = recentlySeenMarkersForUiList.elementAt(it)
-
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(8.dp, 0.dp, 8.dp, 8.dp,)
-                                        .background(
-                                            color = MaterialTheme.colors.primary.copy(alpha = 0.75f),
-                                            shape = RoundedCornerShape(8.dp)
-                                        )
-                                        .heightIn(min = 48.dp)
-                                        .padding(8.dp, 0.dp, 8.dp, 4.dp)
-                                        .clickable {
-                                        // Show marker details
-                                        bottomSheetActiveScreen =
-                                            BottomSheetScreen.MarkerDetailsScreen(
-                                                recentMarker.marker
-                                            )
-                                        coroutineScope.launch {
-                                            bottomSheetScaffoldState.bottomSheetState.apply {
-                                                if (isCollapsed) expand()
-                                            }
-                                        }
-                                    }
-                                ) {
-                                    Text(
-                                        text = recentMarker.marker.title,
-                                        color = MaterialTheme.colors.onPrimary,
-                                        fontStyle = FontStyle.Normal,
-                                        fontSize = MaterialTheme.typography.h6.fontSize,
-                                        fontWeight = FontWeight.Medium,
-                                    )
-                                    Text(
-                                        text = "◉ " + recentMarker.key(),
-                                        color = MaterialTheme.colors.onPrimary,
-                                        fontStyle = FontStyle.Normal,
-                                        fontSize = MaterialTheme.typography.body1.fontSize,
-                                        fontWeight = FontWeight.Medium,
-                                    )
-
+                    RecentlySeenMarkers(
+                        recentlySeenMarkersForUiList,
+                        onClickRecentlySeenMarkerItem = { marker ->
+                            // Show marker details
+                            coroutineScope.launch {
+                                bottomSheetActiveScreen =
+                                    BottomSheetScreen.MarkerDetailsScreen(marker)
+                                bottomSheetScaffoldState.bottomSheetState.apply {
+                                    if (isCollapsed) expand()
                                 }
                             }
                         }
-                    }
+                    )
                 }
             }
         }

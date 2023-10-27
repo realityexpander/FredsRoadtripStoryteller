@@ -86,6 +86,16 @@ https://github.com/JetBrains/compose-multiplatform/tree/master/examples/cocoapod
 - Kotlin Swift - Jetpack Compose iOS, ComposeUIViewController, UIViewControllerRepresentable, UIKitView...
   - https://appkickstarter.com/blog/kotlin-swift
 
+### Asset links
+
+- Photoshop editor: https://www.photopea.com/
+
+- Location Markers
+- https://pngtree.com/so/location-marker
+- https://www.vecteezy.com/png/22187039-map-location-pin-icon
+- https://www.google.com/imgres?imgurl=https%3A%2F%2Fpng.pngtree.com%2Fpng-vector%2F20210214%2Fourmid%2Fpngtree-location-marker-png-image_2921053.jpg&tbnid=0jAIDviURQ9mpM&vet=12ahUKEwiMqrbUkZWCAxWFz8kDHe1nDRoQMygGegQIARBU..i&imgrefurl=https%3A%2F%2Fpngtree.com%2Fso%2Flocation-marker&docid=MUeqs9oCST4JyM&w=360&h=360&q=location%20marker%20map%20%2Bfree&ved=2ahUKEwiMqrbUkZWCAxWFz8kDHe1nDRoQMygGegQIARBU
+- https://www.google.com/search?q=location+marker+map+%2Bfree&tbm=isch&ved=2ahUKEwj8wsnbkJWCAxUhFN4AHVAFAicQ2-cCegQIABAA&oq=location+marker+map+%2Bfree&gs_lcp=CgNpbWcQAzoECCMQJzoGCAAQCBAeOgQIABAeUNcEWNoUYLoXaABwAHgAgAG9AYgB9wWSAQM0LjOYAQCgAQGqAQtnd3Mtd2l6LWltZ8ABAQ&sclient=img&ei=mhk7ZfyNMaGo-LYP0IqIuAI&bih=1050&biw=1698
+- 
 
 # Original Readme:
 
