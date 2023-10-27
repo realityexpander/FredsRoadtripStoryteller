@@ -1,13 +1,17 @@
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
@@ -30,6 +34,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -52,18 +58,21 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberTileOverlayState
 import com.google.maps.android.heatmaps.HeatmapTileProvider
 import com.google.maps.android.heatmaps.WeightedLatLng
-import presentation.uiComponents.SwitchWithLabel
-import kotlinx.coroutines.launch
 import data.loadMarkers.milesToMeters
+import kotlinx.coroutines.launch
 import maps.CameraLocationBounds
 import maps.CameraPosition
 import maps.LatLong
 import maps.MapMarker
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.painterResource
+import presentation.uiComponents.PreviewPlaceholder
+import presentation.uiComponents.SwitchWithLabel
 import co.touchlab.kermit.Logger as Log
 
 // Android Google Maps implementation
 @NoLiveLiterals
-@OptIn(MapsComposeExperimentalApi::class)
+@OptIn(MapsComposeExperimentalApi::class, ExperimentalResourceApi::class)
 @Composable
 actual fun GoogleMaps(
     modifier: Modifier,
@@ -218,7 +227,6 @@ actual fun GoogleMaps(
 
         GoogleMap(
             cameraPositionState = cameraPositionState,
-//            modifier = Modifier.background(Color.Black, RectangleShape),
             modifier = Modifier.background(MaterialTheme.colors.background, RectangleShape),
             uiSettings = uiSettings,
             properties = properties,
@@ -398,7 +406,7 @@ actual fun GoogleMaps(
                         val result = markers?.map { marker ->
                             object : ClusterItem {
                                 override fun getTitle(): String = marker.title
-                                override fun getSnippet(): String = marker.subtitle
+                                override fun getSnippet(): String = marker.id
                                 override fun getPosition(): LatLng =
                                     LatLng(marker.position.latitude, marker.position.longitude)
 
@@ -416,26 +424,23 @@ actual fun GoogleMaps(
                     Log.d { "cluster clicked" }
                     true
                 },
-                onClusterItemClick = { clusterItem ->
+                onClusterItemInfoWindowClick = { clusterItem ->
                     Log.d { "cluster item clicked" }
                     coroutineScope.launch {
                         val selectedMarker = MapMarker(
-                            id = clusterItem.position.toString(),
+                            id = clusterItem.snippet.toString(),
                             position = LatLong(
                                 clusterItem.position.latitude,
                                 clusterItem.position.longitude
                             ),
                             title = clusterItem.title ?: "",
                             alpha = 1.0f,
-                            location = ""
                         )
                         onMarkerClick?.let { nativeFun ->
                             nativeFun(selectedMarker)
                         }
-
-                        println("selectedMarker = ${selectedMarker.title}")
                     }
-                    false
+//                    false
                 },
 //                clusterContent = { cluster ->
 //                    Log.d { "clusterContent" }
@@ -447,21 +452,40 @@ actual fun GoogleMaps(
 //                        title = cluster.items.size.toString()
 //                    )
 //                },
-//                clusterItemContent = { clusterItem ->
-//                    Box(
-//                        modifier = Modifier
-//                            .requiredHeight(50.dp)
-//                            .requiredWidth(50.dp)
-//                            .background(
-//                                Color.Blue.copy(alpha = 0.5f)
-//                            )
-//                    ) {
-//                        Text(
-//                            text = clusterItem.title ?: "",
-//                            color = Color.White
-//                        )
-//                    }
-//                }
+                clusterItemContent = { clusterItem ->
+                    Box(
+                        modifier = Modifier
+                            .requiredHeight(50.dp)
+                            .requiredWidth(50.dp)
+                            //.background(
+                            //   Color.Blue.copy(alpha = 0.5f)
+                            //)
+                    ) {
+                        //Text(
+                        //    text = clusterItem.title ?: "",
+                        //    color = Color.White
+                        //)
+
+                            if(LocalInspectionMode.current) {
+                                PreviewPlaceholder("Location marker.png")
+                            } else {
+                                Image(
+                                    painter = painterResource("locationMarker.png"),
+                                    contentDescription = "location marker",
+                                    modifier = Modifier.fillMaxWidth(),
+                                    contentScale = ContentScale.FillWidth,
+                                    // colorFilter = ColorFilter.tint(Color.Green, BlendMode.SrcAtop) // changes color and blows away alpha
+                                )
+                            }
+
+                        //    Icon(
+                        ////                            imageVector = Icons.Filled.Airplay,
+                        //        imageVector = Icons.Filled.LocationCity,
+                        //        contentDescription = "Play",
+                        //        tint = Color.White
+                        //    )
+                    }
+                }
             )
 
 

@@ -102,7 +102,9 @@ const val kMaxMarkerCacheAgeSeconds = 60 * 60 * 24 * 30  // 30 days
 
 sealed class BottomSheetScreen {
     data object SettingsScreen : BottomSheetScreen()
-    data class MarkerDetailsScreen(val marker: MapMarker) : BottomSheetScreen()
+
+    // Can pass in a marker or just an id
+    data class MarkerDetailsScreen(val marker: MapMarker? = null, val id: String? = marker?.id) : BottomSheetScreen()
 }
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -336,18 +338,31 @@ fun App() {
                     }
                     is BottomSheetScreen.MarkerDetailsScreen -> {
                         // Extract marker using the id parameter
-                        val marker =  remember((bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker.id) {
+                        val localMarker = (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker
+                        val markerIdFromMarker = (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker?.id
+                        val markerIdFromId = (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).id
+                        // Guard
+                        if(markerIdFromId == null && markerIdFromMarker == null) {
+                            throw IllegalStateException("Error: Both markerIdFromId and markerIdFromMarker are null, need to have at least one")
+                        }
+
+                        val marker =  remember(markerIdFromMarker, markerIdFromId) {
                             val markerId: MarkerIdStr =
-                                (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker.id
+                                markerIdFromId
+                                    ?: markerIdFromMarker
+                                    ?: run {
+                                        isShowingError = "Error: Unable to find marker id=$markerIdFromMarker"
+                                        return@remember (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker
+                                    }
 
                             fetchedMarkersResult.markerIdToMapMarker[markerId] ?: run {
                                 isShowingError = "Error: Unable to find marker with id=$markerId"
 
                                 // Just return the marker that was passed in
-                                return@remember (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker
+                                return@remember localMarker
                             }
                         }
-                        fetchMarkerDetailsResult = loadMapMarkerDetails(marker)
+                        fetchMarkerDetailsResult = loadMapMarkerDetails(marker!!)
 
                         // Update the MapMarker with Marker Details after it's loaded
                         LaunchedEffect(fetchMarkerDetailsResult) {
@@ -527,7 +542,17 @@ fun App() {
                                     centerOnUserCameraLocation = userLocation.copy()
                                 },
                                 isMarkersLastUpdatedLocationVisible = isMarkersLastUpdatedLocationVisible,
-                                isMapOptionSwitchesVisible = !isRecentlySeenMarkersPanelVisible  // hide map options when showing marker list
+                                isMapOptionSwitchesVisible = !isRecentlySeenMarkersPanelVisible,  // hide map options when showing marker list
+                                onMarkerClick = { marker ->
+                                    // Show marker details
+                                    coroutineScope.launch {
+                                        bottomSheetActiveScreen =
+                                            BottomSheetScreen.MarkerDetailsScreen(marker)
+                                        bottomSheetScaffoldState.bottomSheetState.apply {
+                                            if (isCollapsed) expand()
+                                        }
+                                    }
+                                },
                             )
                         if (didMapMarkersUpdate) {
                             shouldRedrawMapMarkers =
@@ -585,37 +610,45 @@ fun App() {
                             items(recentlySeenMarkersForUiList.size) {
                                 val recentMarker = recentlySeenMarkersForUiList.elementAt(it)
 
-                                Text(
-                                    text = recentMarker.seenOrder.toString() + ":" + recentMarker.key() + ":" + recentMarker.marker.title,
-                                    color = MaterialTheme.colors.onPrimary,
-                                    fontStyle = FontStyle.Normal,
-                                    fontSize = MaterialTheme.typography.h6.fontSize,
-                                    fontWeight = FontWeight.Medium,
+                                Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(start = 8.dp, top = 0.dp, bottom = 8.dp, end = 8.dp)
+                                        .padding(8.dp, 0.dp, 8.dp, 8.dp,)
                                         .background(
-                                            color = MaterialTheme.colors.primary.copy(
-                                                alpha = 0.75f
-                                            ),
+                                            color = MaterialTheme.colors.primary.copy(alpha = 0.75f),
                                             shape = RoundedCornerShape(8.dp)
                                         )
                                         .heightIn(min = 48.dp)
-                                        .padding(start=8.dp, end=8.dp, top = 0.dp, bottom = 4.dp)
+                                        .padding(8.dp, 0.dp, 8.dp, 4.dp)
                                         .clickable {
-                                            // Show marker details
-                                            bottomSheetActiveScreen =
-                                                BottomSheetScreen.MarkerDetailsScreen(
-//                                                    marker.marker.id
-                                                    recentMarker.marker
-                                                )
-                                            coroutineScope.launch {
-                                                bottomSheetScaffoldState.bottomSheetState.apply {
-                                                    if (isCollapsed) expand()
-                                                }
+                                        // Show marker details
+                                        bottomSheetActiveScreen =
+                                            BottomSheetScreen.MarkerDetailsScreen(
+                                                recentMarker.marker
+                                            )
+                                        coroutineScope.launch {
+                                            bottomSheetScaffoldState.bottomSheetState.apply {
+                                                if (isCollapsed) expand()
                                             }
                                         }
-                                )
+                                    }
+                                ) {
+                                    Text(
+                                        text = recentMarker.marker.title,
+                                        color = MaterialTheme.colors.onPrimary,
+                                        fontStyle = FontStyle.Normal,
+                                        fontSize = MaterialTheme.typography.h6.fontSize,
+                                        fontWeight = FontWeight.Medium,
+                                    )
+                                    Text(
+                                        text = "◉ " + recentMarker.key(),
+                                        color = MaterialTheme.colors.onPrimary,
+                                        fontStyle = FontStyle.Normal,
+                                        fontSize = MaterialTheme.typography.body1.fontSize,
+                                        fontWeight = FontWeight.Medium,
+                                    )
+
+                                }
                             }
                         }
                     }
@@ -774,7 +807,8 @@ fun MapContent(
     onToggleIsTrackingEnabled: (() -> Unit)? = null,
     onFindMeButtonClicked: (() -> Unit)? = null,
     isMarkersLastUpdatedLocationVisible: Boolean = false,
-    isMapOptionSwitchesVisible: Boolean = true
+    isMapOptionSwitchesVisible: Boolean = true,
+    onMarkerClick: ((MapMarker) -> Unit)? = null
 ): Boolean {
     var didMapMarkersUpdate by remember(shouldRedrawMapMarkers) { mutableStateOf(true) }
     var isFirstUpdate by remember { mutableStateOf(true) } // force map to update at least once
@@ -828,7 +862,8 @@ fun MapContent(
                 onToggleIsTrackingEnabledClick = onToggleIsTrackingEnabled,
                 onFindMeButtonClick = onFindMeButtonClicked,
                 isMarkersLastUpdatedLocationVisible = isMarkersLastUpdatedLocationVisible,
-                isMapOptionSwitchesVisible = isMapOptionSwitchesVisible
+                isMapOptionSwitchesVisible = isMapOptionSwitchesVisible,
+                onMarkerClick = onMarkerClick
             )
 
             isFirstUpdate = false

@@ -64,7 +64,7 @@ import presentation.uiComponents.PreviewPlaceholder
 
 const val kMaxWeightOfBottomDrawer = 0.9f
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalResourceApi::class, ExperimentalKamelApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalKamelApi::class)
 @Composable
 fun MarkerDetailsScreen(
     bottomSheetScaffoldState: BottomSheetScaffoldState,
@@ -394,6 +394,13 @@ fun MarkerDetailsScreen(
 //                    contentScale = ContentScale.FillWidth,
 //                )
 //            }
+
+                    // Marker Id
+                    Text(
+                        "ID: ${marker.data.id}",
+                        fontSize = MaterialTheme.typography.body1.fontSize,
+                        fontWeight = FontWeight.Normal,
+                    )
 
                     // Inscription
                     if (marker.data.englishInscription.isNotBlank()) { // todo add spanish translation

@@ -105,10 +105,9 @@ fun AppDrawerContent(
                     modifier = Modifier
                         .clickable {
                             coroutineScope.launch {
+                                println("Clicked on marker: ${marker.value.id}")
                                 onSetBottomSheetActiveScreen(
-                                    BottomSheetScreen.MarkerDetailsScreen(
-                                        marker.value
-                                    )
+                                    BottomSheetScreen.MarkerDetailsScreen(id = marker.value.id)
                                 )
                                 bottomSheetScaffoldState.drawerState.close()
                                 bottomSheetScaffoldState.bottomSheetState.expand()
