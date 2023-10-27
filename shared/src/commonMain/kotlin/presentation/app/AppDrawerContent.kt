@@ -97,26 +97,40 @@ fun AppDrawerContent(
             .entries
             .reversed()
             .forEach { marker ->
-                Text(
-                    text = marker.key + " - " + marker.value.title,
-                    softWrap = false,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+                Row(
                     modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
                         .clickable {
                             coroutineScope.launch {
                                 println("Clicked on marker: ${marker.value.id}")
                                 onSetBottomSheetActiveScreen(
-                                    BottomSheetScreen.MarkerDetailsScreen(id = marker.value.id)
+                                    BottomSheetScreen.MarkerDetailsScreen(marker.value)
                                 )
                                 bottomSheetScaffoldState.drawerState.close()
                                 bottomSheetScaffoldState.bottomSheetState.expand()
                             }
                         }
-                        .padding(8.dp),
-                    fontStyle = FontStyle.Normal,
-                    fontSize = MaterialTheme.typography.body1.fontSize,
-                )
+                ) {
+                    Text(
+                        text = marker.key,
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .weight(1f),
+                        fontStyle = FontStyle.Normal,
+                        fontSize = MaterialTheme.typography.body1.fontSize,
+                    )
+                    Text(
+                        text = marker.value.title,
+                        modifier = Modifier
+                            .weight(3f),
+                        softWrap = false,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontStyle = FontStyle.Normal,
+                        fontSize = MaterialTheme.typography.body1.fontSize,
+                    )
+                }
             }
     }
 }
