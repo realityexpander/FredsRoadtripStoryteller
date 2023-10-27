@@ -334,8 +334,9 @@ fun MarkerDetailsScreen(
                                                     painter,
                                                     marker.data.title,
                                                     contentScale = ContentScale.Crop,
-                                                    modifier = Modifier.fillMaxHeight()
-                                                        .graphicsLayer {
+                                                    alignment = Alignment.Center,
+                                                    modifier = Modifier.fillMaxSize()
+                                                        .graphicsLayer {  // todo make paid feature
                                                             scaleX = scale
                                                             scaleY = scale
                                                             translationX = offset.x
