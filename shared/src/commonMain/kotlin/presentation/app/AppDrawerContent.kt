@@ -20,13 +20,17 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import data.loadMarkers.MarkersResult
@@ -75,13 +79,37 @@ fun AppDrawerContent(
     Spacer(modifier = Modifier.height(16.dp))
 
     // Show all loaded markers
-    Text(
-        "Loaded Markers",
-        modifier = Modifier.padding(start = 8.dp),
-        fontStyle = FontStyle.Italic,
-        fontSize = MaterialTheme.typography.body2.fontSize,
-        fontWeight = FontWeight.Bold,
-    )
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 8.dp),
+    ) {
+        Text(
+            "Loaded Markers",
+            modifier = Modifier.weight(3f),
+            fontStyle = FontStyle.Italic,
+            fontSize = MaterialTheme.typography.body2.fontSize,
+            fontWeight = FontWeight.Bold,
+        )
+        Text(
+            "ID",
+            modifier = Modifier
+                .padding(start=16.dp, end = 8.dp)
+                .weight(1.3f),
+            fontStyle = FontStyle.Italic,
+            fontSize = MaterialTheme.typography.body2.fontSize,
+            fontWeight = FontWeight.Bold,
+        )
+        Text(
+            "Seen",
+            modifier = Modifier.weight(.8f)
+                .padding(end = 8.dp),
+            fontStyle = FontStyle.Italic,
+            fontSize = MaterialTheme.typography.body2.fontSize,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.End
+        )
+    }
 
     // List all loaded markers
     Column(
@@ -92,7 +120,7 @@ fun AppDrawerContent(
                 enabled = true,
             ),
 
-        ) {
+    ) {
         fetchedMarkersResult.markerIdToMapMarker
             .entries
             .reversed()
@@ -110,26 +138,43 @@ fun AppDrawerContent(
                                 bottomSheetScaffoldState.drawerState.close()
                                 bottomSheetScaffoldState.bottomSheetState.expand()
                             }
-                        }
+                        },
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = marker.key,
-                        modifier = Modifier
-                            .padding(end = 8.dp)
-                            .weight(1f),
-                        fontStyle = FontStyle.Normal,
-                        fontSize = MaterialTheme.typography.body1.fontSize,
-                    )
-                    Text(
                         text = marker.value.title,
-                        modifier = Modifier
-                            .weight(3f),
+                        modifier = Modifier.weight(3f),
                         softWrap = false,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         fontStyle = FontStyle.Normal,
                         fontSize = MaterialTheme.typography.body1.fontSize,
                     )
+                    Text(
+                        text = marker.key,
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .weight(1.2f),
+                        fontStyle = FontStyle.Normal,
+                        fontSize = MaterialTheme.typography.body1.fontSize,
+                    )
+
+                    if(marker.value.isSeen) {
+                        Icon(
+                            imageVector = Icons.Filled.RadioButtonUnchecked,
+                            contentDescription = "Unseen",
+                            modifier = Modifier
+                                .padding(end = 2.dp)
+                                .weight(.4f)
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Seen",
+                            modifier = Modifier
+                                .weight(.4f)
+                        )
+                    }
                 }
             }
     }
