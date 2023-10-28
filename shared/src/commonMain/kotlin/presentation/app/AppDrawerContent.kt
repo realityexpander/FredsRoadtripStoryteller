@@ -108,6 +108,16 @@ fun AppDrawerContent(
         )
     }
 
+    if(fetchedMarkersResult.markerIdToMapMarkerMap.isEmpty()) {
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            "No markers loaded yet, drive around to load some!",
+            modifier = Modifier.padding(start = 8.dp),
+            fontSize = MaterialTheme.typography.h6.fontSize,
+            fontWeight = FontWeight.Normal,
+        )
+    }
+
     // List all loaded markers
     Column(
         modifier = Modifier
