@@ -24,9 +24,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Cloud
-import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.History
@@ -169,7 +167,7 @@ fun App() {
         var shouldClearMarkers by remember { mutableStateOf(false) }
 
         // Load markers
-        var loadingStateIcon: ImageVector? by remember { mutableStateOf(Icons.Default.CloudDownload) }
+        var loadingStateIcon: ImageVector by remember { mutableStateOf(Icons.Default.CloudDownload) }
         var fetchedMarkersResult: MarkersResult =
             loadMarkers(
                 settings,
@@ -194,7 +192,7 @@ fun App() {
                         is LoadingState.Loaded -> {
                             Icons.Default.CloudDownload
                         }
-                        is LoadingState.Idle -> {
+                        is LoadingState.Finished -> {
                             Icons.Default.Cloud
                         }
                         is LoadingState.Error -> {
@@ -635,7 +633,7 @@ fun App() {
     }
 }
 
-private fun updateMapMarkerWithFetchedMarkerDetails(
+private fun updateMapMarkersWithFetchedMarkerDetails(
     fetchedMarkersResult: MarkersResult,
     fetchMarkerDetailsResult: LoadingState<MapMarker>,
     mapMarkers: SnapshotStateList<MapMarker>,
@@ -643,21 +641,22 @@ private fun updateMapMarkerWithFetchedMarkerDetails(
 ): MarkersResult {
     var localFetchedMarkersResult = fetchedMarkersResult
 
+    // Update the marker with the details
     if (fetchMarkerDetailsResult is LoadingState.Loaded) {
-        val updatedMapMarker =
-            (fetchMarkerDetailsResult as LoadingState.Loaded<MapMarker>).data
+        val updatedDetailsMapMarker = fetchMarkerDetailsResult.data
 
-        // Update the marker in the mapMarkers list with the new data
+        // Find the marker in the list
         val index = mapMarkers.indexOfFirst { marker ->
-            marker.id == updatedMapMarker.id
+            marker.id == updatedDetailsMapMarker.id
         }
+        // Update the marker to show that the details have been loaded
         if (index >= 0) {
-            mapMarkers[index] = updatedMapMarker.copy(
-                isDescriptionLoaded = true
+            mapMarkers[index] = updatedDetailsMapMarker.copy(
+                isDetailsLoaded = true
             )
         }
 
-        // Update the markers list with the updated marker data
+        // Update the markers list with the updated marker with the updated details
         localFetchedMarkersResult = localFetchedMarkersResult.copy(
             markerIdToMapMarkerMap = mapMarkers.associateBy { mapMarker ->
                 mapMarker.id
@@ -666,8 +665,6 @@ private fun updateMapMarkerWithFetchedMarkerDetails(
 
         // Update the settings with the updated marker data
         settings.setMarkersResult(localFetchedMarkersResult)
-
-        // todo Update the recently seen markers list
     }
 
     return localFetchedMarkersResult

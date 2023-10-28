@@ -356,7 +356,7 @@ private fun fakeLoadingStateForParseMarkerInfoPageHtml(marker: MapMarker): Loadi
             subtitle = marker.subtitle,
 
             markerDetailPageUrl = marker.markerDetailPageUrl,
-            isDescriptionLoaded = true,
+            isDetailsLoaded = true,
             mainPhotoUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Stonehenge.jpg/640px-Stonehenge.jpg",
             markerPhotos = listOf(
                 "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Stonehenge.jpg/640px-Stonehenge.jpg",

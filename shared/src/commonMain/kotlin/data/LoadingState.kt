@@ -8,5 +8,5 @@ sealed class LoadingState<out TData>  {
     data object Loading : LoadingState<Nothing>()
     class Loaded<out TData>(val data: TData) : LoadingState<TData>()
     class Error(val errorMessage: String) : LoadingState<Nothing>()
-    data object Idle: LoadingState<Nothing>()
+    data object Finished: LoadingState<Nothing>()
 }

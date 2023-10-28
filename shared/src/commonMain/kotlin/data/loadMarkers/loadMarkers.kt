@@ -53,7 +53,7 @@ data class MarkersResult(
     val isParseMarkersPageFinished: Boolean = false,
 
     @Contextual
-    val loadingState: LoadingState<String> = LoadingState.Idle,
+    val loadingState: LoadingState<String> = LoadingState.Finished,
 )
 
 // Loads marker info from the markers page html.
@@ -128,8 +128,8 @@ fun loadMarkers(
         //          return the PREVIOUS result until its finished.
         if(!markersResultState.isParseMarkersPageFinished) return@remember mutableStateOf(markersResultState)
         //        - If parsing is finished and loading is NOT complete (idle), return the current result. (should never happen)
-        if(markersLoadingState !is LoadingState.Idle) {
-            Log.w("in loadMarkers: remember-cachedMarkersResultState: markersLoadingState is NOT Idle, even though isParseMarkersPageFinished==true, returning current result")
+        if(markersLoadingState !is LoadingState.Finished) {
+            Log.w("in loadMarkers: remember-cachedMarkersResultState: markersLoadingState is NOT Finished, even though isParseMarkersPageFinished==true, returning current result")
             return@remember mutableStateOf(markersResultState)
         }
 
@@ -204,7 +204,7 @@ fun loadMarkers(
     var shouldUpdateCache by remember { mutableStateOf(false) }
     var networkLoadingState by remember(markersResultState.isParseMarkersPageFinished, curHtmlPageNum) {
         // Guard
-        if(curHtmlPageNum == 0) return@remember mutableStateOf<LoadingState<String>>(LoadingState.Idle)
+        if(curHtmlPageNum == 0) return@remember mutableStateOf<LoadingState<String>>(LoadingState.Finished)
 
         // Step 2 - Initiate Load a page of raw marker HTML from the network
         if (!markersResultState.isParseMarkersPageFinished) {
@@ -248,15 +248,15 @@ fun loadMarkers(
 
         // 6 PROCESS COMPLETE
         Log.d("Finished loading all pages, total markers:${cachedMarkersResultState.markerIdToMapMarkerMap.size}")
-        markersLoadingState = LoadingState.Idle
+        markersLoadingState = LoadingState.Finished
         curHtmlPageNum = 0
-        mutableStateOf<LoadingState<String>>(LoadingState.Idle)
+        mutableStateOf<LoadingState<String>>(LoadingState.Finished)
     }
 
     // Load the data from the network when `markerHtmlPageUrl` is changed
     LaunchedEffect(markerHtmlPageUrl) {
 
-        // Step 3 (real network) - Perform the load from network
+        // Step 3 - Perform the load from network (or fake data)
         markerHtmlPageUrl?.let { assetUrl ->
             networkLoadingState = LoadingState.Loading // leave for debugging
             markersResultState = markersResultState.copy(
@@ -306,8 +306,8 @@ fun loadMarkers(
                         return@withContext
                     }
 
-                    // Update the marker result state with the new parsed data
-                    // Note: preserves cached results
+                    // Merges the new parsed marker data with the previous marker data.
+                    // Note: preserves previous results of "loadMarkerDetails fetch" and "isSeen status"
                     markersResultState = markersResultState.copy(
                         markerIdToRawMarkerDetailStrings = (
                             markersResultState.markerIdToRawMarkerDetailStrings +
@@ -316,12 +316,60 @@ fun loadMarkers(
                         markerIdToMapMarkerMap = (
                             markersResultState.markerIdToMapMarkerMap +
                                 parsedMarkersResult.markerIdToMapMarkerMap.map { parsedMarker ->
-                                    // preserve the `isSeen` state of the current markers // todo PRESERVE STATE OF ALL OTHER DATA TOO
-                                    parsedMarker.key to parsedMarker.value.copy(
-                                        isSeen = markersResultState.markerIdToMapMarkerMap[parsedMarker.key]?.isSeen // preserve the `isSeen` state of the current markers
-                                            ?: parsedMarkersResult.markerIdToMapMarkerMap[parsedMarker.key]?.isSeen // if no isSeen state, use the parsed state
-                                            ?: false // if no isSeen state, default to false
+                                    val markerBeforeUpdate = markersResultState.markerIdToMapMarkerMap[parsedMarker.key]
+                                    val isDetailsLoaded = markerBeforeUpdate?.isDetailsLoaded ?: false
+                                    var mergedBeforeAndAfterParseMarker = parsedMarker.value
+
+                                    // Preserve the `isDetailsLoaded` state of the current markers (if it exists)
+                                    // - these details are loaded in a separate call (loadMarkerDetails), so we need to preserve them.
+                                    if(isDetailsLoaded) {
+                                        println("Preserving isDetailsLoaded=true state for marker: ${parsedMarker.key}")
+                                        mergedBeforeAndAfterParseMarker = mergedBeforeAndAfterParseMarker.copy(
+                                            isDetailsLoaded = isDetailsLoaded,
+                                            inscription =
+                                                markerBeforeUpdate?.inscription
+                                                ?: parsedMarker.value.inscription,
+                                            spanishInscription =
+                                                markerBeforeUpdate?.spanishInscription
+                                                ?: parsedMarker.value.spanishInscription,
+                                            englishInscription =
+                                                markerBeforeUpdate?.englishInscription
+                                                ?: parsedMarker.value.englishInscription,
+                                            location =
+                                                markerBeforeUpdate?.location
+                                                ?: parsedMarker.value.location,
+                                            mainPhotoUrl =
+                                                markerBeforeUpdate?.mainPhotoUrl
+                                                ?: parsedMarker.value.mainPhotoUrl,
+                                            markerDetailPageUrl =
+                                                markerBeforeUpdate?.markerDetailPageUrl
+                                                ?: parsedMarker.value.markerDetailPageUrl,
+                                            photoAttributions =
+                                                markerBeforeUpdate?.photoAttributions
+                                                ?: parsedMarker.value.photoAttributions,
+                                            markerPhotos =
+                                                markerBeforeUpdate?.markerPhotos
+                                                ?: parsedMarker.value.markerPhotos,
+                                            lastUpdatedEpochSeconds =
+                                                markerBeforeUpdate?.lastUpdatedEpochSeconds
+                                                ?: parsedMarker.value.lastUpdatedEpochSeconds,
+                                        )
+                                    }
+
+                                    // preserve the `isSeen` state of the current markers
+                                    mergedBeforeAndAfterParseMarker = mergedBeforeAndAfterParseMarker.copy(
+                                        isSeen = markerBeforeUpdate?.isSeen ?: parsedMarker.value.isSeen,
                                     )
+
+//                                    // preserve the `isSeen` state of the current markers
+//                                    parsedMarker.key to parsedMarker.value.copy(
+////                                        isSeen = markersResultState.markerIdToMapMarkerMap[parsedMarker.key]?.isSeen // preserve the `isSeen` state of the current markers
+////                                            ?: parsedMarkersResult.markerIdToMapMarkerMap[parsedMarker.key]?.isSeen // if no isSeen state, use the parsed state
+////                                            ?: false, // if no isSeen state, default to false
+//                                        isSeen = markerBeforeUpdate?.isSeen ?: parsedMarker.value.isSeen,
+//                                    )
+
+                                    parsedMarker.key to mergedBeforeAndAfterParseMarker
                                 }
                             ).toMap(),
                     )
@@ -344,7 +392,7 @@ fun loadMarkers(
                         //Log.d("Finished processing all pages, total markers: ${markersResultState.markerInfos.size}")
                         markersResultState = markersResultState.copy(
                             isParseMarkersPageFinished = true,
-                            loadingState = LoadingState.Idle
+                            loadingState = LoadingState.Finished
                         )
 
                         // Save the final parsed results to the internal cachedMarkersResultState.
@@ -352,7 +400,7 @@ fun loadMarkers(
                     }
                 }
 
-                LoadingState.Idle // todo add ".Parsing" state
+                LoadingState.Finished
             } catch (e: Exception) {
                 shouldUpdateCache = false
                 markersResultState = markersResultState.copy(

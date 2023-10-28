@@ -25,7 +25,7 @@ fun loadMapMarkerDetails(mapMarkerToUpdate: MapMarker, useFakeData: Boolean = fa
 
     var loadingState by remember(mapMarkerToUpdate) {
         if(isMarkerIsAlreadyCachedAndNotExpired(mapMarkerToUpdate)) {
-            // Log.d("mapMarker.isDescriptionLoaded is true, returning Loaded(mapMarker)")
+            Log.d("mapMarker.isDescriptionLoaded is true, returning Loaded(mapMarker)")
             LoadingState.Loaded(mapMarkerToUpdate)
         }
 
@@ -42,6 +42,10 @@ fun loadMapMarkerDetails(mapMarkerToUpdate: MapMarker, useFakeData: Boolean = fa
     }
 
     LaunchedEffect(markerDetailsPageUrl) {
+        println("loading loadMapMarkerDetails for markerDetailsPageUrl: $markerDetailsPageUrl\n" +
+                "  mapMarkerToUpdate: ${mapMarkerToUpdate.id}\n" +
+                "  mapMarkerToUpdate.isDetailsLoaded: ${mapMarkerToUpdate.isDetailsLoaded}\n" +
+                "  isMarkerIsAlreadyCachedAndNotExpired(mapMarkerToUpdate): ${isMarkerIsAlreadyCachedAndNotExpired(mapMarkerToUpdate)}")
         if(isMarkerIsAlreadyCachedAndNotExpired(mapMarkerToUpdate)) {
             loadingState = LoadingState.Loaded(mapMarkerToUpdate)
             return@LaunchedEffect
@@ -73,7 +77,7 @@ fun loadMapMarkerDetails(mapMarkerToUpdate: MapMarker, useFakeData: Boolean = fa
                         id = mapMarkerToUpdate.id,
                         title = mapMarkerToUpdate.title,
                         subtitle = mapMarkerToUpdate.subtitle,
-                        isDescriptionLoaded = true,
+                        isDetailsLoaded = true,
                         inscription = parsedMarkerDetails.inscription,
                         englishInscription = parsedMarkerDetails.englishInscription,
                         spanishInscription = parsedMarkerDetails.spanishInscription,
@@ -101,7 +105,7 @@ fun loadMapMarkerDetails(mapMarkerToUpdate: MapMarker, useFakeData: Boolean = fa
 }
 
 private fun isMarkerIsAlreadyCachedAndNotExpired(mapMarkerToUpdate: MapMarker) =
-    mapMarkerToUpdate.isDescriptionLoaded &&
+    mapMarkerToUpdate.isDetailsLoaded &&
         mapMarkerToUpdate.lastUpdatedEpochSeconds + kMaxMarkerCacheAgeSeconds < Clock.System.now().epochSeconds
 
 

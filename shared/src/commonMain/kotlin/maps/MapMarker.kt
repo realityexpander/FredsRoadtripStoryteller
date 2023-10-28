@@ -15,7 +15,7 @@ data class MapMarker(
     val isSeen: Boolean = false, // Has been within the talkRadius of the user
 
     // For MarkerInfoScreen (fetched from markerInfoPageUrl)
-    val isDescriptionLoaded: Boolean = false,
+    val isDetailsLoaded: Boolean = false,
     val mainPhotoUrl: String = "",
     val markerPhotos: List<String> = listOf(),
     val photoCaptions: List<String> = listOf(),
