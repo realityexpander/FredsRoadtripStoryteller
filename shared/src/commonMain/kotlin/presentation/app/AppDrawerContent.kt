@@ -22,8 +22,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -35,7 +33,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import data.loadMarkers.MarkersResult
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -121,7 +118,7 @@ fun AppDrawerContent(
             ),
 
     ) {
-        fetchedMarkersResult.markerIdToMapMarker
+        fetchedMarkersResult.markerIdToMapMarkerMap
             .entries
             .reversed()
             .forEach { marker ->
@@ -161,17 +158,17 @@ fun AppDrawerContent(
 
                     if(marker.value.isSeen) {
                         Icon(
-                            imageVector = Icons.Filled.RadioButtonUnchecked,
-                            contentDescription = "Unseen",
-                            modifier = Modifier
-                                .padding(end = 2.dp)
-                                .weight(.4f)
-                        )
-                    } else {
-                        Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = "Seen",
                             modifier = Modifier
+                                .weight(.4f)
+                        )
+                    }
+                    else {
+                        // "leave blank"
+                        Spacer(
+                            modifier = Modifier
+                                .padding(end = 2.dp)
                                 .weight(.4f)
                         )
                     }

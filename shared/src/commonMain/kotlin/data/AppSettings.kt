@@ -21,22 +21,22 @@ const val kSettingIsPermissionsGranted =                  "kSettingIsPermissions
 
 fun Settings.printAppSettings() {
     // Show current settings
-    Log.d { "All keys from settings: ${keys.joinToString { it + "\n" }}" }
-    Log.d("Settings: markersResult markerIdToMapMarker.size= " +
-            markersResult().markerIdToMapMarker.size.toString())
-    Log.d("Settings: markersLastUpdateEpochSeconds= " +
+    Log.d { "All keys from settings: ${keys.joinToString("") { it + "\n" }}" }
+    Log.d(" Settings: markersResult markerIdToMapMarkerMap.size= " +
+            markersResult().markerIdToMapMarkerMap.size.toString())
+    Log.d(" Settings: markersLastUpdateEpochSeconds= " +
             markersLastUpdateEpochSeconds().toString())
-    Log.d("Settings: markersLastUpdatedLocation= " +
+    Log.d(" Settings: markersLastUpdatedLocation= " +
             markersLastUpdatedLocation().toString())
-    Log.d("Settings: lastKnownUserLocation= " +
+    Log.d(" Settings: lastKnownUserLocation= " +
             lastKnownUserLocation().toString())
-    Log.d("Settings: isAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn= " +
+    Log.d(" Settings: isAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn= " +
             isAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn().toString())
-    Log.d("Settings: talkRadiusMiles= " +
+    Log.d(" Settings: talkRadiusMiles= " +
            talkRadiusMiles().toString())
-    Log.d("Settings: isMarkersLastUpdatedLocationVisible= " +
+    Log.d(" Settings: isMarkersLastUpdatedLocationVisible= " +
             isMarkersLastUpdatedLocationVisible().toString())
-    Log.d("Settings: isRecentlySeenMarkersPanelVisible= " +
+    Log.d(" Settings: isRecentlySeenMarkersPanelVisible= " +
             isRecentlySeenMarkersPanelVisible().toString())
 }
 

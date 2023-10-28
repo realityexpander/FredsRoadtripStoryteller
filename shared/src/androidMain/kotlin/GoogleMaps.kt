@@ -300,7 +300,6 @@ actual fun GoogleMaps(
             userLocation?.let { myLocation ->
                 Circle(
                     center = LatLng(myLocation.latitude, myLocation.longitude),
-//                    radius = kTalkRadiusMiles.milesToMeters(),
                     radius = talkRadiusMiles.milesToMeters(),
                     fillColor = Color.Blue.copy(alpha = 0.4f),
                     strokeColor = Color.White.copy(alpha = 0.8f),
@@ -350,7 +349,7 @@ actual fun GoogleMaps(
                             cachedMarkersLastUpdatedLocation.latitude,
                             cachedMarkersLastUpdatedLocation.longitude
                         ),
-                        radius = kMaxReloadDistanceMiles.milesToMeters() * 2,
+                        radius = kMaxReloadDistanceMiles.milesToMeters(),
                         fillColor = Color.Yellow.copy(alpha = 0.1f),
                         strokeColor = Color.White.copy(alpha = 0.3f),
                         strokeWidth = 2.0f
@@ -440,7 +439,6 @@ actual fun GoogleMaps(
                             nativeFun(selectedMarker)
                         }
                     }
-//                    false
                 },
 //                clusterContent = { cluster ->
 //                    Log.d { "clusterContent" }
@@ -465,12 +463,18 @@ actual fun GoogleMaps(
                         //    text = clusterItem.title ?: "",
                         //    color = Color.White
                         //)
+                        val marker = markers?.find { it.id == clusterItem.snippet }
+                        val painterResourceFilename = if (marker?.isSeen == true) {
+                            "marker_gray.png"
+                        } else {
+                            "marker_red.png"
+                        }
 
                             if(LocalInspectionMode.current) {
-                                PreviewPlaceholder("Location marker.png")
+                                PreviewPlaceholder("Location marker $painterResourceFilename")
                             } else {
                                 Image(
-                                    painter = painterResource("marker_red.png"),
+                                    painter = painterResource(painterResourceFilename),
                                     contentDescription = "location marker",
                                     modifier = Modifier.fillMaxSize(),
                                     contentScale = ContentScale.Fit,
@@ -479,7 +483,6 @@ actual fun GoogleMaps(
                             }
 
                         //    Icon(
-                        ////                            imageVector = Icons.Filled.Airplay,
                         //        imageVector = Icons.Filled.LocationCity,
                         //        contentDescription = "Play",
                         //        tint = Color.White

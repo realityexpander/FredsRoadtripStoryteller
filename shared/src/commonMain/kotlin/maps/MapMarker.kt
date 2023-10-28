@@ -12,6 +12,7 @@ data class MapMarker(
     val alpha: Float = 1.0f,
     val subtitle: String = "",
     val markerDetailPageUrl: String = "",
+    val isSeen: Boolean = false, // Has been within the talkRadius of the user
 
     // For MarkerInfoScreen (fetched from markerInfoPageUrl)
     val isDescriptionLoaded: Boolean = false,
