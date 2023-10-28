@@ -169,7 +169,7 @@ fun App() {
         var shouldClearMarkers by remember { mutableStateOf(false) }
 
         // Load markers
-        var loadingStateIcon: ImageVector? by remember { mutableStateOf(Icons.Default.CloudDone) }
+        var loadingStateIcon: ImageVector? by remember { mutableStateOf(Icons.Default.CloudDownload) }
         var fetchedMarkersResult: MarkersResult =
             loadMarkers(
                 settings,
@@ -192,7 +192,7 @@ fun App() {
                             Icons.Default.CloudDownload
                         }
                         is LoadingState.Loaded -> {
-                            Icons.Default.CloudDone
+                            Icons.Default.CloudDownload
                         }
                         is LoadingState.Idle -> {
                             Icons.Default.Cloud
@@ -470,7 +470,7 @@ fun App() {
                                 // Loading status
                                 AnimatedVisibility(
                                     loadingStateIcon != Icons.Default.Cloud,
-                                    enter = fadeIn(tween(500)),
+                                    enter = fadeIn(tween(1500)),
                                     exit = fadeOut(tween(1500))
                                 ) {
                                     Icon(

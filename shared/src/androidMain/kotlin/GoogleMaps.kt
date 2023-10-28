@@ -465,7 +465,7 @@ actual fun GoogleMaps(
                         //)
                         val marker = markers?.find { it.id == clusterItem.snippet }
                         val painterResourceFilename = if (marker?.isSeen == true) {
-                            "marker_gray.png"
+                            "marker_lightgray.png"
                         } else {
                             "marker_red.png"
                         }

@@ -36,6 +36,14 @@ https://github.com/JetBrains/compose-multiplatform/tree/master/examples/cocoapod
   - This thing is a hack and a half way of scraping, but until jSoup is ported, its what we got. 
   -https://github.com/MohamedRejeb/ksoup
 
+- Painter resources
+  - https://github.com/JetBrains/compose-multiplatform/blob/master/tutorials/Image_And_Icons_Manipulations/README.md
+
+- Material Design 3
+- https://material.io/blog/material-3-compose-1-1
+- Drawers
+- https://developer.android.com/jetpack/compose/components/drawer
+
 ### Android
 - Adding markers
  - https://www.geeksforgeeks.org/how-to-add-multiple-markers-to-google-maps-in-android-using-jetpack-compose/
@@ -53,6 +61,9 @@ https://github.com/JetBrains/compose-multiplatform/tree/master/examples/cocoapod
 
 - Compose Clustering
   - https://betterprogramming.pub/clustering-with-maps-compose-for-android-911a2fe3f08b  
+
+- Compose Samples
+  - https://github.com/android/compose-samples  
 
 ### iOS
 - https://developers.google.com/maps/documentation/ios-sdk/utility/setup
