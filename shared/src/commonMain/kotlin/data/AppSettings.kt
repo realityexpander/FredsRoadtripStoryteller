@@ -81,6 +81,7 @@ fun Settings.lastKnownUserLocation(): Location {
     return json.decodeFromString(getString(kSettingLastKnownUserLocation, "{latitude:0.0, longitude:0.0}"))
 }
 
+// todo - make this a Data Class? (for recentlySeenMarkers & recentlySeenMarkersForUIList)
 fun Settings.setRecentlySeenMarkers(recentlySeenMarkers: List<String>) {
     putString(kSettingRecentlySeenMarkers, json.encodeToString(recentlySeenMarkers))
 }

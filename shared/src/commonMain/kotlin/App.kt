@@ -123,6 +123,11 @@ fun App() {
             mutableStateOf<BottomSheetScreen>(BottomSheetScreen.SettingsScreen)
         }
 
+        // Error Message state & value
+        var isShowingError by remember {
+            mutableStateOf<String?>(null)
+        }
+
         // Settings
         val settings = remember {
             Settings().apply {
@@ -131,18 +136,34 @@ fun App() {
                 printAppSettings()
             }
         }
-        var talkRadiusMiles by remember { mutableStateOf(settings.talkRadiusMiles()) }
-        var isMarkersLastUpdatedLocationVisible by remember(settings.isMarkersLastUpdatedLocationVisible()) {
+        var talkRadiusMiles by remember {
+            mutableStateOf(settings.talkRadiusMiles())
+        }
+        var isMarkersLastUpdatedLocationVisible by
+            remember(settings.isMarkersLastUpdatedLocationVisible()) {
             mutableStateOf(settings.isMarkersLastUpdatedLocationVisible())
         }
 
         // Google Maps UI elements
-        var isTrackingEnabled by remember { mutableStateOf(false) }
-        var centerOnUserCameraLocation by remember { mutableStateOf<Location?>(null) } // used to center map on user
+        var isTrackingEnabled by remember {
+            mutableStateOf(false)
+        }
+        var centerOnUserCameraLocation by remember {
+            mutableStateOf<Location?>(null) // used to center map on user location
+        }
 
         // GPS Location Service
-        val gpsLocationService by remember { mutableStateOf(GPSLocationService()) }
-        var userLocation: Location by remember { mutableStateOf(settings.lastKnownUserLocation()) }
+        val gpsLocationService by remember {
+            mutableStateOf(GPSLocationService())
+        }
+        var userLocation: Location by remember {
+            mutableStateOf(settings.lastKnownUserLocation())
+        }
+
+        // Last "markers updated" location
+        var cachedMarkersLastUpdatedLocation by remember {
+            mutableStateOf(settings.markersLastUpdatedLocation())
+        }
 
         // Recently Seen Markers
         val recentlySeenMarkersSet by remember {
@@ -152,19 +173,15 @@ fun App() {
             mutableStateOf(recentlySeenMarkersSet.toMutableStateList())
         }
 
-        // Error Message state & value
-        var isShowingError by remember { mutableStateOf<String?>(null) }
-
-        // Last "markers updated" location
-        var cachedMarkersLastUpdatedLocation by remember {
-            mutableStateOf(settings.markersLastUpdatedLocation())
+        // Holds the set of saved markers, this prevents flicker when loading new markers while processing the marker page(s)
+        val previousMapMarkers = remember {
+            mutableStateListOf<MapMarker>()
         }
 
-        // Holds the set of saved markers, this prevents flicker when loading new markers while processing the marker page(s)
-        val previousMapMarkers = remember { mutableStateListOf<MapMarker>() }
-
         // Load markers
-        var loadingStateIcon: ImageVector by remember { mutableStateOf(Icons.Default.CloudDownload) }
+        var loadingStateIcon: ImageVector by remember {
+            mutableStateOf(Icons.Default.CloudDownload)
+        }
         var fetchedMarkersResult: MarkersResult =
             loadMarkers(
                 settings,
@@ -199,10 +216,13 @@ fun App() {
                 useFakeDataSetId = kUseRealNetwork
             )
 
-        var shouldRedrawMapMarkers by remember { mutableStateOf(true) }
+        var shouldRedrawMapMarkers by remember {
+            mutableStateOf(true)
+        }
 
-        // Update the markers AFTER the page has finished parsing
-        val mapMarkers = remember(fetchedMarkersResult.isParseMarkersPageFinished) {
+        // Update the markers AFTER page has finished parsing
+        val mapMarkers =
+            remember(fetchedMarkersResult.isParseMarkersPageFinished) {
             // More pages to load?
             if (!fetchedMarkersResult.isParseMarkersPageFinished) {
                 // While loading new markers, use the cached markers to prevent flicker
@@ -623,7 +643,6 @@ fun App() {
                         }
                     }
 
-                    // Recently Seen Markers
                     RecentlySeenMarkers(
                         recentlySeenMarkersForUiList,
                         onClickRecentlySeenMarkerItem = { marker ->
