@@ -346,7 +346,7 @@ fun String.processInscriptionString(): String {
         .trim()
 }
 
-private fun fakeLoadingStateForParseMarkerInfoPageHtml(marker: MapMarker): LoadingState<MapMarker> {
+fun fakeLoadingStateForMarkerDetailsPageHtml(marker: MapMarker): LoadingState<MapMarker> {
     return LoadingState.Loaded(
         MapMarker(
             id = marker.id,

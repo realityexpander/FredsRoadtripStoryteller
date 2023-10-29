@@ -424,7 +424,6 @@ actual fun GoogleMaps(
                     true
                 },
                 onClusterItemInfoWindowClick = { clusterItem ->
-                    Log.d { "cluster item clicked" }
                     coroutineScope.launch {
                         val selectedMarker = MapMarker(
                             id = clusterItem.snippet.toString(),

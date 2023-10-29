@@ -361,14 +361,6 @@ fun loadMarkers(
                                         isSeen = markerBeforeUpdate?.isSeen ?: parsedMarker.value.isSeen,
                                     )
 
-//                                    // preserve the `isSeen` state of the current markers
-//                                    parsedMarker.key to parsedMarker.value.copy(
-////                                        isSeen = markersResultState.markerIdToMapMarkerMap[parsedMarker.key]?.isSeen // preserve the `isSeen` state of the current markers
-////                                            ?: parsedMarkersResult.markerIdToMapMarkerMap[parsedMarker.key]?.isSeen // if no isSeen state, use the parsed state
-////                                            ?: false, // if no isSeen state, default to false
-//                                        isSeen = markerBeforeUpdate?.isSeen ?: parsedMarker.value.isSeen,
-//                                    )
-
                                     parsedMarker.key to mergedBeforeAndAfterParseMarker
                                 }
                             ).toMap(),

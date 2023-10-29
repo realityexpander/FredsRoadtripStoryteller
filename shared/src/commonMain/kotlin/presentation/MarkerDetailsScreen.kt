@@ -1,3 +1,5 @@
+package presentation
+
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -33,6 +36,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -59,7 +63,6 @@ import io.kamel.image.KamelImageBox
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch
 import maps.MapMarker
-import org.jetbrains.compose.resources.ExperimentalResourceApi
 import presentation.uiComponents.PreviewPlaceholder
 
 const val kMaxWeightOfBottomDrawer = 0.9f
@@ -141,12 +144,20 @@ fun MarkerDetailsScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
+            Icon(
+                imageVector = Icons.Default.CloudDownload,
+                contentDescription = "Loading Status",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(128.dp),
+            )
             Text(
                 "Loading...",
                 modifier = Modifier.fillMaxWidth(),
-                fontSize = MaterialTheme.typography.h5.fontSize,
+                fontSize = MaterialTheme.typography.h6.fontSize,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
+                color = MaterialTheme.colors.onSurface,
             )
         }
 
@@ -341,7 +352,7 @@ fun MarkerDetailsScreen(
                                                             scaleY = scale
                                                             translationX = offset.x
                                                             translationY = offset.y
-                                                            // this.rotationZ = rotationZ
+                                                            // this.rotationZ = rotationZ  // allow rotation?
                                                         }
                                                         .transformable(
                                                             state,
@@ -362,12 +373,14 @@ fun MarkerDetailsScreen(
                     }
 
                     // Attributions for photo
-                    if (marker.data.photoAttributions[0].isNotBlank()) {
-                        Text(
-                            "Photo Credit: " + marker.data.photoAttributions[0],
-                            fontSize = MaterialTheme.typography.overline.fontSize,
-                            textAlign = TextAlign.End,
-                        )
+                    if(marker.data.photoAttributions.isNotEmpty()) {
+                        if (marker.data.photoAttributions[0].isNotBlank()) {
+                            Text(
+                                "Photo Credit: " + marker.data.photoAttributions[0],
+                                fontSize = MaterialTheme.typography.overline.fontSize,
+                                textAlign = TextAlign.End,
+                            )
+                        }
                     }
 
                     // Show loading error (if any)

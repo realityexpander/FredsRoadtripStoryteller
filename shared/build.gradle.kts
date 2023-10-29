@@ -101,7 +101,8 @@ kotlin {
                 implementation(libs.google.maps.android.compose.utils)
 
                 // Ktor Client for Android
-                implementation(libs.ktor.client.android)  // native bridge to kotlin-only library
+                implementation(libs.ktor.client.android)  // native bridge to kotlin-only
+                implementation(libs.ktor.client.cio)
 
                 // Firebase BoM
                 api(platform(libs.google.firebase.bom.get())) // use `.get` bc its just a simple string with no version id

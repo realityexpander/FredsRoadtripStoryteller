@@ -21,12 +21,13 @@ import co.touchlab.kermit.Logger as Log
 const val kUseFakeData = false
 
 @Composable
-fun loadMapMarkerDetails(mapMarkerToUpdate: MapMarker, useFakeData: Boolean = false): LoadingState<MapMarker> {
+fun loadMapMarkerDetails(mapMarker: MapMarker, useFakeData: Boolean = false): LoadingState<MapMarker> {
 
-    var loadingState by remember(mapMarkerToUpdate) {
-        if(isMarkerIsAlreadyCachedAndNotExpired(mapMarkerToUpdate)) {
-            Log.d("mapMarker.isDescriptionLoaded is true, returning Loaded(mapMarker)")
-            LoadingState.Loaded(mapMarkerToUpdate)
+    var loadingState by remember(mapMarker) {
+        if(isMarkerDetailsAlreadyLoadedAndNotExpired(mapMarker)) {
+            Log.d("in loadMapMarkerDetails(${mapMarker.id}), isDescriptionLoaded is true & not expired, returning Loaded(mapMarker)")
+
+            return@remember mutableStateOf<LoadingState<MapMarker>>(LoadingState.Loading)
         }
 
         mutableStateOf<LoadingState<MapMarker>>(LoadingState.Loading)
@@ -37,26 +38,22 @@ fun loadMapMarkerDetails(mapMarkerToUpdate: MapMarker, useFakeData: Boolean = fa
         return kBaseHmdbDotOrgUrl + "m.asp?m=$markerKeyNumber"
     }
     // load markerDetailsPageUrl from markerId
-    val markerDetailsPageUrl by remember(mapMarkerToUpdate.id) {
-        mutableStateOf(mapMarkerToUpdate.id.calculateMarkerDetailsPageUrl())
+    val markerDetailsPageUrl by remember(mapMarker.id) {
+        mutableStateOf(mapMarker.id.calculateMarkerDetailsPageUrl())
     }
 
     LaunchedEffect(markerDetailsPageUrl) {
-        println("loading loadMapMarkerDetails for markerDetailsPageUrl: $markerDetailsPageUrl\n" +
-                "  mapMarkerToUpdate: ${mapMarkerToUpdate.id}\n" +
-                "  mapMarkerToUpdate.isDetailsLoaded: ${mapMarkerToUpdate.isDetailsLoaded}\n" +
-                "  isMarkerIsAlreadyCachedAndNotExpired(mapMarkerToUpdate): ${isMarkerIsAlreadyCachedAndNotExpired(mapMarkerToUpdate)}")
-        if(isMarkerIsAlreadyCachedAndNotExpired(mapMarkerToUpdate)) {
-            loadingState = LoadingState.Loaded(mapMarkerToUpdate)
+        if(isMarkerDetailsAlreadyLoadedAndNotExpired(mapMarker)) {
+            loadingState = LoadingState.Loaded(mapMarker)
             return@LaunchedEffect
         }
 
-        if(markerDetailsPageUrl == "") {
+        if(markerDetailsPageUrl.isBlank()) {
             loadingState = LoadingState.Error("MarkerDetailsPageUrl is empty")
             return@LaunchedEffect
         }
 
-        Log.d("loading loadMapMarkerDetails from network: $markerDetailsPageUrl")
+        Log.d("in loadMapMarkerDetails(), loading from network: $markerDetailsPageUrl")
         loadingState = LoadingState.Loading
         yield() // Allow UI to render LoadingState.Loading state
 
@@ -72,11 +69,11 @@ fun loadMapMarkerDetails(mapMarkerToUpdate: MapMarker, useFakeData: Boolean = fa
                 // update the passed-in marker with the parsed info and return it
                 val parsedMarkerDetails = parsedMarkerResult.second!!
                 loadingState = LoadingState.Loaded(
-                    mapMarkerToUpdate.copy(
-                        location = mapMarkerToUpdate.location,
-                        id = mapMarkerToUpdate.id,
-                        title = mapMarkerToUpdate.title,
-                        subtitle = mapMarkerToUpdate.subtitle,
+                    mapMarker.copy(
+                        location = mapMarker.location,
+                        id = mapMarker.id,
+                        title = mapMarker.title,
+                        subtitle = mapMarker.subtitle,
                         isDetailsLoaded = true,
                         inscription = parsedMarkerDetails.inscription,
                         englishInscription = parsedMarkerDetails.englishInscription,
@@ -90,7 +87,7 @@ fun loadMapMarkerDetails(mapMarkerToUpdate: MapMarker, useFakeData: Boolean = fa
                     )
                 )
             } else {
-                // loadingState = fakeLoadingStateForParseMarkerInfoPageHtml(mapMarker)  // LEAVE FOR REFERENCE
+                 // loadingState = fakeLoadingStateForMarkerDetailsPageHtml(mapMarker)  // for debugging - LEAVE FOR REFERENCE
 
                 val markerDetailsPageHtml = almadenVineyardsM2580()
                 val result = parseMarkerDetailsPageHtml(markerDetailsPageHtml)
@@ -104,7 +101,7 @@ fun loadMapMarkerDetails(mapMarkerToUpdate: MapMarker, useFakeData: Boolean = fa
     return loadingState
 }
 
-private fun isMarkerIsAlreadyCachedAndNotExpired(mapMarkerToUpdate: MapMarker) =
+private fun isMarkerDetailsAlreadyLoadedAndNotExpired(mapMarkerToUpdate: MapMarker) =
     mapMarkerToUpdate.isDetailsLoaded &&
         mapMarkerToUpdate.lastUpdatedEpochSeconds + kMaxMarkerCacheAgeSeconds < Clock.System.now().epochSeconds
 

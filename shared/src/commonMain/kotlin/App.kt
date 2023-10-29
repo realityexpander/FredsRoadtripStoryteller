@@ -85,6 +85,7 @@ import maps.MarkerIdStr
 import maps.RecentMapMarker
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
+import presentation.MarkerDetailsScreen
 import presentation.SettingsScreen
 import presentation.app.AppDrawerContent
 import presentation.app.AppTheme
@@ -163,8 +164,7 @@ fun App() {
         }
 
         // Holds the set of saved markers, this prevents flicker when loading new markers while processing the marker page(s)
-        var previousMapMarkers = remember { mutableStateListOf<MapMarker>() }
-        var shouldClearMarkers by remember { mutableStateOf(false) }
+        val previousMapMarkers = remember { mutableStateListOf<MapMarker>() }
 
         // Load markers
         var loadingStateIcon: ImageVector by remember { mutableStateOf(Icons.Default.CloudDownload) }
@@ -250,7 +250,7 @@ fun App() {
         }
 
         // For Marker Details Bottom Sheet
-        var fetchMarkerDetailsResult by remember(bottomSheetActiveScreen) {
+        var fetchMarkerDetailsResult by remember {
             mutableStateOf<LoadingState<MapMarker>>(LoadingState.Loading)
         }
 
@@ -380,7 +380,7 @@ fun App() {
                         // Use id string (coming from map marker) or marker id (coming from marker details screen)
                         val localMarker = (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker
                         val markerIdFromMarker = localMarker?.id
-                        val markerIdFromId = localMarker?.id
+                        val markerIdFromId = (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).id
                         // Guard
                         if(markerIdFromId == null && markerIdFromMarker == null) {
                             throw IllegalStateException("Error: Both markerIdFromId and markerIdFromMarker are null, need to have at least one")
@@ -393,26 +393,56 @@ fun App() {
                                 ?: markerIdFromMarker
                                 ?: run {
                                     isShowingError = "Error: Unable to find marker id=$markerIdFromMarker"
-                                    return@remember localMarker
+                                    return@remember localMarker ?: MapMarker()
                                 }
 
                             fetchedMarkersResult.markerIdToMapMarkerMap[markerId] ?: run {
                                 isShowingError = "Error: Unable to find marker with id=$markerId"
-
-                                // Just return the marker that was passed in
-                                return@remember localMarker
+                                return@remember localMarker ?: MapMarker()
                             }
                         }
+                        val isMarkerDetailsAlreadyLoaded = marker.isDetailsLoaded
+
+                        // Fetch the marker details
                         fetchMarkerDetailsResult = loadMapMarkerDetails(marker)
 
-                        // Update the MapMarker with Marker Details after it's loaded
+                        // Update the MapMarker with Marker Details (if they were loaded)
                         LaunchedEffect(fetchMarkerDetailsResult) {
-                            fetchedMarkersResult = updateMapMarkerWithFetchedMarkerDetails(
-                                fetchedMarkersResult,
-                                fetchMarkerDetailsResult,
-                                mapMarkers,
-                                settings
-                            )
+
+                            // Did the marker details get loaded?
+                            //   - if so, save the markers list to settings.
+                            if (fetchMarkerDetailsResult is LoadingState.Loaded
+                                && !isMarkerDetailsAlreadyLoaded
+                                && (fetchMarkerDetailsResult as LoadingState.Loaded<MapMarker>).data.isDetailsLoaded
+                            ) {
+                                coroutineScope.launch {
+                                    val updatedMarkerDetailsMarkersResult = updateMapMarkersWithFetchedMarkerDetails(
+                                        fetchedMarkersResult,
+                                        fetchMarkerDetailsResult,
+                                        mapMarkers,
+                                        settings
+                                    )
+
+                                    fetchedMarkersResult = fetchedMarkersResult.copy(
+                                        markerIdToMapMarkerMap =
+                                            updatedMarkerDetailsMarkersResult
+                                                .markerIdToMapMarkerMap
+                                                .values
+                                                .associateBy { mapMarker ->
+                                                    mapMarker.id
+                                                }
+                                    )
+
+                                    // todo make this a function?
+                                    previousMapMarkers.clear()
+                                    previousMapMarkers.addAll(fetchedMarkersResult.markerIdToMapMarkerMap.values)
+                                    mapMarkers.clear()
+                                    mapMarkers.addAll(fetchedMarkersResult.markerIdToMapMarkerMap.values)
+
+                                    Log.d("save the updated markers list to settings")
+                                    settings.setMarkersResult(fetchedMarkersResult)
+                                }
+                            }
                         }
 
                         MarkerDetailsScreen(
@@ -472,7 +502,7 @@ fun App() {
                                     exit = fadeOut(tween(1500))
                                 ) {
                                     Icon(
-                                        imageVector = loadingStateIcon!!,
+                                        imageVector = loadingStateIcon,
                                         contentDescription = "Loading Status"
                                     )
                                 }
@@ -619,8 +649,7 @@ fun App() {
                         onClickRecentlySeenMarkerItem = { marker ->
                             // Show marker details
                             coroutineScope.launch {
-                                bottomSheetActiveScreen =
-                                    BottomSheetScreen.MarkerDetailsScreen(marker)
+                                bottomSheetActiveScreen = BottomSheetScreen.MarkerDetailsScreen(marker)
                                 bottomSheetScaffoldState.bottomSheetState.apply {
                                     if (isCollapsed) expand()
                                 }
@@ -634,40 +663,42 @@ fun App() {
 }
 
 private fun updateMapMarkersWithFetchedMarkerDetails(
-    fetchedMarkersResult: MarkersResult,
+    fetchMarkersResult: MarkersResult,
     fetchMarkerDetailsResult: LoadingState<MapMarker>,
     mapMarkers: SnapshotStateList<MapMarker>,
     settings: Settings
 ): MarkersResult {
-    var localFetchedMarkersResult = fetchedMarkersResult
+    var updatedFetchMarkersResult = fetchMarkersResult
 
     // Update the marker with the details
     if (fetchMarkerDetailsResult is LoadingState.Loaded) {
         val updatedDetailsMapMarker = fetchMarkerDetailsResult.data
 
-        // Find the marker in the list
+        // Find the matching marker id in the list
         val index = mapMarkers.indexOfFirst { marker ->
             marker.id == updatedDetailsMapMarker.id
         }
-        // Update the marker to show that the details have been loaded
-        if (index >= 0) {
+        // Update the marker to show & indicate the details have been loaded
+        if (index >= 0 && !mapMarkers[index].isDetailsLoaded) {
             mapMarkers[index] = updatedDetailsMapMarker.copy(
                 isDetailsLoaded = true
             )
+
+            // Update the markers list with the updated marker with the updated details
+            println("in updateMapMarkersWithFetchedMarkerDetails() " +
+                    "fetchedMarkersResult.markerIdToMapMarkerMap[marker.id]?.isDetailsLoaded = ${fetchMarkersResult.markerIdToMapMarkerMap[updatedDetailsMapMarker.id]?.isDetailsLoaded}")
+            updatedFetchMarkersResult = updatedFetchMarkersResult.copy(
+                markerIdToMapMarkerMap = mapMarkers.associateBy { mapMarker ->
+                    mapMarker.id
+                }
+            )
+
+            // Update the settings with the updated marker data
+            settings.setMarkersResult(updatedFetchMarkersResult)
         }
-
-        // Update the markers list with the updated marker with the updated details
-        localFetchedMarkersResult = localFetchedMarkersResult.copy(
-            markerIdToMapMarkerMap = mapMarkers.associateBy { mapMarker ->
-                mapMarker.id
-            }
-        )
-
-        // Update the settings with the updated marker data
-        settings.setMarkersResult(localFetchedMarkersResult)
     }
 
-    return localFetchedMarkersResult
+    return updatedFetchMarkersResult
 }
 
 // force a change in location to trigger a reload of the markers

@@ -64,6 +64,7 @@ ksoup-entites = { module = "com.mohamedrejeb.ksoup:ksoup-entites", version.ref =
 ksoup-html = { module = "com.mohamedrejeb.ksoup:ksoup-html", version.ref = "ksoupVersion" }
 ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktor-ClientAndroid" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor-ClientAndroid" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor-ClientAndroid" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor-ClientCore" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor-ClientAndroid" }
 multiplatform-settings = { module = "com.russhwolf:multiplatform-settings", version.ref = "kMutliplatformSettingsVersion" }

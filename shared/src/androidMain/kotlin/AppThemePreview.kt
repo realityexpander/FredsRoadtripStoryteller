@@ -18,6 +18,7 @@ import presentation.uiComponents.SettingsSwitch
 import data.LoadingState
 import maps.LatLong
 import maps.MapMarker
+import presentation.MarkerDetailsScreen
 import presentation.SettingsScreen
 
 @Preview(name = "switches", group = "Settings")
@@ -106,7 +107,7 @@ fun SettingsDark() {
 fun MarkerInfoPreview(
  loadingState: LoadingState<MapMarker> = LoadingState.Loaded(
     MapMarker(
-        id = "test key",
+        id = "M73739",
         position = LatLong(
             latitude = 0.0,
             longitude = 0.0
@@ -117,8 +118,8 @@ fun MarkerInfoPreview(
         subtitle = "Test Subtitle",
         location = "Location Description",
         inscription = "Incised inscription",
-        englishInscription = "",
-        spanishInscription = ""
+        englishInscription = "This is the English inscription",
+        spanishInscription = "This is the Inscripciôn en Espanol",
     ))
 ){
     AppTheme {

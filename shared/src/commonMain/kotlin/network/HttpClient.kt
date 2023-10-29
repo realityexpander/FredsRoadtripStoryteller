@@ -8,8 +8,21 @@ import io.ktor.serialization.kotlinx.json.json
 import io.ktor.utils.io.charsets.Charsets
 import kotlinx.serialization.json.Json
 
+import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.cache.*
+import io.ktor.client.plugins.cache.storage.*
+
 val httpClient = HttpClient {
     developmentMode = true
+
+
+    // todo Add to Actual/Expected
+    // https://github.com/ktorio/ktor-documentation/blob/2.3.5/codeSnippets/snippets/client-caching/src/main/kotlin/com/example/Application.kt
+//    import java.nio.file.*
+//    install(HttpCache) {
+//        val cacheFile = Files.createDirectories(Paths.get("build/cache")).toFile()
+//        publicStorage(FileStorage(cacheFile))
+//    }
 
     install(ContentNegotiation) {
         json(Json {

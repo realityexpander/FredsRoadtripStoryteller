@@ -119,7 +119,7 @@ actual class GPSLocationService  {
 
             override fun onLocationAvailability(availability: LocationAvailability) {
                 super.onLocationAvailability(availability)
-                Log.d("onLocationAvailability: ${availability.isLocationAvailable}")
+                // Log.d("onLocationAvailability: ${availability.isLocationAvailable}")
             }
         }
 
