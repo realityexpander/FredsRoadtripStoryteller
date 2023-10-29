@@ -30,17 +30,17 @@ fun SettingsSwitchPreviews() {
                 SettingsSwitch(
                     title = "Show marker data last searched location",
                     isChecked = false,
-                    onCheckedChange = {}
+                    onUpdateChecked = {}
                 )
                 SettingsSwitch(
                     title = "Show marker data last searched location",
                     isChecked = true,
-                    onCheckedChange = {}
+                    onUpdateChecked = {}
                 )
                 SettingsSlider(
                     title = "Talk Radius",
                     currentValue = 0.5,
-                    onValueChange = {}
+                    onUpdateValue = {}
                 )
             }
         }

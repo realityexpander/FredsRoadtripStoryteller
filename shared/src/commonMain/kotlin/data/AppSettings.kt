@@ -18,7 +18,8 @@ const val kSettingTalkRadiusMiles =                       "kSettingTalkRadiusMil
 const val kSettingIsMarkersLastUpdatedLocationVisible =   "kSettingIsMarkersLastUpdatedLocationVisible"
 const val kSettingIsRecentlySeenMarkersPanelVisible =     "kSettingIsRecentlySeenMarkersPanelVisible"
 const val kSettingIsPermissionsGranted =                  "kSettingIsPermissionsGranted"
-const val kShouldSpeakAutomaticallyWhenNewMarkersAreFound = "kShouldSpeakAutomaticallyWhenNewMarkersAreFound"
+const val kShouldSpeakAutomaticallyWhenUnseenMarkerFound ="kShouldSpeakAutomaticallyWhenUnseenMarkerFound"
+const val kSettingRecentlySeenMarkers =                   "kSettingRecentlySeenMarkers"
 
 fun Settings.printAppSettings() {
     // Show current settings
@@ -40,7 +41,7 @@ fun Settings.printAppSettings() {
     Log.d(" Settings: isRecentlySeenMarkersPanelVisible= " +
             isRecentlySeenMarkersPanelVisible().toString())
     Log.d(" Settings: shouldSpeakAutomaticallyWhenNewMarkersAreFound= " +
-            shouldSpeakAutomaticallyWhenNewMarkersAreFound().toString())
+            shouldSpeakAutomaticallyWhenUnseenMarkerFound().toString())
 }
 
 fun Settings.setMarkersResult(markersResult: MarkersResult) {
@@ -80,14 +81,21 @@ fun Settings.lastKnownUserLocation(): Location {
     return json.decodeFromString(getString(kSettingLastKnownUserLocation, "{latitude:0.0, longitude:0.0}"))
 }
 
+fun Settings.setRecentlySeenMarkers(recentlySeenMarkers: List<String>) {
+    putString(kSettingRecentlySeenMarkers, json.encodeToString(recentlySeenMarkers))
+}
+fun Settings.recentlySeenMarkers(): List<String> {
+    return json.decodeFromString(getString(kSettingRecentlySeenMarkers, "[]"))
+}
+
 
 // • For Settings panel
 
-fun Settings.setShouldSpeakAutomaticallyWhenNewMarkersAreFound(shouldSpeakAutomaticallyWhenNewMarkersAreFound: Boolean) {
-    putBoolean(kShouldSpeakAutomaticallyWhenNewMarkersAreFound, shouldSpeakAutomaticallyWhenNewMarkersAreFound)
+fun Settings.setShouldSpeakAutomaticallyWhenUnseenMarkerFound(shouldSpeakAutomaticallyWhenUnseenMarkerFound: Boolean) {
+    putBoolean(kShouldSpeakAutomaticallyWhenUnseenMarkerFound, shouldSpeakAutomaticallyWhenUnseenMarkerFound)
 }
-fun Settings.shouldSpeakAutomaticallyWhenNewMarkersAreFound(): Boolean {
-    return getBoolean(kShouldSpeakAutomaticallyWhenNewMarkersAreFound, false)
+fun Settings.shouldSpeakAutomaticallyWhenUnseenMarkerFound(): Boolean {
+    return getBoolean(kShouldSpeakAutomaticallyWhenUnseenMarkerFound, false)
 }
 
 fun Settings.setIsAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn(shouldStartBackgroundUpdatesWhenAppLaunches: Boolean) {

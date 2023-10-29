@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 fun SettingsSlider(
     title: String,
     currentValue: Double,
-    onValueChange: (Double) -> Unit
+    onUpdateValue: (Double) -> Unit
 ) {
     val currentValueAsString = remember(currentValue) {
         currentValue.toString()
@@ -39,7 +39,7 @@ fun SettingsSlider(
             steps = 5,
             valueRange = 0.10f..1f,
             onValueChange = {
-                onValueChange(it.toDouble())
+                onUpdateValue(it.toDouble())
             },
             colors = SliderDefaults.colors(
                 thumbColor = MaterialTheme.colors.onSurface,

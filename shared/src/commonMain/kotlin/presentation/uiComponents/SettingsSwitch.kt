@@ -15,7 +15,7 @@ import androidx.compose.ui.graphics.Color
 fun SettingsSwitch(
     title: String,
     isChecked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+    onUpdateChecked: (Boolean) -> Unit
 ) {
     Row {
         Text(
@@ -29,7 +29,7 @@ fun SettingsSwitch(
                 .weight(1f)
                 .align(Alignment.CenterVertically),
             checked = isChecked,
-            onCheckedChange = onCheckedChange,
+            onCheckedChange = onUpdateChecked,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = MaterialTheme.colors.onSurface,
                 checkedTrackColor = MaterialTheme.colors.onSurface.copy(alpha = 0.5f),

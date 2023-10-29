@@ -43,8 +43,8 @@ import data.setIsMarkersLastUpdatedLocationVisible
 import data.setIsAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn
 import data.setTalkRadiusMiles
 import data.isAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn
-import data.setShouldSpeakAutomaticallyWhenNewMarkersAreFound
-import data.shouldSpeakAutomaticallyWhenNewMarkersAreFound
+import data.setShouldSpeakAutomaticallyWhenUnseenMarkerFound
+import data.shouldSpeakAutomaticallyWhenUnseenMarkerFound
 import triggerDeveloperFeedback
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -68,7 +68,7 @@ fun SettingsScreen(
         mutableStateOf(settings?.isMarkersLastUpdatedLocationVisible() ?: false)
     }
     var shouldSpeakAutomaticallyWhenNewMarkersAreFound by remember {
-        mutableStateOf(settings?.shouldSpeakAutomaticallyWhenNewMarkersAreFound() ?: false)
+        mutableStateOf(settings?.shouldSpeakAutomaticallyWhenUnseenMarkerFound() ?: false)
     }
 
     Column(
@@ -103,8 +103,8 @@ fun SettingsScreen(
         SettingsSwitch(
             title = "Speak automatically when new markers are found",
             isChecked = shouldSpeakAutomaticallyWhenNewMarkersAreFound,
-            onCheckedChange = {
-                settings?.setShouldSpeakAutomaticallyWhenNewMarkersAreFound(it)
+            onUpdateChecked = {
+                settings?.setShouldSpeakAutomaticallyWhenUnseenMarkerFound(it)
                 shouldSpeakAutomaticallyWhenNewMarkersAreFound = it
             }
         )
@@ -112,7 +112,7 @@ fun SettingsScreen(
         SettingsSwitch(
             title = "Start tracking automatically when app launches",
             isChecked = shouldStartTrackingAutomaticallyWhenAppLaunches,
-            onCheckedChange = {
+            onUpdateChecked = {
                 settings?.setIsAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn(it)
                 shouldStartTrackingAutomaticallyWhenAppLaunches = it
             }
@@ -121,7 +121,7 @@ fun SettingsScreen(
         SettingsSlider(
             title = "Talk Radius (miles)",
             currentValue = talkRadiusMiles,
-            onValueChange = {
+            onUpdateValue = {
                 settings?.setTalkRadiusMiles(it)
                 onTalkRadiusChange(it)
             }
@@ -130,7 +130,7 @@ fun SettingsScreen(
         SettingsSwitch(
             title = "Show marker data last searched location",
             isChecked = shouldShowMarkerDataLastSearchedLocation,
-            onCheckedChange = {
+            onUpdateChecked = {
                 settings?.setIsMarkersLastUpdatedLocationVisible(it)
                 shouldShowMarkerDataLastSearchedLocation = it
                 onIsCachedMarkersLastUpdatedLocationVisibleChange(it)
