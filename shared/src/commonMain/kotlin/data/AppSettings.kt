@@ -18,6 +18,7 @@ const val kSettingTalkRadiusMiles =                       "kSettingTalkRadiusMil
 const val kSettingIsMarkersLastUpdatedLocationVisible =   "kSettingIsMarkersLastUpdatedLocationVisible"
 const val kSettingIsRecentlySeenMarkersPanelVisible =     "kSettingIsRecentlySeenMarkersPanelVisible"
 const val kSettingIsPermissionsGranted =                  "kSettingIsPermissionsGranted"
+const val kShouldSpeakAutomaticallyWhenNewMarkersAreFound = "kShouldSpeakAutomaticallyWhenNewMarkersAreFound"
 
 fun Settings.printAppSettings() {
     // Show current settings
@@ -38,6 +39,8 @@ fun Settings.printAppSettings() {
             isMarkersLastUpdatedLocationVisible().toString())
     Log.d(" Settings: isRecentlySeenMarkersPanelVisible= " +
             isRecentlySeenMarkersPanelVisible().toString())
+    Log.d(" Settings: shouldSpeakAutomaticallyWhenNewMarkersAreFound= " +
+            shouldSpeakAutomaticallyWhenNewMarkersAreFound().toString())
 }
 
 fun Settings.setMarkersResult(markersResult: MarkersResult) {
@@ -79,6 +82,13 @@ fun Settings.lastKnownUserLocation(): Location {
 
 
 // • For Settings panel
+
+fun Settings.setShouldSpeakAutomaticallyWhenNewMarkersAreFound(shouldSpeakAutomaticallyWhenNewMarkersAreFound: Boolean) {
+    putBoolean(kShouldSpeakAutomaticallyWhenNewMarkersAreFound, shouldSpeakAutomaticallyWhenNewMarkersAreFound)
+}
+fun Settings.shouldSpeakAutomaticallyWhenNewMarkersAreFound(): Boolean {
+    return getBoolean(kShouldSpeakAutomaticallyWhenNewMarkersAreFound, false)
+}
 
 fun Settings.setIsAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn(shouldStartBackgroundUpdatesWhenAppLaunches: Boolean) {
     putBoolean(kSettingStartBackgroundUpdatesWhenAppLaunches, shouldStartBackgroundUpdatesWhenAppLaunches)

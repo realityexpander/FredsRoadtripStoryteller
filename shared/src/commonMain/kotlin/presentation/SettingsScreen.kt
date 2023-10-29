@@ -43,6 +43,8 @@ import data.setIsMarkersLastUpdatedLocationVisible
 import data.setIsAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn
 import data.setTalkRadiusMiles
 import data.isAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn
+import data.setShouldSpeakAutomaticallyWhenNewMarkersAreFound
+import data.shouldSpeakAutomaticallyWhenNewMarkersAreFound
 import triggerDeveloperFeedback
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -64,6 +66,9 @@ fun SettingsScreen(
     }
     var shouldShowMarkerDataLastSearchedLocation by remember {
         mutableStateOf(settings?.isMarkersLastUpdatedLocationVisible() ?: false)
+    }
+    var shouldSpeakAutomaticallyWhenNewMarkersAreFound by remember {
+        mutableStateOf(settings?.shouldSpeakAutomaticallyWhenNewMarkersAreFound() ?: false)
     }
 
     Column(
@@ -94,6 +99,15 @@ fun SettingsScreen(
                 )
             }
         }
+
+        SettingsSwitch(
+            title = "Speak automatically when new markers are found",
+            isChecked = shouldSpeakAutomaticallyWhenNewMarkersAreFound,
+            onCheckedChange = {
+                settings?.setShouldSpeakAutomaticallyWhenNewMarkersAreFound(it)
+                shouldSpeakAutomaticallyWhenNewMarkersAreFound = it
+            }
+        )
 
         SettingsSwitch(
             title = "Start tracking automatically when app launches",
