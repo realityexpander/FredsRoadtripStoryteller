@@ -168,7 +168,7 @@ fun loadMarkers(
                 }
             }
 
-            // Step 1.2 - Check if the user is outside the reload radius
+            // Step 1.2 - Check if the user is outside the markers last update radius
             // todo make a function
             if (settings.hasKey(kSettingMarkersLastLoadLocation)) {
                 val cachedMarkersLastLoadLocation = settings.markersLastUpdatedLocation()
@@ -177,7 +177,7 @@ fun loadMarkers(
                     userLocation.longitude,
                     cachedMarkersLastLoadLocation.latitude,
                     cachedMarkersLastLoadLocation.longitude
-                )
+                ) * 1.25 // fudge factor to account for the fact that the user may have moved since the last update
 
                 if (userDistanceFromCachedLastLocationMiles > maxReloadDistanceMiles &&
                     markersResultState.isParseMarkersPageFinished
