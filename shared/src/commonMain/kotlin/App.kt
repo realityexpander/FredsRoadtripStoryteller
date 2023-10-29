@@ -107,7 +107,7 @@ const val kMaxMarkerCacheAgeSeconds = 60 * 60 * 24 * 30  // 30 days
 sealed class BottomSheetScreen {
     data object SettingsScreen : BottomSheetScreen()
 
-    // Can pass in a marker or just an id
+    // Can pass in a MapMarker or just an id string
     data class MarkerDetailsScreen(val marker: MapMarker? = null, val id: String? = marker?.id) : BottomSheetScreen()
 }
 
@@ -151,9 +151,6 @@ fun App() {
         val recentlySeenMarkersForUiList by remember {
             mutableStateOf(recentlySeenMarkersSet.toMutableStateList())
         }
-        var isRecentlySeenMarkersPanelVisible by remember {
-            mutableStateOf(settings.isRecentlySeenMarkersPanelVisible())
-        }
 
         // Error Message state & value
         var isShowingError by remember { mutableStateOf<String?>(null) }
@@ -177,12 +174,7 @@ fun App() {
                     // Update the UI with the latest location
                     cachedMarkersLastUpdatedLocation = location
                 },
-                showLoadingState = false,
-                useFakeDataSetId = kUseRealNetwork,
-                //    kSunnyvaleFakeDataset,
-                //    kTepoztlanFakeDataset,
-                //    kSingleItemPageFakeDataset,
-                onLoadingStateChange = {
+                onUpdateLoadingState = {
                     // Update the UI with the latest loading state
                     Log.d { "Loading state changed: $it" }
                     loadingStateIcon = when (it) {
@@ -199,7 +191,12 @@ fun App() {
                             Icons.Default.CloudOff
                         }
                     }
-                }
+                },
+                showLoadingState = false,
+                //    kSunnyvaleFakeDataset,
+                //    kTepoztlanFakeDataset,
+                //    kSingleItemPageFakeDataset,
+                useFakeDataSetId = kUseRealNetwork
             )
 
         var shouldRedrawMapMarkers by remember { mutableStateOf(true) }
@@ -291,7 +288,7 @@ fun App() {
                         talkRadiusMiles,
                         recentlySeenMarkersSet,
                         recentlySeenMarkersForUiList,
-                        onUpdateMarkersIsSeen = { updatedIsSeenMapMarkers ->
+                        onUpdateIsSeenMapMarkers = { updatedIsSeenMapMarkers ->
                             // Update the isSeen value of the markers
                             coroutineScope.launch {
                                 fetchedMarkersResult = setCurrentMapMarkers(
@@ -368,7 +365,8 @@ fun App() {
                         )
                     }
                     is BottomSheetScreen.MarkerDetailsScreen -> {
-                        // Use id string (coming from map marker) or marker id (coming from marker details screen)
+                        // Use id string (coming from map marker in google maps)
+                        // or marker id (coming from item in marker details screen)
                         val localMarker = (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker
                         val markerIdFromMarker = localMarker?.id
                         val markerIdFromId = (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).id
@@ -445,6 +443,10 @@ fun App() {
                 )
             }
         ) {
+            var isRecentlySeenMarkersPanelVisible by remember {
+                mutableStateOf(settings.isRecentlySeenMarkersPanelVisible())
+            }
+
             Scaffold(
                 scaffoldState = scaffoldState,
                 topBar = {
@@ -505,8 +507,7 @@ fun App() {
                                 // Recent Markers History List
                                 IconButton(onClick = {
                                     coroutineScope.launch {
-                                        isRecentlySeenMarkersPanelVisible =
-                                            !isRecentlySeenMarkersPanelVisible
+                                        isRecentlySeenMarkersPanelVisible = !isRecentlySeenMarkersPanelVisible
                                         settings.setIsRecentlySeenMarkersPanelVisible(
                                             isRecentlySeenMarkersPanelVisible
                                         )
@@ -749,7 +750,7 @@ private fun addMarkersToRecentlySeenList(
     talkRadiusMiles: Double,
     recentlySeenMarkersSet: MutableSet<RecentMapMarker>,
     recentlySeenMarkersForUiList: SnapshotStateList<RecentMapMarker>,
-    onUpdateMarkersIsSeen: (SnapshotStateList<MapMarker>) -> Unit
+    onUpdateIsSeenMapMarkers: (SnapshotStateList<MapMarker>) -> Unit
 ) {
     var updatedMarkers = mapMarkers
     var didUpdateMarkersIsSeen = false
@@ -765,14 +766,13 @@ private fun addMarkersToRecentlySeenList(
             markerLong
         )
 
-        fun MutableSet<RecentMapMarker>.containsMarker(marker: MapMarker): Boolean {
-            return recentlySeenMarkersSet.any {
-                it.key() == marker.id
-            }
-        }
-
         // add marker to recently seen set?
         if (distanceFromMarkerToUserLocationMiles < talkRadiusMiles * 1.75) {  // idk why 1.75, just seems to work
+            fun MutableSet<RecentMapMarker>.containsMarker(marker: MapMarker): Boolean {
+                return any {
+                    it.key() == marker.id
+                }
+            }
             // Not already in the `seen` set?
             if (!recentlySeenMarkersSet.containsMarker(marker)) {
                 // Add to the `seen` set
@@ -818,7 +818,7 @@ private fun addMarkersToRecentlySeenList(
 
     // Update the "seen" markers for the Map
     if(didUpdateMarkersIsSeen) {
-        onUpdateMarkersIsSeen(updatedMarkers)
+        onUpdateIsSeenMapMarkers(updatedMarkers)
     }
 
     // Update the UI list of recently seen markers (& reverse sort by time)

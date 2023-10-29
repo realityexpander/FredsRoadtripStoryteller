@@ -21,14 +21,10 @@ import data.markersLastUpdatedLocation
 import data.markersResult
 import com.russhwolf.settings.Settings
 import data.LoadingState
-import data.markersLastUpdateEpochSeconds
 import network.httpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import data.kSettingMarkersLastLoadLocation
-import data.kSettingMarkersLastUpdateEpochSeconds
-import data.kSettingMarkersResult
-import kMaxMarkerCacheAgeSeconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -81,18 +77,16 @@ data class MarkersResult(
 @Composable
 fun loadMarkers(
     settings: Settings,
-    // todo expose Loading state params to caller for loading UI
 
     // Map Marker loading parameters
     userLocation: Location = Location(37.422160, -122.084270),
     maxReloadDistanceMiles: Int = 10,
     onSetMarkersLastUpdatedLocation: (Location) -> Unit = {},
+    onUpdateLoadingState: (LoadingState<String>) -> Unit = {},
 
     // Debugging/Testing parameters
-    showLoadingState: Boolean = false,
-    useFakeDataSetId: Int = 0, // 0 = use real data, >1 = use fake data (1 = 3 pages around googleplex, 2 = 1 page around tepoztlan)
-
-    onLoadingStateChange: (LoadingState<String>) -> Unit = {},
+    showLoadingState: Boolean = false, // 0 = use real data, >1 = use fake data (1 = 3 pages around googleplex, 2 = 1 page around tepoztlan)
+    useFakeDataSetId: Int = 0,
 ): MarkersResult {
 
     // If the user location is not set, return an empty result
@@ -102,7 +96,7 @@ fun loadMarkers(
     val coroutineScope = rememberCoroutineScope()
     var markersLoadingState: LoadingState<String> by remember { mutableStateOf(LoadingState.Loading) }
     LaunchedEffect(markersLoadingState.hashCode()) {
-        onLoadingStateChange(markersLoadingState)
+        onUpdateLoadingState(markersLoadingState)
     }
 
     // Holds the current processing state of the parsed markers
@@ -309,7 +303,7 @@ fun loadMarkers(
                     }
 
                     // Merges the new parsed marker data with the previous marker data.
-                    // Note: preserves previous results of "loadMarkerDetails fetch" and "isSeen status"
+                    // Note: needed to preserve previous results of "loadMarkerDetails fetch" and "isSeen status"
                     markersResultState = markersResultState.copy(
                         markerIdToRawMarkerDetailStrings = (
                             markersResultState.markerIdToRawMarkerDetailStrings +
@@ -322,6 +316,7 @@ fun loadMarkers(
                                     val isDetailsLoaded = markerBeforeUpdate?.isDetailsLoaded ?: false
                                     var mergedBeforeAndAfterParseMarker = parsedMarker.value
 
+                                    // todo can this be simplified with a .copy()?
                                     // Preserve the `isDetailsLoaded` state of the current markers (if it exists)
                                     // - these details are loaded in a separate call (loadMarkerDetails), so we need to preserve them.
                                     if(isDetailsLoaded) {
