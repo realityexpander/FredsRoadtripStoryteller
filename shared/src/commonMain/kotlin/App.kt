@@ -249,7 +249,7 @@ fun App() {
             //}
         }
 
-        // For Marker Details Bottom Sheet
+        // Marker Details Loading State (for Bottom Sheet)
         var fetchMarkerDetailsResult by remember {
             mutableStateOf<LoadingState<MapMarker>>(LoadingState.Loading)
         }
@@ -291,25 +291,16 @@ fun App() {
                         talkRadiusMiles,
                         recentlySeenMarkersSet,
                         recentlySeenMarkersForUiList,
-                        onUpdateMarkersIsSeen = { updatedMapMarkers ->
-                            // Seen new markers, so update the current map markers list
+                        onUpdateMarkersIsSeen = { updatedIsSeenMapMarkers ->
+                            // Update the isSeen value of the markers
                             coroutineScope.launch {
-                                // Update the current Map markers with new `isSeen` value (true)
-                                fetchedMarkersResult = fetchedMarkersResult.copy(
-                                    markerIdToMapMarkerMap =
-                                        updatedMapMarkers.associateBy { mapMarker ->
-                                            mapMarker.id
-                                        }
+                                fetchedMarkersResult = setCurrentMapMarkers(
+                                    fetchedMarkersResult,
+                                    updatedMapMarkers = updatedIsSeenMapMarkers,
+                                    mapMarkers = mapMarkers,
+                                    previousMapMarkers = previousMapMarkers,
+                                    settings = settings
                                 )
-
-                                // todo make this a function?
-                                mapMarkers.clear()
-                                mapMarkers.addAll(updatedMapMarkers)
-                                previousMapMarkers.clear()
-                                previousMapMarkers.addAll(updatedMapMarkers)
-
-                                // save the updated markers list to settings
-                                settings.setMarkersResult(fetchedMarkersResult)
                             }
                         }
                     )
@@ -408,39 +399,28 @@ fun App() {
 
                         // Update the MapMarker with Marker Details (if they were loaded)
                         LaunchedEffect(fetchMarkerDetailsResult) {
-
                             // Did the marker details get loaded?
-                            //   - if so, save the markers list to settings.
                             if (fetchMarkerDetailsResult is LoadingState.Loaded
                                 && !isMarkerDetailsAlreadyLoaded
                                 && (fetchMarkerDetailsResult as LoadingState.Loaded<MapMarker>).data.isDetailsLoaded
                             ) {
+                                //  Save the updated markers list to settings
                                 coroutineScope.launch {
-                                    val updatedMarkerDetailsMarkersResult = updateMapMarkersWithFetchedMarkerDetails(
-                                        fetchedMarkersResult,
-                                        fetchMarkerDetailsResult,
-                                        mapMarkers,
-                                        settings
+                                    // Update the markers list with the updated marker with the updated details
+                                    val updatedDetailsMarkersResult =
+                                        updateMapMarkersWithUpdatedMarkerDetails(
+                                            fetchedMarkersResult,
+                                            fetchMarkerDetailsResult,
+                                            mapMarkers,
+                                            settings
+                                        )
+
+                                    fetchedMarkersResult = setCurrentMapMarkers(
+                                        updatedDetailsMarkersResult,
+                                        mapMarkers = mapMarkers,
+                                        previousMapMarkers = previousMapMarkers,
+                                        settings = settings
                                     )
-
-                                    fetchedMarkersResult = fetchedMarkersResult.copy(
-                                        markerIdToMapMarkerMap =
-                                            updatedMarkerDetailsMarkersResult
-                                                .markerIdToMapMarkerMap
-                                                .values
-                                                .associateBy { mapMarker ->
-                                                    mapMarker.id
-                                                }
-                                    )
-
-                                    // todo make this a function?
-                                    previousMapMarkers.clear()
-                                    previousMapMarkers.addAll(fetchedMarkersResult.markerIdToMapMarkerMap.values)
-                                    mapMarkers.clear()
-                                    mapMarkers.addAll(fetchedMarkersResult.markerIdToMapMarkerMap.values)
-
-                                    Log.d("save the updated markers list to settings")
-                                    settings.setMarkersResult(fetchedMarkersResult)
                                 }
                             }
                         }
@@ -662,8 +642,43 @@ fun App() {
     }
 }
 
-private fun updateMapMarkersWithFetchedMarkerDetails(
-    fetchMarkersResult: MarkersResult,
+// Clears & Sets the current map markers, previous map markers, and saves the markers to settings
+private fun setCurrentMapMarkers(
+    updatedMarkersResult: MarkersResult,
+    updatedMapMarkers: SnapshotStateList<MapMarker>? = null,  // prefer to use `updatedMarkersResult`, if possible
+    mapMarkers: SnapshotStateList<MapMarker>,
+    previousMapMarkers: SnapshotStateList<MapMarker>,
+    settings: Settings
+): MarkersResult {
+
+    val localUpdatedMapMarkers =
+        updatedMapMarkers ?:  // prefer to use `updatedMarkersResult`, if possible
+        updatedMarkersResult.markerIdToMapMarkerMap.values.toList()
+    val newMarkersResult = updatedMarkersResult.copy(
+        markerIdToMapMarkerMap =
+        localUpdatedMapMarkers
+            .associateBy { mapMarker ->
+                mapMarker.id
+            }
+    )
+
+    // Update the current Map markers
+    mapMarkers.clear()
+    mapMarkers.addAll(localUpdatedMapMarkers)
+
+    // Update the previous markers list
+    previousMapMarkers.clear()
+    previousMapMarkers.addAll(localUpdatedMapMarkers)
+
+    // save the updated markers list to settings
+    Log.d("save the updated markers list to settings")
+    settings.setMarkersResult(updatedMarkersResult)
+
+    return newMarkersResult
+}
+
+private fun updateMapMarkersWithUpdatedMarkerDetails(
+    fetchMarkersResult: MarkersResult,  // will be updated with data from `fetchMarkerDetailsResult`
     fetchMarkerDetailsResult: LoadingState<MapMarker>,
     mapMarkers: SnapshotStateList<MapMarker>,
     settings: Settings
@@ -685,8 +700,6 @@ private fun updateMapMarkersWithFetchedMarkerDetails(
             )
 
             // Update the markers list with the updated marker with the updated details
-            println("in updateMapMarkersWithFetchedMarkerDetails() " +
-                    "fetchedMarkersResult.markerIdToMapMarkerMap[marker.id]?.isDetailsLoaded = ${fetchMarkersResult.markerIdToMapMarkerMap[updatedDetailsMapMarker.id]?.isDetailsLoaded}")
             updatedFetchMarkersResult = updatedFetchMarkersResult.copy(
                 markerIdToMapMarkerMap = mapMarkers.associateBy { mapMarker ->
                     mapMarker.id
@@ -726,6 +739,7 @@ private fun resetMarkerSettings(
     settings.clearMarkersResult()
     settings.clearMarkersLastUpdatedLocation()
     settings.clearMarkersLastUpdateEpochSeconds()
+    // todo clear Recently Seen Markers list
 }
 
 // Check for new markers inside talk radius & add to recentlySeen list
@@ -813,6 +827,8 @@ private fun addMarkersToRecentlySeenList(
     recentlySeenMarkersForUiList.addAll(oldList.sortedByDescending { recentMarker ->
         recentMarker.timeAddedToRecentList
     }.toMutableStateList())
+
+    // todo save the recently seen markers list to settings
 }
 
 @Composable

@@ -142,42 +142,44 @@ fun loadMarkers(
             // Log.d("Found cached markers in Settings, count: ${cachedMarkersResult.markerInfos.size}")
             markersResultState = cachedMarkersResult.copy(isParseMarkersPageFinished = true)
 
-            // Step 1.1 - Check if the cache is expired // todo replace this with a per-marker details loaded expiry
-            // todo make a function
-            if(settings.hasKey(kSettingMarkersLastUpdateEpochSeconds)) {
-                val cacheLastUpdatedEpochSeconds = settings.markersLastUpdateEpochSeconds()
-                // Log.d("Days since last cache update: $(Clock.System.now().epochSeconds - cacheLastUpdatedEpochSeconds) / (60 * 60 * 24)")
-
-                // if(true) { // test cache expiry
-                if(Clock.System.now().epochSeconds > cacheLastUpdatedEpochSeconds + kMaxMarkerCacheAgeSeconds) {
-                    Log.d("Cached markers are expired, dumping entire cache, attempting load from network..." ) // todo make this more sophisticated
-
-                    // return current cached result, and also trigger network load, which will refresh the cache.
-                    markersResultState = MarkersResult(isParseMarkersPageFinished = false)
-
-                    // Clear the cache in the settings
-                    coroutineScope.launch {
-                        settings.remove(kSettingMarkersResult)
-                        // Update the cache expiry time
-                        settings.putLong(
-                            kSettingMarkersLastUpdateEpochSeconds,
-                            Clock.System.now().epochSeconds
-                        )
-                        Log.d("Cache expired, cleared markers from Settings")
-                    }
-                }
-            }
+//            // Step 1.1 - Check if the cache is expired // todo replace this with a per-marker details loaded expiry
+//            // todo make a function
+//            if(settings.hasKey(kSettingMarkersLastUpdateEpochSeconds)) {
+//                val cacheLastUpdatedEpochSeconds = settings.markersLastUpdateEpochSeconds()
+//                // Log.d("Days since last cache update: $(Clock.System.now().epochSeconds - cacheLastUpdatedEpochSeconds) / (60 * 60 * 24)")
+//
+//                // if(true) { // test cache expiry
+//                if(Clock.System.now().epochSeconds > cacheLastUpdatedEpochSeconds + kMaxMarkerCacheAgeSeconds) {
+//                    Log.d("Cached markers are expired, dumping entire cache, attempting load from network..." ) // todo make this more sophisticated
+//
+//                    // return current cached result, and also trigger network load, which will refresh the cache.
+//                    markersResultState = MarkersResult(isParseMarkersPageFinished = false)
+//
+//                    // Clear the cache in the settings
+//                    coroutineScope.launch {
+//                        settings.remove(kSettingMarkersResult)
+//                        // Update the cache expiry time
+//                        settings.putLong(
+//                            kSettingMarkersLastUpdateEpochSeconds,
+//                            Clock.System.now().epochSeconds
+//                        )
+//                        Log.d("Cache expired, cleared markers from Settings")
+//                    }
+//                }
+//            }
 
             // Step 1.2 - Check if the user is outside the markers last update radius
             // todo make a function
             if (settings.hasKey(kSettingMarkersLastLoadLocation)) {
                 val cachedMarkersLastLoadLocation = settings.markersLastUpdatedLocation()
-                val userDistanceFromCachedLastLocationMiles = distanceBetween(
-                    userLocation.latitude,
-                    userLocation.longitude,
-                    cachedMarkersLastLoadLocation.latitude,
-                    cachedMarkersLastLoadLocation.longitude
-                ) * 1.25 // fudge factor to account for the fact that the user may have moved since the last update
+                val userDistanceFromCachedLastLocationMiles =
+                    distanceBetween(
+                        userLocation.latitude,
+                        userLocation.longitude,
+                        cachedMarkersLastLoadLocation.latitude,
+                        cachedMarkersLastLoadLocation.longitude
+                    ) * 1.35 // fudge factor to account for the fact that the user location may have
+                             // moved since the last update.
 
                 if (userDistanceFromCachedLastLocationMiles > maxReloadDistanceMiles &&
                     markersResultState.isParseMarkersPageFinished
