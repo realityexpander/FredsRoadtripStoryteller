@@ -691,7 +691,7 @@ private fun setCurrentMapMarkers(
 
     // save the updated markers list to settings
     Log.d("save the updated markers list to settings")
-    settings.setMarkersResult(updatedMarkersResult)
+    settings.setMarkersResult(newMarkersResult)
 
     return newMarkersResult
 }
@@ -759,6 +759,8 @@ private fun resetMarkerSettings(
     settings.clearMarkersLastUpdatedLocation()
     settings.clearMarkersLastUpdateEpochSeconds()
     // todo clear Recently Seen Markers list
+
+    // todo check the Drawer to see if it's showing the "isSeen" state
 }
 
 // Check for new markers inside talk radius & add to recentlySeen list
