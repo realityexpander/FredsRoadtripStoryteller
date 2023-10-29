@@ -539,7 +539,7 @@ fun App() {
                     }
                 },
             ) {
-                val transitionRecentMarkersPanel: Float by animateFloatAsState(
+                val transitionRecentMarkersPanelState: Float by animateFloatAsState(
                     if (isRecentlySeenMarkersPanelVisible) 0.5f else 0f,
                     animationSpec = tween(500)
                 )
@@ -571,7 +571,7 @@ fun App() {
                         val didMapMarkersUpdate =
                             MapContent(
                                 modifier = Modifier
-                                    .fillMaxHeight(1.0f - transitionRecentMarkersPanel),
+                                    .fillMaxHeight(1.0f - transitionRecentMarkersPanelState),
                                 isFinishedLoadingMarkerData = fetchedMarkersResult.isParseMarkersPageFinished,
                                 initialUserLocation = settings.lastKnownUserLocation(),
                                 userLocation = userLocation,
@@ -619,8 +619,8 @@ fun App() {
                                 },
                             )
                         if (didMapMarkersUpdate) {
-                            shouldRedrawMapMarkers =
-                                false  // The map has been updated, so don't redraw it again.
+                            // The map has been updated, so don't redraw it again.
+                            shouldRedrawMapMarkers = false
                         }
                     }
 
