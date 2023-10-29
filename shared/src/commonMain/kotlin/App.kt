@@ -210,7 +210,7 @@ fun App() {
             }
 
             // Update the markers list with the latest marker data. (after it's loaded)
-            // todo check that other data is not wiped out (marker details)
+            // Note: new markers are merged with the previous markers list.
             val fetchedMarkers =
                 fetchedMarkersResult.markerIdToMapMarkerMap.map { marker ->
                     marker.value
@@ -218,7 +218,6 @@ fun App() {
 
             // Update the markers list with the updated marker data
             mutableStateListOf<MapMarker>().also { snapShot ->
-                // Log.d("pre-snapshot markersData.markerInfos.size: ${markersLoadResult.markerInfos.size}")
                 snapShot.clear()
                 snapShot.addAll(fetchedMarkers)
 
