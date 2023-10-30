@@ -40,7 +40,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
-//        val settings = Settings()
 
         // https://proandroiddev.com/implementing-core-splashscreen-api-e62f0e690f74
         installSplashScreen().apply {
@@ -57,7 +56,6 @@ class MainActivity : AppCompatActivity() {
             if(it[Manifest.permission.ACCESS_FINE_LOCATION] == false ||
                 it[Manifest.permission.ACCESS_COARSE_LOCATION] == false
             ) {
-//                settings.setIsPermissionsGranted(false)
                 settings.isPermissionsGranted = false
                 AlertDialog.Builder(this)
                     .setTitle("Location Permissions Required")
@@ -88,7 +86,6 @@ class MainActivity : AppCompatActivity() {
             } else {
                 // Dismiss the splash screen
                 splashState.tryEmit(true)
-//                settings.setIsPermissionsGranted(true)
                 settings.isPermissionsGranted = true
 
                 setContent {
