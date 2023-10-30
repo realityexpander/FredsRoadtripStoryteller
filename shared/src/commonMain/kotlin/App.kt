@@ -180,7 +180,7 @@ fun App() {
         var loadingStateIcon: ImageVector by remember {
             mutableStateOf(Icons.Default.CloudDownload)
         }
-        var fetchMarkersResult: MarkersResult =
+        var markersResult: MarkersResult =
             loadMarkers(
                 settings,
                 userLocation = userLocation, // when user location changes, triggers potential load markers from server
@@ -220,9 +220,9 @@ fun App() {
 
         // Update the markers AFTER page has finished parsing
         val markers =
-            remember(fetchMarkersResult.isParseMarkersPageFinished) {
+            remember(markersResult.isParseMarkersPageFinished) {
             // More pages to load?
-            if (!fetchMarkersResult.isParseMarkersPageFinished) {
+            if (!markersResult.isParseMarkersPageFinished) {
                 // While loading new markers, use the cached markers to prevent flicker
                 return@remember previousMarkers
             }
@@ -230,7 +230,7 @@ fun App() {
             // Update the markers list with the latest marker data. (after it's loaded)
             // Note: new markers are merged with the previous markers list.
             val fetchedMarkers =
-                fetchMarkersResult.markerIdToMarker.map { marker ->
+                markersResult.markerIdToMarker.map { marker ->
                     marker.value
                 }
 
@@ -269,7 +269,7 @@ fun App() {
         }
 
         // Update user GPS location & Recently Seen Markers
-        LaunchedEffect(Unit, fetchMarkersResult.loadingState) {
+        LaunchedEffect(Unit, markersResult.loadingState) {
             // Set the last known location to the current location in settings
             gpsLocationService.onUpdatedGPSLocation(
                 errorCallback = { errorMessage ->
@@ -308,9 +308,9 @@ fun App() {
                         onUpdateIsSeenMapMarkers = { updatedIsSeenMapMarkers ->
                             // Update the isSeen value of the markers
                             coroutineScope.launch {
-                                fetchMarkersResult =
+                                markersResult =
                                     setAndSaveCurrentMarkers(
-                                        fetchMarkersResult,
+                                        markersResult,
                                         updatedMarkers = updatedIsSeenMapMarkers,
                                         markers = markers,
                                         previousMarkers = previousMarkers,
@@ -421,7 +421,7 @@ fun App() {
                                     return@remember localMarker ?: Marker()
                                 }
 
-                            fetchMarkersResult.markerIdToMarker[markerId] ?: run {
+                            markersResult.markerIdToMarker[markerId] ?: run {
                                 isShowingError = "Error: Unable to find marker with id=$markerId"
                                 return@remember localMarker ?: Marker()
                             }
@@ -443,13 +443,13 @@ fun App() {
                                     // Update the markers list with the updated marker with the updated details
                                     val updatedDetailsMarkersResult =
                                         updateMarkersWithUpdatedMarkerDetails(
-                                            fetchMarkersResult,
+                                            markersResult,
                                             fetchMarkerDetailsResult,
                                             markers,
                                             settings
                                         )
 
-                                    fetchMarkersResult = setAndSaveCurrentMarkers(
+                                    markersResult = setAndSaveCurrentMarkers(
                                         updatedDetailsMarkersResult,
                                         markers = markers,
                                         previousMarkers = previousMarkers,
@@ -472,7 +472,7 @@ fun App() {
             drawerContent = {
                 AppDrawerContent(
                     bottomSheetScaffoldState,
-                    fetchMarkersResult,
+                    markersResult,
                     onSetBottomSheetActiveScreen = { screen ->
                         bottomSheetActiveScreen = screen
                     },
@@ -558,13 +558,13 @@ fun App() {
 
                         // Show loading error
                         AnimatedVisibility(
-                            visible = fetchMarkersResult.loadingState is LoadingState.Error,
+                            visible = markersResult.loadingState is LoadingState.Error,
                         ) {
-                            if (fetchMarkersResult.loadingState is LoadingState.Error) {
+                            if (markersResult.loadingState is LoadingState.Error) {
                                 Text(
                                     modifier = Modifier.fillMaxWidth()
                                         .background(MaterialTheme.colors.error),
-                                    text = "Error: ${(fetchMarkersResult.loadingState as LoadingState.Error).errorMessage}",
+                                    text = "Error: ${(markersResult.loadingState as LoadingState.Error).errorMessage}",
                                     fontStyle = FontStyle.Normal,
                                     fontWeight = FontWeight.Medium,
                                     color = MaterialTheme.colors.onError
@@ -607,7 +607,7 @@ fun App() {
                             MapContent(
                                 modifier = Modifier
                                     .fillMaxHeight(1.0f - transitionRecentMarkersPanelState),
-                                isFinishedLoadingMarkerData = fetchMarkersResult.isParseMarkersPageFinished,
+                                isFinishedLoadingMarkerData = markersResult.isParseMarkersPageFinished,
                                 initialUserLocation = settings.lastKnownUserLocation,
                                 userLocation = userLocation,
                                 markers = markers,
@@ -712,16 +712,16 @@ private fun setAndSaveCurrentMarkers(
 }
 
 private fun updateMarkersWithUpdatedMarkerDetails(
-    fetchMarkersResult: MarkersResult,  // will be updated with data from `fetchMarkerDetailsResult`
-    fetchMarkerDetailsResult: LoadingState<Marker>,
+    markersResult: MarkersResult,  // will be updated with data from `fetchMarkerDetailsResult`
+    markerDetailsResult: LoadingState<Marker>,
     markers: SnapshotStateList<Marker>,
     settings: AppSettings
 ): MarkersResult {
-    var updatedFetchMarkersResult = fetchMarkersResult
+    var updatedFetchMarkersResult = markersResult
 
     // Update the marker with the details
-    if (fetchMarkerDetailsResult is LoadingState.Loaded) {
-        val updatedDetailsMapMarker = fetchMarkerDetailsResult.data
+    if (markerDetailsResult is LoadingState.Loaded) {
+        val updatedDetailsMapMarker = markerDetailsResult.data
 
         // Find the matching marker id in the list
         val index = markers.indexOfFirst { marker ->

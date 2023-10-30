@@ -302,7 +302,7 @@ fun loadMarkers(
                     }
 
                     // Merge the new parsed marker data with the previous marker data.
-                    // Note: needed to preserve previous results of "loadMarkerDetails fetch" and "isSeen status"
+                    // Note: needed to preserve previous results of "loadMarkerDetails" and "isSeen"
                     markersResultState = markersResultState.copy(
                         markerIdToRawMarkerDetailStrings = (
                             markersResultState.markerIdToRawMarkerDetailStrings +
