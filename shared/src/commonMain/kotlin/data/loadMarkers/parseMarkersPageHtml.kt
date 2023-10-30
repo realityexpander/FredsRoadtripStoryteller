@@ -57,10 +57,10 @@ fun parseMarkersPageHtml(rawPageHtml: String): MarkersResult {
                     // initialize the marker info for this marker
                     markerIdToMarker[curCapturingMarkerId] = markerIdToMarker[curCapturingMarkerId]?.copy(
                         id = curCapturingMarkerId,
-                        markerDetailPageUrl = url,
+                        markerDetailsPageUrl = url,
                     ) ?: Marker(
                         id = curCapturingMarkerId,
-                        markerDetailPageUrl = url,
+                        markerDetailsPageUrl = url,
                     )
                 }
 
@@ -140,10 +140,10 @@ fun parseMarkersPageHtml(rawPageHtml: String): MarkersResult {
                         url.substringAfterLast("/")  // m.asp?m=218883
 
                     markerIdToMarker[curCapturingMarkerId] = markerIdToMarker[curCapturingMarkerId]?.copy(
-                        markerDetailPageUrl = fullUrl,
+                        markerDetailsPageUrl = fullUrl,
                     ) ?: Marker(
                         id = curCapturingMarkerId,
-                        markerDetailPageUrl = fullUrl,
+                        markerDetailsPageUrl = fullUrl,
                     )
                 }
             }
@@ -313,7 +313,7 @@ fun parseMarkersPageHtml(rawPageHtml: String): MarkersResult {
                 title = title,
                 subtitle = shortLocation.stripEmDash(),
                 position = LatLong(lat, long),
-                markerDetailPageUrl = markerIdToMarker[markerId]?.markerDetailPageUrl ?: "",
+                markerDetailsPageUrl = markerIdToMarker[markerId]?.markerDetailsPageUrl ?: "",
             )
         }
     }

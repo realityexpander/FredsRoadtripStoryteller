@@ -310,46 +310,34 @@ fun loadMarkers(
                             ).toMutableMap(),
                         markerIdToMarker = (
                             markersResultState.markerIdToMarker +
-                                // Merge the new parsed marker data with the previous marker data.
-                                parsedMarkersResult.markerIdToMarker.map { parsedMarker ->
-                                    val markerBeforeUpdateWithDetailsAndIsSeen = markersResultState.markerIdToMarker[parsedMarker.key]
-                                    val isMarkerBeforeUpdateDetailsLoaded = markerBeforeUpdateWithDetailsAndIsSeen?.isDetailsLoaded ?: false
+                                // Merge the new parsed marker basic info with the current markers.
+                                parsedMarkersResult.markerIdToMarker.map { parsedBasicInfoMarker ->
+                                    val preserveMarker = markersResultState.markerIdToMarker[parsedBasicInfoMarker.key]
+                                    val isPreserveMarkerDetailsLoaded = preserveMarker?.isDetailsLoaded ?: false
 
-                                    println(
-                                            "in loadMarkers: " +
-                                            "  Parsed marker id: ${parsedMarker.key}, " +
-                                            "  markerBeforeUpdateWithDetailsAndIsSeen: $markerBeforeUpdateWithDetailsAndIsSeen," +
-                                            "  markerBeforeUpdateWithDetailsAndIsSeen.isSeen: ${markerBeforeUpdateWithDetailsAndIsSeen?.isSeen}," +
-                                            "  isDetailsLoaded: $isMarkerBeforeUpdateDetailsLoaded")
+                                    // Start with parsed marker (basic info) as base for merge
+                                    var mergedMarker = parsedBasicInfoMarker.value
 
-                                    // Use new parsed marker as base for merge
-                                    var mergedMarker = parsedMarker.value  // uses the update parsed "basic marker info" from the index page
-
-                                    // TODO Fix preserve isSeen state
-                                    // Preserve the `isDetailsLoaded` state (from the previous loadMarkerDetails fetch)
-                                    // - these details are loaded in a separate call (loadMarkerDetails), so we need to preserve them.
-                                    if(isMarkerBeforeUpdateDetailsLoaded) {
-                                        println("Preserving isDetailsLoaded=true state for marker: ${parsedMarker.key}")
-
-                                        // Use the `markerBeforeUpdateWithDetails` as base
-                                        // and Merge in the new parsedMarker data scraped from the Markers list index page.
-                                        mergedMarker = markerBeforeUpdateWithDetailsAndIsSeen?.copy(
-                                            inscription = parsedMarker.value.inscription,
-                                            position = parsedMarker.value.position,
-                                            title = parsedMarker.value.title,
-                                            alpha = parsedMarker.value.alpha,
-                                            subtitle = parsedMarker.value.subtitle,
-                                            markerDetailPageUrl = parsedMarker.value.markerDetailPageUrl,
-//                                            isSeen = markerBeforeUpdateWithDetailsAndIsSeen.isSeen,  // this is likely unnecessary
-                                        )!!
+                                    // TODO Make this a REPO function
+                                    // Preserve the `MarkerDetails`, and update the basic info from the parsedMarker
+                                    if(isPreserveMarkerDetailsLoaded) {
+                                        // Use the `withDataToBePreservedMarker` as base
+                                        // and copy in the parsedMarker data
+                                        mergedMarker = preserveMarker?.copy(
+                                            inscription = parsedBasicInfoMarker.value.inscription,
+                                            position = parsedBasicInfoMarker.value.position,
+                                            title = parsedBasicInfoMarker.value.title,
+                                            alpha = parsedBasicInfoMarker.value.alpha,
+                                            subtitle = parsedBasicInfoMarker.value.subtitle,
+                                        ) ?: throw IllegalStateException("markerBeforeUpdateWithDetailsAndIsSeen is null, but isDetailsLoaded=true")
                                     }
 
-                                    // preserve the `isSeen` state (from user interaction)
-                                    mergedMarker = markerBeforeUpdateWithDetailsAndIsSeen?.copy(
-                                        isSeen = markerBeforeUpdateWithDetailsAndIsSeen.isSeen,
+                                    // Preserve the `isSeen` state
+                                    mergedMarker = preserveMarker?.copy(
+                                        isSeen = preserveMarker.isSeen,
                                     ) ?: mergedMarker
 
-                                    parsedMarker.key to mergedMarker
+                                    parsedBasicInfoMarker.key to mergedMarker
                                 }
                             ).toMap(),
                     )

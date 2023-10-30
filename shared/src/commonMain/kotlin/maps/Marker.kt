@@ -11,11 +11,13 @@ data class Marker(
     val title: String = "",
     val alpha: Float = 1.0f,
     val subtitle: String = "",
-    val markerDetailPageUrl: String = "",
+
+    // For Map/Speaking
     val isSeen: Boolean = false, // Has been within the talkRadius of the user
 
     // For MarkerInfoScreen (fetched from markerInfoPageUrl)
     val isDetailsLoaded: Boolean = false,
+    val markerDetailsPageUrl: String = "",
     val mainPhotoUrl: String = "",
     val markerPhotos: List<String> = listOf(),
     val photoCaptions: List<String> = listOf(),

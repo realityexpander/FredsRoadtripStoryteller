@@ -717,7 +717,7 @@ private fun updateMarkersWithUpdatedMarkerDetails(
     markers: SnapshotStateList<Marker>,
     settings: AppSettings
 ): MarkersResult {
-    var updatedFetchMarkersResult = markersResult
+    var updatedMarkersResult = markersResult
 
     // Update the marker with the details
     if (markerDetailsResult is LoadingState.Loaded) {
@@ -729,31 +729,34 @@ private fun updateMarkersWithUpdatedMarkerDetails(
         }
         // Found the marker?
         if (index >= 0 && !markers[index].isDetailsLoaded) {
+            val preserveMarker = markers[index] // preserve the marker data
+
+            // TODO Make this a REPO function
             // Update the marker to show & indicate the details have been loaded
             markers[index] = updatedDetailsMapMarker.copy(
-                inscription = markers[index].inscription, // keep the inscription value
-                position = markers[index].position, // keep the position value
-                title = markers[index].title, // keep the title value
-                subtitle = markers[index].subtitle, // keep the subtitle value
-                markerDetailPageUrl = markers[index].markerDetailPageUrl, // keep the markerDetailPageUrl value
-                isSeen = markers[index].isSeen, // keep the isSeen value
+                inscription = preserveMarker.inscription, // keep the inscription value
+                position = preserveMarker.position, // keep the position value
+                title = preserveMarker.title, // keep the title value
+                subtitle = preserveMarker.subtitle, // keep the subtitle value
 
-                isDetailsLoaded = true, // ensure the isDetailsLoaded value reflects the details have been loaded
+                isSeen = preserveMarker.isSeen, // keep the isSeen value
+
+                isDetailsLoaded = true, // ensure the `isDetailsLoaded` value reflects the details have been loaded
             )
 
             // Update the markers list with the updated marker with the updated details
-            updatedFetchMarkersResult = updatedFetchMarkersResult.copy(
+            updatedMarkersResult = updatedMarkersResult.copy(
                 markerIdToMarker = markers.associateBy { mapMarker ->
                     mapMarker.id
                 }
             )
 
             // Update the settings with the updated marker data
-            settings.markersResult = updatedFetchMarkersResult
+            settings.markersResult = updatedMarkersResult
         }
     }
 
-    return updatedFetchMarkersResult
+    return updatedMarkersResult
 }
 
 // force a change in location to trigger a reload of the markers
@@ -830,6 +833,7 @@ private fun addSeenMarkersToRecentlySeenList(
                 uiRecentlySeenMarkersList.add(newlySeenMarker)
                 Log.d("Added Marker ${marker.id} is within talk radius of $talkRadiusMiles miles, distance=$distanceFromMarkerToUserLocationMiles miles, total recentlySeenMarkers=${recentlySeenMarkersSet.size}")
 
+                // TODO Make this a REPO function
                 // Update `isSeen` to change color of markers in Map UI
                 updatedMarkers = updatedMarkers.map { updatedMarker: Marker ->
                     if (updatedMarker.id == newlySeenMarker.id) {
