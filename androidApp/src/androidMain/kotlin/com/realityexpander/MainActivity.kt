@@ -6,7 +6,8 @@ import SplashScreenForPermissions
 import android.Manifest
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
+import android.speech.tts.TextToSpeech
+import co.touchlab.kermit.Logger as Log
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -29,8 +30,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import presentation.app.AppTheme
+import tts
+import java.util.Locale
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
     private val splashState = MutableStateFlow(false)
@@ -40,6 +43,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
+        tts = TextToSpeech(this, this)
 
         // https://proandroiddev.com/implementing-core-splashscreen-api-e62f0e690f74
         installSplashScreen().apply {
@@ -103,7 +107,7 @@ class MainActivity : AppCompatActivity() {
         // Initialize Google Maps SDK
         // See https://issuetracker.google.com/issues/228091313
         MapsInitializer.initialize(this, MapsInitializer.Renderer.LATEST) {
-            Log.i("App", "onMapsSdkInitialized: initialized Google Maps SDK, version: ${it.name}")
+            Log.i("onMapsSdkInitialized: initialized Google Maps SDK, version: ${it.name}")
         }
 
         // Collects the intent flow from the common module Android specific code
@@ -128,15 +132,32 @@ class MainActivity : AppCompatActivity() {
         // If permissions are not granted yet, show the splash screen for permissions.
         setContent {
             AppTheme {
-//                SplashScreenForPermissions(settings.isPermissionsGranted())
                 SplashScreenForPermissions(settings.isPermissionsGranted)
             }
         }
     }
 
+    override fun onInit(status: Int) {
+        if (status == TextToSpeech.SUCCESS) {
+            val result = tts!!.setLanguage(Locale.US)
+
+            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e("TTS: The Language not supported!, result= $result")
+                tts = null
+            } else {
+                Log.d("TTS: Initialization success!")
+            }
+        }
+    }
+
     override fun onDestroy() {
-        super.onDestroy()
+        if (tts != null) {
+            tts!!.stop()
+            tts!!.shutdown()
+        }
         stopBackgroundUpdates()
+
+        super.onDestroy()
     }
 
     // Turn off the notification service for the GPS service, which prevents background location updates
