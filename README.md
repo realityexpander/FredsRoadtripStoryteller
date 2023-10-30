@@ -44,6 +44,9 @@ https://github.com/JetBrains/compose-multiplatform/tree/master/examples/cocoapod
 - Drawers
 - https://developer.android.com/jetpack/compose/components/drawer
 
+- WebView
+- https://github.com/KevinnZou/compose-webview-multiplatform/blob/main/sample/shared/src/commonMain/kotlin/com/kevinnzou/sample/BasicWebViewSample.kt
+
 ### Android
 - Adding markers
  - https://www.geeksforgeeks.org/how-to-add-multiple-markers-to-google-maps-in-android-using-jetpack-compose/
