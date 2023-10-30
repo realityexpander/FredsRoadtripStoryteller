@@ -742,15 +742,15 @@ private fun resetMarkerSettings(
     recentlySeenMarkersForUiList: SnapshotStateList<RecentlySeenMarker>
 ) {
     // Reset the `seen markers` list, UI elements
-    recentlySeenMarkersSet.clear()
-    recentlySeenMarkersForUiList.clear()
     mapMarkers.clear()
     previousMapMarkers.clear()
+    recentlySeenMarkersSet.clear()
+    recentlySeenMarkersForUiList.clear()
 
     // Reset the settings cache of markers
     settings.clear(kMarkersResult)
     settings.clear(kMarkersLastUpdatedLocation)
-    settings.clear(kMarkersLastUpdateEpochSeconds)
+    // settings.clear(kMarkersLastUpdateEpochSeconds)  // todo remove this?
     settings.clear(kRecentlySeenMarkersSet)
     settings.clear(kUiRecentlySeenMarkersList)
 }

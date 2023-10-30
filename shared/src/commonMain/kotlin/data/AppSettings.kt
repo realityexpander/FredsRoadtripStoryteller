@@ -114,7 +114,7 @@ class AppSettings(private val settings: Settings) {
         println("markersResult.size= ${markersResult.markerIdToMapMarkerMap.size}")
 
         // Show current settings
-        Log.d { "All keys from settings: ${settings.keys.joinToString("") { it + "\n  " }}" }
+        Log.d { "All keys from settings: ${settings.keys.joinToString("") { "$it\n ⎣_" }}" }
         settingsMap.forEach { entry ->
             if(entry.key == kMarkersResult) { // Don't want to display all the markers
                 Log.d { "Settings: ${entry.key} = ${(entry.value as MarkersResult).markerIdToMapMarkerMap.size} markers" }

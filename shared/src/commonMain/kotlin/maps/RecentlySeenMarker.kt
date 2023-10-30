@@ -8,7 +8,7 @@ data class RecentlySeenMarker(
     val title: String,
     val insertedAtEpochMilliseconds: Long = 0,
 
-    @Suppress("Unused") // will be used todo really?
+    @Suppress("Unused") // will be used todo remove?
     val seenOrder: Int = 0,
 )
 
