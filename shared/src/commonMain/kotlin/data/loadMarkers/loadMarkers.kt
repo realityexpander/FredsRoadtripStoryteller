@@ -31,7 +31,7 @@ import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import maps.MapMarker
+import maps.Marker
 import maps.MarkerIdStr
 import network.httpClient
 import co.touchlab.kermit.Logger as Log
@@ -39,7 +39,7 @@ import co.touchlab.kermit.Logger as Log
 @Serializable
 data class MarkersResult(
     val markerIdToRawMarkerDetailStrings: MutableMap<MarkerIdStr, String> = mutableMapOf(),
-    val markerIdToMapMarkerMap: Map<MarkerIdStr, MapMarker> = mutableMapOf(),
+    val markerIdToMarker: Map<MarkerIdStr, Marker> = mutableMapOf(),
     val rawMarkerCountFromFirstPageHtmlOfMultiPageResult: Int = 0,
     val isParseMarkersPageFinished: Boolean = false,
 
@@ -101,8 +101,8 @@ fun loadMarkers(
 
     // Holds the current processing state of the parsed markers
     var curProcessingHtmlPageNum by remember { mutableStateOf(1) }
-    var markersResultState by remember(settings.markersResult.markerIdToMapMarkerMap.size) { // checks if settings is cleared or not set yet.
-        if(settings.markersResult.markerIdToMapMarkerMap.isNotEmpty()) {
+    var markersResultState by remember(settings.markersResult.markerIdToMarker.size) { // checks if settings is cleared or not set yet.
+        if(settings.markersResult.markerIdToMarker.isNotEmpty()) {
             return@remember mutableStateOf(settings.markersResult) // return the cached result
         }
 
@@ -127,7 +127,7 @@ fun loadMarkers(
         }
 
         // Step 1 - Check for a cached result in the Settings
-        if (settings.markersResult.markerIdToMapMarkerMap.isNotEmpty()) {
+        if (settings.markersResult.markerIdToMarker.isNotEmpty()) {
             val cachedMarkersResult =
                 settings.markersResult
                     .copy(isParseMarkersPageFinished = true) // ensure the cached result is marked as finished
@@ -229,7 +229,7 @@ fun loadMarkers(
 
         // Save the cachedResultState to persistent storage (Settings) (if it was updated from the network)
         if (shouldUpdateCache) {
-            println("Saving markers to Settings, total count: ${cachedMarkersResultState.markerIdToMapMarkerMap.size}")
+            println("Saving markers to Settings, total count: ${cachedMarkersResultState.markerIdToMarker.size}")
             coroutineScope.launch {
                 settings.markersResult = cachedMarkersResultState
                 settings.markersLastUpdateEpochSeconds = Clock.System.now().epochSeconds
@@ -242,7 +242,7 @@ fun loadMarkers(
         }
 
         // 6 PROCESS COMPLETE
-        Log.d("Finished loading all pages, total markers:${cachedMarkersResultState.markerIdToMapMarkerMap.size}")
+        Log.d("Finished loading all pages, total markers:${cachedMarkersResultState.markerIdToMarker.size}")
         markersLoadingState = LoadingState.Finished
         curProcessingHtmlPageNum = 0
         mutableStateOf<LoadingState<String>>(LoadingState.Finished)
@@ -308,18 +308,27 @@ fun loadMarkers(
                             markersResultState.markerIdToRawMarkerDetailStrings +
                                 parsedMarkersResult.markerIdToRawMarkerDetailStrings
                             ).toMutableMap(),
-                        markerIdToMapMarkerMap = (
-                            markersResultState.markerIdToMapMarkerMap +
-                                parsedMarkersResult.markerIdToMapMarkerMap.map { parsedMarker ->
-                                    val markerBeforeUpdateWithDetailsAndIsSeen = markersResultState.markerIdToMapMarkerMap[parsedMarker.key]
-                                    val markerBeforeUpdateIsDetailsLoaded = markerBeforeUpdateWithDetailsAndIsSeen?.isDetailsLoaded ?: false
+                        markerIdToMarker = (
+                            markersResultState.markerIdToMarker +
+                                // Merge the new parsed marker data with the previous marker data.
+                                parsedMarkersResult.markerIdToMarker.map { parsedMarker ->
+                                    val markerBeforeUpdateWithDetailsAndIsSeen = markersResultState.markerIdToMarker[parsedMarker.key]
+                                    val isMarkerBeforeUpdateDetailsLoaded = markerBeforeUpdateWithDetailsAndIsSeen?.isDetailsLoaded ?: false
+
+                                    println(
+                                            "in loadMarkers: " +
+                                            "  Parsed marker id: ${parsedMarker.key}, " +
+                                            "  markerBeforeUpdateWithDetailsAndIsSeen: $markerBeforeUpdateWithDetailsAndIsSeen," +
+                                            "  markerBeforeUpdateWithDetailsAndIsSeen.isSeen: ${markerBeforeUpdateWithDetailsAndIsSeen?.isSeen}," +
+                                            "  isDetailsLoaded: $isMarkerBeforeUpdateDetailsLoaded")
 
                                     // Use new parsed marker as base for merge
-                                    var mergedMarker = parsedMarker.value
+                                    var mergedMarker = parsedMarker.value  // uses the update parsed "basic marker info" from the index page
 
+                                    // TODO Fix preserve isSeen state
                                     // Preserve the `isDetailsLoaded` state (from the previous loadMarkerDetails fetch)
                                     // - these details are loaded in a separate call (loadMarkerDetails), so we need to preserve them.
-                                    if(markerBeforeUpdateIsDetailsLoaded) {
+                                    if(isMarkerBeforeUpdateDetailsLoaded) {
                                         println("Preserving isDetailsLoaded=true state for marker: ${parsedMarker.key}")
 
                                         // Use the `markerBeforeUpdateWithDetails` as base
@@ -331,13 +340,14 @@ fun loadMarkers(
                                             alpha = parsedMarker.value.alpha,
                                             subtitle = parsedMarker.value.subtitle,
                                             markerDetailPageUrl = parsedMarker.value.markerDetailPageUrl,
-                                        ) ?: parsedMarker.value
+//                                            isSeen = markerBeforeUpdateWithDetailsAndIsSeen.isSeen,  // this is likely unnecessary
+                                        )!!
                                     }
 
                                     // preserve the `isSeen` state (from user interaction)
-                                    mergedMarker = mergedMarker.copy(
-                                        isSeen = markerBeforeUpdateWithDetailsAndIsSeen?.isSeen ?: false,
-                                    )
+                                    mergedMarker = markerBeforeUpdateWithDetailsAndIsSeen?.copy(
+                                        isSeen = markerBeforeUpdateWithDetailsAndIsSeen.isSeen,
+                                    ) ?: mergedMarker
 
                                     parsedMarker.key to mergedMarker
                                 }
@@ -349,13 +359,15 @@ fun loadMarkers(
                                 parsedMarkersResult.rawMarkerCountFromFirstPageHtmlOfMultiPageResult
                         )
                     }
-                    Log.d("Total drivable markerInfos.size after parse: ${markersResultState.markerIdToMapMarkerMap.size}, Parsed markerIdToRawMarkerInfoStrings count: ${markersResultState.markerIdToRawMarkerDetailStrings.size}")
+                    Log.d("Total drivable markerInfos.size after parse: ${markersResultState.markerIdToMarker.size}, Parsed markerIdToRawMarkerInfoStrings count: ${markersResultState.markerIdToRawMarkerDetailStrings.size}")
 
                     // 4.2 - Load more pages, if needed.
                     // - Marker list size comparison is based on the number of `markerIdToRawMarkerInfoStrings`, not the parsed
                     //   `markerInfos` because some of the markers from the page may have been rejected, and we just want
                     //   to know when the raw html is completely loaded, not how many markers were parsed.
-                    if (markersResultState.markerIdToRawMarkerDetailStrings.size < markersResultState.rawMarkerCountFromFirstPageHtmlOfMultiPageResult) {
+                    if (markersResultState.markerIdToRawMarkerDetailStrings.size
+                        < markersResultState.rawMarkerCountFromFirstPageHtmlOfMultiPageResult
+                    ) {
                         Log.d("Loading next page..., markerIdToRawMarkerDetailStrings.size: ${markersResultState.markerIdToRawMarkerDetailStrings.size}, rawMarkerCountFromFirstHtmlPage: ${markersResultState.rawMarkerCountFromFirstPageHtmlOfMultiPageResult}")
                         curProcessingHtmlPageNum++  // trigger the next page load
                     } else {
@@ -404,7 +416,7 @@ fun loadMarkers(
                     Text(
                         fontSize = 18.sp,
                         text = "Loaded: ${markersResultState.markerIdToRawMarkerDetailStrings.size} / ${markersResultState.rawMarkerCountFromFirstPageHtmlOfMultiPageResult} entries\n" +
-                                "Parsed: ${markersResultState.markerIdToMapMarkerMap.size}\n" +
+                                "Parsed: ${markersResultState.markerIdToMarker.size}\n" +
                                 "Data size: ${state.data.length} chars"
                     )
                 }

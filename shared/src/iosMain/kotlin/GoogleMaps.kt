@@ -45,7 +45,7 @@ import data.loadMarkers.milesToMeters
 import maps.CameraLocationBounds
 import maps.CameraPosition
 import maps.LatLong
-import maps.MapMarker
+import maps.Marker
 import platform.CoreLocation.CLLocationCoordinate2DMake
 import platform.UIKit.UIColor
 
@@ -57,7 +57,7 @@ actual fun GoogleMaps(
     isMapOptionSwitchesVisible: Boolean,
     isTrackingEnabled: Boolean,
     userLocation: LatLong?,
-    markers: List<MapMarker>?,
+    markers: List<Marker>?,
     shouldRedrawMapMarkers: Boolean,
     cameraOnetimePosition: CameraPosition?,  // best for tracking user location
     cameraLocationLatLong: LatLong?,  // best for showing a bunch of markers
@@ -65,7 +65,7 @@ actual fun GoogleMaps(
     polyLine: List<LatLong>?,
     onMapClick: ((LatLong) -> Unit)?,  // shows the user's location with a 100m radius circle
     onMapLongClick: ((LatLong) -> Unit)?,
-    onMarkerClick: ((MapMarker) -> Unit)?,
+    onMarkerClick: ((Marker) -> Unit)?,
     talkRadiusMiles: Double,
     cachedMarkersLastUpdatedLocation: Location?,
     onToggleIsTrackingEnabledClick: (() -> Unit)?,

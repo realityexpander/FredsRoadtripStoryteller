@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
@@ -63,7 +62,7 @@ import kotlinx.coroutines.launch
 import maps.CameraLocationBounds
 import maps.CameraPosition
 import maps.LatLong
-import maps.MapMarker
+import maps.Marker
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import presentation.uiComponents.PreviewPlaceholder
@@ -79,7 +78,7 @@ actual fun GoogleMaps(
     isMapOptionSwitchesVisible: Boolean,
     isTrackingEnabled: Boolean,
     userLocation: LatLong?,
-    markers: List<MapMarker>?,
+    markers: List<Marker>?,
     shouldRedrawMapMarkers: Boolean,
     cameraOnetimePosition: CameraPosition?, // Best for setting initial camera position bc zoom level is forced
     cameraLocationLatLong: LatLong?, // Best for tracking user location
@@ -87,7 +86,7 @@ actual fun GoogleMaps(
     polyLine: List<LatLong>?,
     onMapClick: ((LatLong) -> Unit)?,
     onMapLongClick: ((LatLong) -> Unit)?,
-    onMarkerClick: ((MapMarker) -> Unit)?,
+    onMarkerClick: ((Marker) -> Unit)?,
     talkRadiusMiles: Double,
     cachedMarkersLastUpdatedLocation: Location?,
     onToggleIsTrackingEnabledClick: (() -> Unit)?,
@@ -207,7 +206,7 @@ actual fun GoogleMaps(
 
     Box(modifier.fillMaxSize()) {
 
-        val myMarkers = remember { mutableStateOf(listOf<MapMarker>()) }
+        val myMarkers = remember { mutableStateOf(listOf<Marker>()) }
         val coroutineScope = rememberCoroutineScope()
         val cachedMarkers = remember { mutableStateListOf<ClusterItem>() }
         var cachedTileProvider by remember {
@@ -425,7 +424,7 @@ actual fun GoogleMaps(
                 },
                 onClusterItemInfoWindowClick = { clusterItem ->
                     coroutineScope.launch {
-                        val selectedMarker = MapMarker(
+                        val selectedMarker = Marker(
                             id = clusterItem.snippet.toString(),
                             position = LatLong(
                                 clusterItem.position.latitude,

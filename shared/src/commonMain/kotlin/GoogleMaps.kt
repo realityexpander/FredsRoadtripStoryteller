@@ -3,7 +3,7 @@ import androidx.compose.ui.Modifier
 import maps.CameraLocationBounds
 import maps.CameraPosition
 import maps.LatLong
-import maps.MapMarker
+import maps.Marker
 
 @Composable
 expect fun GoogleMaps(
@@ -11,7 +11,7 @@ expect fun GoogleMaps(
     isMapOptionSwitchesVisible: Boolean = true,
     isTrackingEnabled: Boolean = false,
     userLocation: LatLong? = null,
-    markers: List<MapMarker>? = null,
+    markers: List<Marker>? = null,
     shouldRedrawMapMarkers: Boolean = false,
     cameraOnetimePosition: CameraPosition? = null,
     cameraLocationLatLong: LatLong? = null,
@@ -19,7 +19,7 @@ expect fun GoogleMaps(
     polyLine: List<LatLong>? = null,
     onMapClick: ((LatLong) -> Unit)? = {},
     onMapLongClick: ((LatLong) -> Unit)? = {},
-    onMarkerClick: ((MapMarker) -> Unit)? = {},
+    onMarkerClick: ((Marker) -> Unit)? = {},
     talkRadiusMiles: Double = .5,
     cachedMarkersLastUpdatedLocation: Location? = null,
     onToggleIsTrackingEnabledClick: (() -> Unit)? = null,
@@ -32,4 +32,3 @@ expect fun GoogleMaps(
 //onMapClick: (maps.LatLong) -> Unit = {},
 //onMapLongClick: (maps.LatLong) -> Unit = {},
 
-expect fun triggerDeveloperFeedback()

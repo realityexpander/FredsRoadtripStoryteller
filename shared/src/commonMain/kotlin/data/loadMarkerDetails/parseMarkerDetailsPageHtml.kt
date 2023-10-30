@@ -1,6 +1,6 @@
 package data.loadMarkerDetails
 
-import maps.MapMarker
+import maps.Marker
 import co.touchlab.kermit.Logger
 import com.mohamedrejeb.ksoup.entities.KsoupEntities
 import com.mohamedrejeb.ksoup.html.parser.KsoupHtmlHandler
@@ -9,9 +9,9 @@ import data.LoadingState
 import data.loadMarkers.kBaseHmdbDotOrgUrl
 
 
-fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
+fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, Marker?> {
 
-    var mapMarkerResult = MapMarker()
+    var markerResult = Marker()
     val rawMarkerInfoStrings = mutableListOf<String>()
     val spanishInscriptionLines = mutableListOf<String>()
     val englishInscriptionLines = mutableListOf<String>()
@@ -85,16 +85,16 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
                     val markerPhotoUrl = kBaseHmdbDotOrgUrl + (attributes["src"] ?: "")
 
                     // Set first photo as the main photo
-                    if(mapMarkerResult.mainPhotoUrl.isBlank()) {
-                        mapMarkerResult = mapMarkerResult.copy(
+                    if(markerResult.mainPhotoUrl.isBlank()) {
+                        markerResult = markerResult.copy(
                             mainPhotoUrl = markerPhotoUrl
                         )
                     }
 
                     // Add all photos to markerPhotos list
-                    mapMarkerResult =
-                        mapMarkerResult.copy(
-                            markerPhotos = mapMarkerResult.markerPhotos.plus(markerPhotoUrl)
+                    markerResult =
+                        markerResult.copy(
+                            markerPhotos = markerResult.markerPhotos.plus(markerPhotoUrl)
                         )
                 }
 
@@ -162,7 +162,7 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
 
                     // Title Text
                     if (isCapturingTitleText) {
-                        mapMarkerResult = mapMarkerResult.copy(
+                        markerResult = markerResult.copy(
                             title = decodedString
                         )
                         isCapturingText = false
@@ -171,7 +171,7 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
 
                     // Inscription (english-only text) (will be "English translation:" if multi-language)
                     if(isCapturingInscriptionText) {
-                        mapMarkerResult = mapMarkerResult.copy(
+                        markerResult = markerResult.copy(
                             inscription = decodedString
                         )
                         isCapturingText = false  // Captures only one line of text
@@ -196,8 +196,8 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
 
                     // Photo Caption(s)
                     if(isCapturingPhotoCaption) {
-                        mapMarkerResult = mapMarkerResult.copy(
-                            photoCaptions = mapMarkerResult
+                        markerResult = markerResult.copy(
+                            photoCaptions = markerResult
                                 .photoCaptions.plus(decodedString.trim())
                         )
                         isCapturingText = false
@@ -206,8 +206,8 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
 
                     // Photo Attribution(s)
                     if(isCapturingPhotoAttribution) {
-                        mapMarkerResult = mapMarkerResult.copy(
-                            photoAttributions = mapMarkerResult
+                        markerResult = markerResult.copy(
+                            photoAttributions = markerResult
                                 .photoAttributions.plus(decodedString.trim())
                         )
                         isCapturingText = false
@@ -234,8 +234,8 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
 
                     }
                     if(isCapturingErectedTextPhase2) {
-                        mapMarkerResult = mapMarkerResult.copy(
-                            erected = mapMarkerResult.erected + decodedString.trim()
+                        markerResult = markerResult.copy(
+                            erected = markerResult.erected + decodedString.trim()
                         )
                         return@onText
                     }
@@ -259,13 +259,13 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
 
                     }
                     if(isCapturingLocationTextPhase2) {
-                        mapMarkerResult = mapMarkerResult.copy(
-                            location = mapMarkerResult.location + decodedString
+                        markerResult = markerResult.copy(
+                            location = markerResult.location + decodedString
                         )
 
                         // Strip the final string of "Touch for map." or "Touch for directions."
-                        mapMarkerResult = mapMarkerResult.copy(
-                            location = mapMarkerResult.location
+                        markerResult = markerResult.copy(
+                            location = markerResult.location
                                 .stripString("Touch for map.")
                                 .stripString("Touch for directions.")
                         )
@@ -288,7 +288,7 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
     // Multi-language Inscription - Process the collected lines, if any
     val finalEnglishInscription =
         if(englishInscriptionLines.size > 0
-           || mapMarkerResult.inscription.contains("English translation", ignoreCase=true)
+           || markerResult.inscription.contains("English translation", ignoreCase=true)
         ) {
             englishInscriptionLines
                 .subList(1, englishInscriptionLines.size)// skip the first line of the inscription (it's the title)
@@ -299,7 +299,7 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
         }
     val finalSpanishInscription =
         if(spanishInscriptionLines.size > 0
-            || mapMarkerResult.inscription.contains("English translation", ignoreCase=true)
+            || markerResult.inscription.contains("English translation", ignoreCase=true)
         ) {
             spanishInscriptionLines
                 .subList(1, spanishInscriptionLines.size) // skip the first line of the inscription (it's the title)
@@ -308,12 +308,12 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, MapMarker?> {
         } else {
             ""
         }
-    mapMarkerResult = mapMarkerResult.copy(
+    markerResult = markerResult.copy(
         englishInscription = finalEnglishInscription,
         spanishInscription = finalSpanishInscription,
     )
 
-    return Pair(null, mapMarkerResult)
+    return Pair(null, markerResult)
 }
 
 fun String.stripDoubleSpace(): String {
@@ -346,9 +346,9 @@ fun String.processInscriptionString(): String {
         .trim()
 }
 
-fun fakeLoadingStateForMarkerDetailsPageHtml(marker: MapMarker): LoadingState<MapMarker> {
+fun fakeLoadingStateForMarkerDetailsPageHtml(marker: Marker): LoadingState<Marker> {
     return LoadingState.Loaded(
-        MapMarker(
+        Marker(
             id = marker.id,
             position = marker.position,
             title = marker.title,

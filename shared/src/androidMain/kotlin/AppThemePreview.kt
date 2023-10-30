@@ -17,7 +17,7 @@ import presentation.uiComponents.SettingsSlider
 import presentation.uiComponents.SettingsSwitch
 import data.LoadingState
 import maps.LatLong
-import maps.MapMarker
+import maps.Marker
 import presentation.MarkerDetailsScreen
 import presentation.SettingsScreen
 
@@ -105,8 +105,8 @@ fun SettingsDark() {
 )
 @Composable
 fun MarkerInfoPreview(
- loadingState: LoadingState<MapMarker> = LoadingState.Loaded(
-    MapMarker(
+ loadingState: LoadingState<Marker> = LoadingState.Loaded(
+    Marker(
         id = "M73739",
         position = LatLong(
             latitude = 0.0,

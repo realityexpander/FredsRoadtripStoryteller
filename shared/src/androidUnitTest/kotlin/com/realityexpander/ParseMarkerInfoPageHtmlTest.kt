@@ -262,7 +262,7 @@ class ParseMarkerInfoPageHtmlTest {
         val result = parseMarkerDetailsPageHtml(markerInfoPageHtml)
         val markerInfo = result.second!!
 
-         println(json.encodeToString(maps.MapMarker.serializer(), markerInfo))
+         println(json.encodeToString(maps.Marker.serializer(), markerInfo))
 
         // Title
         assertTrue(

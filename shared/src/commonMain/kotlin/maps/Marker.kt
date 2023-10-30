@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 typealias MarkerIdStr = String // e.g. "M2580"
 
 @Serializable
-data class MapMarker(
+data class Marker(
     val id: MarkerIdStr = "",
     val position: LatLong = LatLong(0.0, 0.0),
     val title: String = "",
@@ -28,5 +28,5 @@ data class MapMarker(
     val location: String = "",
 
     val markerPhotos2: List<MarkerPhoto> = listOf(), // todo consolidate with markerPhotos, photoCaptions, photoAttributions
-    val lastUpdatedEpochSeconds: Long = 0, // for cache expiry
+    val lastUpdatedDetailsEpochSeconds: Long = 0, // for cache expiry
 )

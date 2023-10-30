@@ -1,6 +1,6 @@
 package data.loadMarkerDetails
 
-import maps.MapMarker
+import maps.Marker
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -21,16 +21,16 @@ import co.touchlab.kermit.Logger as Log
 const val kUseFakeData = false
 
 @Composable
-fun loadMapMarkerDetails(mapMarker: MapMarker, useFakeData: Boolean = false): LoadingState<MapMarker> {
+fun loadMarkerDetails(marker: Marker, useFakeData: Boolean = false): LoadingState<Marker> {
 
-    var loadingState by remember(mapMarker) {
-        if(isMarkerDetailsAlreadyLoadedAndNotExpired(mapMarker)) {
-            Log.d("in loadMapMarkerDetails(${mapMarker.id}), isDescriptionLoaded is true & not expired, returning Loaded(mapMarker)")
+    var loadingState by remember(marker) {
+        if(isMarkerDetailsAlreadyLoadedAndNotExpired(marker)) {
+            Log.d("in loadMapMarkerDetails(${marker.id}), isDescriptionLoaded is true & not expired, returning Loaded(mapMarker)")
 
-            return@remember mutableStateOf<LoadingState<MapMarker>>(LoadingState.Loading)
+            return@remember mutableStateOf<LoadingState<Marker>>(LoadingState.Loading)
         }
 
-        mutableStateOf<LoadingState<MapMarker>>(LoadingState.Loading)
+        mutableStateOf<LoadingState<Marker>>(LoadingState.Loading)
     }
 
     fun String.calculateMarkerDetailsPageUrl(): String {
@@ -38,13 +38,13 @@ fun loadMapMarkerDetails(mapMarker: MapMarker, useFakeData: Boolean = false): Lo
         return kBaseHmdbDotOrgUrl + "m.asp?m=$markerKeyNumber"
     }
     // load markerDetailsPageUrl from markerId
-    val markerDetailsPageUrl by remember(mapMarker.id) {
-        mutableStateOf(mapMarker.id.calculateMarkerDetailsPageUrl())
+    val markerDetailsPageUrl by remember(marker.id) {
+        mutableStateOf(marker.id.calculateMarkerDetailsPageUrl())
     }
 
     LaunchedEffect(markerDetailsPageUrl) {
-        if(isMarkerDetailsAlreadyLoadedAndNotExpired(mapMarker)) {
-            loadingState = LoadingState.Loaded(mapMarker)
+        if(isMarkerDetailsAlreadyLoadedAndNotExpired(marker)) {
+            loadingState = LoadingState.Loaded(marker)
             return@LaunchedEffect
         }
 
@@ -69,11 +69,11 @@ fun loadMapMarkerDetails(mapMarker: MapMarker, useFakeData: Boolean = false): Lo
                 // update the passed-in marker with the parsed info and return it
                 val parsedMarkerDetails = parsedMarkerResult.second!!
                 loadingState = LoadingState.Loaded(
-                    mapMarker.copy(
-                        location = mapMarker.location,
-                        id = mapMarker.id,
-                        title = mapMarker.title,
-                        subtitle = mapMarker.subtitle,
+                    marker.copy(
+                        location = marker.location,
+                        id = marker.id,
+                        title = marker.title,
+                        subtitle = marker.subtitle,
                         isDetailsLoaded = true,
                         inscription = parsedMarkerDetails.inscription,
                         englishInscription = parsedMarkerDetails.englishInscription,
@@ -101,8 +101,8 @@ fun loadMapMarkerDetails(mapMarker: MapMarker, useFakeData: Boolean = false): Lo
     return loadingState
 }
 
-private fun isMarkerDetailsAlreadyLoadedAndNotExpired(mapMarkerToUpdate: MapMarker) =
-    mapMarkerToUpdate.isDetailsLoaded &&
-        mapMarkerToUpdate.lastUpdatedEpochSeconds + kMaxMarkerCacheAgeSeconds < Clock.System.now().epochSeconds
+private fun isMarkerDetailsAlreadyLoadedAndNotExpired(markerToUpdate: Marker) =
+    markerToUpdate.isDetailsLoaded &&
+        markerToUpdate.lastUpdatedDetailsEpochSeconds + kMaxMarkerCacheAgeSeconds < Clock.System.now().epochSeconds
 
 

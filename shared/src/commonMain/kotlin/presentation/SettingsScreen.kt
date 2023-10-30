@@ -167,7 +167,7 @@ fun SettingsScreen(
                 Text("Reset Marker Info Cache")
             }
         Text(
-            "Cache size: ${settings?.markersResult?.markerIdToMapMarkerMap?.size} markers",
+            "Cache size: ${settings?.markersResult?.markerIdToMarker?.size} markers",
             modifier = Modifier
                 .align(Alignment.CenterHorizontally),
         )

@@ -53,15 +53,13 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.russhwolf.settings.Settings
 import data.AppSettings
-import data.AppSettings.Companion.kMarkersLastUpdateEpochSeconds
 import data.AppSettings.Companion.kMarkersLastUpdatedLocation
 import data.AppSettings.Companion.kMarkersResult
 import data.AppSettings.Companion.kRecentlySeenMarkersSet
 import data.AppSettings.Companion.kUiRecentlySeenMarkersList
 import data.LoadingState
-import data.loadMarkerDetails.loadMapMarkerDetails
+import data.loadMarkerDetails.loadMarkerDetails
 import data.loadMarkers.MarkersResult
 import data.loadMarkers.distanceBetween
 import data.loadMarkers.loadMarkers
@@ -74,7 +72,7 @@ import kotlinx.serialization.json.Json
 import maps.CameraLocationBounds
 import maps.CameraPosition
 import maps.LatLong
-import maps.MapMarker
+import maps.Marker
 import maps.MarkerIdStr
 import maps.RecentlySeenMarker
 import maps.RecentlySeenMarkersList
@@ -103,7 +101,7 @@ sealed class BottomSheetScreen {
     data object SettingsScreen : BottomSheetScreen()
 
     // Can pass in a MapMarker or just an id string
-    data class MarkerDetailsScreen(val marker: MapMarker? = null, val id: String? = marker?.id) : BottomSheetScreen()
+    data class MarkerDetailsScreen(val marker: Marker? = null, val id: String? = marker?.id) : BottomSheetScreen()
 }
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -123,14 +121,19 @@ fun App() {
             mutableStateOf<String?>(null)
         }
 
-        // Settings
-        val settings = remember {
-            AppSettings(Settings()).apply {
-                if(kForceClearSettingsAtLaunch) { clearAllSettings() }
-                // Log.setMinSeverity(Severity.Warn)
-                printAppSettings()
-            }
+        // Speaking UI
+        var isCurrentlySpeaking by remember {
+            mutableStateOf(false)
         }
+
+        // Settings
+//        val settings = remember {
+//            AppSettings.use(settings).apply {
+//                if(kForceClearSettingsAtLaunch) { clearAllSettings() }
+//                // Log.setMinSeverity(Severity.Warn)
+//                printAppSettings()
+//            }
+//        }
         var talkRadiusMiles by remember {
             mutableStateOf(settings.talkRadiusMiles)
         }
@@ -169,15 +172,15 @@ fun App() {
         }
 
         // Holds the set of saved markers, this prevents flicker when loading new markers while processing the marker page(s)
-        val previousMapMarkers = remember {
-            mutableStateListOf<MapMarker>()
+        val previousMarkers = remember {
+            mutableStateListOf<Marker>()
         }
 
         // Load markers
         var loadingStateIcon: ImageVector by remember {
             mutableStateOf(Icons.Default.CloudDownload)
         }
-        var fetchedMarkersResult: MarkersResult =
+        var fetchMarkersResult: MarkersResult =
             loadMarkers(
                 settings,
                 userLocation = userLocation, // when user location changes, triggers potential load markers from server
@@ -216,29 +219,29 @@ fun App() {
         }
 
         // Update the markers AFTER page has finished parsing
-        val mapMarkers =
-            remember(fetchedMarkersResult.isParseMarkersPageFinished) {
+        val markers =
+            remember(fetchMarkersResult.isParseMarkersPageFinished) {
             // More pages to load?
-            if (!fetchedMarkersResult.isParseMarkersPageFinished) {
+            if (!fetchMarkersResult.isParseMarkersPageFinished) {
                 // While loading new markers, use the cached markers to prevent flicker
-                return@remember previousMapMarkers
+                return@remember previousMarkers
             }
 
             // Update the markers list with the latest marker data. (after it's loaded)
             // Note: new markers are merged with the previous markers list.
             val fetchedMarkers =
-                fetchedMarkersResult.markerIdToMapMarkerMap.map { marker ->
+                fetchMarkersResult.markerIdToMarker.map { marker ->
                     marker.value
                 }
 
             // Update the markers list with the updated marker data
-            mutableStateListOf<MapMarker>().also { snapShot ->
+            mutableStateListOf<Marker>().also { snapShot ->
                 snapShot.clear()
                 snapShot.addAll(fetchedMarkers)
 
                 // Update the new "previous" markers list
-                previousMapMarkers.clear()
-                previousMapMarkers.addAll(fetchedMarkers)
+                previousMarkers.clear()
+                previousMarkers.addAll(fetchedMarkers)
 
                 // Force a redraw of the map & markers
                 coroutineScope.launch {
@@ -262,11 +265,11 @@ fun App() {
 
         // Marker Details Loading State (for Bottom Sheet)
         var fetchMarkerDetailsResult by remember {
-            mutableStateOf<LoadingState<MapMarker>>(LoadingState.Loading)
+            mutableStateOf<LoadingState<Marker>>(LoadingState.Loading)
         }
 
         // Update user GPS location & Recently Seen Markers
-        LaunchedEffect(Unit, fetchedMarkersResult.loadingState) {
+        LaunchedEffect(Unit, fetchMarkersResult.loadingState) {
             // Set the last known location to the current location in settings
             gpsLocationService.onUpdatedGPSLocation(
                 errorCallback = { errorMessage ->
@@ -296,8 +299,8 @@ fun App() {
                     settings.lastKnownUserLocation = location
 
                     // 2. Check for new markers inside talk radius & add to recentlySeen list
-                    addMarkersToRecentlySeenList(
-                        mapMarkers,
+                    addSeenMarkersToRecentlySeenList(
+                        markers,
                         userLocation,
                         talkRadiusMiles,
                         recentlySeenMarkersSet,
@@ -305,13 +308,32 @@ fun App() {
                         onUpdateIsSeenMapMarkers = { updatedIsSeenMapMarkers ->
                             // Update the isSeen value of the markers
                             coroutineScope.launch {
-                                fetchedMarkersResult = setCurrentMapMarkers(
-                                    fetchedMarkersResult,
-                                    updatedMapMarkers = updatedIsSeenMapMarkers,
-                                    mapMarkers = mapMarkers,
-                                    previousMapMarkers = previousMapMarkers,
-                                    settings = settings
-                                )
+                                fetchMarkersResult =
+                                    setAndSaveCurrentMarkers(
+                                        fetchMarkersResult,
+                                        updatedMarkers = updatedIsSeenMapMarkers,
+                                        markers = markers,
+                                        previousMarkers = previousMarkers,
+                                        settings = settings
+                                    )
+
+                                // Speak the top marker
+                                if (!isTTSSpeaking()) {
+                                    println("Speak the top marker")
+                                    // Speak the marker title
+                                    isCurrentlySpeaking = true
+                                    if(settings.shouldSpeakAutomaticallyWhenUnseenMarkerFound) {
+                                        if(settings.uiRecentlySeenMarkersList.list.isNotEmpty()) {
+                                            ttsSpeak(
+                                                settings.uiRecentlySeenMarkersList
+                                                    .list
+                                                    .maxBy { recentMarker -> // get newest marker
+                                                        recentMarker.insertedAtEpochMilliseconds
+                                                    }.title
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     )
@@ -368,8 +390,8 @@ fun App() {
                                 coroutineScope.launch {
                                     resetMarkerSettings(
                                         settings,
-                                        mapMarkers,
-                                        previousMapMarkers,
+                                        markers,
+                                        previousMarkers,
                                         recentlySeenMarkersSet,
                                         recentlySeenMarkersForUiList
                                     )
@@ -396,41 +418,41 @@ fun App() {
                                 ?: markerIdFromMarker
                                 ?: run {
                                     isShowingError = "Error: Unable to find marker id=$markerIdFromMarker"
-                                    return@remember localMarker ?: MapMarker()
+                                    return@remember localMarker ?: Marker()
                                 }
 
-                            fetchedMarkersResult.markerIdToMapMarkerMap[markerId] ?: run {
+                            fetchMarkersResult.markerIdToMarker[markerId] ?: run {
                                 isShowingError = "Error: Unable to find marker with id=$markerId"
-                                return@remember localMarker ?: MapMarker()
+                                return@remember localMarker ?: Marker()
                             }
                         }
                         val isMarkerDetailsAlreadyLoaded = marker.isDetailsLoaded
 
                         // Fetch the marker details
-                        fetchMarkerDetailsResult = loadMapMarkerDetails(marker)
+                        fetchMarkerDetailsResult = loadMarkerDetails(marker)
 
                         // Update the MapMarker with Marker Details (if they were loaded)
                         LaunchedEffect(fetchMarkerDetailsResult) {
                             // Did the marker details get loaded?
                             if (fetchMarkerDetailsResult is LoadingState.Loaded
                                 && !isMarkerDetailsAlreadyLoaded
-                                && (fetchMarkerDetailsResult as LoadingState.Loaded<MapMarker>).data.isDetailsLoaded
+                                && (fetchMarkerDetailsResult as LoadingState.Loaded<Marker>).data.isDetailsLoaded
                             ) {
                                 //  Save the updated markers list to settings
                                 coroutineScope.launch {
                                     // Update the markers list with the updated marker with the updated details
                                     val updatedDetailsMarkersResult =
-                                        updateMapMarkersWithUpdatedMarkerDetails(
-                                            fetchedMarkersResult,
+                                        updateMarkersWithUpdatedMarkerDetails(
+                                            fetchMarkersResult,
                                             fetchMarkerDetailsResult,
-                                            mapMarkers,
+                                            markers,
                                             settings
                                         )
 
-                                    fetchedMarkersResult = setCurrentMapMarkers(
+                                    fetchMarkersResult = setAndSaveCurrentMarkers(
                                         updatedDetailsMarkersResult,
-                                        mapMarkers = mapMarkers,
-                                        previousMapMarkers = previousMapMarkers,
+                                        markers = markers,
+                                        previousMarkers = previousMarkers,
                                         settings = settings
                                     )
                                 }
@@ -450,7 +472,7 @@ fun App() {
             drawerContent = {
                 AppDrawerContent(
                     bottomSheetScaffoldState,
-                    fetchedMarkersResult,
+                    fetchMarkersResult,
                     onSetBottomSheetActiveScreen = { screen ->
                         bottomSheetActiveScreen = screen
                     },
@@ -536,13 +558,13 @@ fun App() {
 
                         // Show loading error
                         AnimatedVisibility(
-                            visible = fetchedMarkersResult.loadingState is LoadingState.Error,
+                            visible = fetchMarkersResult.loadingState is LoadingState.Error,
                         ) {
-                            if (fetchedMarkersResult.loadingState is LoadingState.Error) {
+                            if (fetchMarkersResult.loadingState is LoadingState.Error) {
                                 Text(
                                     modifier = Modifier.fillMaxWidth()
                                         .background(MaterialTheme.colors.error),
-                                    text = "Error: ${(fetchedMarkersResult.loadingState as LoadingState.Error).errorMessage}",
+                                    text = "Error: ${(fetchMarkersResult.loadingState as LoadingState.Error).errorMessage}",
                                     fontStyle = FontStyle.Normal,
                                     fontWeight = FontWeight.Medium,
                                     color = MaterialTheme.colors.onError
@@ -585,10 +607,10 @@ fun App() {
                             MapContent(
                                 modifier = Modifier
                                     .fillMaxHeight(1.0f - transitionRecentMarkersPanelState),
-                                isFinishedLoadingMarkerData = fetchedMarkersResult.isParseMarkersPageFinished,
+                                isFinishedLoadingMarkerData = fetchMarkersResult.isParseMarkersPageFinished,
                                 initialUserLocation = settings.lastKnownUserLocation,
                                 userLocation = userLocation,
-                                mapMarkers = mapMarkers,
+                                markers = markers,
                                 mapBounds = null,
                                 shouldRedrawMapMarkers = shouldRedrawMapMarkers, // redraw the map & markers
                                 isTrackingEnabled = isTrackingEnabled,
@@ -655,19 +677,19 @@ fun App() {
 }
 
 // Clears & Sets the current map markers, previous map markers, and saves the markers to settings
-private fun setCurrentMapMarkers(
-    updatedMarkersResult: MarkersResult,
-    updatedMapMarkers: SnapshotStateList<MapMarker>? = null,  // prefer to use `updatedMarkersResult`, if possible
-    mapMarkers: SnapshotStateList<MapMarker>,
-    previousMapMarkers: SnapshotStateList<MapMarker>,
+private fun setAndSaveCurrentMarkers(
+    updatedMarkersResult: MarkersResult,                // A) Can use this instead of `updatedMarkers`.
+    updatedMarkers: SnapshotStateList<Marker>? = null,  // B) Prefer to use `updatedMarkersResult`, if possible
+    markers: SnapshotStateList<Marker>,
+    previousMarkers: SnapshotStateList<Marker>,
     settings: AppSettings
 ): MarkersResult {
 
     val localUpdatedMapMarkers =
-        updatedMapMarkers ?:  // prefer to use `updatedMarkersResult`, if possible
-        updatedMarkersResult.markerIdToMapMarkerMap.values.toList()
+        updatedMarkers ?:  // prefer to use `updatedMarkersResult`, if possible
+        updatedMarkersResult.markerIdToMarker.values.toList()
     val newMarkersResult = updatedMarkersResult.copy(
-        markerIdToMapMarkerMap =
+        markerIdToMarker =
         localUpdatedMapMarkers
             .associateBy { mapMarker ->
                 mapMarker.id
@@ -675,12 +697,12 @@ private fun setCurrentMapMarkers(
     )
 
     // Update the current Map markers
-    mapMarkers.clear()
-    mapMarkers.addAll(localUpdatedMapMarkers)
+    markers.clear()
+    markers.addAll(localUpdatedMapMarkers)
 
     // Update the previous markers list
-    previousMapMarkers.clear()
-    previousMapMarkers.addAll(localUpdatedMapMarkers)
+    previousMarkers.clear()
+    previousMarkers.addAll(localUpdatedMapMarkers)
 
     // save the updated markers list to settings
     Log.d("save the updated markers list to settings")
@@ -689,10 +711,10 @@ private fun setCurrentMapMarkers(
     return newMarkersResult
 }
 
-private fun updateMapMarkersWithUpdatedMarkerDetails(
+private fun updateMarkersWithUpdatedMarkerDetails(
     fetchMarkersResult: MarkersResult,  // will be updated with data from `fetchMarkerDetailsResult`
-    fetchMarkerDetailsResult: LoadingState<MapMarker>,
-    mapMarkers: SnapshotStateList<MapMarker>,
+    fetchMarkerDetailsResult: LoadingState<Marker>,
+    markers: SnapshotStateList<Marker>,
     settings: AppSettings
 ): MarkersResult {
     var updatedFetchMarkersResult = fetchMarkersResult
@@ -702,18 +724,26 @@ private fun updateMapMarkersWithUpdatedMarkerDetails(
         val updatedDetailsMapMarker = fetchMarkerDetailsResult.data
 
         // Find the matching marker id in the list
-        val index = mapMarkers.indexOfFirst { marker ->
+        val index = markers.indexOfFirst { marker ->
             marker.id == updatedDetailsMapMarker.id
         }
-        // Update the marker to show & indicate the details have been loaded
-        if (index >= 0 && !mapMarkers[index].isDetailsLoaded) {
-            mapMarkers[index] = updatedDetailsMapMarker.copy(
-                isDetailsLoaded = true
+        // Found the marker?
+        if (index >= 0 && !markers[index].isDetailsLoaded) {
+            // Update the marker to show & indicate the details have been loaded
+            markers[index] = updatedDetailsMapMarker.copy(
+                inscription = markers[index].inscription, // keep the inscription value
+                position = markers[index].position, // keep the position value
+                title = markers[index].title, // keep the title value
+                subtitle = markers[index].subtitle, // keep the subtitle value
+                markerDetailPageUrl = markers[index].markerDetailPageUrl, // keep the markerDetailPageUrl value
+                isSeen = markers[index].isSeen, // keep the isSeen value
+
+                isDetailsLoaded = true, // ensure the isDetailsLoaded value reflects the details have been loaded
             )
 
             // Update the markers list with the updated marker with the updated details
             updatedFetchMarkersResult = updatedFetchMarkersResult.copy(
-                markerIdToMapMarkerMap = mapMarkers.associateBy { mapMarker ->
+                markerIdToMarker = markers.associateBy { mapMarker ->
                     mapMarker.id
                 }
             )
@@ -736,16 +766,16 @@ private fun jiggleLocationToForceUpdate(userLocation: Location) = Location(
 
 private fun resetMarkerSettings(
     settings: AppSettings,
-    mapMarkers: SnapshotStateList<MapMarker>,
-    previousMapMarkers: SnapshotStateList<MapMarker>,
+    markers: SnapshotStateList<Marker>,
+    previousMarkers: SnapshotStateList<Marker>,
     recentlySeenMarkersSet: MutableSet<RecentlySeenMarker>,
-    recentlySeenMarkersForUiList: SnapshotStateList<RecentlySeenMarker>
+    uiRecentlySeenMarkersList: SnapshotStateList<RecentlySeenMarker>
 ) {
     // Reset the `seen markers` list, UI elements
-    mapMarkers.clear()
-    previousMapMarkers.clear()
+    markers.clear()
+    previousMarkers.clear()
     recentlySeenMarkersSet.clear()
-    recentlySeenMarkersForUiList.clear()
+    uiRecentlySeenMarkersList.clear()
 
     // Reset the settings cache of markers
     settings.clear(kMarkersResult)
@@ -756,18 +786,19 @@ private fun resetMarkerSettings(
 }
 
 // Check for new markers inside talk radius & add to recentlySeen list
-private fun addMarkersToRecentlySeenList(
-    mapMarkers: SnapshotStateList<MapMarker>,
+private fun addSeenMarkersToRecentlySeenList(
+    markers: SnapshotStateList<Marker>,
     userLocation: Location,
     talkRadiusMiles: Double,
     recentlySeenMarkersSet: MutableSet<RecentlySeenMarker>,
-    recentlySeenMarkersForUiList: SnapshotStateList<RecentlySeenMarker>,
-    onUpdateIsSeenMapMarkers: (SnapshotStateList<MapMarker>) -> Unit
+    uiRecentlySeenMarkersList: SnapshotStateList<RecentlySeenMarker>,
+    onUpdateIsSeenMapMarkers: (SnapshotStateList<Marker>) -> Unit,
+    onUpdateCurrentlySpeaking: (Boolean, RecentlySeenMarker) -> Unit = {_,_ ->}
 ) {
-    var updatedMarkers = mapMarkers
-    var didUpdateMarkersIsSeen = false
+    var updatedMarkers = markers // start with current value of `markers`.
+    var didUpdateMarkers = false
 
-    mapMarkers.forEach { marker ->
+    markers.forEach { marker ->
         // if marker is within talk radius, add to recently seen list
         val markerLat = marker.position.latitude
         val markerLong = marker.position.longitude
@@ -780,13 +811,13 @@ private fun addMarkersToRecentlySeenList(
 
         // add marker to recently seen set?
         if (distanceFromMarkerToUserLocationMiles < talkRadiusMiles * 1.75) {  // idk why 1.75, just seems to work
-            fun MutableSet<RecentlySeenMarker>.containsMarker(marker: MapMarker): Boolean {
+            fun MutableSet<RecentlySeenMarker>.containsMarker(marker: Marker): Boolean {
                 return any { recentMapMarker ->
                     recentMapMarker.id == marker.id
                 }
             }
 
-            // Not already in the `recently seen` set of all seen markers?
+            // Not already in the `recently seen` set of all `recently seen` markers?
             if (!recentlySeenMarkersSet.containsMarker(marker)) {
                 // Add to the `seen` set
                 val newlySeenMarker = RecentlySeenMarker(
@@ -796,54 +827,56 @@ private fun addMarkersToRecentlySeenList(
                     recentlySeenMarkersSet.size + 1
                 )
                 recentlySeenMarkersSet.add(newlySeenMarker)
-                recentlySeenMarkersForUiList.add(newlySeenMarker)
+                uiRecentlySeenMarkersList.add(newlySeenMarker)
                 Log.d("Added Marker ${marker.id} is within talk radius of $talkRadiusMiles miles, distance=$distanceFromMarkerToUserLocationMiles miles, total recentlySeenMarkers=${recentlySeenMarkersSet.size}")
 
-                // Update the markers for Map UI
-                updatedMarkers = updatedMarkers.map { mapMarker: MapMarker ->
-                    if (mapMarker.id == marker.id) {
-                        mapMarker.copy(isSeen = true)
+                // Update `isSeen` to change color of markers in Map UI
+                updatedMarkers = updatedMarkers.map { updatedMarker: Marker ->
+                    if (updatedMarker.id == newlySeenMarker.id) {
+                        updatedMarker.copy(isSeen = true)
                     } else {
-                        mapMarker
+                        updatedMarker//.copy(isSeen = marker.isSeen)
                     }
                 }.toMutableStateList()
-                didUpdateMarkersIsSeen = true
 
                 // Trim the UI list to 5 items
-                if (recentlySeenMarkersForUiList.size > 5) {
-                    Log.d("Trimming recentlySeenMarkersForUiList.size=${recentlySeenMarkersForUiList.size}")
+                if (uiRecentlySeenMarkersList.size > 5) {
+                    Log.d("Trimming recentlySeenMarkersForUiList.size=${uiRecentlySeenMarkersList.size}")
                     // remove old markers until there are only 5
                     do {
                         val oldestMarker =
-                            recentlySeenMarkersForUiList.minByOrNull { recentMarker ->
+                            uiRecentlySeenMarkersList.minByOrNull { recentMarker ->
                                 recentMarker.insertedAtEpochMilliseconds
                             }
 
                         // remove the oldest marker
                         oldestMarker?.let { oldMarker ->
-                            recentlySeenMarkersForUiList.remove(oldMarker)
+                            uiRecentlySeenMarkersList.remove(oldMarker)
                         }
-                        Log.d("Removed oldest marker, recentlySeenMarkersList.size=${recentlySeenMarkersForUiList.size}")
-                    } while (recentlySeenMarkersForUiList.size > 5)
+                        Log.d("Removed oldest marker, recentlySeenMarkersList.size=${uiRecentlySeenMarkersList.size}")
+                    } while (uiRecentlySeenMarkersList.size > 5)
                 }
+
+                didUpdateMarkers = true
             }
         }
     }
 
+    // Update the UI list of recently seen markers (& reverse sort by inserted time)
+    val oldList = uiRecentlySeenMarkersList.toList()
+    uiRecentlySeenMarkersList.clear()
+    uiRecentlySeenMarkersList.addAll(
+        oldList.sortedByDescending { recentMarker ->
+            recentMarker.insertedAtEpochMilliseconds
+        }.toMutableStateList())
+
     // Update the "isSeen" marker colors for the Map
     // & save the updated markers list to settings
-    if(didUpdateMarkersIsSeen) {
+    if(didUpdateMarkers) {
         onUpdateIsSeenMapMarkers(updatedMarkers)
         settings.recentlySeenMarkersSet = RecentlySeenMarkersList(recentlySeenMarkersSet.toList())
-        settings.uiRecentlySeenMarkersList = RecentlySeenMarkersList(recentlySeenMarkersForUiList.toList())
+        settings.uiRecentlySeenMarkersList = RecentlySeenMarkersList(uiRecentlySeenMarkersList.toList())
     }
-
-    // Update the UI list of recently seen markers (& reverse sort by time)
-    val oldList = recentlySeenMarkersForUiList.toList()
-    recentlySeenMarkersForUiList.clear()
-    recentlySeenMarkersForUiList.addAll(oldList.sortedByDescending { recentMarker ->
-        recentMarker.insertedAtEpochMilliseconds
-    }.toMutableStateList())
 }
 
 @Composable
@@ -852,7 +885,7 @@ fun MapContent(
     isFinishedLoadingMarkerData: Boolean = false,  // only sets the initial position, not tracked. Use `userLocation` for tracking.
     initialUserLocation: Location,
     userLocation: Location,
-    mapMarkers: List<MapMarker>,
+    markers: List<Marker>,
     mapBounds: List<LatLong>? = null,
     shouldRedrawMapMarkers: Boolean,
     isTrackingEnabled: Boolean = false,
@@ -863,7 +896,7 @@ fun MapContent(
     onFindMeButtonClicked: (() -> Unit)? = null,
     isMarkersLastUpdatedLocationVisible: Boolean = false,
     isMapOptionSwitchesVisible: Boolean = true,
-    onMarkerClick: ((MapMarker) -> Unit)? = null
+    onMarkerClick: ((Marker) -> Unit)? = null
 ): Boolean {
     var didMapMarkersUpdate by remember(shouldRedrawMapMarkers) { mutableStateOf(true) }
     var isFirstUpdate by remember { mutableStateOf(true) } // force map to update at least once
@@ -877,7 +910,7 @@ fun MapContent(
                     userLocation.latitude,
                     userLocation.longitude
                 ),
-                markers = mapMarkers.ifEmpty { null },
+                markers = markers.ifEmpty { null },
                 shouldRedrawMapMarkers = shouldRedrawMapMarkers,
                 cameraOnetimePosition =
                     if (isFirstUpdate) {  // set initial camera position

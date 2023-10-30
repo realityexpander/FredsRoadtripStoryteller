@@ -2,9 +2,11 @@ package data
 
 import Location
 import com.russhwolf.settings.Settings
+import com.russhwolf.settings.get
 import com.russhwolf.settings.set
 import data.loadMarkers.MarkersResult
 import json
+import kForceClearSettingsAtLaunch
 import kotlinx.serialization.encodeToString
 import maps.RecentlySeenMarkersList
 import kotlin.properties.ReadWriteProperty
@@ -13,42 +15,47 @@ import kotlin.reflect.safeCast
 import co.touchlab.kermit.Logger as Log
 
 val settings = AppSettings.create()
+    .apply {
+        if(kForceClearSettingsAtLaunch) { clearAllSettings() }
+        // Log.setMinSeverity(Severity.Warn)
+        printAppSettings()
+    }
 
-class AppSettings(private val settings: Settings) {
+class AppSettings(val settingsInstance: Settings) {
 
     // Typesafe accessors for settings
     // is there a way to put these into the map automatically & keep typesafe w/o using casts?
     // REMEMBER TO ADD NEW SETTINGS TO THE MAP!
     var markersResult by
-        SettingsDelegate(settings, kMarkersResult, defaultValue = MarkersResult())
+        SettingsDelegate(settingsInstance, kMarkersResult, defaultValue = MarkersResult())
     var markersLastUpdateEpochSeconds by
-        SettingsDelegate(settings, kMarkersLastUpdateEpochSeconds, defaultValue = 0L)
+        SettingsDelegate(settingsInstance, kMarkersLastUpdateEpochSeconds, defaultValue = 0L)
     var markersLastUpdatedLocation by
-        SettingsDelegate(settings, kMarkersLastUpdatedLocation, defaultValue = Location(0.0, 0.0))
+        SettingsDelegate(settingsInstance, kMarkersLastUpdatedLocation, defaultValue = Location(0.0, 0.0))
     var lastKnownUserLocation by
-        SettingsDelegate(settings, kLastKnownUserLocation, defaultValue = Location(0.0, 0.0))
+        SettingsDelegate(settingsInstance, kLastKnownUserLocation, defaultValue = Location(0.0, 0.0))
     var isRecentlySeenMarkersPanelVisible by
-        SettingsDelegate(settings, kIsRecentlySeenMarkersPanelVisible, defaultValue = false)
+        SettingsDelegate(settingsInstance, kIsRecentlySeenMarkersPanelVisible, defaultValue = false)
     var isPermissionsGranted by
-        SettingsDelegate(settings, kIsPermissionsGranted, defaultValue = false)
+        SettingsDelegate(settingsInstance, kIsPermissionsGranted, defaultValue = false)
     var recentlySeenMarkersSet by
-        SettingsDelegate(settings, kRecentlySeenMarkersSet, defaultValue = RecentlySeenMarkersList())
+        SettingsDelegate(settingsInstance, kRecentlySeenMarkersSet, defaultValue = RecentlySeenMarkersList())
     var uiRecentlySeenMarkersList by
-        SettingsDelegate(settings, kUiRecentlySeenMarkersList, defaultValue = RecentlySeenMarkersList())
+        SettingsDelegate(settingsInstance, kUiRecentlySeenMarkersList, defaultValue = RecentlySeenMarkersList())
 
     // • For Settings panel
     var shouldSpeakAutomaticallyWhenUnseenMarkerFound by
-        SettingsDelegate(settings, kSpeakAutomaticallyWhenUnseenMarkerFound, defaultValue = false)
+        SettingsDelegate(settingsInstance, kSpeakAutomaticallyWhenUnseenMarkerFound, defaultValue = false)
     var isAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn by
-        SettingsDelegate(settings, kStartBackgroundUpdatesWhenAppLaunches, defaultValue = false)
+        SettingsDelegate(settingsInstance, kStartBackgroundUpdatesWhenAppLaunches, defaultValue = false)
     var talkRadiusMiles by
-        SettingsDelegate(settings, kTalkRadiusMiles, defaultValue = 0.5)
+        SettingsDelegate(settingsInstance, kTalkRadiusMiles, defaultValue = 0.5)
     var isMarkersLastUpdatedLocationVisible by
-        SettingsDelegate(settings, kIsMarkersLastUpdatedLocationVisible, defaultValue = false)
+        SettingsDelegate(settingsInstance, kIsMarkersLastUpdatedLocationVisible, defaultValue = false)
 
-    // This is useful for testing
     // - REMEMBER TO ADD NEW SETTINGS TO THIS MAP!
-    val settingsMap = mutableMapOf<String, Any?>(
+    var settingsMap = createSettingsMap()
+    private fun createSettingsMap() = mutableMapOf<String, Any?>(
         kMarkersResult to markersResult,
         kMarkersLastUpdateEpochSeconds to markersLastUpdateEpochSeconds,
         kMarkersLastUpdatedLocation to markersLastUpdatedLocation,
@@ -98,26 +105,36 @@ class AppSettings(private val settings: Settings) {
         return settingsMap[key]
     }
 
+    // Obliterates all values in the settings store
     fun clearAllSettings() { // This is useful for testing
-        settings.clear()
+        settingsInstance.clear()
+
+        // Re-add all the settings
+        settingsMap.clear()
+        settingsMap = createSettingsMap()
+
+        Log.w{ "AppSettings: Cleared all settings!"}
     }
 
     fun clear(key: String) {
-        settings[key] = null
+        settingsInstance[key] = null
     }
 
     fun hasKey(key: String): Boolean {
-        return settings.hasKey(key)
+        return settingsInstance.hasKey(key)
     }
 
     fun printAppSettings() {
-        println("markersResult.size= ${markersResult.markerIdToMapMarkerMap.size}")
+        println("markersResult.size= ${markersResult.markerIdToMarker.size}")
+
+        // Show all keys
+        Log.d { "All keys from settings: ${settingsInstance.keys.joinToString("") { "$it\n ⎣_" }}" }
+        if(settingsInstance.keys.isEmpty()) Log.d { "No keys in settings" }
 
         // Show current settings
-        Log.d { "All keys from settings: ${settings.keys.joinToString("") { "$it\n ⎣_" }}" }
         settingsMap.forEach { entry ->
             if(entry.key == kMarkersResult) { // Don't want to display all the markers
-                Log.d { "Settings: ${entry.key} = ${(entry.value as MarkersResult).markerIdToMapMarkerMap.size} markers" }
+                Log.d { "Settings: ${entry.key} = ${(entry.value as MarkersResult).markerIdToMarker.size} markers" }
                 return@forEach
             }
             if(entry.key == kRecentlySeenMarkersSet) { // Don't want to display all the markers

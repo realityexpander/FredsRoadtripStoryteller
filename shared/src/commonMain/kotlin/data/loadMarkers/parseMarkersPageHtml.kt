@@ -4,7 +4,7 @@ import com.mohamedrejeb.ksoup.entities.KsoupEntities
 import com.mohamedrejeb.ksoup.html.parser.KsoupHtmlHandler
 import com.mohamedrejeb.ksoup.html.parser.KsoupHtmlParser
 import maps.LatLong
-import maps.MapMarker
+import maps.Marker
 import maps.MarkerIdStr
 import co.touchlab.kermit.Logger as Log
 
@@ -23,7 +23,7 @@ fun parseMarkersPageHtml(rawPageHtml: String): MarkersResult {
     var curCapturingMarkerId = ""
     var foundMarkerCount = 0
     val markerIdToRawMarkerDetailStringMap = mutableMapOf<MarkerIdStr, String>()  // Strings are the text strings, separated by newlines (maybe should use a list next time for clarity)
-    val markerIdToMapMarkerMap = mutableMapOf<MarkerIdStr, MapMarker>()
+    val markerIdToMarker = mutableMapOf<MarkerIdStr, Marker>()
 
     // Simple scraper that checks if a page is only a single-marker page
     // - If it has a "span" with class "sectionhead", then it's a single-marker page.
@@ -55,10 +55,10 @@ fun parseMarkersPageHtml(rawPageHtml: String): MarkersResult {
                         Log.e { "Found more than one marker on a single marker page. Found marker: $curCapturingMarkerId, count= $foundMarkerCount" }
 
                     // initialize the marker info for this marker
-                    markerIdToMapMarkerMap[curCapturingMarkerId] = markerIdToMapMarkerMap[curCapturingMarkerId]?.copy(
+                    markerIdToMarker[curCapturingMarkerId] = markerIdToMarker[curCapturingMarkerId]?.copy(
                         id = curCapturingMarkerId,
                         markerDetailPageUrl = url,
-                    ) ?: MapMarker(
+                    ) ?: Marker(
                         id = curCapturingMarkerId,
                         markerDetailPageUrl = url,
                     )
@@ -68,9 +68,9 @@ fun parseMarkersPageHtml(rawPageHtml: String): MarkersResult {
                 if(tagName == "meta" && attributes["property"] == "og:title") {
                     val title = attributes["content"] ?: ""
 
-                    markerIdToMapMarkerMap[curCapturingMarkerId] = markerIdToMapMarkerMap[curCapturingMarkerId]?.copy(
+                    markerIdToMarker[curCapturingMarkerId] = markerIdToMarker[curCapturingMarkerId]?.copy(
                         title = title,
-                    ) ?: MapMarker(
+                    ) ?: Marker(
                         id = curCapturingMarkerId,
                         title = title,
                     )
@@ -80,9 +80,9 @@ fun parseMarkersPageHtml(rawPageHtml: String): MarkersResult {
                 if(tagName == "meta" && attributes["name"] == "description") {
                     val description = attributes["content"] ?: ""
 
-                    markerIdToMapMarkerMap[curCapturingMarkerId] = markerIdToMapMarkerMap[curCapturingMarkerId]?.copy(
+                    markerIdToMarker[curCapturingMarkerId] = markerIdToMarker[curCapturingMarkerId]?.copy(
                         subtitle = description,
-                    ) ?: MapMarker(
+                    ) ?: Marker(
                         id = curCapturingMarkerId,
                         subtitle = description,
                     )
@@ -92,9 +92,9 @@ fun parseMarkersPageHtml(rawPageHtml: String): MarkersResult {
                 if(tagName == "meta" && attributes["name"] == "twitter:image") {
                     val imageUrl = attributes["content"] ?: ""
 
-                    markerIdToMapMarkerMap[curCapturingMarkerId] = markerIdToMapMarkerMap[curCapturingMarkerId]?.copy(
+                    markerIdToMarker[curCapturingMarkerId] = markerIdToMarker[curCapturingMarkerId]?.copy(
                         mainPhotoUrl = imageUrl
-                    ) ?: MapMarker(
+                    ) ?: Marker(
                         id = curCapturingMarkerId,
                         mainPhotoUrl = imageUrl,
                     )
@@ -121,9 +121,9 @@ fun parseMarkersPageHtml(rawPageHtml: String): MarkersResult {
                     }
 
                     // Log.d { "Found an a lat long link, Lat long: $lat, $long")  }
-                    markerIdToMapMarkerMap[curCapturingMarkerId] = markerIdToMapMarkerMap[curCapturingMarkerId]?.copy(
+                    markerIdToMarker[curCapturingMarkerId] = markerIdToMarker[curCapturingMarkerId]?.copy(
                         position = LatLong(lat, long)
-                    ) ?: MapMarker(
+                    ) ?: Marker(
                         id = curCapturingMarkerId,
                         position = LatLong(lat, long)
                     )
@@ -139,9 +139,9 @@ fun parseMarkersPageHtml(rawPageHtml: String): MarkersResult {
                         kBaseHmdbDotOrgUrl +
                         url.substringAfterLast("/")  // m.asp?m=218883
 
-                    markerIdToMapMarkerMap[curCapturingMarkerId] = markerIdToMapMarkerMap[curCapturingMarkerId]?.copy(
+                    markerIdToMarker[curCapturingMarkerId] = markerIdToMarker[curCapturingMarkerId]?.copy(
                         markerDetailPageUrl = fullUrl,
-                    ) ?: MapMarker(
+                    ) ?: Marker(
                         id = curCapturingMarkerId,
                         markerDetailPageUrl = fullUrl,
                     )
@@ -217,9 +217,9 @@ fun parseMarkersPageHtml(rawPageHtml: String): MarkersResult {
                         }
 
                         // Log.d { "Found an a lat long link, Lat long: $lat, $long")  }
-                        markerIdToMapMarkerMap[curCapturingMarkerId] = markerIdToMapMarkerMap[curCapturingMarkerId]?.copy(
+                        markerIdToMarker[curCapturingMarkerId] = markerIdToMarker[curCapturingMarkerId]?.copy(
                             position = LatLong(lat, long)
-                        ) ?: MapMarker(
+                        ) ?: Marker(
                             id = curCapturingMarkerId,
                             position = LatLong(lat, long)
                         )
@@ -299,21 +299,21 @@ fun parseMarkersPageHtml(rawPageHtml: String): MarkersResult {
                 lines[5]  // default to one Line Description
             }
 
-            val lat = markerIdToMapMarkerMap[markerId]?.position?.latitude ?: run {
+            val lat = markerIdToMarker[markerId]?.position?.latitude ?: run {
                 Log.d { "Failed to find lat value for marker id: $markerId" }
                 return@forEach
             }
-            val long = markerIdToMapMarkerMap[markerId]?.position?.longitude ?: run {
+            val long = markerIdToMarker[markerId]?.position?.longitude ?: run {
                 Log.d { "Failed to find long value for marker id: $markerId" }
                 return@forEach
             }
 
-            markerIdToMapMarkerMap[markerId] = MapMarker(
+            markerIdToMarker[markerId] = Marker(
                 id = markerId,
                 title = title,
                 subtitle = shortLocation.stripEmDash(),
                 position = LatLong(lat, long),
-                markerDetailPageUrl = markerIdToMapMarkerMap[markerId]?.markerDetailPageUrl ?: "",
+                markerDetailPageUrl = markerIdToMarker[markerId]?.markerDetailPageUrl ?: "",
             )
         }
     }
@@ -327,7 +327,7 @@ fun parseMarkersPageHtml(rawPageHtml: String): MarkersResult {
 
     return MarkersResult(
         markerIdToRawMarkerDetailStringMap, // used for multi-page processing.
-        markerIdToMapMarkerMap,
+        markerIdToMarker,
         totalMarkersAtLocation
     )
 }

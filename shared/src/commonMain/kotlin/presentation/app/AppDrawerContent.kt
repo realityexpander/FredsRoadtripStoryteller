@@ -108,7 +108,7 @@ fun AppDrawerContent(
         )
     }
 
-    if(fetchedMarkersResult.markerIdToMapMarkerMap.isEmpty()) {
+    if(fetchedMarkersResult.markerIdToMarker.isEmpty()) {
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             "No markers loaded yet, drive around to load some!",
@@ -128,7 +128,7 @@ fun AppDrawerContent(
             ),
 
     ) {
-        fetchedMarkersResult.markerIdToMapMarkerMap
+        fetchedMarkersResult.markerIdToMarker
             .entries
             .reversed()
             .forEach { marker ->
