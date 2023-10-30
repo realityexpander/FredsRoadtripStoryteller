@@ -45,6 +45,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.FilterQuality
@@ -62,7 +63,7 @@ import io.kamel.image.KamelImage
 import io.kamel.image.KamelImageBox
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch
-import maps.MapMarker
+import maps.Marker
 import presentation.uiComponents.PreviewPlaceholder
 
 const val kMaxWeightOfBottomDrawer = 0.9f
@@ -71,7 +72,7 @@ const val kMaxWeightOfBottomDrawer = 0.9f
 @Composable
 fun MarkerDetailsScreen(
     bottomSheetScaffoldState: BottomSheetScaffoldState,
-    marker: LoadingState<MapMarker>,
+    marker: LoadingState<Marker>,
 ) {
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
@@ -137,6 +138,35 @@ fun MarkerDetailsScreen(
 
     // Show Loading
     if (marker is LoadingState.Loading) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 0.dp, top = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top
+        ) {
+            Spacer(
+                modifier = Modifier
+                    .weight(3f),
+            )
+            IconButton(
+                modifier = Modifier
+                    .offset(8.dp, (-8).dp)
+                    .padding(8.dp),
+                onClick = {
+                    coroutineScope.launch {
+                        bottomSheetScaffoldState.bottomSheetState.collapse()
+                    }
+                },
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Close",
+                    modifier = Modifier.alpha(0.5f)
+                )
+            }
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -165,7 +195,7 @@ fun MarkerDetailsScreen(
     }
 
     // Show Loaded Marker Info
-    if (marker is LoadingState.Loaded<MapMarker>) {
+    if (marker is LoadingState.Loaded<Marker>) {
 
             Column(
                 modifier = Modifier
@@ -449,7 +479,10 @@ fun MarkerDetailsScreen(
                                     data = it,
                                     filterQuality = FilterQuality.Medium,
                                 ),
-                                contentDescription = null
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                contentScale = ContentScale.Crop,
                             )
                             // Caption for photo
                             if (marker.data.photoCaptions[index].isNotBlank()) {
