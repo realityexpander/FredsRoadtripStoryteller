@@ -13,9 +13,10 @@ import co.touchlab.kermit.Logger as Log
 
 val settings = AppSettings.create()
 
-class AppSettings(val settings: Settings) {
+class AppSettings(private val settings: Settings) {
 
-    // Typesafe accessors for settings (is there a way to put these into the map automatically & keep typesafe w/o using casts?)
+    // Typesafe accessors for settings
+    // is there a way to put these into the map automatically & keep typesafe w/o using casts?
     // REMEMBER TO ADD NEW SETTINGS TO THE MAP!
     var markersResult by
         SettingsDelegate(settings, kMarkersResult, defaultValue = MarkersResult())
@@ -80,6 +81,7 @@ class AppSettings(val settings: Settings) {
 
         return settingType.safeCast(settingsMap[key]) as TValue
     }
+    // Note: Not typesafe, so you have to cast the return type for `set`.
     operator fun set(key: String, value: Any?) {
         settingsMap[key] = value
     }
@@ -141,10 +143,9 @@ class AppSettings(val settings: Settings) {
         const val kTalkRadiusMiles =                         "kTalkRadiusMiles"
         const val kIsMarkersLastUpdatedLocationVisible =     "kIsMarkersLastUpdatedLocationVisible"
     }
-
 }
 
-@Suppress("UNCHECKED_CAST") // You can see we are checking the type in the when statement... so this is safe, Kotlin compiler people...
+@Suppress("UNCHECKED_CAST") // You can see we are checking the type in the `when` statement... so this is safe, Kotlin compiler people...
 class SettingsDelegate<T>(
     private val settings: Settings,
     private val key: String,
