@@ -17,14 +17,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import data.markersLastUpdatedLocation
-import data.markersResult
-import com.russhwolf.settings.Settings
+import data.AppSettings
+import data.AppSettings.Companion.kMarkersLastUpdatedLocation
 import data.LoadingState
-import network.httpClient
+import data.loadMarkers.sampleData.kUseRealNetwork
+import data.loadMarkers.sampleData.simpleMarkersPageHtml
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import data.kSettingMarkersLastLoadLocation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -32,13 +31,9 @@ import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import data.loadMarkers.sampleData.simpleMarkersPageHtml
-import data.loadMarkers.sampleData.kUseRealNetwork
-import data.setMarkersLastUpdatedLocation
-import data.setMarkersLastUpdateEpochSeconds
-import data.setMarkersResult
 import maps.MapMarker
 import maps.MarkerIdStr
+import network.httpClient
 import co.touchlab.kermit.Logger as Log
 
 @Serializable
@@ -52,31 +47,36 @@ data class MarkersResult(
     val loadingState: LoadingState<String> = LoadingState.Finished,
 )
 
-// Loads marker info from the markers page html.
-// - Can process multiple pages, so there is a state machine to track the current processing page.
-//
-// Strategy:
-// 1 - Check for cached data
-//   - if not cached, attempt load from network (go to step 2)
-//   1.1 - Check for cached markers & load them if they exist.
-//   1.2 - Check if user is still inside max re-load radius & cache has not expired.
-//     - If so, return the cached data.
-//     - If not, attempt load markers from network for this location.
-// 2 - Initiate Load from network
-// 3 - Perform Load & Error checking
-// 4 - Parse the HTML
-//   4.1 - Parse the raw page HTML into a list of `MapMarker` objects & metadata about the scraped data
-//   4.2 - Load more pages, if needed (goto step 2)
-// 5 - Save the MapMarker objects to cache & settings (if they were updated from the network)
-// 6 - PROCESS COMPLETE
-//
-// Note: yes! this code is goofy looking & hops around a lot... this is because to I'm avoid using
-//       a ViewModel as this works as a pure composable function. And its all reactive.
-//       Plus side - there is no ping-pong between files. Its all here.
-//       I'm Experimenting with a pure compose architecture with no android idiom remnants.
+/**
+ Loads marker info from the markers page html.
+ - Can process multiple pages, so there is a state machine to track the current processing page.
+
+
+ Strategy:
+ ```
+ 1 - Check for cached data
+   - if not cached, attempt load from network (go to step 2)
+   - 1.1 - Check for cached markers & load them if they exist.
+   - 1.2 - Check if user is still inside max re-load radius & cache has not expired.
+     - 1.2a - If so, return the cached data.
+     - 1.2b - If not, attempt load markers from network for this location.
+ 2 - Initiate Load from network
+ 3 - Perform Load & Error checking
+ 4 - Parse the HTML
+   - 4.1 - Parse the raw page HTML into a list of `MapMarker` objects & metadata about the scraped data
+   - 4.2 - Load more pages, if needed (goto step 2)
+ 5 - Save the MapMarker objects to cache & settings (if they were updated from the network)
+ 6 - PROCESS COMPLETE
+ ```
+
+ Note: This code is goofy looking & hops around a lot... this is because to I'm avoid using
+       a ViewModel as this works as a pure composable function. And its all reactive.
+       Plus side - there is no ping-pong between files. Its all here.
+       I'm Experimenting with a pure compose architecture with no android idiom remnants.
+**/
 @Composable
 fun loadMarkers(
-    settings: Settings,
+    settings: AppSettings,
 
     // Map Marker loading parameters
     userLocation: Location = Location(37.422160, -122.084270),
@@ -101,16 +101,15 @@ fun loadMarkers(
 
     // Holds the current processing state of the parsed markers
     var curProcessingHtmlPageNum by remember { mutableStateOf(1) }
-    var markersResultState by remember(settings.markersResult().markerIdToMapMarkerMap.size) { // checks if settings is cleared or not set yet.
-        // Use the cached result from persistent storage (Settings) as the initial state, if it exists.
-        if(settings.markersResult().markerIdToMapMarkerMap.isNotEmpty()) {
-            Log.d("in loadMarkers(): markersResultState: Found cached markers in Settings, count: ${settings.markersResult().markerIdToMapMarkerMap.size}")
-            return@remember mutableStateOf(settings.markersResult()) // return the cached result
+    var markersResultState by remember(settings.markersResult.markerIdToMapMarkerMap.size) { // checks if settings is cleared or not set yet.
+        if(settings.markersResult.markerIdToMapMarkerMap.isNotEmpty()) {
+            return@remember mutableStateOf(settings.markersResult) // return the cached result
         }
 
         // Log.d { "in loadMarkers(): markersResultState: No cached markers found. Attempting load from network..." }
         curProcessingHtmlPageNum = 1
-        mutableStateOf(MarkersResult(
+        mutableStateOf(
+            MarkersResult(
             loadingState = LoadingState.Loading,
             isParseMarkersPageFinished = false,
         ))// return empty result, trigger network load
@@ -128,9 +127,9 @@ fun loadMarkers(
         }
 
         // Step 1 - Check for a cached result in the Settings
-        if (settings.markersResult().markerIdToMapMarkerMap.isNotEmpty()) {
+        if (settings.markersResult.markerIdToMapMarkerMap.isNotEmpty()) {
             val cachedMarkersResult =
-                settings.markersResult()
+                settings.markersResult
                     .copy(isParseMarkersPageFinished = true) // ensure the cached result is marked as finished
 
             // Log.d("Found cached markers in Settings, count: ${cachedMarkersResult.markerInfos.size}")
@@ -163,8 +162,9 @@ fun loadMarkers(
 //            }
 
             // Step 1.2 - Check if the user is outside the markers last update radius
-            if (settings.hasKey(kSettingMarkersLastLoadLocation)) {
-                val markersLastUpdatedLocation = settings.markersLastUpdatedLocation()
+            if (settings.hasKey(kMarkersLastUpdatedLocation)) {
+//                val markersLastUpdatedLocation = settings.markersLastUpdatedLocation()
+                val markersLastUpdatedLocation = settings.markersLastUpdatedLocation
                 val userDistanceFromLastUpdatedLocationMiles =
                     distanceBetween(
                         userLocation.latitude,
@@ -230,13 +230,14 @@ fun loadMarkers(
 
         // Save the cachedResultState to persistent storage (Settings) (if it was updated from the network)
         if (shouldUpdateCache) {
-            println("Saving markers to Settings, total count: ${cachedMarkersResultState.markerIdToMapMarkerMap.size}, setCachedMarkersLastUpdatedLocation: $userLocation")
+            println("Saving markers to Settings, total count: ${cachedMarkersResultState.markerIdToMapMarkerMap.size}")
             coroutineScope.launch {
-                settings.setMarkersResult(cachedMarkersResultState)
-                settings.setMarkersLastUpdateEpochSeconds(Clock.System.now().epochSeconds)
-                settings.setMarkersLastUpdatedLocation(userLocation).also {
-                    onSetMarkersLastUpdatedLocation(userLocation)
-                }
+                settings.markersResult = cachedMarkersResultState
+                settings.markersLastUpdateEpochSeconds = Clock.System.now().epochSeconds
+                settings.markersLastUpdatedLocation = userLocation
+                    .also {
+                        onSetMarkersLastUpdatedLocation(userLocation)
+                    }
                 // Log.d("Saved markers to Settings, total count: ${cachedMarkersResultState.markerIdToMapMarker.size}")
             }
         }
@@ -311,53 +312,35 @@ fun loadMarkers(
                         markerIdToMapMarkerMap = (
                             markersResultState.markerIdToMapMarkerMap +
                                 parsedMarkersResult.markerIdToMapMarkerMap.map { parsedMarker ->
-                                    val markerBeforeUpdate = markersResultState.markerIdToMapMarkerMap[parsedMarker.key]
-                                    val isDetailsLoaded = markerBeforeUpdate?.isDetailsLoaded ?: false
-                                    var mergedBeforeAndAfterParseMarker = parsedMarker.value
+                                    val markerBeforeUpdateWithDetailsAndIsSeen = markersResultState.markerIdToMapMarkerMap[parsedMarker.key]
+                                    val markerBeforeUpdateIsDetailsLoaded = markerBeforeUpdateWithDetailsAndIsSeen?.isDetailsLoaded ?: false
 
-                                    // todo can this be simplified with a .copy()?
-                                    // Preserve the `isDetailsLoaded` state of the current markers (if it exists)
+                                    // Use new parsed marker as base for merge
+                                    var mergedMarker = parsedMarker.value
+
+                                    // Preserve the `isDetailsLoaded` state (from the previous loadMarkerDetails fetch)
                                     // - these details are loaded in a separate call (loadMarkerDetails), so we need to preserve them.
-                                    if(isDetailsLoaded) {
+                                    if(markerBeforeUpdateIsDetailsLoaded) {
                                         println("Preserving isDetailsLoaded=true state for marker: ${parsedMarker.key}")
-                                        mergedBeforeAndAfterParseMarker = mergedBeforeAndAfterParseMarker.copy(
-                                            isDetailsLoaded = isDetailsLoaded,
-                                            inscription =
-                                                markerBeforeUpdate?.inscription
-                                                ?: parsedMarker.value.inscription,
-                                            spanishInscription =
-                                                markerBeforeUpdate?.spanishInscription
-                                                ?: parsedMarker.value.spanishInscription,
-                                            englishInscription =
-                                                markerBeforeUpdate?.englishInscription
-                                                ?: parsedMarker.value.englishInscription,
-                                            location =
-                                                markerBeforeUpdate?.location
-                                                ?: parsedMarker.value.location,
-                                            mainPhotoUrl =
-                                                markerBeforeUpdate?.mainPhotoUrl
-                                                ?: parsedMarker.value.mainPhotoUrl,
-                                            markerDetailPageUrl =
-                                                markerBeforeUpdate?.markerDetailPageUrl
-                                                ?: parsedMarker.value.markerDetailPageUrl,
-                                            photoAttributions =
-                                                markerBeforeUpdate?.photoAttributions
-                                                ?: parsedMarker.value.photoAttributions,
-                                            markerPhotos =
-                                                markerBeforeUpdate?.markerPhotos
-                                                ?: parsedMarker.value.markerPhotos,
-                                            lastUpdatedEpochSeconds =
-                                                markerBeforeUpdate?.lastUpdatedEpochSeconds
-                                                ?: parsedMarker.value.lastUpdatedEpochSeconds,
-                                        )
+
+                                        // Use the `markerBeforeUpdateWithDetails` as base
+                                        // and Merge in the new parsedMarker data scraped from the Markers list index page.
+                                        mergedMarker = markerBeforeUpdateWithDetailsAndIsSeen?.copy(
+                                            inscription = parsedMarker.value.inscription,
+                                            position = parsedMarker.value.position,
+                                            title = parsedMarker.value.title,
+                                            alpha = parsedMarker.value.alpha,
+                                            subtitle = parsedMarker.value.subtitle,
+                                            markerDetailPageUrl = parsedMarker.value.markerDetailPageUrl,
+                                        ) ?: parsedMarker.value
                                     }
 
-                                    // preserve the `isSeen` state of the current markers
-                                    mergedBeforeAndAfterParseMarker = mergedBeforeAndAfterParseMarker.copy(
-                                        isSeen = markerBeforeUpdate?.isSeen ?: parsedMarker.value.isSeen,
+                                    // preserve the `isSeen` state (from user interaction)
+                                    mergedMarker = mergedMarker.copy(
+                                        isSeen = markerBeforeUpdateWithDetailsAndIsSeen?.isSeen ?: false,
                                     )
 
-                                    parsedMarker.key to mergedBeforeAndAfterParseMarker
+                                    parsedMarker.key to mergedMarker
                                 }
                             ).toMap(),
                     )

@@ -1,6 +1,5 @@
 package com.realityexpander
 
-import presentation.app.AppTheme
 import GPSLocationService
 import MainView
 import SplashScreenForPermissions
@@ -22,15 +21,14 @@ import com.google.android.gms.maps.MapsInitializer
 import com.google.firebase.FirebaseApp
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.logEvent
-import com.russhwolf.settings.Settings
+import data.settings
 import intentFlow
-import data.isPermissionsGranted
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import data.setIsPermissionsGranted
+import presentation.app.AppTheme
 
 class MainActivity : AppCompatActivity() {
 
@@ -42,7 +40,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
-        val settings = Settings()
+//        val settings = Settings()
 
         // https://proandroiddev.com/implementing-core-splashscreen-api-e62f0e690f74
         installSplashScreen().apply {
@@ -59,7 +57,8 @@ class MainActivity : AppCompatActivity() {
             if(it[Manifest.permission.ACCESS_FINE_LOCATION] == false ||
                 it[Manifest.permission.ACCESS_COARSE_LOCATION] == false
             ) {
-                settings.setIsPermissionsGranted(false)
+//                settings.setIsPermissionsGranted(false)
+                settings.isPermissionsGranted = false
                 AlertDialog.Builder(this)
                     .setTitle("Location Permissions Required")
                     .setMessage("This app requires location permissions to function. " +
@@ -89,7 +88,8 @@ class MainActivity : AppCompatActivity() {
             } else {
                 // Dismiss the splash screen
                 splashState.tryEmit(true)
-                settings.setIsPermissionsGranted(true)
+//                settings.setIsPermissionsGranted(true)
+                settings.isPermissionsGranted = true
 
                 setContent {
                     MainView()
@@ -131,7 +131,8 @@ class MainActivity : AppCompatActivity() {
         // If permissions are not granted yet, show the splash screen for permissions.
         setContent {
             AppTheme {
-                SplashScreenForPermissions(settings.isPermissionsGranted())
+//                SplashScreenForPermissions(settings.isPermissionsGranted())
+                SplashScreenForPermissions(settings.isPermissionsGranted)
             }
         }
     }

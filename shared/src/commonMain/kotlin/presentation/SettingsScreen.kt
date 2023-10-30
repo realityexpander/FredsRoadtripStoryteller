@@ -32,25 +32,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
-import data.markersResult
-import com.russhwolf.settings.Settings
+import data.AppSettings
+import getPlatformName
+import kotlinx.coroutines.launch
 import presentation.uiComponents.SettingsSlider
 import presentation.uiComponents.SettingsSwitch
-import getPlatformName
-import data.isMarkersLastUpdatedLocationVisible
-import kotlinx.coroutines.launch
-import data.setIsMarkersLastUpdatedLocationVisible
-import data.setIsAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn
-import data.setTalkRadiusMiles
-import data.isAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn
-import data.setShouldSpeakAutomaticallyWhenUnseenMarkerFound
-import data.shouldSpeakAutomaticallyWhenUnseenMarkerFound
 import triggerDeveloperFeedback
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SettingsScreen(
-    settings: Settings? = null,
+    settings: AppSettings? = null,
     bottomSheetScaffoldState: BottomSheetScaffoldState,
     talkRadiusMiles: Double,
     onTalkRadiusChange: (Double) -> Unit = {},
@@ -62,13 +54,13 @@ fun SettingsScreen(
     val coroutineScope = rememberCoroutineScope()
 
     var shouldStartTrackingAutomaticallyWhenAppLaunches by remember {
-        mutableStateOf(settings?.isAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn() ?: false)
+        mutableStateOf(settings?.isAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn ?: false)
     }
     var shouldShowMarkerDataLastSearchedLocation by remember {
-        mutableStateOf(settings?.isMarkersLastUpdatedLocationVisible() ?: false)
+        mutableStateOf(settings?.isMarkersLastUpdatedLocationVisible ?: false)
     }
     var shouldSpeakAutomaticallyWhenNewMarkersAreFound by remember {
-        mutableStateOf(settings?.shouldSpeakAutomaticallyWhenUnseenMarkerFound() ?: false)
+        mutableStateOf(settings?.shouldSpeakAutomaticallyWhenUnseenMarkerFound ?: false)
     }
 
     Column(
@@ -104,7 +96,7 @@ fun SettingsScreen(
             title = "Speak automatically when new markers are found",
             isChecked = shouldSpeakAutomaticallyWhenNewMarkersAreFound,
             onUpdateChecked = {
-                settings?.setShouldSpeakAutomaticallyWhenUnseenMarkerFound(it)
+                settings?.shouldSpeakAutomaticallyWhenUnseenMarkerFound = it
                 shouldSpeakAutomaticallyWhenNewMarkersAreFound = it
             }
         )
@@ -113,7 +105,7 @@ fun SettingsScreen(
             title = "Start tracking automatically when app launches",
             isChecked = shouldStartTrackingAutomaticallyWhenAppLaunches,
             onUpdateChecked = {
-                settings?.setIsAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn(it)
+                settings?.isAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn = it
                 shouldStartTrackingAutomaticallyWhenAppLaunches = it
             }
         )
@@ -122,7 +114,7 @@ fun SettingsScreen(
             title = "Talk Radius (miles)",
             currentValue = talkRadiusMiles,
             onUpdateValue = {
-                settings?.setTalkRadiusMiles(it)
+                settings?.talkRadiusMiles = it
                 onTalkRadiusChange(it)
             }
         )
@@ -131,7 +123,7 @@ fun SettingsScreen(
             title = "Show marker data last searched location",
             isChecked = shouldShowMarkerDataLastSearchedLocation,
             onUpdateChecked = {
-                settings?.setIsMarkersLastUpdatedLocationVisible(it)
+                settings?.isMarkersLastUpdatedLocationVisible = it
                 shouldShowMarkerDataLastSearchedLocation = it
                 onIsCachedMarkersLastUpdatedLocationVisibleChange(it)
             }
@@ -175,12 +167,12 @@ fun SettingsScreen(
                 Text("Reset Marker Info Cache")
             }
         Text(
-            "Cache size: ${settings?.markersResult()?.markerIdToMapMarkerMap?.size} markers",
+            "Cache size: ${settings?.markersResult?.markerIdToMapMarkerMap?.size} markers",
             modifier = Modifier
                 .align(Alignment.CenterHorizontally),
         )
 
-        // Show Reset Cache Alert Dialog
+        // Show Reset Settings Alert Dialog
         if (isResetMarkerSettingsAlertDialogVisible)
             ShowResetMarkerSettingsAlert(
                 onClose = {
@@ -191,9 +183,6 @@ fun SettingsScreen(
                 onSuccess = {
                     coroutineScope.launch {
                         isResetMarkerSettingsAlertDialogVisible = false
-                        // reset cache
-                        //settings?.setCachedMarkersResult(MarkersResult())
-                        //settings?.setCachedMarkersLastUpdatedLocation(Location(0.0,0.0))
                         onResetMarkerSettings()
                     }
                 }

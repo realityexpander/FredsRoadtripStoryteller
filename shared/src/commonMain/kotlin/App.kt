@@ -54,25 +54,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.russhwolf.settings.Settings
+import data.AppSettings
+import data.AppSettings.Companion.kMarkersLastUpdateEpochSeconds
+import data.AppSettings.Companion.kMarkersLastUpdatedLocation
+import data.AppSettings.Companion.kMarkersResult
 import data.LoadingState
-import data.clearMarkersLastUpdateEpochSeconds
-import data.clearMarkersLastUpdatedLocation
-import data.clearMarkersResult
-import data.isAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn
-import data.isMarkersLastUpdatedLocationVisible
-import data.isRecentlySeenMarkersPanelVisible
-import data.lastKnownUserLocation
 import data.loadMarkerDetails.loadMapMarkerDetails
 import data.loadMarkers.MarkersResult
 import data.loadMarkers.distanceBetween
 import data.loadMarkers.loadMarkers
 import data.loadMarkers.sampleData.kUseRealNetwork
-import data.markersLastUpdatedLocation
-import data.printAppSettings
-import data.setIsRecentlySeenMarkersPanelVisible
-import data.setLastKnownUserLocation
-import data.setMarkersResult
-import data.talkRadiusMiles
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
@@ -130,19 +121,19 @@ fun App() {
 
         // Settings
         val settings = remember {
-            Settings().apply {
-                if(kForceClearSettingsAtLaunch) { clear() }
+            AppSettings(Settings()).apply {
+                if(kForceClearSettingsAtLaunch) { clearAllSettings() }
                 // Log.setMinSeverity(Severity.Warn)
                 printAppSettings()
             }
         }
         var talkRadiusMiles by remember {
-            mutableStateOf(settings.talkRadiusMiles())
+            mutableStateOf(settings.talkRadiusMiles)
         }
         var isMarkersLastUpdatedLocationVisible by
-            remember(settings.isMarkersLastUpdatedLocationVisible()) {
-            mutableStateOf(settings.isMarkersLastUpdatedLocationVisible())
-        }
+            remember(settings.isMarkersLastUpdatedLocationVisible) {
+                mutableStateOf(settings.isMarkersLastUpdatedLocationVisible)
+            }
 
         // Google Maps UI elements
         var isTrackingEnabled by remember {
@@ -157,12 +148,12 @@ fun App() {
             mutableStateOf(GPSLocationService())
         }
         var userLocation: Location by remember {
-            mutableStateOf(settings.lastKnownUserLocation())
+            mutableStateOf(settings.lastKnownUserLocation)
         }
 
         // Last "markers updated" location
         var cachedMarkersLastUpdatedLocation by remember {
-            mutableStateOf(settings.markersLastUpdatedLocation())
+            mutableStateOf(settings.markersLastUpdatedLocation)
         }
 
         // Recently Seen Markers
@@ -298,7 +289,7 @@ fun App() {
             snapshotFlow { userLocation }
                 .collect { location ->
                     // 1. Save the last known location to settings
-                    settings.setLastKnownUserLocation(location)
+                    settings.lastKnownUserLocation = location
 
                     // 2. Check for new markers inside talk radius & add to recentlySeen list
                     addMarkersToRecentlySeenList(
@@ -315,7 +306,7 @@ fun App() {
                                     updatedMapMarkers = updatedIsSeenMapMarkers,
                                     mapMarkers = mapMarkers,
                                     previousMapMarkers = previousMapMarkers,
-                                    settings = settings
+                                    settings = settings // todo fix this. should be able to use `settings` directly
                                 )
                             }
                         }
@@ -344,7 +335,7 @@ fun App() {
 
         // Turn on tracking automatically?
         LaunchedEffect(Unit) {
-            val shouldStart = settings.isAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn()
+            val shouldStart = settings.isAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn
             if (shouldStart) {
                 startTracking()
             }
@@ -463,7 +454,7 @@ fun App() {
             }
         ) {
             var isRecentlySeenMarkersPanelVisible by remember {
-                mutableStateOf(settings.isRecentlySeenMarkersPanelVisible())
+                mutableStateOf(settings.isRecentlySeenMarkersPanelVisible)
             }
 
             Scaffold(
@@ -527,9 +518,8 @@ fun App() {
                                 IconButton(onClick = {
                                     coroutineScope.launch {
                                         isRecentlySeenMarkersPanelVisible = !isRecentlySeenMarkersPanelVisible
-                                        settings.setIsRecentlySeenMarkersPanelVisible(
+                                        settings.isRecentlySeenMarkersPanelVisible =
                                             isRecentlySeenMarkersPanelVisible
-                                        )
                                     }
                                 }) { // show marker history panel
                                     Icon(
@@ -592,7 +582,7 @@ fun App() {
                                 modifier = Modifier
                                     .fillMaxHeight(1.0f - transitionRecentMarkersPanelState),
                                 isFinishedLoadingMarkerData = fetchedMarkersResult.isParseMarkersPageFinished,
-                                initialUserLocation = settings.lastKnownUserLocation(),
+                                initialUserLocation = settings.lastKnownUserLocation,
                                 userLocation = userLocation,
                                 mapMarkers = mapMarkers,
                                 mapBounds = null,
@@ -602,10 +592,10 @@ fun App() {
                                 talkRadiusMiles = talkRadiusMiles,
                                 cachedMarkersLastUpdatedLocation =
                                     remember(
-                                        settings.isMarkersLastUpdatedLocationVisible(),
+                                        settings.isMarkersLastUpdatedLocationVisible,
                                         cachedMarkersLastUpdatedLocation
                                     ) {
-                                        if (settings.isMarkersLastUpdatedLocationVisible())
+                                        if (settings.isMarkersLastUpdatedLocationVisible)
                                             cachedMarkersLastUpdatedLocation
                                         else
                                             null
@@ -621,7 +611,6 @@ fun App() {
                                     }
                                 },
                                 onFindMeButtonClicked = {
-                                    // center on location
                                     centerOnUserCameraLocation = userLocation.copy()
                                 },
                                 isMarkersLastUpdatedLocationVisible = isMarkersLastUpdatedLocationVisible,
@@ -667,7 +656,7 @@ private fun setCurrentMapMarkers(
     updatedMapMarkers: SnapshotStateList<MapMarker>? = null,  // prefer to use `updatedMarkersResult`, if possible
     mapMarkers: SnapshotStateList<MapMarker>,
     previousMapMarkers: SnapshotStateList<MapMarker>,
-    settings: Settings
+    settings: AppSettings
 ): MarkersResult {
 
     val localUpdatedMapMarkers =
@@ -691,7 +680,7 @@ private fun setCurrentMapMarkers(
 
     // save the updated markers list to settings
     Log.d("save the updated markers list to settings")
-    settings.setMarkersResult(newMarkersResult)
+    settings.markersResult = newMarkersResult
 
     return newMarkersResult
 }
@@ -700,7 +689,7 @@ private fun updateMapMarkersWithUpdatedMarkerDetails(
     fetchMarkersResult: MarkersResult,  // will be updated with data from `fetchMarkerDetailsResult`
     fetchMarkerDetailsResult: LoadingState<MapMarker>,
     mapMarkers: SnapshotStateList<MapMarker>,
-    settings: Settings
+    settings: AppSettings
 ): MarkersResult {
     var updatedFetchMarkersResult = fetchMarkersResult
 
@@ -726,7 +715,7 @@ private fun updateMapMarkersWithUpdatedMarkerDetails(
             )
 
             // Update the settings with the updated marker data
-            settings.setMarkersResult(updatedFetchMarkersResult)
+            settings.markersResult = updatedFetchMarkersResult
         }
     }
 
@@ -742,7 +731,7 @@ private fun jiggleLocationToForceUpdate(userLocation: Location) = Location(
 )
 
 private fun resetMarkerSettings(
-    settings: Settings,
+    settings: AppSettings,
     mapMarkers: SnapshotStateList<MapMarker>,
     previousMapMarkers: SnapshotStateList<MapMarker>,
     recentlySeenMarkersSet: MutableSet<RecentMapMarker>,
@@ -755,12 +744,10 @@ private fun resetMarkerSettings(
     previousMapMarkers.clear()
 
     // Reset the settings cache of markers
-    settings.clearMarkersResult()
-    settings.clearMarkersLastUpdatedLocation()
-    settings.clearMarkersLastUpdateEpochSeconds()
+    settings.clear(kMarkersResult)
+    settings.clear(kMarkersLastUpdatedLocation)
+    settings.clear(kMarkersLastUpdateEpochSeconds)
     // todo clear Recently Seen Markers list
-
-    // todo check the Drawer to see if it's showing the "isSeen" state
 }
 
 // Check for new markers inside talk radius & add to recentlySeen list
@@ -953,7 +940,6 @@ fun SplashScreenForPermissions(
 
     Column(
         modifier = Modifier
-//            .heightIn(min = 48.dp, max=300.dp)
             .background(MaterialTheme.colors.primary),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
@@ -984,12 +970,6 @@ fun SplashScreenForPermissions(
                         contentScale = ContentScale.FillWidth,
                     )
                 }
-    //            PreviewPlaceholder("Freds head",
-    //                modifier = Modifier
-    //                    .weight(1f)
-    //                    .fillMaxHeight()
-    //                    .background(Color.Red)
-    //            )
                 Text(
                     "Fred's Historic Markers",
                     color = Color.White,
