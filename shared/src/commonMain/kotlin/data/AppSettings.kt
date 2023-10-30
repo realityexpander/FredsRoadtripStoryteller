@@ -194,11 +194,11 @@ class SettingsDelegate<T>(
             is Long -> settings.putLong(key, value)
             is String -> settings.putString(key, value)
             is Location ->
-                settings.putString(key, json.encodeToString<Location>(value))
+                settings.putString(key, json.encodeToString(value as Location))
             is List<*> -> // Note: can't use List<String> here, because of type erasure, assumes List<String>
                 settings.putString(key, json.encodeToString(value as List<String>))
             is MarkersResult ->
-                settings.putString(key, json.encodeToString<MarkersResult>(value))
+                settings.putString(key, json.encodeToString(value as MarkersResult))
             else -> throw IllegalArgumentException("Unsupported type, key= $key, " +
                     "type of defaultValue= ${defaultValue!!::class.simpleName}")
         }

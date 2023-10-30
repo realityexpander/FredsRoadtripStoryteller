@@ -54,19 +54,19 @@ data class MarkersResult(
 
  Strategy:
  ```
- 1 - Check for cached data
-   - if not cached, attempt load from network (go to step 2)
-   - 1.1 - Check for cached markers & load them if they exist.
-   - 1.2 - Check if user is still inside max re-load radius & cache has not expired.
-     - 1.2a - If so, return the cached data.
-     - 1.2b - If not, attempt load markers from network for this location.
- 2 - Initiate Load from network
- 3 - Perform Load & Error checking
- 4 - Parse the HTML
-   - 4.1 - Parse the raw page HTML into a list of `MapMarker` objects & metadata about the scraped data
-   - 4.2 - Load more pages, if needed (goto step 2)
- 5 - Save the MapMarker objects to cache & settings (if they were updated from the network)
- 6 - PROCESS COMPLETE
+     1 - Check for cached data
+       - if not cached, attempt load from network (go to step 2)
+       - 1.1 - Check for cached markers & load them if they exist.
+       - 1.2 - Check if user is still inside max re-load radius & cache has not expired.
+         - 1.2a - If so, return the cached data.
+         - 1.2b - If not, attempt load markers from network for this location.
+     2 - Initiate Load from network
+     3 - Perform Load & Error checking
+     4 - Parse the HTML
+       - 4.1 - Parse the raw page HTML into a list of `MapMarker` objects & metadata about the scraped data
+       - 4.2 - Load more pages, if needed (goto step 2)
+     5 - Save the MapMarker objects to cache & settings (if they were updated from the network)
+     6 - PROCESS COMPLETE
  ```
 
  Note: This code is goofy looking & hops around a lot... this is because to I'm avoid using
@@ -163,7 +163,6 @@ fun loadMarkers(
 
             // Step 1.2 - Check if the user is outside the markers last update radius
             if (settings.hasKey(kMarkersLastUpdatedLocation)) {
-//                val markersLastUpdatedLocation = settings.markersLastUpdatedLocation()
                 val markersLastUpdatedLocation = settings.markersLastUpdatedLocation
                 val userDistanceFromLastUpdatedLocationMiles =
                     distanceBetween(
