@@ -6,6 +6,7 @@ import com.russhwolf.settings.set
 import data.loadMarkers.MarkersResult
 import json
 import kotlinx.serialization.encodeToString
+import maps.RecentlySeenMarkersList
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 import kotlin.reflect.safeCast
@@ -30,8 +31,10 @@ class AppSettings(private val settings: Settings) {
         SettingsDelegate(settings, kIsRecentlySeenMarkersPanelVisible, defaultValue = false)
     var isPermissionsGranted by
         SettingsDelegate(settings, kIsPermissionsGranted, defaultValue = false)
-    var recentlySeenMarkers by
-        SettingsDelegate(settings, kRecentlySeenMarkers, defaultValue = listOf<String>())
+    var recentlySeenMarkersSet by
+        SettingsDelegate(settings, kRecentlySeenMarkersSet, defaultValue = RecentlySeenMarkersList())
+    var uiRecentlySeenMarkersList by
+        SettingsDelegate(settings, kUiRecentlySeenMarkersList, defaultValue = RecentlySeenMarkersList())
 
     // • For Settings panel
     var shouldSpeakAutomaticallyWhenUnseenMarkerFound by
@@ -56,7 +59,8 @@ class AppSettings(private val settings: Settings) {
         kStartBackgroundUpdatesWhenAppLaunches to isAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn,
         kTalkRadiusMiles to talkRadiusMiles,
         kIsMarkersLastUpdatedLocationVisible to isMarkersLastUpdatedLocationVisible,
-        kRecentlySeenMarkers to recentlySeenMarkers
+        kRecentlySeenMarkersSet to recentlySeenMarkersSet,
+        kUiRecentlySeenMarkersList to uiRecentlySeenMarkersList
     )
 
     // Use [] access operator
@@ -110,13 +114,22 @@ class AppSettings(private val settings: Settings) {
         println("markersResult.size= ${markersResult.markerIdToMapMarkerMap.size}")
 
         // Show current settings
-        Log.d { "All keys from settings: ${settings.keys.joinToString("") { it + "\n" }}" }
-        settingsMap.forEach {
-            if(it.key == kMarkersResult) { // Don't want to display all the markers
-                Log.d { "Settings: ${it.key} = ${(it.value as MarkersResult).markerIdToMapMarkerMap.size} markers" }
+        Log.d { "All keys from settings: ${settings.keys.joinToString("") { it + "\n  " }}" }
+        settingsMap.forEach { entry ->
+            if(entry.key == kMarkersResult) { // Don't want to display all the markers
+                Log.d { "Settings: ${entry.key} = ${(entry.value as MarkersResult).markerIdToMapMarkerMap.size} markers" }
                 return@forEach
             }
-            Log.d { "Settings: ${it.key} = ${it.value}" }
+            if(entry.key == kRecentlySeenMarkersSet) { // Don't want to display all the markers
+                Log.d { "Settings: ${entry.key} = ${(entry.value as RecentlySeenMarkersList).list.size} markers in seen set" }
+                return@forEach
+            }
+            if(entry.key == kUiRecentlySeenMarkersList) { // Don't want to display all the markers
+                Log.d { "Settings: ${entry.key} = ${(entry.value as RecentlySeenMarkersList).list.size} markers in seen list" }
+                return@forEach
+            }
+
+            Log.d { "Settings: ${entry.key} = ${entry.value}" }
         }
     }
 
@@ -133,9 +146,10 @@ class AppSettings(private val settings: Settings) {
         const val kMarkersLastUpdateEpochSeconds =           "kMarkersLastUpdateEpochSeconds"
         const val kMarkersLastUpdatedLocation =              "kMarkersLastUpdatedLocation"
         const val kLastKnownUserLocation =                   "kLastKnownUserLocation"
-        const val kRecentlySeenMarkers =                     "kRecentlySeenMarkers"
         const val kIsPermissionsGranted =                    "kIsPermissionsGranted"
         const val kIsRecentlySeenMarkersPanelVisible =       "kIsRecentlySeenMarkersPanelVisible"
+        const val kRecentlySeenMarkersSet =                  "kRecentlySeenMarkersSet"
+        const val kUiRecentlySeenMarkersList =               "kUiRecentlySeenMarkersList"
 
         // • For Settings panel
         const val kSpeakAutomaticallyWhenUnseenMarkerFound = "kShouldSpeakAutomaticallyWhenUnseenMarkerFound"
@@ -175,6 +189,11 @@ class SettingsDelegate<T>(
                     settings.getStringOrNull(key) ?: return defaultValue
                 ) as T
             }
+            is RecentlySeenMarkersList -> {
+                json.decodeFromString<RecentlySeenMarkersList>(
+                    settings.getStringOrNull(key) ?: return defaultValue
+                ) as T
+            }
             else -> throw IllegalArgumentException("Unsupported type, key= $key, " +
                     "type of defaultValue= ${defaultValue!!::class.simpleName}")
         }
@@ -199,6 +218,8 @@ class SettingsDelegate<T>(
                 settings.putString(key, json.encodeToString(value as List<String>))
             is MarkersResult ->
                 settings.putString(key, json.encodeToString(value as MarkersResult))
+            is RecentlySeenMarkersList ->
+                settings.putString(key, json.encodeToString(value as RecentlySeenMarkersList))
             else -> throw IllegalArgumentException("Unsupported type, key= $key, " +
                     "type of defaultValue= ${defaultValue!!::class.simpleName}")
         }

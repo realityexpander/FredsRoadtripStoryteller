@@ -1,6 +1,6 @@
 package maps
 
-class CameraLocationBounds( // todo move to proper package
+class CameraLocationBounds(
     val coordinates: List<LatLong> = listOf(),
     val padding: Int = 0
 )

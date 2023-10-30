@@ -32,14 +32,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import maps.MapMarker
-import maps.RecentMapMarker
+import maps.MarkerIdStr
+import maps.RecentlySeenMarker
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun RecentlySeenMarkers(
-    recentlySeenMarkersForUiList: SnapshotStateList<RecentMapMarker>,
-    onClickRecentlySeenMarkerItem: ((MapMarker) -> Unit) = {}
+    recentlySeenMarkersForUiList: SnapshotStateList<RecentlySeenMarker>,
+    onClickRecentlySeenMarkerItem: ((MarkerIdStr) -> Unit) = {}
 ) {
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberLazyListState()
@@ -48,11 +48,11 @@ fun RecentlySeenMarkers(
     // Scroll to top when first item key changes
     LaunchedEffect(
         recentlySeenMarkersForUiList.isNotEmpty()
-        && recentlySeenMarkersForUiList.first().key() != curTopItemKey
+        && recentlySeenMarkersForUiList.first().id != curTopItemKey
     ) {
         if(recentlySeenMarkersForUiList.isEmpty()) return@LaunchedEffect
 
-        curTopItemKey = recentlySeenMarkersForUiList.first().key()
+        curTopItemKey = recentlySeenMarkersForUiList.first().id
         coroutineScope.launch {
             scrollState.animateScrollToItem(0)
         }
@@ -84,10 +84,10 @@ fun RecentlySeenMarkers(
                 .background(MaterialTheme.colors.surface)
 
         ) {
-//            // Header
+//            // Speaking Marker // todo add for Speak Marker
 //            item {
 //                Text(
-//                    text = "TOP 5 RECENTLY SEEN MARKERS",
+//                    text = "Currently Speaking: $currentlySpeakingMarkerId",
 //                    color = MaterialTheme.colors.onSurface,
 //                    fontStyle = FontStyle.Normal,
 //                    fontSize = MaterialTheme.typography.subtitle2.fontSize,
@@ -120,7 +120,7 @@ fun RecentlySeenMarkers(
 
             items(
                 recentlySeenMarkersForUiList.size,
-                key = { index -> recentlySeenMarkersForUiList[index].key() }
+                key = { index -> recentlySeenMarkersForUiList[index].id }
             ) {
                 val recentMarker = recentlySeenMarkersForUiList.elementAt(it)
 
@@ -135,7 +135,7 @@ fun RecentlySeenMarkers(
                         .heightIn(min = 48.dp)
                         .padding(8.dp, 0.dp, 8.dp, 4.dp)
                         .clickable {
-                            onClickRecentlySeenMarkerItem(recentMarker.marker)
+                            onClickRecentlySeenMarkerItem(recentMarker.id)
                         }
                         .animateItemPlacement(
                             animationSpec = tween(
@@ -145,14 +145,14 @@ fun RecentlySeenMarkers(
                         )
                 ) {
                     Text(
-                        text = recentMarker.marker.title,
+                        text = recentMarker.title,
                         color = MaterialTheme.colors.onPrimary,
                         fontStyle = FontStyle.Normal,
                         fontSize = MaterialTheme.typography.h6.fontSize,
                         fontWeight = FontWeight.Medium,
                     )
                     Text(
-                        text = recentMarker.key(),
+                        text = recentMarker.id,
                         color = MaterialTheme.colors.onPrimary.copy(alpha = 0.50f),
                         fontStyle = FontStyle.Normal,
                         fontSize = MaterialTheme.typography.body1.fontSize,

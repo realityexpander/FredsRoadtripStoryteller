@@ -58,12 +58,15 @@ import data.AppSettings
 import data.AppSettings.Companion.kMarkersLastUpdateEpochSeconds
 import data.AppSettings.Companion.kMarkersLastUpdatedLocation
 import data.AppSettings.Companion.kMarkersResult
+import data.AppSettings.Companion.kRecentlySeenMarkersSet
+import data.AppSettings.Companion.kUiRecentlySeenMarkersList
 import data.LoadingState
 import data.loadMarkerDetails.loadMapMarkerDetails
 import data.loadMarkers.MarkersResult
 import data.loadMarkers.distanceBetween
 import data.loadMarkers.loadMarkers
 import data.loadMarkers.sampleData.kUseRealNetwork
+import data.settings
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
@@ -73,7 +76,8 @@ import maps.CameraPosition
 import maps.LatLong
 import maps.MapMarker
 import maps.MarkerIdStr
-import maps.RecentMapMarker
+import maps.RecentlySeenMarker
+import maps.RecentlySeenMarkersList
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import presentation.MarkerDetailsScreen
@@ -158,10 +162,10 @@ fun App() {
 
         // Recently Seen Markers
         val recentlySeenMarkersSet by remember {
-            mutableStateOf(mutableSetOf<RecentMapMarker>()) // todo add to settings
+            mutableStateOf(settings.recentlySeenMarkersSet.list.toMutableSet())
         }
         val recentlySeenMarkersForUiList by remember {
-            mutableStateOf(recentlySeenMarkersSet.toMutableStateList())
+            mutableStateOf(settings.uiRecentlySeenMarkersList.list.toMutableStateList())
         }
 
         // Holds the set of saved markers, this prevents flicker when loading new markers while processing the marker page(s)
@@ -306,7 +310,7 @@ fun App() {
                                     updatedMapMarkers = updatedIsSeenMapMarkers,
                                     mapMarkers = mapMarkers,
                                     previousMapMarkers = previousMapMarkers,
-                                    settings = settings // todo fix this. should be able to use `settings` directly
+                                    settings = settings
                                 )
                             }
                         }
@@ -634,10 +638,10 @@ fun App() {
 
                     RecentlySeenMarkers(
                         recentlySeenMarkersForUiList,
-                        onClickRecentlySeenMarkerItem = { marker ->
+                        onClickRecentlySeenMarkerItem = { markerId ->
                             // Show marker details
                             coroutineScope.launch {
-                                bottomSheetActiveScreen = BottomSheetScreen.MarkerDetailsScreen(marker)
+                                bottomSheetActiveScreen = BottomSheetScreen.MarkerDetailsScreen(id = markerId)
                                 bottomSheetScaffoldState.bottomSheetState.apply {
                                     if (isCollapsed) expand()
                                 }
@@ -734,8 +738,8 @@ private fun resetMarkerSettings(
     settings: AppSettings,
     mapMarkers: SnapshotStateList<MapMarker>,
     previousMapMarkers: SnapshotStateList<MapMarker>,
-    recentlySeenMarkersSet: MutableSet<RecentMapMarker>,
-    recentlySeenMarkersForUiList: SnapshotStateList<RecentMapMarker>
+    recentlySeenMarkersSet: MutableSet<RecentlySeenMarker>,
+    recentlySeenMarkersForUiList: SnapshotStateList<RecentlySeenMarker>
 ) {
     // Reset the `seen markers` list, UI elements
     recentlySeenMarkersSet.clear()
@@ -747,7 +751,8 @@ private fun resetMarkerSettings(
     settings.clear(kMarkersResult)
     settings.clear(kMarkersLastUpdatedLocation)
     settings.clear(kMarkersLastUpdateEpochSeconds)
-    // todo clear Recently Seen Markers list
+    settings.clear(kRecentlySeenMarkersSet)
+    settings.clear(kUiRecentlySeenMarkersList)
 }
 
 // Check for new markers inside talk radius & add to recentlySeen list
@@ -755,8 +760,8 @@ private fun addMarkersToRecentlySeenList(
     mapMarkers: SnapshotStateList<MapMarker>,
     userLocation: Location,
     talkRadiusMiles: Double,
-    recentlySeenMarkersSet: MutableSet<RecentMapMarker>,
-    recentlySeenMarkersForUiList: SnapshotStateList<RecentMapMarker>,
+    recentlySeenMarkersSet: MutableSet<RecentlySeenMarker>,
+    recentlySeenMarkersForUiList: SnapshotStateList<RecentlySeenMarker>,
     onUpdateIsSeenMapMarkers: (SnapshotStateList<MapMarker>) -> Unit
 ) {
     var updatedMarkers = mapMarkers
@@ -775,16 +780,18 @@ private fun addMarkersToRecentlySeenList(
 
         // add marker to recently seen set?
         if (distanceFromMarkerToUserLocationMiles < talkRadiusMiles * 1.75) {  // idk why 1.75, just seems to work
-            fun MutableSet<RecentMapMarker>.containsMarker(marker: MapMarker): Boolean {
-                return any {
-                    it.key() == marker.id
+            fun MutableSet<RecentlySeenMarker>.containsMarker(marker: MapMarker): Boolean {
+                return any { recentMapMarker ->
+                    recentMapMarker.id == marker.id
                 }
             }
-            // Not already in the `seen` set?
+
+            // Not already in the `recently seen` set of all seen markers?
             if (!recentlySeenMarkersSet.containsMarker(marker)) {
                 // Add to the `seen` set
-                val newlySeenMarker = RecentMapMarker(
-                    marker,
+                val newlySeenMarker = RecentlySeenMarker(
+                    marker.id,
+                    marker.title,
                     Clock.System.now().toEpochMilliseconds(),
                     recentlySeenMarkersSet.size + 1
                 )
@@ -809,7 +816,7 @@ private fun addMarkersToRecentlySeenList(
                     do {
                         val oldestMarker =
                             recentlySeenMarkersForUiList.minByOrNull { recentMarker ->
-                                recentMarker.timeAddedToRecentList
+                                recentMarker.insertedAtEpochMilliseconds
                             }
 
                         // remove the oldest marker
@@ -823,19 +830,20 @@ private fun addMarkersToRecentlySeenList(
         }
     }
 
-    // Update the "seen" markers for the Map
+    // Update the "isSeen" marker colors for the Map
+    // & save the updated markers list to settings
     if(didUpdateMarkersIsSeen) {
         onUpdateIsSeenMapMarkers(updatedMarkers)
+        settings.recentlySeenMarkersSet = RecentlySeenMarkersList(recentlySeenMarkersSet.toList())
+        settings.uiRecentlySeenMarkersList = RecentlySeenMarkersList(recentlySeenMarkersForUiList.toList())
     }
 
     // Update the UI list of recently seen markers (& reverse sort by time)
     val oldList = recentlySeenMarkersForUiList.toList()
     recentlySeenMarkersForUiList.clear()
     recentlySeenMarkersForUiList.addAll(oldList.sortedByDescending { recentMarker ->
-        recentMarker.timeAddedToRecentList
+        recentMarker.insertedAtEpochMilliseconds
     }.toMutableStateList())
-
-    // todo save the recently seen markers list to settings
 }
 
 @Composable
