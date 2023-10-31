@@ -308,9 +308,12 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, Marker?> {
         } else {
             ""
         }
+
+    // Prepare final result
     markerResult = markerResult.copy(
         englishInscription = finalEnglishInscription,
         spanishInscription = finalSpanishInscription,
+        isDetailsLoaded = true
     )
 
     return Pair(null, markerResult)

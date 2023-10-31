@@ -2,7 +2,6 @@ package data
 
 import Location
 import com.russhwolf.settings.Settings
-import com.russhwolf.settings.get
 import com.russhwolf.settings.set
 import data.loadMarkers.MarkersResult
 import json
@@ -21,6 +20,7 @@ val settings = AppSettings.create()
         printAppSettings()
     }
 
+@Suppress("MemberVisibilityCanBePrivate") // for settingsInstance - will be used in tests
 class AppSettings(val settingsInstance: Settings) {
 
     // Typesafe accessors for settings
@@ -44,10 +44,12 @@ class AppSettings(val settingsInstance: Settings) {
         SettingsDelegate(settingsInstance, kUiRecentlySeenMarkersList, defaultValue = RecentlySeenMarkersList())
 
     // • For Settings panel
-    var shouldSpeakAutomaticallyWhenUnseenMarkerFound by
+    var shouldSpeakWhenUnseenMarkerFound by
         SettingsDelegate(settingsInstance, kSpeakAutomaticallyWhenUnseenMarkerFound, defaultValue = false)
-    var isAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn by
-        SettingsDelegate(settingsInstance, kStartBackgroundUpdatesWhenAppLaunches, defaultValue = false)
+    var shouldSpeakDetailsWhenUnseenMarkerFound by
+        SettingsDelegate(settingsInstance, kShouldSpeakDetailsWhenUnseenMarkerFound, defaultValue = false)
+    var shouldStartBackgroundTrackingWhenAppLaunches by
+        SettingsDelegate(settingsInstance, kShouldStartBackgroundTrackingWhenAppLaunches, defaultValue = false)
     var talkRadiusMiles by
         SettingsDelegate(settingsInstance, kTalkRadiusMiles, defaultValue = 0.5)
     var isMarkersLastUpdatedLocationVisible by
@@ -56,18 +58,32 @@ class AppSettings(val settingsInstance: Settings) {
     // - REMEMBER TO ADD NEW SETTINGS TO THIS MAP!
     var settingsMap = createSettingsMap()
     private fun createSettingsMap() = mutableMapOf<String, Any?>(
-        kMarkersResult to markersResult,
-        kMarkersLastUpdateEpochSeconds to markersLastUpdateEpochSeconds,
-        kMarkersLastUpdatedLocation to markersLastUpdatedLocation,
-        kLastKnownUserLocation to lastKnownUserLocation,
-        kIsPermissionsGranted to isPermissionsGranted,
-        kIsRecentlySeenMarkersPanelVisible to isRecentlySeenMarkersPanelVisible,
-        kSpeakAutomaticallyWhenUnseenMarkerFound to shouldSpeakAutomaticallyWhenUnseenMarkerFound,
-        kStartBackgroundUpdatesWhenAppLaunches to isAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn,
-        kTalkRadiusMiles to talkRadiusMiles,
-        kIsMarkersLastUpdatedLocationVisible to isMarkersLastUpdatedLocationVisible,
-        kRecentlySeenMarkersSet to recentlySeenMarkersSet,
-        kUiRecentlySeenMarkersList to uiRecentlySeenMarkersList
+        kMarkersResult to
+            markersResult,
+        kMarkersLastUpdateEpochSeconds to
+            markersLastUpdateEpochSeconds,
+        kMarkersLastUpdatedLocation to
+            markersLastUpdatedLocation,
+        kLastKnownUserLocation to
+            lastKnownUserLocation,
+        kIsPermissionsGranted to
+            isPermissionsGranted,
+        kIsRecentlySeenMarkersPanelVisible to
+            isRecentlySeenMarkersPanelVisible,
+        kSpeakAutomaticallyWhenUnseenMarkerFound to
+            shouldSpeakWhenUnseenMarkerFound,
+        kShouldStartBackgroundTrackingWhenAppLaunches to
+            shouldStartBackgroundTrackingWhenAppLaunches,
+        kTalkRadiusMiles to
+            talkRadiusMiles,
+        kIsMarkersLastUpdatedLocationVisible to
+            isMarkersLastUpdatedLocationVisible,
+        kRecentlySeenMarkersSet to
+            recentlySeenMarkersSet,
+        kUiRecentlySeenMarkersList to
+            uiRecentlySeenMarkersList,
+        kShouldSpeakDetailsWhenUnseenMarkerFound to
+            shouldSpeakDetailsWhenUnseenMarkerFound,
     )
 
     // Use [] access operator
@@ -159,20 +175,34 @@ class AppSettings(val settingsInstance: Settings) {
         }
 
         // Settings Keys
-        const val kMarkersResult =                           "kMarkersResult"
-        const val kMarkersLastUpdateEpochSeconds =           "kMarkersLastUpdateEpochSeconds"
-        const val kMarkersLastUpdatedLocation =              "kMarkersLastUpdatedLocation"
-        const val kLastKnownUserLocation =                   "kLastKnownUserLocation"
-        const val kIsPermissionsGranted =                    "kIsPermissionsGranted"
-        const val kIsRecentlySeenMarkersPanelVisible =       "kIsRecentlySeenMarkersPanelVisible"
-        const val kRecentlySeenMarkersSet =                  "kRecentlySeenMarkersSet"
-        const val kUiRecentlySeenMarkersList =               "kUiRecentlySeenMarkersList"
+        const val kMarkersResult =
+                 "kMarkersResult"
+        const val kMarkersLastUpdateEpochSeconds =
+                 "kMarkersLastUpdateEpochSeconds"
+        const val kMarkersLastUpdatedLocation =
+                 "kMarkersLastUpdatedLocation"
+        const val kLastKnownUserLocation =
+                 "kLastKnownUserLocation"
+        const val kIsPermissionsGranted =
+                 "kIsPermissionsGranted"
+        const val kIsRecentlySeenMarkersPanelVisible =
+                 "kIsRecentlySeenMarkersPanelVisible"
+        const val kRecentlySeenMarkersSet =
+                 "kRecentlySeenMarkersSet"
+        const val kUiRecentlySeenMarkersList =
+                 "kUiRecentlySeenMarkersList"
 
         // • For Settings panel
-        const val kSpeakAutomaticallyWhenUnseenMarkerFound = "kShouldSpeakAutomaticallyWhenUnseenMarkerFound"
-        const val kStartBackgroundUpdatesWhenAppLaunches =   "kStartBackgroundUpdatesWhenAppLaunches"
-        const val kTalkRadiusMiles =                         "kTalkRadiusMiles"
-        const val kIsMarkersLastUpdatedLocationVisible =     "kIsMarkersLastUpdatedLocationVisible"
+        const val kSpeakAutomaticallyWhenUnseenMarkerFound =
+                 "kShouldSpeakAutomaticallyWhenUnseenMarkerFound"
+        const val kShouldSpeakDetailsWhenUnseenMarkerFound =
+                 "kShouldSpeakDetailsWhenUnseenMarkerFound"
+        const val kShouldStartBackgroundTrackingWhenAppLaunches =
+                 "kShouldStartBackgroundTrackingWhenAppLaunches"
+        const val kTalkRadiusMiles =
+                 "kTalkRadiusMiles"
+        const val kIsMarkersLastUpdatedLocationVisible =
+                 "kIsMarkersLastUpdatedLocationVisible"
     }
 }
 

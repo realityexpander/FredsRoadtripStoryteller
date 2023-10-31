@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.BottomSheetScaffoldState
@@ -37,6 +38,8 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CloudDownload
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -72,14 +75,17 @@ const val kMaxWeightOfBottomDrawer = 0.9f
 @Composable
 fun MarkerDetailsScreen(
     bottomSheetScaffoldState: BottomSheetScaffoldState,
-    marker: LoadingState<Marker>,
+    markerLoadingState: LoadingState<Marker>,
+    onClickStartSpeakingMarker: (Marker) -> Unit = {},
+    onClickStopSpeakingMarker: () -> Unit = {},
+    isCurrentlySpeaking: Boolean = false,
 ) {
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Show Error (if any)
-    if (marker is LoadingState.Error) {
+    if (markerLoadingState is LoadingState.Error) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -91,8 +97,7 @@ fun MarkerDetailsScreen(
             Spacer(modifier = Modifier.padding(8.dp))
 
             Text(
-                //marker.errorMessage,
-                "This is an error message that i want to see",
+                markerLoadingState.errorMessage,
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
@@ -137,7 +142,7 @@ fun MarkerDetailsScreen(
     }
 
     // Show Loading
-    if (marker is LoadingState.Loading) {
+    if (markerLoadingState is LoadingState.Loading) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -195,7 +200,7 @@ fun MarkerDetailsScreen(
     }
 
     // Show Loaded Marker Info
-    if (marker is LoadingState.Loaded<Marker>) {
+    if (markerLoadingState is LoadingState.Loaded<Marker>) {
 
             Column(
                 modifier = Modifier
@@ -205,54 +210,118 @@ fun MarkerDetailsScreen(
             ) {
                 val painterResource: Resource<Painter> =
                     asyncPainterResource(
-                        data = marker.data.mainPhotoUrl,
+                        data = markerLoadingState.data.mainPhotoUrl,
                         filterQuality = FilterQuality.Medium,
                     )
 
                 // Title & Close Button
+                // Subtitle & Speak Button
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .fillMaxHeight()
+                        .weight(1f)
                         .padding(bottom = 0.dp, top = 4.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.Top
                 ) {
-                    Text(
-                        marker.data.title,
+                    // Title & Subtitle
+                    Column(
                         modifier = Modifier
-                            .weight(3f)
+                            .fillMaxWidth()
+                            .weight(6f)
                             .padding(bottom = 0.dp, top = 4.dp),
-                        fontSize = MaterialTheme.typography.h5.fontSize,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    IconButton(
-                        modifier = Modifier
-                            .offset(16.dp, (-8).dp)
-                            .padding(8.dp),
-                        onClick = {
-                            coroutineScope.launch {
-                                bottomSheetScaffoldState.bottomSheetState.collapse()
-                            }
-                        },
+                        horizontalAlignment = Alignment.Start,
+                        verticalArrangement = Arrangement.Top,
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Close",
+                        // Title
+                        Text(
+                            markerLoadingState.data.title,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 0.dp, top = 4.dp),
+                            fontSize = MaterialTheme.typography.h5.fontSize,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        // Subtitle
+                        Text(
+                            markerLoadingState.data.subtitle,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 0.dp, bottom = 4.dp),
+                            fontSize = MaterialTheme.typography.h6.fontSize,
+                            fontWeight = FontWeight.Normal,
                         )
                     }
+
+                    // Close & Speak
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .padding(bottom = 0.dp, top = 4.dp),
+                        horizontalAlignment = Alignment.End,
+                        verticalArrangement = Arrangement.Top,
+                    ) {
+                        // Close Button
+                        IconButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .offset(16.dp, (-8).dp)
+                                .padding(8.dp)
+                                .weight(.5f),
+                            onClick = {
+                                coroutineScope.launch {
+                                    bottomSheetScaffoldState.bottomSheetState.collapse()
+                                }
+                            },
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Close",
+                            )
+                        }
+
+                        // Speak Button
+                        IconButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(.5f)
+                                .align(Alignment.End)
+                                .padding(8.dp),
+                            onClick = {
+                                if(isCurrentlySpeaking)
+                                    onClickStopSpeakingMarker()
+                                else
+                                    onClickStartSpeakingMarker(markerLoadingState.data)
+                            },
+                            enabled = true,
+                        ) {
+                            if(isCurrentlySpeaking) {
+                                Icon(
+                                    imageVector = Icons.Filled.Stop,
+                                    contentDescription = "Stop Speaking Marker",
+                                    tint = MaterialTheme.colors.onBackground,
+                                    modifier = Modifier.width(36.dp).height(36.dp)
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Filled.VolumeUp,
+                                    contentDescription = "Speak Marker",
+                                    tint = MaterialTheme.colors.onBackground,
+                                    modifier = Modifier.width(36.dp).height(36.dp)
+                                )
+                            }
+                        }
+                    }
                 }
-                Text(
-                    marker.data.subtitle,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 0.dp, bottom = 4.dp),
-                    fontSize = MaterialTheme.typography.h6.fontSize,
-                    fontWeight = FontWeight.Normal,
-                )
+
 
                 // Marker Info Content
                 Column(
                     Modifier
+                        .fillMaxHeight()
+                        .weight(4f)
                         .verticalScroll(
                             scrollState,
                             enabled = true,
@@ -265,7 +334,7 @@ fun MarkerDetailsScreen(
                     if (LocalInspectionMode.current) {
                         PreviewPlaceholder("Another Image")
                     } else {
-                        if (marker.data.mainPhotoUrl.isNotEmpty()) {
+                        if (markerLoadingState.data.mainPhotoUrl.isNotEmpty()) {
                             Surface(
                                 modifier = Modifier.background(
                                     MaterialTheme.colors.background,
@@ -373,7 +442,7 @@ fun MarkerDetailsScreen(
                                             ) {
                                                 Image(
                                                     painter,
-                                                    marker.data.title,
+                                                    markerLoadingState.data.title,
                                                     contentScale = ContentScale.Crop,
                                                     alignment = Alignment.Center,
                                                     modifier = Modifier.fillMaxSize()
@@ -403,10 +472,10 @@ fun MarkerDetailsScreen(
                     }
 
                     // Attributions for photo
-                    if(marker.data.photoAttributions.isNotEmpty()) {
-                        if (marker.data.photoAttributions[0].isNotBlank()) {
+                    if(markerLoadingState.data.photoAttributions.isNotEmpty()) {
+                        if (markerLoadingState.data.photoAttributions[0].isNotBlank()) {
                             Text(
-                                "Photo Credit: " + marker.data.photoAttributions[0],
+                                "Photo Credit: " + markerLoadingState.data.photoAttributions[0],
                                 fontSize = MaterialTheme.typography.overline.fontSize,
                                 textAlign = TextAlign.End,
                             )
@@ -450,20 +519,20 @@ fun MarkerDetailsScreen(
 
                     // Marker Id
                     Text(
-                        "ID: ${marker.data.id}",
+                        "ID: ${markerLoadingState.data.id}",
                         fontSize = MaterialTheme.typography.body1.fontSize,
                         fontWeight = FontWeight.Bold,
                     )
 
                     // Inscription
-                    if (marker.data.englishInscription.isNotBlank()) { // todo add spanish translation
+                    if (markerLoadingState.data.englishInscription.isNotBlank()) { // todo add spanish translation
                         Text(
-                            marker.data.englishInscription,
+                            markerLoadingState.data.englishInscription,
                             fontSize = MaterialTheme.typography.body2.fontSize,
                         )
                     } else {
                         Text(
-                            marker.data.inscription,
+                            markerLoadingState.data.inscription,
                             fontSize = MaterialTheme.typography.body2.fontSize,
                         )
                     }
@@ -472,7 +541,7 @@ fun MarkerDetailsScreen(
                     Spacer(modifier = Modifier.padding(8.dp))
 
                     // More Photos
-                    marker.data.markerPhotos.forEachIndexed { index, it ->
+                    markerLoadingState.data.markerPhotos.forEachIndexed { index, it ->
                         if (index > 0) {
                             KamelImage(
                                 resource = asyncPainterResource(
@@ -485,18 +554,18 @@ fun MarkerDetailsScreen(
                                 contentScale = ContentScale.Crop,
                             )
                             // Caption for photo
-                            if (marker.data.photoCaptions[index].isNotBlank()) {
+                            if (markerLoadingState.data.photoCaptions[index].isNotBlank()) {
                                 Text(
-                                    marker.data.photoCaptions[index],
+                                    markerLoadingState.data.photoCaptions[index],
                                     fontSize = MaterialTheme.typography.caption.fontSize,
                                     textAlign = TextAlign.Center,
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }
                             // Attributions for photo
-                            if (marker.data.photoAttributions[index].isNotBlank()) {
+                            if (markerLoadingState.data.photoAttributions[index].isNotBlank()) {
                                 Text(
-                                    "Photo Credit: " + marker.data.photoAttributions[index],
+                                    "Photo Credit: " + markerLoadingState.data.photoAttributions[index],
                                     fontSize = MaterialTheme.typography.overline.fontSize,
                                     textAlign = TextAlign.Center,
                                     modifier = Modifier.fillMaxWidth()
@@ -507,19 +576,19 @@ fun MarkerDetailsScreen(
                     }
 
                     // Extra Marker Data
-                    if (marker.data.erected.isNotBlank()) {
+                    if (markerLoadingState.data.erected.isNotBlank()) {
                         Text(
-                            "Erected " + marker.data.erected,
+                            "Erected " + markerLoadingState.data.erected,
                             fontSize = MaterialTheme.typography.body1.fontSize,
                         )
                     }
                     Text(
-                        "Marker Latitude: ${marker.data.position.latitude}",
+                        "Marker Latitude: ${markerLoadingState.data.position.latitude}",
                         fontSize = MaterialTheme.typography.body1.fontSize,
                         fontWeight = FontWeight.Normal,
                     )
                     Text(
-                        "Marker Longitude: ${marker.data.position.longitude}",
+                        "Marker Longitude: ${markerLoadingState.data.position.longitude}",
                         fontSize = MaterialTheme.typography.body1.fontSize,
                         fontWeight = FontWeight.Normal,
                     )

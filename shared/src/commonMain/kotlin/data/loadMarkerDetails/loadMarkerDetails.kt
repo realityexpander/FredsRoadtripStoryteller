@@ -20,30 +20,31 @@ import co.touchlab.kermit.Logger as Log
 
 const val kUseFakeData = false
 
+fun String.calculateMarkerDetailsPageUrl(): String {
+    val markerKeyNumber = this.substringAfter ("M").toInt()
+    return kBaseHmdbDotOrgUrl + "m.asp?m=$markerKeyNumber"
+}
+
 @Composable
 fun loadMarkerDetails(marker: Marker, useFakeData: Boolean = false): LoadingState<Marker> {
 
     var loadingState by remember(marker) {
-        if(isMarkerDetailsAlreadyLoadedAndNotExpired(marker)) {
-            Log.d("in loadMapMarkerDetails(${marker.id}), isDescriptionLoaded is true & not expired, returning Loaded(mapMarker)")
-
+        if(isMarkerDetailsLoadedAndNotExpired(marker)) {
+            Log.d("in loadMarkerDetails(${marker.id}), " +
+                    "isDetailsLoaded is true & not expired, returning Loaded(marker)")
             return@remember mutableStateOf<LoadingState<Marker>>(LoadingState.Loading)
         }
 
         mutableStateOf<LoadingState<Marker>>(LoadingState.Loading)
     }
 
-    fun String.calculateMarkerDetailsPageUrl(): String {
-        val markerKeyNumber = this.substringAfter ("M").toInt()
-        return kBaseHmdbDotOrgUrl + "m.asp?m=$markerKeyNumber"
-    }
     // load markerDetailsPageUrl from markerId
     val markerDetailsPageUrl by remember(marker.id) {
         mutableStateOf(marker.id.calculateMarkerDetailsPageUrl())
     }
 
     LaunchedEffect(markerDetailsPageUrl) {
-        if(isMarkerDetailsAlreadyLoadedAndNotExpired(marker)) {
+        if(isMarkerDetailsLoadedAndNotExpired(marker)) {
             loadingState = LoadingState.Loaded(marker)
             return@LaunchedEffect
         }
@@ -53,37 +54,40 @@ fun loadMarkerDetails(marker: Marker, useFakeData: Boolean = false): LoadingStat
             return@LaunchedEffect
         }
 
-        Log.d("in loadMapMarkerDetails(), loading from network: $markerDetailsPageUrl")
+        Log.d("in loadMarkerDetails(), loading from network: $markerDetailsPageUrl")
         loadingState = LoadingState.Loading
         yield() // Allow UI to render LoadingState.Loading state
 
         try {
             if (!useFakeData) {
                 val response = httpClient.get(markerDetailsPageUrl)
-                val markerInfoPageHtml = response.body<String>()
+                val markerDetailsPageHtml = response.body<String>()
 
                 // parse the page html into a MarkerInfo object
-                val parsedMarkerResult = parseMarkerDetailsPageHtml(markerInfoPageHtml)
-                parsedMarkerResult.second ?: throw Exception(parsedMarkerResult.first)
+                val (errorMessageStr, parsedDetailsMarker) =
+                    parseMarkerDetailsPageHtml(markerDetailsPageHtml)
+                errorMessageStr?.run { throw Exception(errorMessageStr) }
+                parsedDetailsMarker ?: throw Exception("parsedDetailsMarker is null, even though errorMessageStr is null")
 
-                // update the passed-in marker with the parsed info and return it
-                val parsedMarkerDetails = parsedMarkerResult.second!!
+                // update the passed-in marker with the parsed details and return it
                 loadingState = LoadingState.Loaded(
-                    marker.copy(
-                        location = marker.location,
+                    parsedDetailsMarker.copy(
+                        position = marker.position,
                         id = marker.id,
                         title = marker.title,
                         subtitle = marker.subtitle,
+                        alpha = marker.alpha,
+                        isSeen = marker.isSeen,
                         isDetailsLoaded = true,
-                        inscription = parsedMarkerDetails.inscription,
-                        englishInscription = parsedMarkerDetails.englishInscription,
-                        spanishInscription = parsedMarkerDetails.spanishInscription,
-                        erected = parsedMarkerDetails.erected,
-                        mainPhotoUrl = parsedMarkerDetails.mainPhotoUrl,
-                        markerPhotos = parsedMarkerDetails.markerPhotos,
-                        photoCaptions = parsedMarkerDetails.photoCaptions,
-                        photoAttributions = parsedMarkerDetails.photoAttributions,
-                        credits = parsedMarkerDetails.credits
+//                        inscription = parsedDetailsMarker.inscription,
+//                        englishInscription = parsedDetailsMarker.englishInscription,
+//                        spanishInscription = parsedDetailsMarker.spanishInscription,
+//                        erected = parsedDetailsMarker.erected,
+//                        mainPhotoUrl = parsedDetailsMarker.mainPhotoUrl,
+//                        markerPhotos = parsedDetailsMarker.markerPhotos,
+//                        photoCaptions = parsedDetailsMarker.photoCaptions,
+//                        photoAttributions = parsedDetailsMarker.photoAttributions,
+//                        credits = parsedDetailsMarker.credits
                     )
                 )
             } else {
@@ -94,15 +98,16 @@ fun loadMarkerDetails(marker: Marker, useFakeData: Boolean = false): LoadingStat
                 loadingState = LoadingState.Loaded(result.second!!)
             }
         } catch (e: Exception) {
-            loadingState = LoadingState.Error(e.message ?: e.cause?.message ?: "Loading error")
+            loadingState = LoadingState.Error(e.message ?: e.cause?.message ?: "Unknown Loading error")
         }
     }
 
     return loadingState
 }
 
-private fun isMarkerDetailsAlreadyLoadedAndNotExpired(markerToUpdate: Marker) =
-    markerToUpdate.isDetailsLoaded &&
-        markerToUpdate.lastUpdatedDetailsEpochSeconds + kMaxMarkerCacheAgeSeconds < Clock.System.now().epochSeconds
+private fun isMarkerDetailsLoadedAndNotExpired(marker: Marker) =
+    marker.isDetailsLoaded
+        && marker.lastUpdatedDetailsEpochSeconds +
+            kMaxMarkerCacheAgeSeconds < Clock.System.now().epochSeconds
 
 

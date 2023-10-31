@@ -148,6 +148,9 @@ fun RecentlySeenMarkers(
                                 )
                                 .heightIn(min = 48.dp)
                                 .padding(8.dp, 0.dp, 8.dp, 4.dp)
+                                .clickable {
+                                    onClickRecentlySeenMarkerItem(currentSpokenRecentlySeenMarker.id)
+                                }
                                 .weight(3f)
                         ) {
                             Text(

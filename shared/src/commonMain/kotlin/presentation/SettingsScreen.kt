@@ -53,14 +53,17 @@ fun SettingsScreen(
     var isResetMarkerSettingsAlertDialogVisible by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
-    var shouldStartTrackingAutomaticallyWhenAppLaunches by remember {
-        mutableStateOf(settings?.isAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn ?: false)
+    var shouldStartBackgroundTrackingWhenAppLaunches by remember {
+        mutableStateOf(settings?.shouldStartBackgroundTrackingWhenAppLaunches ?: false)
     }
     var shouldShowMarkerDataLastSearchedLocation by remember {
         mutableStateOf(settings?.isMarkersLastUpdatedLocationVisible ?: false)
     }
-    var shouldSpeakAutomaticallyWhenNewMarkersAreFound by remember {
-        mutableStateOf(settings?.shouldSpeakAutomaticallyWhenUnseenMarkerFound ?: false)
+    var shouldSpeakWhenUnseenMarkerFound by remember {
+        mutableStateOf(settings?.shouldSpeakWhenUnseenMarkerFound ?: false)
+    }
+    var shouldSpeakDetailsWhenUnseenMarkerFound by remember {
+        mutableStateOf(settings?.shouldSpeakDetailsWhenUnseenMarkerFound ?: false)
     }
 
     Column(
@@ -93,20 +96,30 @@ fun SettingsScreen(
         }
 
         SettingsSwitch(
-            title = "Speak automatically when new markers are found",
-            isChecked = shouldSpeakAutomaticallyWhenNewMarkersAreFound,
+            title = "Speak marker when new marker is found",
+            isChecked = shouldSpeakWhenUnseenMarkerFound,
             onUpdateChecked = {
-                settings?.shouldSpeakAutomaticallyWhenUnseenMarkerFound = it
-                shouldSpeakAutomaticallyWhenNewMarkersAreFound = it
+                settings?.shouldSpeakWhenUnseenMarkerFound = it
+                shouldSpeakWhenUnseenMarkerFound = it
             }
         )
 
         SettingsSwitch(
-            title = "Start tracking automatically when app launches",
-            isChecked = shouldStartTrackingAutomaticallyWhenAppLaunches,
+            title = "Speak full marker details when new marker is found",
+            isChecked = shouldSpeakDetailsWhenUnseenMarkerFound,
+            enabled = shouldSpeakWhenUnseenMarkerFound, // linked to above setting
             onUpdateChecked = {
-                settings?.isAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn = it
-                shouldStartTrackingAutomaticallyWhenAppLaunches = it
+                settings?.shouldSpeakDetailsWhenUnseenMarkerFound = it
+                shouldSpeakDetailsWhenUnseenMarkerFound = it
+            }
+        )
+
+        SettingsSwitch(
+            title = "Start background tracking when app launches",
+            isChecked = shouldStartBackgroundTrackingWhenAppLaunches,
+            onUpdateChecked = {
+                settings?.shouldStartBackgroundTrackingWhenAppLaunches = it
+                shouldStartBackgroundTrackingWhenAppLaunches = it
             }
         )
 
