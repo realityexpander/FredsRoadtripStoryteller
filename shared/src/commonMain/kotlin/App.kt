@@ -65,6 +65,7 @@ import data.loadMarkers.distanceBetween
 import data.loadMarkers.loadMarkers
 import data.loadMarkers.sampleData.kUseRealNetwork
 import data.settings
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
@@ -124,6 +125,9 @@ fun App() {
         // Speaking UI
         var isCurrentlySpeaking by remember {
             mutableStateOf(false)
+        }
+        var currentlySpeakingRecentlySeenMarker: RecentlySeenMarker? by remember {
+            mutableStateOf(null)
         }
 
         // Settings
@@ -319,18 +323,21 @@ fun App() {
 
                                 // Speak the top marker
                                 if (!isTTSSpeaking()) {
-                                    println("Speak the top marker")
                                     // Speak the marker title
-                                    isCurrentlySpeaking = true
                                     if(settings.shouldSpeakAutomaticallyWhenUnseenMarkerFound) {
                                         if(settings.uiRecentlySeenMarkersList.list.isNotEmpty()) {
-                                            ttsSpeak(
-                                                settings.uiRecentlySeenMarkersList
-                                                    .list
-                                                    .maxBy { recentMarker -> // get newest marker
-                                                        recentMarker.insertedAtEpochMilliseconds
-                                                    }.title
-                                            )
+                                            currentlySpeakingRecentlySeenMarker = settings.uiRecentlySeenMarkersList.list.first()
+                                            currentlySpeakingRecentlySeenMarker?.let { speakingMarker ->
+                                                Log.d { "Speak the top marker: ${speakingMarker.title}" }
+                                                ttsSpeak(
+//                                                settings.uiRecentlySeenMarkersList
+//                                                    .list
+//                                                    .maxBy { recentMarker -> // get newest marker
+//                                                        recentMarker.insertedAtEpochMilliseconds
+//                                                    }.title
+                                                    speakingMarker.title
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -364,6 +371,14 @@ fun App() {
             val shouldStart = settings.isAutomaticStartBackgroundUpdatesWhenAppLaunchTurnedOn
             if (shouldStart) {
                 startTracking()
+            }
+        }
+
+        // Poll for speech completed
+        LaunchedEffect(Unit) {
+            while (true) {
+                delay(1000)
+                isCurrentlySpeaking = isTTSSpeaking()
             }
         }
 
@@ -668,7 +683,17 @@ fun App() {
                                     if (isCollapsed) expand()
                                 }
                             }
-                        }
+                        },
+                        currentSpokenRecentlySeenMarker = currentlySpeakingRecentlySeenMarker,
+                        isCurrentlySpeaking = isCurrentlySpeaking,
+                        onClickStartSpeakingMarker = { recentlySeenMarker ->
+                            currentlySpeakingRecentlySeenMarker = recentlySeenMarker
+                            ttsSpeak(recentlySeenMarker.title)
+                        },
+                        onClickStopSpeakingMarker = {
+                            ttsStop()
+                            isCurrentlySpeaking = false
+                        },
                     )
                 }
             }
@@ -744,14 +769,13 @@ private fun updateMarkersWithUpdatedMarkerDetails(
                 isDetailsLoaded = true, // ensure the `isDetailsLoaded` value reflects the details have been loaded
             )
 
-            // Update the markers list with the updated marker with the updated details
+            // Update markers list with updated details
             updatedMarkersResult = updatedMarkersResult.copy(
                 markerIdToMarker = markers.associateBy { mapMarker ->
                     mapMarker.id
                 }
             )
-
-            // Update the settings with the updated marker data
+            // Save to settings
             settings.markersResult = updatedMarkersResult
         }
     }

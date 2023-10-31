@@ -9,3 +9,7 @@ actual fun ttsSpeak(text: String) {
 actual fun isTTSSpeaking(): Boolean {
     return tts?.isSpeaking ?: false
 }
+
+actual fun ttsStop() {
+    tts?.stop()
+}

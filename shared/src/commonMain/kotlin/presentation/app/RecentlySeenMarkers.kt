@@ -5,7 +5,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,8 +17,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -34,12 +41,17 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import maps.MarkerIdStr
 import maps.RecentlySeenMarker
+import presentation.uiComponents.lightenBy
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun RecentlySeenMarkers(
     recentlySeenMarkersForUiList: SnapshotStateList<RecentlySeenMarker>,
-    onClickRecentlySeenMarkerItem: ((MarkerIdStr) -> Unit) = {}
+    onClickRecentlySeenMarkerItem: ((MarkerIdStr) -> Unit) = {},
+    currentSpokenRecentlySeenMarker: RecentlySeenMarker? = null,
+    isCurrentlySpeaking: Boolean = false,
+    onClickStartSpeakingMarker: (RecentlySeenMarker) -> Unit = {},
+    onClickStopSpeakingMarker: () -> Unit = {},
 ) {
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberLazyListState()
@@ -118,6 +130,77 @@ fun RecentlySeenMarkers(
                 }
             }
 
+            currentSpokenRecentlySeenMarker?.let {
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp, 0.dp, 8.dp, 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    color = MaterialTheme.colors.primary.lightenBy(.2f).copy(alpha = 0.75f),
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .heightIn(min = 48.dp)
+                                .padding(8.dp, 0.dp, 8.dp, 4.dp)
+                                .weight(3f)
+                        ) {
+                            Text(
+                                text = currentSpokenRecentlySeenMarker.title,
+                                color = MaterialTheme.colors.onPrimary,
+                                fontStyle = FontStyle.Normal,
+                                fontSize = MaterialTheme.typography.h6.fontSize,
+                                fontWeight = FontWeight.Medium,
+                            )
+                            Text(
+                                text = currentSpokenRecentlySeenMarker.id + " "
+                                        + if(isCurrentlySpeaking) "speaking" else "spoken last",
+                                color = MaterialTheme.colors.onPrimary.copy(alpha = 0.50f),
+                                fontStyle = FontStyle.Normal,
+                                fontSize = MaterialTheme.typography.body1.fontSize,
+                                fontWeight = FontWeight.Medium,
+                            )
+                        }
+
+                        if (isCurrentlySpeaking) {
+                            IconButton(
+                                onClick = {
+                                    onClickStopSpeakingMarker()
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(.5f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Stop,
+                                    contentDescription = "Stop Speaking Marker",
+                                )
+                            }
+                        } else {
+                            IconButton(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(.5f),
+                                onClick = {
+                                    onClickStartSpeakingMarker(currentSpokenRecentlySeenMarker)
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.VolumeUp,
+                                    contentDescription = "Speak Marker",
+                                    tint = MaterialTheme.colors.onBackground
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
             items(
                 recentlySeenMarkersForUiList.size,
                 key = { index -> recentlySeenMarkersForUiList[index].id }
@@ -158,7 +241,6 @@ fun RecentlySeenMarkers(
                         fontSize = MaterialTheme.typography.body1.fontSize,
                         fontWeight = FontWeight.Medium,
                     )
-
                 }
             }
         }
