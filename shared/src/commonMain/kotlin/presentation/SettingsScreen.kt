@@ -44,7 +44,7 @@ import triggerDeveloperFeedback
 fun SettingsScreen(
     settings: AppSettings? = null,
     bottomSheetScaffoldState: BottomSheetScaffoldState,
-    talkRadiusMiles: Double,
+    seenRadiusMiles: Double,
     onTalkRadiusChange: (Double) -> Unit = {},
     onIsCachedMarkersLastUpdatedLocationVisibleChange: ((Boolean) -> Unit) = {},
     onResetMarkerSettings: (() -> Unit) = {}
@@ -124,10 +124,10 @@ fun SettingsScreen(
         )
 
         SettingsSlider(
-            title = "Talk Radius (miles)",
-            currentValue = talkRadiusMiles,
+            title = "Seen Radius (miles)",
+            currentValue = seenRadiusMiles,
             onUpdateValue = {
-                settings?.talkRadiusMiles = it
+                settings?.seenRadiusMiles = it
                 onTalkRadiusChange(it)
             }
         )

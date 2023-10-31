@@ -50,8 +50,8 @@ class AppSettings(val settingsInstance: Settings) {
         SettingsDelegate(settingsInstance, kShouldSpeakDetailsWhenUnseenMarkerFound, defaultValue = false)
     var shouldStartBackgroundTrackingWhenAppLaunches by
         SettingsDelegate(settingsInstance, kShouldStartBackgroundTrackingWhenAppLaunches, defaultValue = false)
-    var talkRadiusMiles by
-        SettingsDelegate(settingsInstance, kTalkRadiusMiles, defaultValue = 0.5)
+    var seenRadiusMiles by
+        SettingsDelegate(settingsInstance, kSeenRadiusMiles, defaultValue = 0.5)
     var isMarkersLastUpdatedLocationVisible by
         SettingsDelegate(settingsInstance, kIsMarkersLastUpdatedLocationVisible, defaultValue = false)
 
@@ -74,8 +74,8 @@ class AppSettings(val settingsInstance: Settings) {
             shouldSpeakWhenUnseenMarkerFound,
         kShouldStartBackgroundTrackingWhenAppLaunches to
             shouldStartBackgroundTrackingWhenAppLaunches,
-        kTalkRadiusMiles to
-            talkRadiusMiles,
+        kSeenRadiusMiles to
+            seenRadiusMiles,
         kIsMarkersLastUpdatedLocationVisible to
             isMarkersLastUpdatedLocationVisible,
         kRecentlySeenMarkersSet to
@@ -199,8 +199,8 @@ class AppSettings(val settingsInstance: Settings) {
                  "kShouldSpeakDetailsWhenUnseenMarkerFound"
         const val kShouldStartBackgroundTrackingWhenAppLaunches =
                  "kShouldStartBackgroundTrackingWhenAppLaunches"
-        const val kTalkRadiusMiles =
-                 "kTalkRadiusMiles"
+        const val kSeenRadiusMiles =
+                 "kSeenRadiusMiles"
         const val kIsMarkersLastUpdatedLocationVisible =
                  "kIsMarkersLastUpdatedLocationVisible"
     }

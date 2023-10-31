@@ -14,8 +14,10 @@ import io.ktor.client.request.get
 import kotlinx.coroutines.yield
 import network.httpClient
 import data.loadMarkers.kBaseHmdbDotOrgUrl
+import json
 import kMaxMarkerCacheAgeSeconds
 import kotlinx.datetime.Clock
+import kotlinx.serialization.encodeToString
 import co.touchlab.kermit.Logger as Log
 
 const val kUseFakeData = false
@@ -27,11 +29,9 @@ fun String.calculateMarkerDetailsPageUrl(): String {
 
 @Composable
 fun loadMarkerDetails(marker: Marker, useFakeData: Boolean = false): LoadingState<Marker> {
-
     var loadingState: LoadingState<Marker> by remember(marker) {
         if(isMarkerDetailsLoadedAndNotExpired(marker)) {
-            Log.d("in loadMarkerDetails(${marker.id}), " +
-                    "isDetailsLoaded is true & not expired, returning Loaded(marker)")
+            // Log.d("in loadMarkerDetails(${marker.id}), isDetailsLoaded is true & not expired, returning Loaded(marker)")
             return@remember mutableStateOf(LoadingState.Loaded(marker))
         }
 
@@ -53,7 +53,7 @@ fun loadMarkerDetails(marker: Marker, useFakeData: Boolean = false): LoadingStat
             return@LaunchedEffect
         }
 
-        Log.d("in loadMarkerDetails(), loading from network: $markerDetailsPageUrl")
+        Log.d("in loadMarkerDetails(${marker.id}), loading from network: $markerDetailsPageUrl")
         loadingState = LoadingState.Loading
         yield() // Allow UI to render LoadingState.Loading state
 
@@ -78,15 +78,6 @@ fun loadMarkerDetails(marker: Marker, useFakeData: Boolean = false): LoadingStat
                         alpha = marker.alpha,
                         isSeen = marker.isSeen,
                         isDetailsLoaded = true,
-//                        inscription = parsedDetailsMarker.inscription,
-//                        englishInscription = parsedDetailsMarker.englishInscription,
-//                        spanishInscription = parsedDetailsMarker.spanishInscription,
-//                        erected = parsedDetailsMarker.erected,
-//                        mainPhotoUrl = parsedDetailsMarker.mainPhotoUrl,
-//                        markerPhotos = parsedDetailsMarker.markerPhotos,
-//                        photoCaptions = parsedDetailsMarker.photoCaptions,
-//                        photoAttributions = parsedDetailsMarker.photoAttributions,
-//                        credits = parsedDetailsMarker.credits
                     )
                 )
             } else {
@@ -97,7 +88,7 @@ fun loadMarkerDetails(marker: Marker, useFakeData: Boolean = false): LoadingStat
                 loadingState = LoadingState.Loaded(result.second!!)
             }
         } catch (e: Exception) {
-            loadingState = LoadingState.Error(e.message ?: e.cause?.message ?: "Unknown Loading error")
+            loadingState = LoadingState.Error(e.message ?: e.cause?.message ?: "Unknown Loading error for marker ${marker.id}")
         }
     }
 

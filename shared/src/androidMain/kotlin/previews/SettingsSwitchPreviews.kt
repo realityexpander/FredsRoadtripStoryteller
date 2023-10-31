@@ -87,7 +87,7 @@ fun SettingsPreview() {
                     ),
                     snackbarHostState = SnackbarHostState()
                 ),
-                talkRadiusMiles = .5,
+                seenRadiusMiles = .5,
             )
         }
     }

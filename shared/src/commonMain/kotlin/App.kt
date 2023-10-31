@@ -136,18 +136,10 @@ fun App() {
         var currentlySpeakingMarker: RecentlySeenMarker? by remember {
             mutableStateOf(null)
         }
-
-        // Settings
-//        val settings = remember {
-//            AppSettings.use(settings).apply {
-//                if(kForceClearSettingsAtLaunch) { clearAllSettings() }
-//                // Log.setMinSeverity(Severity.Warn)
-//                printAppSettings()
-//            }
-//        }
-        var talkRadiusMiles by remember {
-            mutableStateOf(settings.talkRadiusMiles)
+        var seenRadiusMiles by remember {
+            mutableStateOf(settings.seenRadiusMiles)
         }
+
         var isMarkersLastUpdatedLocationVisible by
             remember(settings.isMarkersLastUpdatedLocationVisible) {
                 mutableStateOf(settings.isMarkersLastUpdatedLocationVisible)
@@ -202,7 +194,6 @@ fun App() {
                 },
                 onUpdateLoadingState = {
                     // Update the UI with the latest loading state
-                    Log.d { "Loading state changed: $it" }
                     loadingStateIcon = when (it) {
                         is LoadingState.Loading -> {
                             Icons.Default.CloudDownload
@@ -313,12 +304,12 @@ fun App() {
                     addSeenMarkersToRecentlySeenList(
                         markers,
                         userLocation,
-                        talkRadiusMiles,
+                        seenRadiusMiles,
                         recentlySeenMarkersSet,
                         recentlySeenMarkersForUiList,
                         onUpdateIsSeenMapMarkers = { updatedIsSeenMarkers ->
-                            // Update the `isSeen` value of markers
                             coroutineScope.launch {
+                                // Update the `isSeen` value of markers
                                 markersResult = setCurrentMarkersAndSaveToSettings(
                                         markersResult,
                                         updatedMarkers = updatedIsSeenMarkers,  // using these values to update the markers
@@ -329,10 +320,10 @@ fun App() {
 
                                 // Speak the top marker
                                 if (!isTextToSpeechSpeaking()) {
-                                    // Speak the marker title
                                     if(settings.shouldSpeakWhenUnseenMarkerFound) {
                                         if(settings.uiRecentlySeenMarkersList.list.isNotEmpty()) {
                                             currentlySpeakingMarker = settings.uiRecentlySeenMarkersList.list.first()
+
                                             currentlySpeakingMarker?.let { speakingMarker ->
                                                 speakRecentlySeenMarker(
                                                     speakingMarker,
@@ -344,7 +335,6 @@ fun App() {
                                                         isShowingError = errorMessage
                                                     },
                                                     onUpdateMarkersResult = { updatedMarkersResult ->
-                                                        Log.d { "in addSeenMarkersToRecentlySeenList onUpdateMarkersResult() updatedMarkersResult size= ${updatedMarkersResult.markerIdToMarker.size}" }
                                                         markersResult = updatedMarkersResult
                                                     }
                                                 )
@@ -407,14 +397,14 @@ fun App() {
                         SettingsScreen(
                             settings,
                             bottomSheetScaffoldState,
-                            talkRadiusMiles,
-                            onTalkRadiusChange = { updatedRadiusMiles -> talkRadiusMiles = updatedRadiusMiles },
+                            seenRadiusMiles,
+                            onTalkRadiusChange = { updatedRadiusMiles -> seenRadiusMiles = updatedRadiusMiles },
                             onIsCachedMarkersLastUpdatedLocationVisibleChange = {
                                 isMarkersLastUpdatedLocationVisible = it
                             },
                             onResetMarkerSettings = {
                                 coroutineScope.launch {
-                                    resetMarkerSettings(
+                                    resetMarkerCacheInSettings(
                                         settings,
                                         markers,
                                         previousMarkers,
@@ -450,7 +440,7 @@ fun App() {
                                     return@remember localMarker ?: Marker()
                                 }
 
-                            markersResult.markerIdToMarker[markerId] ?: run {
+                            settings.markersResult.markerIdToMarker[markerId] ?: run {
                                 isShowingError = "Error: Unable to find marker with id=$markerId"
                                 return@remember localMarker ?: Marker()
                             }
@@ -651,7 +641,7 @@ fun App() {
                                 shouldRedrawMapMarkers = shouldRedrawMapMarkers, // redraw the map & markers
                                 isTrackingEnabled = isTrackingEnabled,
                                 centerOnUserCameraLocation = centerOnUserCameraLocation,
-                                talkRadiusMiles = talkRadiusMiles,
+                                talkRadiusMiles = seenRadiusMiles,
                                 cachedMarkersLastUpdatedLocation =
                                     remember(
                                         settings.isMarkersLastUpdatedLocationVisible,
@@ -741,9 +731,8 @@ private fun speakRecentlySeenMarker(
     includeDetails: Boolean = false,
     coroutineScope: CoroutineScope,
     onError: (String) -> Unit = { },
-    onUpdateMarkersResult: (MarkersResult) -> Unit = { }, // if details are loaded, update the markers list.
+    onUpdateMarkersResult: (MarkersResult) -> Unit = {}, // if details are loaded, update the master markers list.
 ) {
-
    if(includeDetails) {
        val marker = markersResult.markerIdToMarker[recentlySeenMarker.id]
 
@@ -755,6 +744,7 @@ private fun speakRecentlySeenMarker(
                        // if (!useFakeData) {
                        if (true) {
                            val markerDetailsPageUrl = marker.id.calculateMarkerDetailsPageUrl()
+                           Log.d("loading network markerDetailsPageUrl = $markerDetailsPageUrl")
                            val response = httpClient.get(markerDetailsPageUrl)
                            val markerDetailsPageHtml = response.body<String>()
 
@@ -774,15 +764,6 @@ private fun speakRecentlySeenMarker(
                                    alpha = marker.alpha,
                                    isSeen = marker.isSeen,
                                    isDetailsLoaded = true,
-//                                   inscription = parsedMarkerDetails.inscription,
-//                                   englishInscription = parsedMarkerDetails.englishInscription,
-//                                   spanishInscription = parsedMarkerDetails.spanishInscription,
-//                                   erected = parsedMarkerDetails.erected,
-//                                   mainPhotoUrl = parsedMarkerDetails.mainPhotoUrl,
-//                                   markerPhotos = parsedMarkerDetails.markerPhotos,
-//                                   photoCaptions = parsedMarkerDetails.photoCaptions,
-//                                   photoAttributions = parsedMarkerDetails.photoAttributions,
-//                                   credits = parsedMarkerDetails.credits
                                ),
                                null // no error
                            )
@@ -797,7 +778,6 @@ private fun speakRecentlySeenMarker(
                        Pair(null, e.message ?: e.cause?.message ?: "Loading error")
                    }
 
-                   // todo add error message handling callback
                    if(errorMessage != null) {
                        onError(errorMessage)
                        return@launch
@@ -808,6 +788,8 @@ private fun speakRecentlySeenMarker(
                    }
 
                    speakMarkerWithDetails(updatedMarker, true)
+
+                   // Todo MAKE REPO FUNCTION
                    settings.markersResult = markersResult.copy(
                        markerIdToMarker = markersResult.markerIdToMarker
                            .toMutableMap()
@@ -965,7 +947,7 @@ private fun jiggleLocationToForceUpdate(userLocation: Location) = Location(
             Random.nextDouble(0.0001, 0.0002)
 )
 
-private fun resetMarkerSettings(
+private fun resetMarkerCacheInSettings(
     settings: AppSettings,
     markers: SnapshotStateList<Marker>,
     previousMarkers: SnapshotStateList<Marker>,
