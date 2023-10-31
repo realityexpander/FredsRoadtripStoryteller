@@ -48,7 +48,7 @@ import presentation.uiComponents.lightenBy
 fun RecentlySeenMarkers(
     recentlySeenMarkersForUiList: SnapshotStateList<RecentlySeenMarker>,
     onClickRecentlySeenMarkerItem: ((MarkerIdStr) -> Unit) = {},
-    currentSpokenRecentlySeenMarker: RecentlySeenMarker? = null,
+    currentSpokenMarker: RecentlySeenMarker? = null,
     isCurrentlySpeaking: Boolean = false,
     onClickStartSpeakingMarker: (RecentlySeenMarker) -> Unit = {},
     onClickStopSpeakingMarker: () -> Unit = {},
@@ -76,18 +76,6 @@ fun RecentlySeenMarkers(
             .background(MaterialTheme.colors.surface),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Header
-        Text(
-            text = "TOP 5 RECENTLY SEEN MARKERS",
-            color = MaterialTheme.colors.onSurface,
-            fontStyle = FontStyle.Normal,
-            fontSize = MaterialTheme.typography.subtitle2.fontSize,
-            fontWeight = FontWeight.Medium,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 8.dp, bottom = 8.dp)
-        )
 
         LazyColumn(
             userScrollEnabled = true,
@@ -96,41 +84,8 @@ fun RecentlySeenMarkers(
                 .background(MaterialTheme.colors.surface)
 
         ) {
-//            // Speaking Marker // todo add for Speak Marker
-//            item {
-//                Text(
-//                    text = "Currently Speaking: $currentlySpeakingMarkerId",
-//                    color = MaterialTheme.colors.onSurface,
-//                    fontStyle = FontStyle.Normal,
-//                    fontSize = MaterialTheme.typography.subtitle2.fontSize,
-//                    fontWeight = FontWeight.Medium,
-//                    textAlign = TextAlign.Center,
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(start = 8.dp, bottom = 8.dp)
-//                )
-//            }
-
-            // Show "empty" placeholder if no markers
-            if (recentlySeenMarkersForUiList.isEmpty()) {
-                item {
-                    Spacer(modifier = Modifier.height(48.dp))
-
-                    Text(
-                        text = "No recently seen markers, drive around to see some!",
-                        color = MaterialTheme.colors.onBackground,
-                        fontStyle = FontStyle.Normal,
-                        fontSize = MaterialTheme.typography.h6.fontSize,
-                        fontWeight = FontWeight.Medium,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 8.dp)
-                    )
-                }
-            }
-
-            currentSpokenRecentlySeenMarker?.let {
+            // Current spoken marker
+            currentSpokenMarker?.let {
                 item {
                     Row(
                         modifier = Modifier
@@ -149,19 +104,19 @@ fun RecentlySeenMarkers(
                                 .heightIn(min = 48.dp)
                                 .padding(8.dp, 0.dp, 8.dp, 4.dp)
                                 .clickable {
-                                    onClickRecentlySeenMarkerItem(currentSpokenRecentlySeenMarker.id)
+                                    onClickRecentlySeenMarkerItem(currentSpokenMarker.id)
                                 }
                                 .weight(3f)
                         ) {
                             Text(
-                                text = currentSpokenRecentlySeenMarker.title,
+                                text = currentSpokenMarker.title,
                                 color = MaterialTheme.colors.onPrimary,
                                 fontStyle = FontStyle.Normal,
                                 fontSize = MaterialTheme.typography.h6.fontSize,
                                 fontWeight = FontWeight.Medium,
                             )
                             Text(
-                                text = currentSpokenRecentlySeenMarker.id + " "
+                                text = currentSpokenMarker.id + " "
                                         + if(isCurrentlySpeaking) "speaking" else "spoken last",
                                 color = MaterialTheme.colors.onPrimary.copy(alpha = 0.50f),
                                 fontStyle = FontStyle.Normal,
@@ -190,7 +145,7 @@ fun RecentlySeenMarkers(
                                     .fillMaxWidth()
                                     .weight(.5f),
                                 onClick = {
-                                    onClickStartSpeakingMarker(currentSpokenRecentlySeenMarker)
+                                    onClickStartSpeakingMarker(currentSpokenMarker)
                                 }
                             ) {
                                 Icon(
@@ -201,6 +156,42 @@ fun RecentlySeenMarkers(
                             }
                         }
                     }
+                }
+            }
+
+            if (recentlySeenMarkersForUiList.isEmpty()) {
+                // Show "empty" placeholder if no markers
+                item {
+                    Spacer(modifier = Modifier.height(48.dp))
+
+                    Text(
+                        text = "No recently seen markers, drive around to see some!",
+                        color = MaterialTheme.colors.onBackground,
+                        fontStyle = FontStyle.Normal,
+                        fontSize = MaterialTheme.typography.h6.fontSize,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 8.dp)
+                    )
+                }
+            } else {
+                // Header
+                item(
+                    "header"
+                ) {
+                    Text(
+                        text = "TOP 5 RECENTLY SEEN MARKERS",
+                        color = MaterialTheme.colors.onSurface,
+                        fontStyle = FontStyle.Normal,
+                        fontSize = MaterialTheme.typography.subtitle2.fontSize,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 8.dp, bottom = 8.dp)
+                    )
                 }
             }
 

@@ -695,7 +695,7 @@ fun App() {
                                 }
                             }
                         },
-                        currentSpokenRecentlySeenMarker = currentlySpeakingMarker,
+                        currentSpokenMarker = currentlySpeakingMarker,
                         isCurrentlySpeaking = isCurrentlySpeaking,
                         onClickStartSpeakingMarker = { recentlySeenMarker ->
                             currentlySpeakingMarker = recentlySeenMarker
