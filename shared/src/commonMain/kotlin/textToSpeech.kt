@@ -1,3 +1,3 @@
-expect fun ttsSpeak(text: String)
-expect fun isTTSSpeaking(): Boolean
-expect fun ttsStop()
+expect fun speakTextToSpeech(text: String)
+expect fun isTextToSpeechSpeaking(): Boolean
+expect fun stopTextToSpeech()

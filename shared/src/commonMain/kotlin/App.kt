@@ -316,20 +316,19 @@ fun App() {
                         talkRadiusMiles,
                         recentlySeenMarkersSet,
                         recentlySeenMarkersForUiList,
-                        onUpdateIsSeenMapMarkers = { updatedIsSeenMapMarkers ->
+                        onUpdateIsSeenMapMarkers = { updatedIsSeenMarkers ->
                             // Update the `isSeen` value of markers
                             coroutineScope.launch {
-                                markersResult =
-                                    setAndSaveCurrentMarkers(
+                                markersResult = setCurrentMarkersAndSaveToSettings(
                                         markersResult,
-                                        updatedMarkers = updatedIsSeenMapMarkers,  // using these values to update the markers
+                                        updatedMarkers = updatedIsSeenMarkers,  // using these values to update the markers
                                         markers = markers,
                                         previousMarkers = previousMarkers,
                                         settings = settings
                                     )
 
                                 // Speak the top marker
-                                if (!isTTSSpeaking()) {
+                                if (!isTextToSpeechSpeaking()) {
                                     // Speak the marker title
                                     if(settings.shouldSpeakWhenUnseenMarkerFound) {
                                         if(settings.uiRecentlySeenMarkersList.list.isNotEmpty()) {
@@ -390,7 +389,7 @@ fun App() {
         LaunchedEffect(Unit) {
             while (true) {
                 delay(1000)
-                isCurrentlySpeaking = isTTSSpeaking()
+                isCurrentlySpeaking = isTextToSpeechSpeaking()
             }
         }
 
@@ -430,18 +429,21 @@ fun App() {
                     is BottomSheetScreen.MarkerDetailsScreen -> {
                         // Use id string (coming from map marker in google maps)
                         // or marker id (coming from item in marker details screen)
-                        val localMarker = (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).marker
+                        val bottomSheetParams =
+                            bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen
+                        val localMarker = bottomSheetParams.marker
+                        val markerIdFromParamId = bottomSheetParams.id
                         val markerIdFromMarker = localMarker?.id
-                        val markerIdFromId = (bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen).id
                         // Guard
-                        if(markerIdFromId == null && markerIdFromMarker == null) {
-                            throw IllegalStateException("Error: Both markerIdFromId and markerIdFromMarker are null, need to have at least one")
+                        if(markerIdFromParamId == null && markerIdFromMarker == null) {
+                            throw IllegalStateException("Error: Both markerIdFromId and " +
+                                    "markerIdFromMarker are null, need to have at least one non-null value.")
                         }
 
                         // Get marker from current mapMarkers list
-                        val marker =  remember(markerIdFromMarker, markerIdFromId) {
+                        val marker =  remember(markerIdFromMarker, markerIdFromParamId) {
                             val markerId: MarkerIdStr =
-                                markerIdFromId
+                                markerIdFromParamId
                                 ?: markerIdFromMarker
                                 ?: run {
                                     isShowingError = "Error: Unable to find marker id=$markerIdFromMarker"
@@ -455,28 +457,26 @@ fun App() {
                         }
                         val isMarkerDetailsAlreadyLoaded = marker.isDetailsLoaded
 
-                        // Fetch the marker details
                         markerDetailsResult = loadMarkerDetails(marker)
 
                         // Update the MapMarker with Marker Details (if they were loaded)
                         LaunchedEffect(markerDetailsResult) {
-                            // Did the marker details get loaded?
+                            // Did fresh marker details get loaded?
                             if (markerDetailsResult is LoadingState.Loaded
                                 && !isMarkerDetailsAlreadyLoaded
                                 && (markerDetailsResult as LoadingState.Loaded<Marker>).data.isDetailsLoaded
                             ) {
-                                //  Save the updated markers list to settings
+                                // Update the markers and save to settings
                                 coroutineScope.launch {
-                                    // Update the markers list with the updated marker with the updated details
                                     val updatedDetailsMarkersResult =
-                                        updateMarkersWithUpdatedMarkerDetails(
+                                        updateMarkersWithMarkerDetails(
                                             markersResult,
                                             markerDetailsResult,
                                             markers,
                                             settings
                                         )
 
-                                    markersResult = setAndSaveCurrentMarkers(
+                                    markersResult = setCurrentMarkersAndSaveToSettings(
                                         updatedDetailsMarkersResult,
                                         markers = markers,
                                         previousMarkers = previousMarkers,
@@ -495,7 +495,7 @@ fun App() {
                                     speakMarkerWithDetails(speakMarker, true)
                             },
                             onClickStopSpeakingMarker = {
-                                ttsStop()
+                                stopTextToSpeech()
                                 isCurrentlySpeaking = false
                             },
                         )
@@ -725,7 +725,7 @@ fun App() {
                             )
                         },
                         onClickStopSpeakingMarker = {
-                            ttsStop()
+                            stopTextToSpeech()
                             isCurrentlySpeaking = false
                         },
                     )
@@ -825,7 +825,7 @@ private fun speakRecentlySeenMarker(
            speakMarkerWithDetails(marker, true)
        }
    } else {
-       ttsSpeak(recentlySeenMarker.title)
+       speakTextToSpeech(recentlySeenMarker.title)
    }
 }
 
@@ -852,7 +852,7 @@ private fun speakMarkerWithDetails(
             finalSpeechText += " for $title"
         }
         if (subtitle.isNotEmpty()) {
-            finalSpeechText += " subtitle $subtitle"
+            finalSpeechText += ", with subtitle of $subtitle"
         }
         val inscriptionPrefix = " has inscription reading"
         finalSpeechText += if (englishInscription.isNotEmpty()) {
@@ -865,18 +865,18 @@ private fun speakMarkerWithDetails(
             " and there is no inscription available."
         }
 
-        ttsSpeak(finalSpeechText)
+        speakTextToSpeech(finalSpeechText)
     } else {
-        ttsSpeak(marker.title)
+        speakTextToSpeech(marker.title)
     }
 
     return currentlySpeakingRecentlySeenMarker
 }
 
 // Clears & Sets the current map markers, previous map markers, and saves the markers to settings
-private fun setAndSaveCurrentMarkers(
+private fun setCurrentMarkersAndSaveToSettings(
     updatedMarkersResult: MarkersResult,                // A) Can use this instead of `updatedMarkers`.
-    updatedMarkers: SnapshotStateList<Marker>? = null,  // B) Prefer to use `updatedMarkersResult`, if possible
+    updatedMarkers: SnapshotStateList<Marker>? = null,  // B) Prefer to use `updatedMarkersResult`, if possible.
     markers: SnapshotStateList<Marker>,
     previousMarkers: SnapshotStateList<Marker>,
     settings: AppSettings
@@ -885,6 +885,8 @@ private fun setAndSaveCurrentMarkers(
     val localUpdatedMarkers =
         updatedMarkers ?:  // prefer to use `updatedMarkersResult`(next line), if possible
         updatedMarkersResult.markerIdToMarker.values.toList()
+
+    // Update the markers result
     val newMarkersResult = updatedMarkersResult.copy(
         markerIdToMarker =
             localUpdatedMarkers
@@ -908,7 +910,7 @@ private fun setAndSaveCurrentMarkers(
     return newMarkersResult
 }
 
-private fun updateMarkersWithUpdatedMarkerDetails(
+private fun updateMarkersWithMarkerDetails(
     markersResult: MarkersResult,  // will be updated with data from `fetchMarkerDetailsResult`
     markerDetailsResult: LoadingState<Marker>,
     markers: SnapshotStateList<Marker>,
@@ -918,11 +920,11 @@ private fun updateMarkersWithUpdatedMarkerDetails(
 
     // Update the marker with the details
     if (markerDetailsResult is LoadingState.Loaded) {
-        val updatedDetailsMapMarker = markerDetailsResult.data
+        val updatedDetailsMarker = markerDetailsResult.data
 
         // Find the matching marker id in the list
         val index = markers.indexOfFirst { marker ->
-            marker.id == updatedDetailsMapMarker.id
+            marker.id == updatedDetailsMarker.id
         }
         // Found the marker?
         if (index >= 0 && !markers[index].isDetailsLoaded) {
@@ -930,11 +932,11 @@ private fun updateMarkersWithUpdatedMarkerDetails(
 
             // TODO Make this a REPO function
             // Update the marker to show & indicate the details have been loaded
-            markers[index] = updatedDetailsMapMarker.copy(
-                inscription = preserveMarker.inscription, // keep the inscription value
-                position = preserveMarker.position, // keep the position value
+            markers[index] = updatedDetailsMarker.copy(
                 title = preserveMarker.title, // keep the title value
                 subtitle = preserveMarker.subtitle, // keep the subtitle value
+                position = preserveMarker.position, // keep the position value
+                alpha = preserveMarker.alpha, // keep the alpha value
 
                 isSeen = preserveMarker.isSeen, // keep the isSeen value
 

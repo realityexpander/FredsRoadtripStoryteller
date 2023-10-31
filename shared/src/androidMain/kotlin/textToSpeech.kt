@@ -1,15 +1,15 @@
 import android.speech.tts.TextToSpeech
 import android.util.Log
 
-actual fun ttsSpeak(text: String) {
+actual fun speakTextToSpeech(text: String) {
     tts ?: Log.w("ttsSpeak", "tts is null")
 
     tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "")
 }
-actual fun isTTSSpeaking(): Boolean {
+actual fun isTextToSpeechSpeaking(): Boolean {
     return tts?.isSpeaking ?: false
 }
 
-actual fun ttsStop() {
+actual fun stopTextToSpeech() {
     tts?.stop()
 }

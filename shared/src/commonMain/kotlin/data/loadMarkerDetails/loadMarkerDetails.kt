@@ -28,14 +28,14 @@ fun String.calculateMarkerDetailsPageUrl(): String {
 @Composable
 fun loadMarkerDetails(marker: Marker, useFakeData: Boolean = false): LoadingState<Marker> {
 
-    var loadingState by remember(marker) {
+    var loadingState: LoadingState<Marker> by remember(marker) {
         if(isMarkerDetailsLoadedAndNotExpired(marker)) {
             Log.d("in loadMarkerDetails(${marker.id}), " +
                     "isDetailsLoaded is true & not expired, returning Loaded(marker)")
-            return@remember mutableStateOf<LoadingState<Marker>>(LoadingState.Loading)
+            return@remember mutableStateOf(LoadingState.Loaded(marker))
         }
 
-        mutableStateOf<LoadingState<Marker>>(LoadingState.Loading)
+        mutableStateOf(LoadingState.Loading)
     }
 
     // load markerDetailsPageUrl from markerId
@@ -48,7 +48,6 @@ fun loadMarkerDetails(marker: Marker, useFakeData: Boolean = false): LoadingStat
             loadingState = LoadingState.Loaded(marker)
             return@LaunchedEffect
         }
-
         if(markerDetailsPageUrl.isBlank()) {
             loadingState = LoadingState.Error("MarkerDetailsPageUrl is empty")
             return@LaunchedEffect
