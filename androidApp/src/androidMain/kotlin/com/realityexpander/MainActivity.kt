@@ -22,6 +22,8 @@ import com.google.android.gms.maps.MapsInitializer
 import com.google.firebase.FirebaseApp
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.logEvent
+import com.russhwolf.settings.get
+import com.russhwolf.settings.set
 import data.settings
 import intentFlow
 import kotlinx.coroutines.CoroutineScope

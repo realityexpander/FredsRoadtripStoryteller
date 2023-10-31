@@ -2,20 +2,21 @@ package maps
 
 import kotlinx.serialization.Serializable
 
-typealias MarkerIdStr = String // e.g. "M2580"
+typealias MarkerIdStr = String // e.g. "M2580", always starts with "M"
 
 @Serializable
 data class Marker(
+    // Basic info (from marker index html page)
     val id: MarkerIdStr = "",
     val position: LatLong = LatLong(0.0, 0.0),
     val title: String = "",
-    val alpha: Float = 1.0f,
     val subtitle: String = "",
+    val alpha: Float = 1.0f,
 
     // For Map/Speaking
     val isSeen: Boolean = false, // Has been within the talkRadius of the user
 
-    // For MarkerInfoScreen (fetched from markerInfoPageUrl)
+    // Marker Details (from from marker details html page
     val isDetailsLoaded: Boolean = false,
     val markerDetailsPageUrl: String = "",
     val mainPhotoUrl: String = "",
@@ -29,6 +30,7 @@ data class Marker(
     val credits: String = "",
     val location: String = "",
 
+    // LEAVE FOR FUTURE REFACTOR
     val markerPhotos2: List<MarkerPhoto> = listOf(), // todo consolidate with markerPhotos, photoCaptions, photoAttributions
     val lastUpdatedDetailsEpochSeconds: Long = 0, // for cache expiry
 )
