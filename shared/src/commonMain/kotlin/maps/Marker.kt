@@ -15,6 +15,7 @@ data class Marker(
 
     // For Map/Speaking
     val isSeen: Boolean = false, // Has been within the talkRadius of the user
+    val hasBeenSpoken: Boolean = false, // Has been spoken by the user or automatically by the app // todo add
 
     // Marker Details (from from marker details html page
     val isDetailsLoaded: Boolean = false,

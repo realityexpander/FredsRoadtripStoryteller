@@ -7,11 +7,9 @@ import maps.MarkerIdStr
 import co.touchlab.kermit.Logger as Log
 
 open class MarkerRepo(
-    val appSettings: AppSettings
-) {
-
+    private val appSettings: AppSettings,
     val markerRepoUpdateFlow: MutableStateFlow<MarkersResult> = MutableStateFlow(appSettings.markersResult)
-
+) {
     fun addMarker(marker: Marker): MarkersResult {
         // todo should update if already exists?
         if(appSettings.markersResult.markerIdToMarker.containsKey(marker.id)) {
