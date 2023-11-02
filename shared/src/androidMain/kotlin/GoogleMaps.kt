@@ -62,6 +62,7 @@ import kotlinx.coroutines.launch
 import maps.CameraLocationBounds
 import maps.CameraPosition
 import maps.LatLong
+import maps.Location
 import maps.Marker
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource

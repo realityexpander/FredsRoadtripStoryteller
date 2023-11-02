@@ -3,6 +3,7 @@ import androidx.compose.ui.Modifier
 import maps.CameraLocationBounds
 import maps.CameraPosition
 import maps.LatLong
+import maps.Location
 import maps.Marker
 
 @Composable
@@ -28,6 +29,7 @@ expect fun GoogleMaps(
 )
 
 
+// LEAVE FOR REFERENCE
 //onMarkerClick: (maps.MapMarker) -> Unit = {},
 //onMapClick: (maps.LatLong) -> Unit = {},
 //onMapLongClick: (maps.LatLong) -> Unit = {},

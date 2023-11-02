@@ -1,6 +1,8 @@
 import androidx.compose.runtime.AtomicReference
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
+import maps.Heading
+import maps.Location
 import platform.CoreLocation.CLDeviceOrientationPortrait
 import platform.CoreLocation.CLHeading
 import platform.CoreLocation.CLLocation
@@ -102,7 +104,7 @@ actual class GPSLocationService  {
     }
 
     // Get the current location only one time (not a stream)
-    actual suspend fun getCurrentGPSLocation(): Location = suspendCoroutine { continuation ->
+    actual suspend fun getCurrentGPSLocationOneTime(): Location = suspendCoroutine { continuation ->
         oneTimeLocationManager.requestWhenInUseAuthorization()
         oneTimeLocationManager.desiredAccuracy = kCLLocationAccuracyBest
 
@@ -123,7 +125,7 @@ actual class GPSLocationService  {
         oneTimeLocationManager.delegate = locationDelegate
     }
 
-    actual suspend fun getLatestGPSLocation(): Location? {
+    actual fun getLatestGPSLocation(): Location? {
         return latestLocation.get()
     }
 

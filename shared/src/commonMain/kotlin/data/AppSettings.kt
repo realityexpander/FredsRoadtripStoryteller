@@ -1,12 +1,12 @@
 package data
 
-import Location
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.set
 import data.loadMarkers.MarkersResult
 import json
 import kForceClearSettingsAtLaunch
 import kotlinx.serialization.encodeToString
+import maps.Location
 import maps.RecentlySeenMarkersList
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty

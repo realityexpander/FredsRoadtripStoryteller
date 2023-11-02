@@ -45,6 +45,7 @@ import data.loadMarkers.milesToMeters
 import maps.CameraLocationBounds
 import maps.CameraPosition
 import maps.LatLong
+import maps.Location
 import maps.Marker
 import platform.CoreLocation.CLLocationCoordinate2DMake
 import platform.UIKit.UIColor

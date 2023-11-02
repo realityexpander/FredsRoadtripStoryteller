@@ -1,6 +1,5 @@
 package data.loadMarkers
 
-import Location
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -32,6 +31,7 @@ import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
+import maps.Location
 import maps.Marker
 import maps.MarkerIdStr
 import network.httpClient

@@ -1,7 +1,6 @@
 package maps
 
 import GoogleMaps
-import Location
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
@@ -89,9 +88,10 @@ fun MapContent(
                 onMarkerClick = onMarkerClick
             )
 
-            isFirstUpdate = false
-            didMapMarkersRedraw = false
-            onDidRedrawMapMarkers()
+            // Guard against initial location being (0.0, 0.0)
+            if(initialUserLocation.isLocationValid()) isFirstUpdate = false
+            if(initialUserLocation.isLocationValid()) didMapMarkersRedraw = false
+            if(initialUserLocation.isLocationValid()) onDidRedrawMapMarkers()
         }
     }
 

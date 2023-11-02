@@ -16,13 +16,17 @@ import com.google.android.gms.location.Priority
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import maps.Heading
+import maps.Location
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 import co.touchlab.kermit.Logger as Log
 
+
 // Implement the LocationService in Android
+@SuppressLint("MissingPermission") // Assuming location permission check is already handled
 @NoLiveLiterals
 actual class GPSLocationService  {
 
@@ -48,12 +52,15 @@ actual class GPSLocationService  {
         .build()
 
     // Gets location 1 time only. (useful for testing)
-    // NOTE: Should NOT be used for continuous location updates or in conjunction with currentLocation()
+    // WARNING: Should NOT be used for continuous location updates or in conjunction with currentLocation()
     @SuppressLint("MissingPermission") // Assuming location permission check is already handled
-    actual suspend fun getCurrentGPSLocation(): Location = suspendCoroutine { continuation ->
+    actual suspend fun getCurrentGPSLocationOneTime(): Location = suspendCoroutine { continuation ->
+
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-            location?.let {
-                continuation.resume(Location(it.latitude, it.longitude))
+            location?.let { androidOsLocation ->
+                val updatedLocation = Location(androidOsLocation.latitude, androidOsLocation.longitude)
+                latestLocation.set(updatedLocation)
+                continuation.resume(updatedLocation)
             } ?: run {
                 continuation.resumeWithException(Exception("Unable to get current location"))
             }
@@ -63,13 +70,12 @@ actual class GPSLocationService  {
     }
 
     @SuppressLint("MissingPermission") // suppress missing permission check warning, we are checking permissions in the method.
-    //    actual suspend fun onUpdatedGPSLocation(callback: (Location?) -> Flow<Location>) {  // leave for reference - emits a flow of locations
+    // actual suspend fun onUpdatedGPSLocation(callback: (Location?) -> Flow<Location>) {  // LEAVE FOR REFERENCE - emits a flow of locations
     actual suspend fun onUpdatedGPSLocation(
         errorCallback: (String) -> Unit,
         locationCallback: (Location?) -> Unit
     ) {
         startGPSLocationUpdates(errorCallback, locationCallback) // keeps requesting location updates
-        // Log.d{ "onUpdatedGPSLocation(): startGPSLocationUpdates updated"}
     }
 
     @SuppressLint("MissingPermission") // suppress missing permission check warning, we are checking permissions in the method.
@@ -105,21 +111,21 @@ actual class GPSLocationService  {
             override fun onLocationResult(result: LocationResult) {
                 super.onLocationResult(result)
 
-                result.locations.lastOrNull()?.let { location: android.location.Location ->
+                result.locations.lastOrNull()?.let { androidOsLocation: android.location.Location ->
                     //launch {  // For flow - leave for reference
-                    //    send(location) // emits the location into the flow
+                    //    send(androidOsLocation) // emits the androidOsLocation into the flow
                     //}
+                    val updatedLocation = Location(androidOsLocation.latitude, androidOsLocation.longitude)
+                    latestLocation.set(updatedLocation)
+
                     locationCallback?.let {
-                        locationCallback(
-                            Location(location.latitude, location.longitude)
-                        )
+                        locationCallback(updatedLocation)
                     }
                 }
             }
 
             override fun onLocationAvailability(availability: LocationAvailability) {
                 super.onLocationAvailability(availability)
-                // Log.d("onLocationAvailability: ${availability.isLocationAvailable}")
             }
         }
 
@@ -149,7 +155,7 @@ actual class GPSLocationService  {
 
     }
 
-    actual suspend fun getLatestGPSLocation(): Location? {
+    actual fun getLatestGPSLocation(): Location? {
         return latestLocation.get()
     }
 

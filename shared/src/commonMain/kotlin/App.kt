@@ -64,6 +64,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
 import kotlinx.serialization.json.Json
+import maps.Location
 import maps.MapContent
 import maps.Marker
 import maps.MarkerIdStr
@@ -93,13 +94,17 @@ sealed class BottomSheetScreen {
     data object SettingsScreen : BottomSheetScreen()
 
     // Can pass in a MapMarker or just an id string
-    data class MarkerDetailsScreen(val marker: Marker? = null, val id: String? = marker?.id) : BottomSheetScreen()
+    data class MarkerDetailsScreen(
+        val marker: Marker? = null,
+        val id: String? = marker?.id
+    ) : BottomSheetScreen()
 }
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun App(
-    markersRepo: MarkersRepo = MarkersRepo(appSettings)
+    markersRepo: MarkersRepo = MarkersRepo(appSettings),
+    gpsLocationService: GPSLocationService = GPSLocationService()
 ) {
     AppTheme {
         val coroutineScope = rememberCoroutineScope()
@@ -126,11 +131,6 @@ fun App(
             mutableStateOf(appSettings.seenRadiusMiles)
         }
 
-        var isMarkersLastUpdatedLocationVisible by
-            remember(appSettings.isMarkersLastUpdatedLocationVisible) {
-                mutableStateOf(appSettings.isMarkersLastUpdatedLocationVisible)
-            }
-
         // Google Maps UI elements
         var isTrackingEnabled by remember {
             mutableStateOf(appSettings.shouldStartBackgroundTrackingWhenAppLaunches)
@@ -139,15 +139,16 @@ fun App(
             mutableStateOf<Location?>(null) // used to center map on user location
         }
 
-        // GPS Location Service
-        val gpsLocationService by remember {
-            mutableStateOf(GPSLocationService())
-        }
         var userLocation: Location by remember {
             mutableStateOf(appSettings.lastKnownUserLocation)
         }
 
-        // Last "markers data updated at" location
+        // UI markers data last updated location
+        var isMarkersLastUpdatedLocationVisible by
+        remember(appSettings.isMarkersLastUpdatedLocationVisible) {
+            mutableStateOf(appSettings.isMarkersLastUpdatedLocationVisible)
+        }
+        // Location where markers data was last updated
         var markersLastUpdatedLocation by remember {
             mutableStateOf(appSettings.markersLastUpdatedLocation)
         }
@@ -162,7 +163,9 @@ fun App(
 
         // Holds the set of saved markers, this prevents flicker when loading new markers while processing the marker page(s)
         val previousMarkers = remember {
-            mutableStateListOf<Marker>()
+            mutableStateListOf<Marker>().also { snapShot ->
+                snapShot.addAll(markersRepo.markers()) // init from repo
+            }
         }
 
         // Load markers
@@ -273,18 +276,18 @@ fun App(
                     Log.w("Error: $errorMessage")
                     isShowingError = errorMessage
                 }
-            ) { location ->
+            ) { updatedLocation ->
                 //    val locationTemp = Location(
                 //        37.422160,
                 //        -122.084270 // googleplex
                 //        // 18.976794,
                 //        // -99.095387 // Tepoztlan
                 //    )
-                //    myLocation = locationTemp ?: run { // use defined location above
-                userLocation = location ?: run { // use live location
+                //    myLocation = locationTemp ?: run { // use fake location above
+                userLocation = updatedLocation ?: run {
                     isShowingError = "Unable to get current location"
                     Log.w(isShowingError.toString())
-                    return@run userLocation // just return the most recent location
+                    return@run userLocation // just return most recent location
                 }
                 isShowingError = null
             }
@@ -295,7 +298,7 @@ fun App(
                     // 1. Save the last known location to settings
                     appSettings.lastKnownUserLocation = location
 
-                    // 2. Check for new markers inside talk radius & add to recentlySeen list
+                    // 2. Check for new markers inside `seen` radius & add to recentlySeen list
                     addSeenMarkersToRecentlySeenList(
                         markers,
                         userLocation,
@@ -405,7 +408,7 @@ fun App(
                                         recentlySeenMarkersSet,
                                         recentlySeenMarkersForUiList
                                     )
-                                    userLocation = jiggleLocationToForceUpdate(userLocation)
+                                    userLocation = jiggleLocationToForceUiUpdate(userLocation)
                                 }
                             },
                         )
@@ -716,7 +719,7 @@ fun App(
     }
 }
 
-// Clears & Sets the current map markers, previous map markers, and saves the markers to settings
+// Clears & Sets the current & previous map markers for UI
 private fun updateCurrentUiMarkers(
     markers: SnapshotStateList<Marker>,
     previousMarkers: SnapshotStateList<Marker>,
@@ -733,7 +736,7 @@ private fun updateCurrentUiMarkers(
 
 // force a change in location to trigger a reload of the markers
 // todo maybe use callback and set `shouldRedrawMapMarkers = true`
-private fun jiggleLocationToForceUpdate(userLocation: Location) = Location(
+private fun jiggleLocationToForceUiUpdate(userLocation: Location) = Location(
     userLocation.latitude +
             Random.nextDouble(0.0001, 0.0002),
     userLocation.longitude +
