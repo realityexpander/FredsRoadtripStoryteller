@@ -23,7 +23,7 @@ open class MarkersRepo(
         updateMarkersResultFlow.tryEmit(appSettings.markersResult)
     }
 
-    fun markersResult() = markersResult
+    fun markersResult() = appSettings.markersResult
 
     fun addMarker(marker: Marker): MarkersResult {
         // todo should update if expired? - Add functionality in caller instead
@@ -34,9 +34,9 @@ open class MarkersRepo(
         }
 
         updateMarkersResult(
-            appSettings.markersResult.copy(
+            markersResult().copy(
                 markerIdToMarker =
-                    appSettings.markersResult.markerIdToMarker +
+                    markersResult().markerIdToMarker +
                         (marker.id to marker)
             )
         )
@@ -52,9 +52,9 @@ open class MarkersRepo(
         }
 
         updateMarkersResult(
-            appSettings.markersResult.copy(
+            markersResult().copy(
                 markerIdToMarker =
-                    appSettings.markersResult.markerIdToMarker - id
+                    markersResult().markerIdToMarker - id
                 )
         )
 
@@ -62,17 +62,17 @@ open class MarkersRepo(
     }
 
     fun marker(id: MarkerIdStr): Marker? {
-        return appSettings.markersResult.markerIdToMarker[id]
+        return markersResult().markerIdToMarker[id]
     }
 
     fun markers(): List<Marker> {
-        return appSettings.markersResult.markerIdToMarker.values.toList()
+        return markersResult().markerIdToMarker.values.toList()
     }
 
     fun clearAllMarkers(): MarkersResult {
         Log.i("MarkerRepo: clearAllMarkers")
         updateMarkersResult(
-            appSettings.markersResult.copy(
+            markersResult().copy(
                 markerIdToMarker = emptyMap()
             )
         )
@@ -84,7 +84,7 @@ open class MarkersRepo(
     fun replaceMarker(replacementMarker: Marker): MarkersResult {
         Log.i("MarkerRepo: updateAllDataForMarker: replacementMarker.id=${replacementMarker.id}")
         updateMarkersResult(
-            appSettings.markersResult.copy(
+            markersResult().copy(
                 markerIdToMarker =
                     appSettings.markersResult.markerIdToMarker +
                         (replacementMarker.id to replacementMarker)
@@ -104,15 +104,41 @@ open class MarkersRepo(
                 }
         if(originalMarker.isSeen == isSeen) { // no change
             updateMarkersResult(appSettings.markersResult)
-            return appSettings.markersResult
+            return markersResult()
         }
 
         updateMarkersResult(
-            appSettings.markersResult.copy(
+            markersResult().copy(
                 markerIdToMarker =
                     appSettings.markersResult.markerIdToMarker +
                         (originalMarker.id to originalMarker.copy(
                             isSeen = isSeen
+                        ))
+            )
+        )
+
+        return markersResult()
+    }
+
+    fun updateMarkerIsSpoken(markerToUpdate: Marker, isSpoken: Boolean): MarkersResult {
+        Log.i("MarkerRepo: updateMarkerIsSpoken: markerToUpdate.id=${markerToUpdate.id}, isSpoken=$isSpoken")
+        val originalMarker =
+            this.marker(markerToUpdate.id)
+                ?: run {
+                    Log.w("MarkerRepo: updateMarkerIsSpoken: marker not found, id: ${markerToUpdate.id}")
+                    return markersResult()
+                }
+        if(originalMarker.isSpoken == isSpoken) { // no change
+            updateMarkersResult(appSettings.markersResult)
+            return appSettings.markersResult
+        }
+
+        updateMarkersResult(
+            markersResult().copy(
+                markerIdToMarker =
+                    appSettings.markersResult.markerIdToMarker +
+                        (originalMarker.id to originalMarker.copy(
+                            isSpoken = isSpoken
                         ))
             )
         )
@@ -131,9 +157,9 @@ open class MarkersRepo(
                 }
 
         updateMarkersResult(
-            appSettings.markersResult.copy(
+            markersResult().copy(
                 markerIdToMarker =
-                    appSettings.markersResult.markerIdToMarker +
+                    markersResult().markerIdToMarker +
                         (originalMarker.id to originalMarker.copy(
                             isDetailsLoaded = true, // force to indicate details have been loaded
                             markerDetailsPageUrl = markerWithUpdatedDetails.markerDetailsPageUrl,
@@ -179,9 +205,9 @@ open class MarkersRepo(
                 }
 
         updateMarkersResult(
-            appSettings.markersResult.copy(
+            markersResult().copy(
                 markerIdToMarker =
-                    appSettings.markersResult.markerIdToMarker +
+                    markersResult().markerIdToMarker +
                         (originalMarker.id to originalMarker.copy(
                             position = markerWithUpdatedBasicInfo.position,
                             title = markerWithUpdatedBasicInfo.title,
@@ -205,10 +231,10 @@ open class MarkersRepo(
         return markersResult()
     }
 
-    fun setIsParseMarkersPageFinished(isFinished: Boolean): MarkersResult {
+    fun updateIsParseMarkersPageFinished(isFinished: Boolean): MarkersResult {
         Log.i("MarkerRepo: setIsParseMarkersPageFinished: isFinished=$isFinished")
         updateMarkersResult(
-            appSettings.markersResult.copy(
+            markersResult().copy(
                 isParseMarkersPageFinished = isFinished
             )
         )

@@ -224,7 +224,7 @@ fun App(
                 markersResult.markerIdToMarker.forEach { marker ->
                     markersRepo.upsertMarkerBasicInfo(marker.value) // only basic info needs to be updated
                 }
-                markersRepo.setIsParseMarkersPageFinished(true)
+                markersRepo.updateIsParseMarkersPageFinished(true)
 
                 // Force a redraw of the map & markers
                 updateCurrentUiMarkers(markers = snapShot, previousMarkers, markersRepo)
