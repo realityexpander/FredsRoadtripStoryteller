@@ -2,12 +2,10 @@ package com.realityexpander
 
 import GPSLocationService
 import MainView
-import SplashScreenForPermissions
 import android.Manifest
 import android.content.Intent
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
-import co.touchlab.kermit.Logger as Log
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -22,18 +20,18 @@ import com.google.android.gms.maps.MapsInitializer
 import com.google.firebase.FirebaseApp
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.logEvent
-import com.russhwolf.settings.get
-import com.russhwolf.settings.set
-import data.settings
+import data.appSettings
 import intentFlow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import presentation.SplashScreenForPermissions
 import presentation.app.AppTheme
 import tts
 import java.util.Locale
+import co.touchlab.kermit.Logger as Log
 
 class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
@@ -62,7 +60,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             if(it[Manifest.permission.ACCESS_FINE_LOCATION] == false ||
                 it[Manifest.permission.ACCESS_COARSE_LOCATION] == false
             ) {
-                settings.isPermissionsGranted = false
+                appSettings.isPermissionsGranted = false
                 AlertDialog.Builder(this)
                     .setTitle("Location Permissions Required")
                     .setMessage("This app requires location permissions to function. " +
@@ -92,7 +90,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             } else {
                 // Dismiss the splash screen
                 splashState.tryEmit(true)
-                settings.isPermissionsGranted = true
+                appSettings.isPermissionsGranted = true
 
                 setContent {
                     MainView()
@@ -134,7 +132,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         // If permissions are not granted yet, show the splash screen for permissions.
         setContent {
             AppTheme {
-                SplashScreenForPermissions(settings.isPermissionsGranted)
+                SplashScreenForPermissions(appSettings.isPermissionsGranted)
             }
         }
     }

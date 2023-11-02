@@ -1,5 +1,6 @@
 package presentation.app
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -77,6 +78,80 @@ fun RecentlySeenMarkers(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
+        // Current spoken marker
+        AnimatedVisibility(currentSpokenMarker != null) {
+            val speakingMarker = currentSpokenMarker!!
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp, 4.dp, 8.dp, 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                color = MaterialTheme.colors.primary.lightenBy(.2f).copy(alpha = 0.75f),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .heightIn(min = 48.dp)
+                            .padding(8.dp, 0.dp, 8.dp, 4.dp)
+                            .clickable {
+                                onClickRecentlySeenMarkerItem(speakingMarker.id)
+                            }
+                            .weight(3f)
+                    ) {
+                        Text(
+                            text = speakingMarker.title,
+                            color = MaterialTheme.colors.onPrimary,
+                            fontStyle = FontStyle.Normal,
+                            fontSize = MaterialTheme.typography.h6.fontSize,
+                            fontWeight = FontWeight.Medium,
+                        )
+                        Text(
+                            text = speakingMarker.id + " "
+                                    + if(isCurrentlySpeaking) "speaking" else "spoken last",
+                            color = MaterialTheme.colors.onPrimary.copy(alpha = 0.50f),
+                            fontStyle = FontStyle.Normal,
+                            fontSize = MaterialTheme.typography.body1.fontSize,
+                            fontWeight = FontWeight.Medium,
+                        )
+                    }
+
+                    if (isCurrentlySpeaking) {
+                        IconButton(
+                            onClick = {
+                                onClickStopSpeakingMarker()
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(.5f)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Stop,
+                                contentDescription = "Stop Speaking Marker",
+                            )
+                        }
+                    } else {
+                        IconButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(.5f),
+                            onClick = {
+                                onClickStartSpeakingMarker(speakingMarker)
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.VolumeUp,
+                                contentDescription = "Speak Marker",
+                                tint = MaterialTheme.colors.onBackground
+                            )
+                        }
+                    }
+                }
+        }
+
         LazyColumn(
             userScrollEnabled = true,
             state = scrollState,
@@ -84,80 +159,6 @@ fun RecentlySeenMarkers(
                 .background(MaterialTheme.colors.surface)
 
         ) {
-            // Current spoken marker
-            currentSpokenMarker?.let {
-                item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp, 0.dp, 8.dp, 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    color = MaterialTheme.colors.primary.lightenBy(.2f).copy(alpha = 0.75f),
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .heightIn(min = 48.dp)
-                                .padding(8.dp, 0.dp, 8.dp, 4.dp)
-                                .clickable {
-                                    onClickRecentlySeenMarkerItem(currentSpokenMarker.id)
-                                }
-                                .weight(3f)
-                        ) {
-                            Text(
-                                text = currentSpokenMarker.title,
-                                color = MaterialTheme.colors.onPrimary,
-                                fontStyle = FontStyle.Normal,
-                                fontSize = MaterialTheme.typography.h6.fontSize,
-                                fontWeight = FontWeight.Medium,
-                            )
-                            Text(
-                                text = currentSpokenMarker.id + " "
-                                        + if(isCurrentlySpeaking) "speaking" else "spoken last",
-                                color = MaterialTheme.colors.onPrimary.copy(alpha = 0.50f),
-                                fontStyle = FontStyle.Normal,
-                                fontSize = MaterialTheme.typography.body1.fontSize,
-                                fontWeight = FontWeight.Medium,
-                            )
-                        }
-
-                        if (isCurrentlySpeaking) {
-                            IconButton(
-                                onClick = {
-                                    onClickStopSpeakingMarker()
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .weight(.5f)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Stop,
-                                    contentDescription = "Stop Speaking Marker",
-                                )
-                            }
-                        } else {
-                            IconButton(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .weight(.5f),
-                                onClick = {
-                                    onClickStartSpeakingMarker(currentSpokenMarker)
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.VolumeUp,
-                                    contentDescription = "Speak Marker",
-                                    tint = MaterialTheme.colors.onBackground
-                                )
-                            }
-                        }
-                    }
-                }
-            }
 
             if (recentlySeenMarkersForUiList.isEmpty()) {
                 // Show "empty" placeholder if no markers
@@ -190,7 +191,7 @@ fun RecentlySeenMarkers(
                         textAlign = TextAlign.Center,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(start = 8.dp, bottom = 8.dp)
+                            .padding(start = 4.dp, bottom = 4.dp)
                     )
                 }
             }

@@ -13,7 +13,7 @@ import kotlin.reflect.KProperty
 import kotlin.reflect.safeCast
 import co.touchlab.kermit.Logger as Log
 
-val settings = AppSettings.create()
+val appSettings = AppSettings.create()
     .apply {
         if(kForceClearSettingsAtLaunch) { clearAllSettings() }
         // Log.setMinSeverity(Severity.Warn)
@@ -45,7 +45,7 @@ class AppSettings(val settingsInstance: Settings) {
 
     // • For Settings panel
     var shouldSpeakWhenUnseenMarkerFound by
-        SettingsDelegate(settingsInstance, kSpeakAutomaticallyWhenUnseenMarkerFound, defaultValue = false)
+        SettingsDelegate(settingsInstance, kShouldSpeakWhenUnseenMarkerFound, defaultValue = false)
     var shouldSpeakDetailsWhenUnseenMarkerFound by
         SettingsDelegate(settingsInstance, kShouldSpeakDetailsWhenUnseenMarkerFound, defaultValue = false)
     var shouldStartBackgroundTrackingWhenAppLaunches by
@@ -59,31 +59,31 @@ class AppSettings(val settingsInstance: Settings) {
     var settingsMap = createSettingsMap()
     private fun createSettingsMap() = mutableMapOf<String, Any?>(
         kMarkersResult to
-            markersResult,
+         markersResult,
         kMarkersLastUpdateEpochSeconds to
-            markersLastUpdateEpochSeconds,
+         markersLastUpdateEpochSeconds,
         kMarkersLastUpdatedLocation to
-            markersLastUpdatedLocation,
+         markersLastUpdatedLocation,
         kLastKnownUserLocation to
-            lastKnownUserLocation,
+         lastKnownUserLocation,
         kIsPermissionsGranted to
-            isPermissionsGranted,
+         isPermissionsGranted,
         kIsRecentlySeenMarkersPanelVisible to
-            isRecentlySeenMarkersPanelVisible,
-        kSpeakAutomaticallyWhenUnseenMarkerFound to
-            shouldSpeakWhenUnseenMarkerFound,
+         isRecentlySeenMarkersPanelVisible,
+        kShouldSpeakWhenUnseenMarkerFound to
+         shouldSpeakWhenUnseenMarkerFound,
         kShouldStartBackgroundTrackingWhenAppLaunches to
-            shouldStartBackgroundTrackingWhenAppLaunches,
+         shouldStartBackgroundTrackingWhenAppLaunches,
         kSeenRadiusMiles to
-            seenRadiusMiles,
+         seenRadiusMiles,
         kIsMarkersLastUpdatedLocationVisible to
-            isMarkersLastUpdatedLocationVisible,
+         isMarkersLastUpdatedLocationVisible,
         kRecentlySeenMarkersSet to
-            recentlySeenMarkersSet,
+         recentlySeenMarkersSet,
         kUiRecentlySeenMarkersList to
-            uiRecentlySeenMarkersList,
+         uiRecentlySeenMarkersList,
         kShouldSpeakDetailsWhenUnseenMarkerFound to
-            shouldSpeakDetailsWhenUnseenMarkerFound,
+         shouldSpeakDetailsWhenUnseenMarkerFound,
     )
 
     // Use [] access operator
@@ -193,8 +193,8 @@ class AppSettings(val settingsInstance: Settings) {
                  "kUiRecentlySeenMarkersList"
 
         // • For Settings panel
-        const val kSpeakAutomaticallyWhenUnseenMarkerFound =
-                 "kShouldSpeakAutomaticallyWhenUnseenMarkerFound"
+        const val kShouldSpeakWhenUnseenMarkerFound =
+                 "kShouldSpeakWhenUnseenMarkerFound"
         const val kShouldSpeakDetailsWhenUnseenMarkerFound =
                  "kShouldSpeakDetailsWhenUnseenMarkerFound"
         const val kShouldStartBackgroundTrackingWhenAppLaunches =

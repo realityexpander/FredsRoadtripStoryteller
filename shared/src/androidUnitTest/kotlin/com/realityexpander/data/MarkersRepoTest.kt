@@ -1,7 +1,7 @@
 package com.realityexpander.data
 
 import data.AppSettings
-import data.MarkerRepo
+import data.MarkersRepo
 import maps.LatLong
 import maps.Marker
 import kotlin.test.BeforeTest
@@ -9,20 +9,20 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 // Use real MarkerRepo and fake Settings
-class FakeSettingsRealMarkerRepo(
+class FakeSettingsRealMarkersRepo(
     appSettings: AppSettings = AppSettings.use(FakeSettings())
-): MarkerRepo(appSettings)
+): MarkersRepo(appSettings)
 
 
-class MarkerRepoTest {
+class MarkersRepoTest {
 
     private lateinit var fakeSettings: FakeSettings
-    private lateinit var markerRepo: FakeSettingsRealMarkerRepo
+    private lateinit var markerRepo: FakeSettingsRealMarkersRepo
 
     @BeforeTest
     fun setUp() {
         fakeSettings = FakeSettings()
-        markerRepo = FakeSettingsRealMarkerRepo(AppSettings.use(fakeSettings))
+        markerRepo = FakeSettingsRealMarkersRepo(AppSettings.use(fakeSettings))
     }
 
     @Test
@@ -35,6 +35,7 @@ class MarkerRepoTest {
 
         // Assert
         assertEquals(markerRepo.marker(marker.id), marker)
+        assertEquals(markerRepo.markersResult().markerIdToMarker["M1"], marker)
     }
 
     @Test
@@ -48,6 +49,7 @@ class MarkerRepoTest {
 
         // Assert
         assertEquals(markerRepo.marker(marker.id), null)
+        assertEquals(markerRepo.markersResult().markerIdToMarker["M1"], null)
     }
 
     @Test
@@ -58,23 +60,28 @@ class MarkerRepoTest {
         val updatedMarker = marker.copy(title = "updated title")
 
         // Act
-        markerRepo.updateMarker(updatedMarker)
+        markerRepo.replaceMarker(updatedMarker)
 
         // Assert
         assertEquals(markerRepo.marker(marker.id), updatedMarker)
+        assertEquals(markerRepo.markersResult().markerIdToMarker["M1"], updatedMarker)
     }
 
     @Test
     fun `MarkerRepo should be able to clear all markers`() {
         // Arrange
         val marker = Marker(id = "M1")
+        val marker2 = Marker(id = "M2")
         markerRepo.addMarker(marker)
+        markerRepo.addMarker(marker2)
 
         // Act
         markerRepo.clearAllMarkers()
 
         // Assert
         assertEquals(markerRepo.marker(marker.id), null)
+        assertEquals(markerRepo.markersResult().markerIdToMarker["M1"], null)
+        assertEquals(markerRepo.markersResult().markerIdToMarker["M2"], null)
     }
 
     @Test
@@ -90,6 +97,7 @@ class MarkerRepoTest {
 
         // Assert
         assertEquals(markers, listOf(marker1, marker2))
+        assertEquals(markerRepo.markersResult().markerIdToMarker.size, 2)
     }
     
     @Test
@@ -146,6 +154,38 @@ class MarkerRepoTest {
 
         // Assert
         assertEquals(markerRepo.marker(marker.id), updatedMarker)
+        assertEquals(markerRepo.markersResult().markerIdToMarker["M1"], updatedMarker)
+    }
+
+    @Test
+    fun `MarkerRepo should be able to upsert a marker's details and retain all other info`() {
+        // Arrange
+        val marker = Marker(
+            id = "M1",
+            position = LatLong(1.0, 2.0),
+            title = "title",
+            subtitle = "subtitle",
+            alpha = 0.5f,
+            isSeen = false,
+        )
+        val updatedMarker = marker.copy(
+            isDetailsLoaded = true,
+            markerDetailsPageUrl = "updated markerDetailsPageUrl",
+            mainPhotoUrl = "updated mainPhotoUrl",
+            markerPhotos = listOf("updated markerPhotos"),
+            photoCaptions = listOf("updated photoCaptions"),
+            photoAttributions = listOf("updated photoAttributions"),
+            inscription = "updated inscription",
+            englishInscription = "updated englishInscription",
+            spanishInscription = "updated spanishInscription",
+        )
+
+        // Act
+        markerRepo.upsertMarkerDetails(updatedMarker)
+
+        // Assert
+        assertEquals(markerRepo.marker(marker.id), updatedMarker)
+        assertEquals(markerRepo.markersResult().markerIdToMarker["M1"], updatedMarker)
     }
 
     @Test
@@ -181,6 +221,42 @@ class MarkerRepoTest {
 
         // Assert
         assertEquals(markerRepo.marker(marker.id), updatedMarker)
+        assertEquals(markerRepo.markersResult().markerIdToMarker[marker.id], updatedMarker)
+    }
+
+    @Test
+    fun `MarkerRepo should be able to upsert basic info for a marker that doesn't exist`() {
+        // Arrange
+        val marker = Marker(
+            id = "M1",
+            position = LatLong(1.0, 2.0),
+            title = "title",
+            subtitle = "subtitle",
+            alpha = 0.5f,
+            isDetailsLoaded = true,
+            isSeen = false,
+            markerDetailsPageUrl = "markerDetailsPageUrl",
+            mainPhotoUrl = "mainPhotoUrl",
+            markerPhotos = listOf("markerPhotos"),
+            photoCaptions = listOf("photoCaptions"),
+            photoAttributions = listOf("photoAttributions"),
+            inscription = "inscription",
+            englishInscription = "englishInscription",
+            spanishInscription = "spanishInscription",
+        )
+        val updatedMarker = marker.copy(
+            position = LatLong(3.0, 4.0),
+            title = "updated title",
+            subtitle = "updated subtitle",
+            alpha = 0.75f
+        )
+
+        // Act
+        markerRepo.upsertMarkerBasicInfo(updatedMarker)
+
+        // Assert
+        assertEquals(markerRepo.marker(marker.id), updatedMarker)
+        assertEquals(markerRepo.markersResult().markerIdToMarker[marker.id], updatedMarker)
     }
 
     @Test
@@ -222,10 +298,11 @@ class MarkerRepoTest {
         )
 
         // Act
-        markerRepo.updateMarker(updatedMarker)
+        markerRepo.replaceMarker(updatedMarker)
 
         // Assert
         assertEquals(markerRepo.marker(marker.id), updatedMarker)
+        assertEquals(markerRepo.markersResult().markerIdToMarker[marker.id], updatedMarker)
     }
 
     @Test
@@ -258,5 +335,6 @@ class MarkerRepoTest {
 
         // Assert
         assertEquals(markerRepo.marker(marker.id), updatedMarker)
+        assertEquals(markerRepo.markersResult().markerIdToMarker[marker.id], updatedMarker)
     }
 }

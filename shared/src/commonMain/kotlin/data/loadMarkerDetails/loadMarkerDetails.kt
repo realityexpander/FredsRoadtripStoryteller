@@ -14,10 +14,8 @@ import io.ktor.client.request.get
 import kotlinx.coroutines.yield
 import network.httpClient
 import data.loadMarkers.kBaseHmdbDotOrgUrl
-import json
-import kMaxMarkerCacheAgeSeconds
+import kMaxMarkerDetailsAgeSeconds
 import kotlinx.datetime.Clock
-import kotlinx.serialization.encodeToString
 import co.touchlab.kermit.Logger as Log
 
 const val kUseFakeData = false
@@ -98,6 +96,6 @@ fun loadMarkerDetails(marker: Marker, useFakeData: Boolean = false): LoadingStat
 private fun isMarkerDetailsLoadedAndNotExpired(marker: Marker) =
     marker.isDetailsLoaded
         && marker.lastUpdatedDetailsEpochSeconds +
-            kMaxMarkerCacheAgeSeconds < Clock.System.now().epochSeconds
+            kMaxMarkerDetailsAgeSeconds < Clock.System.now().epochSeconds
 
 

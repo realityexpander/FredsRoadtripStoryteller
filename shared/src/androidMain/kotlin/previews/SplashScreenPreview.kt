@@ -1,10 +1,10 @@
 package previews
 
-import SplashScreenForPermissions
 import android.content.res.Configuration
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import presentation.SplashScreenForPermissions
 import presentation.app.AppTheme
 
 @Preview(

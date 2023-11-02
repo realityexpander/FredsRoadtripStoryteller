@@ -1,6 +1,5 @@
 package previews
 
-import SplashScreenForPermissions
 import android.content.res.Configuration
 import androidx.compose.material.BottomSheetScaffoldState
 import androidx.compose.material.BottomSheetState
