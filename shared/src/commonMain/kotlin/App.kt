@@ -547,8 +547,7 @@ fun App(
                                             isRecentlySeenMarkersPanelVisible
                                     }
                                 }) { // show marker history panel
-
-                                    // Loading status
+                                    // Loading status icon
                                     AnimatedVisibility(
                                         loadingStateIcon != Icons.Default.Cloud,
                                         enter = fadeIn(tween(1500)),
@@ -559,6 +558,7 @@ fun App(
                                             contentDescription = "Loading Status"
                                         )
                                     }
+                                    // History icon
                                     AnimatedVisibility(loadingStateIcon == Icons.Default.Cloud) {
                                         Icon(
                                             imageVector = Icons.Default.History,
