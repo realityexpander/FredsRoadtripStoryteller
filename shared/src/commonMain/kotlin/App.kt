@@ -524,18 +524,6 @@ fun App(
                                 )
                             },
                             actions = {
-                                // Loading status
-                                AnimatedVisibility(
-                                    loadingStateIcon != Icons.Default.Cloud,
-                                    enter = fadeIn(tween(1500)),
-                                    exit = fadeOut(tween(1500))
-                                ) {
-                                    Icon(
-                                        imageVector = loadingStateIcon,
-                                        contentDescription = "Loading Status"
-                                    )
-                                }
-
                                 // Settings
                                 IconButton(onClick = {
                                     coroutineScope.launch {
@@ -559,10 +547,24 @@ fun App(
                                             isRecentlySeenMarkersPanelVisible
                                     }
                                 }) { // show marker history panel
-                                    Icon(
-                                        imageVector = Icons.Default.History,
-                                        contentDescription = "Hide/Show Marker List"
-                                    )
+
+                                    // Loading status
+                                    AnimatedVisibility(
+                                        loadingStateIcon != Icons.Default.Cloud,
+                                        enter = fadeIn(tween(1500)),
+                                        exit = fadeOut(tween(1500))
+                                    ) {
+                                        Icon(
+                                            imageVector = loadingStateIcon,
+                                            contentDescription = "Loading Status"
+                                        )
+                                    }
+                                    AnimatedVisibility(loadingStateIcon == Icons.Default.Cloud) {
+                                        Icon(
+                                            imageVector = Icons.Default.History,
+                                            contentDescription = "Hide/Show Marker List"
+                                        )
+                                    }
                                 }
                             }
                         )
