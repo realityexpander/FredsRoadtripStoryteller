@@ -25,7 +25,7 @@ class AppSettings(val settingsInstance: Settings) {
 
     // Typesafe accessors for settings
     // is there a way to put these into the map automatically & keep typesafe w/o using casts?
-    // REMEMBER TO ADD NEW SETTINGS TO THE MAP!
+    // REMEMBER TO ADD NEW SETTINGS TO THE MAP! - FORMATTING IS INTENTIONAL
     var markersResult by
         SettingsDelegate(settingsInstance,
        kMarkersResult, defaultValue = MarkersResult())
@@ -65,7 +65,7 @@ class AppSettings(val settingsInstance: Settings) {
         SettingsDelegate(settingsInstance,
        kIsMarkersLastUpdatedLocationVisible, defaultValue = false)
 
-    // - REMEMBER TO ADD NEW SETTINGS TO THIS MAP!
+    // - REMEMBER TO ADD NEW SETTINGS TO THIS MAP! - FORMATTING IS INTENTIONAL
     var settingsMap = createSettingsMap()
     private fun createSettingsMap() = mutableMapOf<String, Any?>(
         kMarkersResult to
