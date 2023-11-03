@@ -759,23 +759,21 @@ fun App(
     }
 }
 
-private fun calcLoadingStateIcon(it: LoadingState<String>) = when (it) {
-    is LoadingState.Loading -> {
-        Icons.Default.CloudDownload
+private fun calcLoadingStateIcon(it: LoadingState<String>) =
+    when (it) {
+        is LoadingState.Loading -> {
+            Icons.Default.CloudDownload
+        }
+        is LoadingState.Loaded -> {
+            Icons.Default.CloudDownload
+        }
+        is LoadingState.Finished -> {
+            Icons.Default.Cloud
+        }
+        is LoadingState.Error -> {
+            Icons.Default.CloudOff
+        }
     }
-
-    is LoadingState.Loaded -> {
-        Icons.Default.CloudDownload
-    }
-
-    is LoadingState.Finished -> {
-        Icons.Default.Cloud
-    }
-
-    is LoadingState.Error -> {
-        Icons.Default.CloudOff
-    }
-}
 
 // Clears & Sets the current & previous map markers for UI
 private fun updateCurrentUiMarkers(
