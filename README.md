@@ -5,6 +5,10 @@ Compose KMP experimental app using Google Maps for iOS and Android
 
 <img width="1700" alt="image" src="https://github.com/realityexpander/GoolgeMapsUsingCocoaPodsExample/assets/5157474/7b0395d3-04e6-48df-9219-990cb10d81e1">
 
+Wiki: [Freds Talking Historical Markers Wiki](https://github.com/realityexpander/FredsHistoryMarkers/wiki)
+
+## Developer notes
+
 Firebase console: https://console.firebase.google.com/u/0/project/talkingmarkers/overview
 
 Source: (Code snapshot taken 10/8/24)
