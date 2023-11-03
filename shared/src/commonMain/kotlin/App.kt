@@ -121,7 +121,7 @@ fun App(
         }
 
         // Speaking UI
-        var isCurrentlySpeaking by remember {
+        var isTextToSpeechCurrentlySpeaking by remember {
             mutableStateOf(false)
         }
         var currentlySpeakingMarker: RecentlySeenMarker? by remember {
@@ -157,7 +157,7 @@ fun App(
         val recentlySeenMarkersSet by remember {
             mutableStateOf(appSettings.recentlySeenMarkersSet.list.toMutableSet())
         }
-        val recentlySeenMarkersForUiList by remember {
+        val uiRecentlySeenMarkersList by remember {
             mutableStateOf(appSettings.uiRecentlySeenMarkersList.list.toMutableStateList())
         }
 
@@ -187,12 +187,15 @@ fun App(
                         is LoadingState.Loading -> {
                             Icons.Default.CloudDownload
                         }
+
                         is LoadingState.Loaded -> {
                             Icons.Default.CloudDownload
                         }
+
                         is LoadingState.Finished -> {
                             Icons.Default.Cloud
                         }
+
                         is LoadingState.Error -> {
                             Icons.Default.CloudOff
                         }
@@ -304,12 +307,16 @@ fun App(
                         userLocation,
                         seenRadiusMiles,
                         recentlySeenMarkersSet,
-                        recentlySeenMarkersForUiList,
+                        uiRecentlySeenMarkersList,
                         onUpdateIsSeenMapMarkers = { updatedIsSeenMarkers ->
+                            // Seen markers, so update the `isSeen` and speak the top marker.
                             coroutineScope.launch {
                                 // Update `isSeen`
                                 updatedIsSeenMarkers.forEach { updatedMarker ->
-                                    markersRepo.updateMarkerIsSeen(updatedMarker, updatedMarker.isSeen)
+                                    markersRepo.updateMarkerIsSeen(
+                                        updatedMarker,
+                                        updatedMarker.isSeen
+                                    )
                                 }
                                 updateCurrentUiMarkers(
                                     markers = markers,
@@ -319,26 +326,26 @@ fun App(
                                 shouldRedrawMapMarkers = true
 
                                 // Speak the top marker
-                                if (!isTextToSpeechSpeaking()) {
-                                    if(appSettings.shouldSpeakWhenUnseenMarkerFound
-                                       && appSettings.uiRecentlySeenMarkersList.list.isNotEmpty()
+                                if (!isTextToSpeechSpeaking()) { // Don't interrupt current speech
+                                    if (appSettings.shouldSpeakWhenUnseenMarkerFound
+                                        && appSettings.uiRecentlySeenMarkersList.list.isNotEmpty()
                                     ) {
-                                        currentlySpeakingMarker = appSettings.uiRecentlySeenMarkersList.list.first()
-                                        currentlySpeakingMarker?.let { speakingMarker ->
+                                        val nextUnspokenMarker =
+                                            appSettings.uiRecentlySeenMarkersList.list.first()
+                                        currentlySpeakingMarker =
                                             speakRecentlySeenMarker(
-                                                speakingMarker,
+                                                nextUnspokenMarker,
                                                 appSettings.shouldSpeakDetailsWhenUnseenMarkerFound,
                                                 coroutineScope,
                                                 onError = { errorMessage ->
                                                     Log.w(errorMessage)
                                                     isShowingError = errorMessage
                                                 },
-                                                onUpdateMarkersResult = { updatedMarkersResult ->
-                                                    markersResult = updatedMarkersResult
-                                                },
-                                                markersRepo = markersRepo
+                                                markersRepo = markersRepo,
+                                                onUpdateLoadingState = { loadingState -> // todo make function
+                                                    loadingStateIcon = calcDetailsLoadingStateIcon(loadingState)
+                                                }
                                             )
-                                        }
                                     }
                                 }
                             }
@@ -361,6 +368,7 @@ fun App(
             isTrackingEnabled = true
             gpsLocationService.allowBackgroundLocationUpdates()
         }
+
         fun stopTracking() {
             isTrackingEnabled = false
             gpsLocationService.preventBackgroundLocationUpdates()
@@ -372,11 +380,50 @@ fun App(
             }
         }
 
-        // Poll for speech completed
+        // Update isCurrentlySpeaking UI flag
         LaunchedEffect(Unit) {
             while (true) {
-                delay(1000)
-                isCurrentlySpeaking = isTextToSpeechSpeaking()
+                delay(100)
+                isTextToSpeechCurrentlySpeaking = isTextToSpeechSpeaking()
+            }
+        }
+
+        // Poll for next unspoken marker
+        LaunchedEffect(Unit) {
+            while (true) {
+                delay(1000)  // allow time for last text-to-speech to end
+
+                if (appSettings.shouldSpeakWhenUnseenMarkerFound
+                    && uiRecentlySeenMarkersList.isNotEmpty()
+                ) {
+                    if (!isTextToSpeechSpeaking() && !isTextToSpeechCurrentlySpeaking) {
+
+                        // look for next unspoken marker
+                        val nextUnspokenMarker =
+                            uiRecentlySeenMarkersList.firstOrNull { marker ->
+                                !(markersRepo.marker(marker.id)?.isSpoken
+                                    ?: false) // default not spoken yet
+                            }
+                        nextUnspokenMarker?.let { speakMarker ->
+                            isTextToSpeechCurrentlySpeaking = true
+                            yield() // allow UI to update
+
+                            currentlySpeakingMarker = speakRecentlySeenMarker(
+                                speakMarker,
+                                appSettings.shouldSpeakDetailsWhenUnseenMarkerFound,
+                                coroutineScope,
+                                onError = { errorMessage ->
+                                    Log.w(errorMessage)
+                                    isShowingError = errorMessage
+                                },
+                                markersRepo = markersRepo,
+                                onUpdateLoadingState = { loadingState ->
+                                    loadingStateIcon = calcDetailsLoadingStateIcon(loadingState)
+                                }
+                            )
+                        }
+                    }
+                }
             }
         }
 
@@ -395,7 +442,9 @@ fun App(
                             appSettings,
                             bottomSheetScaffoldState,
                             seenRadiusMiles,
-                            onTalkRadiusChange = { updatedRadiusMiles -> seenRadiusMiles = updatedRadiusMiles },
+                            onTalkRadiusChange = { updatedRadiusMiles ->
+                                seenRadiusMiles = updatedRadiusMiles
+                            },
                             onIsCachedMarkersLastUpdatedLocationVisibleChange = {
                                 isMarkersLastUpdatedLocationVisible = it
                             },
@@ -406,13 +455,14 @@ fun App(
                                         markers,
                                         previousMarkers,
                                         recentlySeenMarkersSet,
-                                        recentlySeenMarkersForUiList
+                                        uiRecentlySeenMarkersList
                                     )
                                     userLocation = jiggleLocationToForceUiUpdate(userLocation)
                                 }
                             },
                         )
                     }
+
                     is BottomSheetScreen.MarkerDetailsScreen -> {
                         // Use id string (coming from map marker in google maps)
                         // or marker id (coming from item in marker details screen)
@@ -422,20 +472,23 @@ fun App(
                         val markerIdFromParamId = bottomSheetParams.id
                         val markerIdFromMarker = localMarker?.id
                         // Guard
-                        if(markerIdFromParamId == null && markerIdFromMarker == null) {
-                            throw IllegalStateException("Error: Both markerIdFromId and " +
-                                    "markerIdFromMarker are null, need to have at least one non-null value.")
+                        if (markerIdFromParamId == null && markerIdFromMarker == null) {
+                            throw IllegalStateException(
+                                "Error: Both markerIdFromId and " +
+                                        "markerIdFromMarker are null, need to have at least one non-null value."
+                            )
                         }
 
                         // Get marker from current mapMarkers list
-                        val marker =  remember(markerIdFromMarker, markerIdFromParamId) {
+                        val marker = remember(markerIdFromMarker, markerIdFromParamId) {
                             val markerId: MarkerIdStr =
                                 markerIdFromParamId
-                                ?: markerIdFromMarker
-                                ?: run {
-                                    isShowingError = "Error: Unable to find marker id=$markerIdFromMarker"
-                                    return@remember localMarker ?: Marker()
-                                }
+                                    ?: markerIdFromMarker
+                                    ?: run {
+                                        isShowingError =
+                                            "Error: Unable to find marker id=$markerIdFromMarker"
+                                        return@remember localMarker ?: Marker()
+                                    }
 
                             markersRepo.marker(markerId) ?: run {
                                 isShowingError = "Error: Unable to find marker with id=$markerId"
@@ -458,7 +511,8 @@ fun App(
                             ) {
                                 // Update the markers and save to settings
                                 coroutineScope.launch {
-                                    markersResult = markersRepo.updateMarkerDetails(updatedDetailsMarker)
+                                    markersResult =
+                                        markersRepo.updateMarkerDetails(updatedDetailsMarker)
                                     updateCurrentUiMarkers(markers, previousMarkers, markersRepo)
                                 }
                             }
@@ -467,14 +521,10 @@ fun App(
                         MarkerDetailsScreen(
                             bottomSheetScaffoldState,
                             markerDetailsResult,
-                            isCurrentlySpeaking = isCurrentlySpeaking,
+                            isCurrentlySpeaking = isTextToSpeechSpeaking(),
                             onClickStartSpeakingMarker = { speakMarker ->
-                                currentlySpeakingMarker =
-                                    speakMarker(speakMarker, true)
-                            },
-                            onClickStopSpeakingMarker = {
-                                stopTextToSpeech()
-                                isCurrentlySpeaking = false
+                                markersRepo.updateMarkerIsSpoken(speakMarker, isSpoken = true)
+                                currentlySpeakingMarker = speakMarker(speakMarker, true)
                             },
                         )
                     }
@@ -545,7 +595,8 @@ fun App(
                                 // Recent Markers History List
                                 IconButton(onClick = {
                                     coroutineScope.launch {
-                                        isRecentlySeenMarkersPanelVisible = !isRecentlySeenMarkersPanelVisible
+                                        isRecentlySeenMarkersPanelVisible =
+                                            !isRecentlySeenMarkersPanelVisible
                                         appSettings.isRecentlySeenMarkersPanelVisible =
                                             isRecentlySeenMarkersPanelVisible
                                     }
@@ -637,15 +688,15 @@ fun App(
                                 centerOnUserCameraLocation = centerOnUserCameraLocation,
                                 talkRadiusMiles = seenRadiusMiles,
                                 cachedMarkersLastUpdatedLocation =
-                                    remember(
-                                        appSettings.isMarkersLastUpdatedLocationVisible,
+                                remember(
+                                    appSettings.isMarkersLastUpdatedLocationVisible,
+                                    markersLastUpdatedLocation
+                                ) {
+                                    if (appSettings.isMarkersLastUpdatedLocationVisible)
                                         markersLastUpdatedLocation
-                                    ) {
-                                        if (appSettings.isMarkersLastUpdatedLocationVisible)
-                                            markersLastUpdatedLocation
-                                        else
-                                            null
-                                    },
+                                    else
+                                        null
+                                },
                                 onToggleIsTrackingEnabled = {
                                     isTrackingEnabled = !isTrackingEnabled
                                     coroutineScope.launch {
@@ -679,45 +730,67 @@ fun App(
                     }
 
                     RecentlySeenMarkers(
-                        recentlySeenMarkersForUiList,
+                        uiRecentlySeenMarkersList,
                         onClickRecentlySeenMarkerItem = { markerId ->
                             // Show marker details
                             coroutineScope.launch {
-                                bottomSheetActiveScreen = BottomSheetScreen.MarkerDetailsScreen(id = markerId)
+                                bottomSheetActiveScreen =
+                                    BottomSheetScreen.MarkerDetailsScreen(id = markerId)
                                 bottomSheetScaffoldState.bottomSheetState.apply {
                                     if (isCollapsed) expand()
                                 }
                             }
                         },
-                        currentSpokenMarker = currentlySpeakingMarker,
-                        isCurrentlySpeaking = isCurrentlySpeaking,
-                        onClickStartSpeakingMarker = { recentlySeenMarker ->
-                            currentlySpeakingMarker = recentlySeenMarker
-                            speakRecentlySeenMarker(
-                                recentlySeenMarker,
-                                appSettings.shouldSpeakDetailsWhenUnseenMarkerFound,
-                                coroutineScope,
-                                onError = { errorMessage ->
-                                    Log.w(errorMessage)
-                                    isShowingError = errorMessage
-                                },
-                                onUpdateMarkersResult = { updatedMarkersResult ->
-                                    Log.d { "in speakRecentlySeenMarker() onClickStartSpeakingMarker updatedMarkersResult size= ${updatedMarkersResult.markerIdToMarker.size}" }
-                                    markersResult = updatedMarkersResult
-                                },
-                                markersRepo = markersRepo
-                            )
+                        currentlySpeakingMarker = currentlySpeakingMarker,
+                        isTextToSpeechCurrentlySpeaking = isTextToSpeechCurrentlySpeaking,
+                        onClickStartSpeakingMarker = { recentlySeenMarker, shouldSpeakDetails: Boolean ->
+                            stopTextToSpeech()
+
+                            coroutineScope.launch {
+                                delay(50) // allow UI to update
+                                currentlySpeakingMarker =
+                                    speakRecentlySeenMarker(
+                                        recentlySeenMarker,
+                                        shouldSpeakDetails = shouldSpeakDetails,
+                                        coroutineScope,
+                                        onError = { errorMessage ->
+                                            Log.w(errorMessage)
+                                            isShowingError = errorMessage
+                                        },
+                                        markersRepo = markersRepo,
+                                        onUpdateLoadingState = { loadingState -> // todo make function
+                                            loadingStateIcon =
+                                                calcDetailsLoadingStateIcon(loadingState)
+                                        }
+                                    )
+                            }
                         },
                         onClickStopSpeakingMarker = {
                             stopTextToSpeech()
-                            isCurrentlySpeaking = false
                         },
+                        markersRepo = markersRepo,
                     )
                 }
             }
         }
     }
 }
+
+private fun calcDetailsLoadingStateIcon(loadingState: LoadingState<String>) =
+    when (loadingState) {
+        is LoadingState.Loading -> {
+            Icons.Default.CloudDownload
+        }
+        is LoadingState.Finished -> {
+            Icons.Default.Cloud
+        }
+        is LoadingState.Error -> {
+            Icons.Default.CloudOff
+        }
+        else -> {
+            Icons.Default.CloudDownload
+        }
+    }
 
 // Clears & Sets the current & previous map markers for UI
 private fun updateCurrentUiMarkers(
@@ -771,9 +844,10 @@ private fun addSeenMarkersToRecentlySeenList(
     recentlySeenMarkersSet: MutableSet<RecentlySeenMarker>,
     uiRecentlySeenMarkersList: SnapshotStateList<RecentlySeenMarker>,
     onUpdateIsSeenMapMarkers: (SnapshotStateList<Marker>) -> Unit,
-    onUpdateCurrentlySpeaking: (Boolean, RecentlySeenMarker) -> Unit = {_,_ ->}
+    onUpdateCurrentlySpeaking: (Boolean, RecentlySeenMarker) -> Unit = { _, _ -> }
 ) {
-    val updatedMarkers: SnapshotStateList<Marker> = listOf<Marker>().toMutableStateList() // start with empty list
+    val updatedMarkers: SnapshotStateList<Marker> =
+        listOf<Marker>().toMutableStateList() // start with empty list
     var didUpdateMarkers = false
 
     markers.forEach { marker ->
@@ -807,10 +881,12 @@ private fun addSeenMarkersToRecentlySeenList(
                 )
                 recentlySeenMarkersSet.add(newlySeenMarker)
                 uiRecentlySeenMarkersList.add(newlySeenMarker)
-                Log.d("Added Marker ${marker.id} is within talk radius of ${seenRadiusMiles*kSeenRadiusFudgeFactor} miles, " +
-                        "distance=$distanceFromMarkerToUserLocationMiles miles, " +
-                        "kTalkRadiusFudgeFactor= $kSeenRadiusFudgeFactor, " +
-                        "total recentlySeenMarkers=${recentlySeenMarkersSet.size}")
+                Log.d(
+                    "Added Marker ${marker.id} is within talk radius of ${seenRadiusMiles * kSeenRadiusFudgeFactor} miles, " +
+                            "distance=$distanceFromMarkerToUserLocationMiles miles, " +
+                            "kTalkRadiusFudgeFactor= $kSeenRadiusFudgeFactor, " +
+                            "total recentlySeenMarkers=${recentlySeenMarkersSet.size}"
+                )
                 updatedMarkers.add(marker.copy(isSeen = true))
 
                 // Trim the UI list to 5 items
@@ -842,14 +918,17 @@ private fun addSeenMarkersToRecentlySeenList(
     uiRecentlySeenMarkersList.addAll(
         oldList.sortedByDescending { recentMarker ->
             recentMarker.insertedAtEpochMilliseconds
-        }.toMutableStateList())
+        }.toMutableStateList()
+    )
 
     // Update the "isSeen" marker colors for the Map
     // & save the updated markers list to settings
-    if(didUpdateMarkers) {
+    if (didUpdateMarkers) {
         onUpdateIsSeenMapMarkers(updatedMarkers)
-        appSettings.recentlySeenMarkersSet = RecentlySeenMarkersList(recentlySeenMarkersSet.toList())
-        appSettings.uiRecentlySeenMarkersList = RecentlySeenMarkersList(uiRecentlySeenMarkersList.toList())
+        appSettings.recentlySeenMarkersSet =
+            RecentlySeenMarkersList(recentlySeenMarkersSet.toList())
+        appSettings.uiRecentlySeenMarkersList =
+            RecentlySeenMarkersList(uiRecentlySeenMarkersList.toList())
     }
 }
 

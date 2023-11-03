@@ -10,7 +10,8 @@ data class RecentlySeenMarker(
 
     @Suppress("Unused") // will be used todo remove?
     val seenOrder: Int = 0,
-)
+) {
+}
 
 @Serializable
 data class RecentlySeenMarkersList(

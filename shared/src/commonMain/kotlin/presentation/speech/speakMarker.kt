@@ -6,7 +6,7 @@ import speakTextToSpeech
 
 fun speakMarker(
     marker: Marker,
-    includeDetails: Boolean = false
+    shouldSpeakDetails: Boolean = false
 ): RecentlySeenMarker {
     val currentlySpeakingMarker =
         RecentlySeenMarker(
@@ -14,7 +14,7 @@ fun speakMarker(
             marker.title,
         )
 
-    if(includeDetails) {
+    if(shouldSpeakDetails) {
         // Speak the marker title and inscription
         val title = marker.title
         val subtitle = marker.subtitle
@@ -42,7 +42,7 @@ fun speakMarker(
 
         speakTextToSpeech(finalSpeechText)
     } else {
-        speakTextToSpeech(marker.title)
+        speakTextToSpeech("Seen marker " + marker.title) //  (present perfect tense) // https://www.thesaurus.com/e/grammar/seen-vs-saw/
     }
 
     return currentlySpeakingMarker

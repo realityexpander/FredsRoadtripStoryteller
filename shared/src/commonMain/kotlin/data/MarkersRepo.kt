@@ -120,12 +120,22 @@ open class MarkersRepo(
         return markersResult()
     }
 
-    fun updateMarkerIsSpoken(markerToUpdate: Marker, isSpoken: Boolean): MarkersResult {
-        Log.i("MarkerRepo: updateMarkerIsSpoken: markerToUpdate.id=${markerToUpdate.id}, isSpoken=$isSpoken")
+    fun updateMarkerIsSpoken(
+        markerToUpdate: Marker? = null,
+        id: MarkerIdStr? = null,
+        isSpoken: Boolean
+    ): MarkersResult {
+        val updateId =
+            id ?: markerToUpdate?.id
+            ?: run {
+                Log.w("MarkerRepo: updateMarkerIsSpoken: marker id found")
+                return markersResult()
+            }
+        Log.i("MarkerRepo: updateMarkerIsSpoken: markerToUpdate.id=$updateId, isSpoken=$isSpoken")
         val originalMarker =
-            this.marker(markerToUpdate.id)
+            this.marker(updateId)
                 ?: run {
-                    Log.w("MarkerRepo: updateMarkerIsSpoken: marker not found, id: ${markerToUpdate.id}")
+                    Log.w("MarkerRepo: updateMarkerIsSpoken: marker not found, id: $updateId")
                     return markersResult()
                 }
         if(originalMarker.isSpoken == isSpoken) { // no change
@@ -149,8 +159,7 @@ open class MarkersRepo(
     fun updateMarkerDetails(markerWithUpdatedDetails: Marker): MarkersResult {
         Log.i("MarkerRepo: updateMarkerDetails: markerWithUpdatedDetails.id=${markerWithUpdatedDetails.id}")
         // todo - should add marker if not found? Add upsert function?
-        val originalMarker =
-            this.marker(markerWithUpdatedDetails.id)
+        val originalMarker = this.marker(markerWithUpdatedDetails.id)
                 ?: run {
                     Log.w("MarkerRepo: updateMarkerDetails: marker not found, id: ${markerWithUpdatedDetails.id}")
                     return appSettings.markersResult

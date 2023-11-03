@@ -68,6 +68,7 @@ import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch
 import maps.Marker
 import presentation.uiComponents.PreviewPlaceholder
+import stopTextToSpeech
 
 const val kMaxWeightOfBottomDrawer = 0.9f
 
@@ -77,7 +78,6 @@ fun MarkerDetailsScreen(
     bottomSheetScaffoldState: BottomSheetScaffoldState,
     markerLoadingState: LoadingState<Marker>,
     onClickStartSpeakingMarker: (Marker) -> Unit = {},
-    onClickStopSpeakingMarker: () -> Unit = {},
     isCurrentlySpeaking: Boolean = false,
 ) {
     val scrollState = rememberScrollState()
@@ -254,7 +254,7 @@ fun MarkerDetailsScreen(
                         )
                     }
 
-                    // Close & Speak
+                    // Close & Speak Button
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -291,9 +291,10 @@ fun MarkerDetailsScreen(
                                 .padding(8.dp),
                             onClick = {
                                 if(isCurrentlySpeaking)
-                                    onClickStopSpeakingMarker()
-                                else
+                                    stopTextToSpeech()
+                                else {
                                     onClickStartSpeakingMarker(markerLoadingState.data)
+                                }
                             },
                             enabled = true,
                         ) {
@@ -505,17 +506,6 @@ fun MarkerDetailsScreen(
                     }
 
                     Spacer(modifier = Modifier.padding(8.dp))
-
-//            if(LocalInspectionMode.current) {
-//                PreviewPlaceholder("Freds head")
-//            } else {
-//                Image(
-//                    painter = painterResource("fred-head-owl-1.png"),
-//                    contentDescription = null,
-//                    modifier = Modifier.fillMaxWidth(),
-//                    contentScale = ContentScale.FillWidth,
-//                )
-//            }
 
                     // Marker Id
                     Text(

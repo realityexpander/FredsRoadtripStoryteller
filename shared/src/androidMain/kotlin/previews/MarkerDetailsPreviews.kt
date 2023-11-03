@@ -99,3 +99,14 @@ fun MarkerDetailsPreviewLoading() {
     )
 }
 
+//            if(LocalInspectionMode.current) {
+//                PreviewPlaceholder("Freds head")
+//            } else {
+//                Image(
+//                    painter = painterResource("fred-head-owl-1.png"),
+//                    contentDescription = null,
+//                    modifier = Modifier.fillMaxWidth(),
+//                    contentScale = ContentScale.FillWidth,
+//                )
+//            }
+

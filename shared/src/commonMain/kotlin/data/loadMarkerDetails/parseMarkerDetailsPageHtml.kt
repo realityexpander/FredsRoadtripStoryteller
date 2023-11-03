@@ -309,7 +309,7 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, Marker?> {
             ""
         }
 
-    // Prepare final result
+    // Prepare final result -- NOTE: DOES NOT INCLUDE ID
     markerResult = markerResult.copy(
         englishInscription = finalEnglishInscription,
         spanishInscription = finalSpanishInscription,
