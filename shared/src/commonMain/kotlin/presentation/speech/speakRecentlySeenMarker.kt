@@ -11,8 +11,8 @@ import io.ktor.client.request.get
 import isTextToSpeechSpeaking
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import maps.RecentlySeenMarker
-import network.httpClient
+import data.network.httpClient
+import presentation.maps.RecentlySeenMarker
 import co.touchlab.kermit.Logger as Log
 
 var lastSpeakMarker: RecentlySeenMarker? = null

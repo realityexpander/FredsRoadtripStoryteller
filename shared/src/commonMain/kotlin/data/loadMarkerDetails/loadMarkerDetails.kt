@@ -12,7 +12,7 @@ import data.loadMarkerDetails.sampleData.almadenVineyardsM2580
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import kotlinx.coroutines.yield
-import network.httpClient
+import data.network.httpClient
 import data.loadMarkers.kBaseHmdbDotOrgUrl
 import kMaxMarkerDetailsAgeSeconds
 import kotlinx.datetime.Clock

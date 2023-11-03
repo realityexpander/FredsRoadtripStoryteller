@@ -5,7 +5,7 @@ import com.mohamedrejeb.ksoup.html.parser.KsoupHtmlHandler
 import com.mohamedrejeb.ksoup.html.parser.KsoupHtmlParser
 import presentation.maps.LatLong
 import presentation.maps.Marker
-import maps.MarkerIdStr
+import presentation.maps.MarkerIdStr
 import co.touchlab.kermit.Logger as Log
 
 const val kBaseHmdbDotOrgUrl = "https://www.hmdb.org/"

@@ -45,10 +45,10 @@ import data.loadMarkers.milesToMeters
 import presentation.maps.CameraLocationBounds
 import presentation.maps.CameraPosition
 import presentation.maps.LatLong
-import maps.Location
 import presentation.maps.Marker
 import platform.CoreLocation.CLLocationCoordinate2DMake
 import platform.UIKit.UIColor
+import presentation.maps.Location
 
 // iOS Google Maps implementation
 @OptIn(ExperimentalForeignApi::class)

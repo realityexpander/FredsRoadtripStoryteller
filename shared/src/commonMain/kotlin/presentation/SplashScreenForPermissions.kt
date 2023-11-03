@@ -39,7 +39,6 @@ fun SplashScreenForPermissions(
         return
     }
 
-
     Column(
         modifier = Modifier
             .background(MaterialTheme.colors.primary),

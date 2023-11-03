@@ -1,4 +1,4 @@
-package network
+package data.network
 
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.Charsets

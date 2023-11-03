@@ -3,7 +3,7 @@ import androidx.compose.ui.Modifier
 import presentation.maps.CameraLocationBounds
 import presentation.maps.CameraPosition
 import presentation.maps.LatLong
-import maps.Location
+import presentation.maps.Location
 import presentation.maps.Marker
 
 @Composable

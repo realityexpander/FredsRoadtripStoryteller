@@ -32,7 +32,7 @@ import kotlinx.datetime.Clock
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import presentation.maps.Marker
-import network.httpClient
+import data.network.httpClient
 import presentation.maps.Location
 import presentation.maps.MarkerIdStr
 import co.touchlab.kermit.Logger as Log

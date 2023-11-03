@@ -66,6 +66,7 @@ import io.kamel.image.KamelImage
 import io.kamel.image.KamelImageBox
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch
+import presentation.maps.Location
 import presentation.maps.Marker
 import presentation.uiComponents.PreviewPlaceholder
 import stopTextToSpeech

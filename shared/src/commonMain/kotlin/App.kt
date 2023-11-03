@@ -120,7 +120,7 @@ fun App(
             mutableStateOf<String?>(null)
         }
 
-        // Speaking UI
+        // Seen Marker & Speaking UI
         var isTextToSpeechCurrentlySpeaking by remember {
             mutableStateOf(false)
         }
@@ -138,12 +138,11 @@ fun App(
         var centerOnUserCameraLocation by remember {
             mutableStateOf<Location?>(null) // used to center map on user location
         }
-
         var userLocation: Location by remember {
             mutableStateOf(appSettings.lastKnownUserLocation)
         }
 
-        // UI markers data last updated location
+        // UI markers data last update-at location
         var isMarkersLastUpdatedLocationVisible by
         remember(appSettings.isMarkersLastUpdatedLocationVisible) {
             mutableStateOf(appSettings.isMarkersLastUpdatedLocationVisible)
@@ -181,25 +180,9 @@ fun App(
                 onUpdateMarkersLastUpdatedLocation = { updatedLocation ->
                     markersLastUpdatedLocation = updatedLocation
                 },
-                onUpdateLoadingState = {
+                onUpdateLoadingState = { loadingState ->
                     // Update the UI (icon) with the latest loading state
-                    loadingStateIcon = when (it) {
-                        is LoadingState.Loading -> {
-                            Icons.Default.CloudDownload
-                        }
-
-                        is LoadingState.Loaded -> {
-                            Icons.Default.CloudDownload
-                        }
-
-                        is LoadingState.Finished -> {
-                            Icons.Default.Cloud
-                        }
-
-                        is LoadingState.Error -> {
-                            Icons.Default.CloudOff
-                        }
-                    }
+                    loadingStateIcon = calcLoadingStateIcon(loadingState)
                 },
                 showLoadingState = false,
                 //    kSunnyvaleFakeDataset,
@@ -343,7 +326,7 @@ fun App(
                                                 },
                                                 markersRepo = markersRepo,
                                                 onUpdateLoadingState = { loadingState -> // todo make function
-                                                    loadingStateIcon = calcDetailsLoadingStateIcon(loadingState)
+                                                    loadingStateIcon = calcLoadingStateIcon(loadingState)
                                                 }
                                             )
                                     }
@@ -418,7 +401,7 @@ fun App(
                                 },
                                 markersRepo = markersRepo,
                                 onUpdateLoadingState = { loadingState ->
-                                    loadingStateIcon = calcDetailsLoadingStateIcon(loadingState)
+                                    loadingStateIcon = calcLoadingStateIcon(loadingState)
                                 }
                             )
                         }
@@ -760,7 +743,7 @@ fun App(
                                         markersRepo = markersRepo,
                                         onUpdateLoadingState = { loadingState -> // todo make function
                                             loadingStateIcon =
-                                                calcDetailsLoadingStateIcon(loadingState)
+                                                calcLoadingStateIcon(loadingState)
                                         }
                                     )
                             }
@@ -776,21 +759,23 @@ fun App(
     }
 }
 
-private fun calcDetailsLoadingStateIcon(loadingState: LoadingState<String>) =
-    when (loadingState) {
-        is LoadingState.Loading -> {
-            Icons.Default.CloudDownload
-        }
-        is LoadingState.Finished -> {
-            Icons.Default.Cloud
-        }
-        is LoadingState.Error -> {
-            Icons.Default.CloudOff
-        }
-        else -> {
-            Icons.Default.CloudDownload
-        }
+private fun calcLoadingStateIcon(it: LoadingState<String>) = when (it) {
+    is LoadingState.Loading -> {
+        Icons.Default.CloudDownload
     }
+
+    is LoadingState.Loaded -> {
+        Icons.Default.CloudDownload
+    }
+
+    is LoadingState.Finished -> {
+        Icons.Default.Cloud
+    }
+
+    is LoadingState.Error -> {
+        Icons.Default.CloudOff
+    }
+}
 
 // Clears & Sets the current & previous map markers for UI
 private fun updateCurrentUiMarkers(

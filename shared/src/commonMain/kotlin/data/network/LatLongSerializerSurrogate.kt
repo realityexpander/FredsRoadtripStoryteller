@@ -1,4 +1,4 @@
-package network
+package data.network
 
 import presentation.maps.LatLong
 import kotlinx.serialization.KSerializer

@@ -3,7 +3,7 @@ package data
 import data.loadMarkers.MarkersResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import presentation.maps.Marker
-import maps.MarkerIdStr
+import presentation.maps.MarkerIdStr
 import co.touchlab.kermit.Logger as Log
 
 open class MarkersRepo(

@@ -62,10 +62,10 @@ import kotlinx.coroutines.launch
 import presentation.maps.CameraLocationBounds
 import presentation.maps.CameraPosition
 import presentation.maps.LatLong
-import maps.Location
 import presentation.maps.Marker
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
+import presentation.maps.Location
 import presentation.uiComponents.PreviewPlaceholder
 import presentation.uiComponents.SwitchWithLabel
 import co.touchlab.kermit.Logger as Log
