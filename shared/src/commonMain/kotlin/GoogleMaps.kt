@@ -21,7 +21,7 @@ expect fun GoogleMaps(
     onMapClick: ((LatLong) -> Unit)? = {},
     onMapLongClick: ((LatLong) -> Unit)? = {},
     onMarkerClick: ((Marker) -> Unit)? = {},
-    talkRadiusMiles: Double = .5,
+    seenRadiusMiles: Double = .5,
     cachedMarkersLastUpdatedLocation: Location? = null,
     onToggleIsTrackingEnabledClick: (() -> Unit)? = null,
     onFindMeButtonClick: (() -> Unit)? = null,

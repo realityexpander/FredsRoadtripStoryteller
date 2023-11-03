@@ -67,7 +67,7 @@ actual fun GoogleMaps(
     onMapClick: ((LatLong) -> Unit)?,  // shows the user's location with a 100m radius circle
     onMapLongClick: ((LatLong) -> Unit)?,
     onMarkerClick: ((Marker) -> Unit)?,
-    talkRadiusMiles: Double,
+    seenRadiusMiles: Double,
     cachedMarkersLastUpdatedLocation: Location?,
     onToggleIsTrackingEnabledClick: (() -> Unit)?,
     onFindMeButtonClick: (() -> Unit)?,
@@ -104,7 +104,7 @@ actual fun GoogleMaps(
         isMapRedrawTriggered = true
     }
 
-    LaunchedEffect(talkRadiusMiles) {
+    LaunchedEffect(seenRadiusMiles) {
         isMapRedrawTriggered = true
     }
 
@@ -277,7 +277,7 @@ actual fun GoogleMaps(
                                 userLocation.latitude,
                                 userLocation.longitude
                             )
-                            radius = talkRadiusMiles.milesToMeters()
+                            radius = seenRadiusMiles.milesToMeters()
                             fillColor = UIColor.blueColor().colorWithAlphaComponent(0.4)
                             strokeColor = UIColor.whiteColor().colorWithAlphaComponent(0.8)
                             strokeWidth = 4.0

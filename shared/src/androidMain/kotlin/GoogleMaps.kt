@@ -88,7 +88,7 @@ actual fun GoogleMaps(
     onMapClick: ((LatLong) -> Unit)?,
     onMapLongClick: ((LatLong) -> Unit)?,
     onMarkerClick: ((Marker) -> Unit)?,
-    talkRadiusMiles: Double,
+    seenRadiusMiles: Double,
     cachedMarkersLastUpdatedLocation: Location?,
     onToggleIsTrackingEnabledClick: (() -> Unit)?,
     onFindMeButtonClick: (() -> Unit)?,
@@ -296,11 +296,11 @@ actual fun GoogleMaps(
                 )
             }
 
-            // Render the user's location "talk" circle
+            // Render the user's location "seen" circle radius
             userLocation?.let { myLocation ->
                 Circle(
                     center = LatLng(myLocation.latitude, myLocation.longitude),
-                    radius = talkRadiusMiles.milesToMeters(),
+                    radius = seenRadiusMiles.milesToMeters(),
                     fillColor = Color.Blue.copy(alpha = 0.4f),
                     strokeColor = Color.White.copy(alpha = 0.8f),
                     strokeWidth = 4.0f

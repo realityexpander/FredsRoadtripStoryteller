@@ -256,7 +256,7 @@ fun App(
 
         // 1) Update user GPS location
         // 2) Check for Recently Seen Markers
-        LaunchedEffect(Unit, markersResult.loadingState, shouldRedrawMapMarkers) {
+        LaunchedEffect(Unit, markersResult.loadingState, shouldRedrawMapMarkers, seenRadiusMiles) {
             // Set the last known location to the current location in settings
             gpsLocationService.onUpdatedGPSLocation(
                 errorCallback = { errorMessage ->
@@ -352,7 +352,6 @@ fun App(
             isTrackingEnabled = true
             gpsLocationService.allowBackgroundLocationUpdates()
         }
-
         fun stopTracking() {
             isTrackingEnabled = false
             gpsLocationService.preventBackgroundLocationUpdates()
@@ -428,7 +427,6 @@ fun App(
                             seenRadiusMiles,
                             onSeenRadiusChange = { updatedRadiusMiles ->
                                 seenRadiusMiles = updatedRadiusMiles
-                                userLocation = jiggleLocationToForceUiUpdate(userLocation)
                             },
                             onIsCachedMarkersLastUpdatedLocationVisibleChange = {
                                 isMarkersLastUpdatedLocationVisible = it
@@ -673,7 +671,7 @@ fun App(
                                 },
                                 isTrackingEnabled = isTrackingEnabled,
                                 centerOnUserCameraLocation = centerOnUserCameraLocation,
-                                talkRadiusMiles = seenRadiusMiles,
+                                seenRadiusMiles = seenRadiusMiles,
                                 cachedMarkersLastUpdatedLocation =
                                 remember(
                                     appSettings.isMarkersLastUpdatedLocationVisible,
@@ -768,12 +766,15 @@ fun App(
 private fun FixScreenRotationLeavesDrawerPartiallyOpenIssue(bottomSheetScaffoldState: BottomSheetScaffoldState) {
     // Fix a bug in Material 2 where the drawer isn't fully closed when the screen is rotated
     var isFinished by remember(bottomSheetScaffoldState.drawerState.isOpen) {
-        mutableStateOf(false)
+        if(bottomSheetScaffoldState.drawerState.isClosed) {
+            mutableStateOf(false)
+        } else
+            mutableStateOf(true)
     }
     LaunchedEffect(Unit, bottomSheetScaffoldState.drawerState.isOpen) {
+        delay(250)
         while (!isFinished) {
             if (bottomSheetScaffoldState.drawerState.isClosed) {
-                delay(250)
                 bottomSheetScaffoldState.drawerState.close() // yes it polls but it's only 250ms
             }
             if(bottomSheetScaffoldState.drawerState.isOpen) {

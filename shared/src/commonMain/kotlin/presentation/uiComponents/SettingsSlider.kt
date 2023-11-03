@@ -36,7 +36,7 @@ fun SettingsSlider(
                 .weight(2f)
                 .align(Alignment.CenterVertically),
             value = currentValue.toFloat(),
-            steps = 5,
+            // steps = 5,
             valueRange = 0.10f..1f,
             onValueChange = {
                 onUpdateValue(it.toDouble())

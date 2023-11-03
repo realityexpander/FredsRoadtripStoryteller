@@ -23,7 +23,7 @@ fun MapContent(
     onDidRedrawMapMarkers: () -> Unit = {},
     isTrackingEnabled: Boolean = false,
     centerOnUserCameraLocation: Location? = null,
-    talkRadiusMiles: Double = .5,
+    seenRadiusMiles: Double = .5,
     cachedMarkersLastUpdatedLocation: Location? = null,
     onToggleIsTrackingEnabled: (() -> Unit)? = null,
     onFindMeButtonClicked: (() -> Unit)? = null,
@@ -79,7 +79,7 @@ fun MapContent(
                         null // won't center around bounds
                     }
                 },
-                talkRadiusMiles = talkRadiusMiles,
+                seenRadiusMiles = seenRadiusMiles,
                 cachedMarkersLastUpdatedLocation = cachedMarkersLastUpdatedLocation,
                 onToggleIsTrackingEnabledClick = onToggleIsTrackingEnabled,
                 onFindMeButtonClick = onFindMeButtonClicked,
