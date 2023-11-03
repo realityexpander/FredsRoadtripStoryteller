@@ -1,11 +1,8 @@
 package presentation
 
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -47,7 +44,7 @@ fun SettingsScreen(
     settings: AppSettings? = null,
     bottomSheetScaffoldState: BottomSheetScaffoldState,
     seenRadiusMiles: Double,
-    onTalkRadiusChange: (Double) -> Unit = {},
+    onSeenRadiusChange: (Double) -> Unit = {},
     onIsCachedMarkersLastUpdatedLocationVisibleChange: ((Boolean) -> Unit) = {},
     onResetMarkerSettings: (() -> Unit) = {}
 ) {
@@ -134,7 +131,7 @@ fun SettingsScreen(
                 currentValue = seenRadiusMiles,
                 onUpdateValue = {
                     settings?.seenRadiusMiles = it
-                    onTalkRadiusChange(it)
+                    onSeenRadiusChange(it)
                 }
             )
 

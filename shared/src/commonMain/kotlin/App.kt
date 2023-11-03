@@ -426,8 +426,9 @@ fun App(
                             appSettings,
                             bottomSheetScaffoldState,
                             seenRadiusMiles,
-                            onTalkRadiusChange = { updatedRadiusMiles ->
+                            onSeenRadiusChange = { updatedRadiusMiles ->
                                 seenRadiusMiles = updatedRadiusMiles
+                                userLocation = jiggleLocationToForceUiUpdate(userLocation)
                             },
                             onIsCachedMarkersLastUpdatedLocationVisibleChange = {
                                 isMarkersLastUpdatedLocationVisible = it
@@ -766,25 +767,17 @@ fun App(
 @Composable
 private fun FixScreenRotationLeavesDrawerPartiallyOpenIssue(bottomSheetScaffoldState: BottomSheetScaffoldState) {
     // Fix a bug in Material 2 where the drawer isn't fully closed when the screen is rotated
-    val initialHiddenDrawerOffset by remember {
-        mutableStateOf(bottomSheetScaffoldState.drawerState.offset)
+    var isFinished by remember(bottomSheetScaffoldState.drawerState.isOpen) {
+        mutableStateOf(false)
     }
-    LaunchedEffect(Unit) {
-        while (true) {
-            delay(250)
-
-            // get screen orientation
-            val curHiddenDrawerOffset = bottomSheetScaffoldState.drawerState.offset
-            if (bottomSheetScaffoldState.drawerState.isClosed
-                && curHiddenDrawerOffset == initialHiddenDrawerOffset
-            ) {
-                bottomSheetScaffoldState.drawerState.close() // yes, constantly closing this for now. Maybe material 3 will fix this issue
+    LaunchedEffect(Unit, bottomSheetScaffoldState.drawerState.isOpen) {
+        while (!isFinished) {
+            if (bottomSheetScaffoldState.drawerState.isClosed) {
+                delay(250)
+                bottomSheetScaffoldState.drawerState.close() // yes it polls but it's only 250ms
             }
-
-            if (bottomSheetScaffoldState.drawerState.isClosed
-                && curHiddenDrawerOffset != initialHiddenDrawerOffset
-            ) {
-                break // Once the screen is closed while rotated, stop checking.
+            if(bottomSheetScaffoldState.drawerState.isOpen) {
+                isFinished = true
             }
         }
     }

@@ -206,7 +206,6 @@ fun loadMarkers(
         // Save the cachedResultState to persistent storage (Settings) (if it was updated from the network)
         if (shouldUpdateCache) {
             coroutineScope.launch {
-                appSettings.markersLastUpdateEpochSeconds = Clock.System.now().epochSeconds // todo - move this to individual markerDetails
                 appSettings.markersLastUpdatedLocation =
                     userLocation.also { onUpdateMarkersLastUpdatedLocation(userLocation) }
 
