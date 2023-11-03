@@ -24,7 +24,6 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 import co.touchlab.kermit.Logger as Log
 
-
 // Implement the LocationService in Android
 @SuppressLint("MissingPermission") // Assuming location permission check is already handled
 @NoLiveLiterals

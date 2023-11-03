@@ -45,7 +45,7 @@ class AppSettings(val settingsInstance: Settings) {
 
     // • For Settings panel
     var shouldSpeakWhenUnseenMarkerFound by
-        SettingsDelegate(settingsInstance, kShouldSpeakWhenUnseenMarkerFound, defaultValue = false)
+        SettingsDelegate(settingsInstance, kShouldSpeakWhenUnseenMarkerFound, defaultValue = true)
     var shouldSpeakDetailsWhenUnseenMarkerFound by
         SettingsDelegate(settingsInstance, kShouldSpeakDetailsWhenUnseenMarkerFound, defaultValue = false)
     var shouldStartBackgroundTrackingWhenAppLaunches by
