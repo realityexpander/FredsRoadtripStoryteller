@@ -27,41 +27,49 @@ class AppSettings(val settingsInstance: Settings) {
     // is there a way to put these into the map automatically & keep typesafe w/o using casts?
     // REMEMBER TO ADD NEW SETTINGS TO THE MAP!
     var markersResult by
-        SettingsDelegate(settingsInstance, kMarkersResult, defaultValue = MarkersResult())
-    var markersLastUpdateEpochSeconds by
-        SettingsDelegate(settingsInstance, kMarkersLastUpdateEpochSeconds, defaultValue = 0L)
+        SettingsDelegate(settingsInstance,
+       kMarkersResult, defaultValue = MarkersResult())
     var markersLastUpdatedLocation by
-        SettingsDelegate(settingsInstance, kMarkersLastUpdatedLocation, defaultValue = Location(0.0, 0.0))
+        SettingsDelegate(settingsInstance,
+       kMarkersLastUpdatedLocation, defaultValue = Location(0.0, 0.0))
     var lastKnownUserLocation by
-        SettingsDelegate(settingsInstance, kLastKnownUserLocation, defaultValue = Location(0.0, 0.0))
+        SettingsDelegate(settingsInstance,
+       kLastKnownUserLocation, defaultValue = Location(0.0, 0.0))
     var isRecentlySeenMarkersPanelVisible by
-        SettingsDelegate(settingsInstance, kIsRecentlySeenMarkersPanelVisible, defaultValue = false)
+        SettingsDelegate(settingsInstance,
+       kIsRecentlySeenMarkersPanelVisible, defaultValue = false)
     var isPermissionsGranted by
-        SettingsDelegate(settingsInstance, kIsPermissionsGranted, defaultValue = false)
+        SettingsDelegate(settingsInstance,
+       kIsPermissionsGranted, defaultValue = false)
     var recentlySeenMarkersSet by
-        SettingsDelegate(settingsInstance, kRecentlySeenMarkersSet, defaultValue = RecentlySeenMarkersList())
+        SettingsDelegate(settingsInstance,
+       kRecentlySeenMarkersSet, defaultValue = RecentlySeenMarkersList())
     var uiRecentlySeenMarkersList by
-        SettingsDelegate(settingsInstance, kUiRecentlySeenMarkersList, defaultValue = RecentlySeenMarkersList())
+        SettingsDelegate(settingsInstance,
+       kUiRecentlySeenMarkersList, defaultValue = RecentlySeenMarkersList())
 
     // • For Settings panel
     var shouldSpeakWhenUnseenMarkerFound by
-        SettingsDelegate(settingsInstance, kShouldSpeakWhenUnseenMarkerFound, defaultValue = true)
+        SettingsDelegate(settingsInstance,
+       kShouldSpeakWhenUnseenMarkerFound, defaultValue = true)
     var shouldSpeakDetailsWhenUnseenMarkerFound by
-        SettingsDelegate(settingsInstance, kShouldSpeakDetailsWhenUnseenMarkerFound, defaultValue = false)
+        SettingsDelegate(settingsInstance,
+       kShouldSpeakDetailsWhenUnseenMarkerFound, defaultValue = false)
     var shouldStartBackgroundTrackingWhenAppLaunches by
-        SettingsDelegate(settingsInstance, kShouldStartBackgroundTrackingWhenAppLaunches, defaultValue = false)
+        SettingsDelegate(settingsInstance,
+       kShouldStartBackgroundTrackingWhenAppLaunches, defaultValue = false)
     var seenRadiusMiles by
-        SettingsDelegate(settingsInstance, kSeenRadiusMiles, defaultValue = 0.5)
+        SettingsDelegate(settingsInstance,
+       kSeenRadiusMiles, defaultValue = 0.5)
     var isMarkersLastUpdatedLocationVisible by
-        SettingsDelegate(settingsInstance, kIsMarkersLastUpdatedLocationVisible, defaultValue = false)
+        SettingsDelegate(settingsInstance,
+       kIsMarkersLastUpdatedLocationVisible, defaultValue = false)
 
     // - REMEMBER TO ADD NEW SETTINGS TO THIS MAP!
     var settingsMap = createSettingsMap()
     private fun createSettingsMap() = mutableMapOf<String, Any?>(
         kMarkersResult to
          markersResult,
-        kMarkersLastUpdateEpochSeconds to
-         markersLastUpdateEpochSeconds,
         kMarkersLastUpdatedLocation to
          markersLastUpdatedLocation,
         kLastKnownUserLocation to
@@ -177,8 +185,6 @@ class AppSettings(val settingsInstance: Settings) {
         // Settings Keys
         const val kMarkersResult =
                  "kMarkersResult"
-        const val kMarkersLastUpdateEpochSeconds =
-                 "kMarkersLastUpdateEpochSeconds"
         const val kMarkersLastUpdatedLocation =
                  "kMarkersLastUpdatedLocation"
         const val kLastKnownUserLocation =
