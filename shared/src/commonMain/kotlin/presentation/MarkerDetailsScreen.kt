@@ -317,7 +317,6 @@ fun MarkerDetailsScreen(
                     }
                 }
 
-
                 // Marker Info Content
                 Column(
                     Modifier

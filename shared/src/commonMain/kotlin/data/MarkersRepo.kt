@@ -26,10 +26,9 @@ open class MarkersRepo(
     fun markersResult() = appSettings.markersResult
 
     fun addMarker(marker: Marker): MarkersResult {
-        // todo should update if expired? - Add functionality in caller instead
         this.marker(marker.id)?.run {
             // Log.w("MarkerRepo: addMarker: marker already exists, id: ${marker.id}, add ignored.")
-            updateMarkersResult(appSettings.markersResult) // trigger update to flow anyway // todo test that this is correct
+            updateMarkersResult(appSettings.markersResult) // trigger update to flow anyway
             return markersResult()
         }
 
@@ -47,7 +46,7 @@ open class MarkersRepo(
     fun removeMarker(id: MarkerIdStr): MarkersResult {
         Log.i("MarkerRepo: removeMarker: id=$id")
         this.marker(id) ?: run {
-            updateMarkersResult(appSettings.markersResult) // trigger update to flow anyway // todo test that this is correct
+            updateMarkersResult(appSettings.markersResult) // trigger update to flow anyway
             return markersResult()
         }
 
@@ -158,7 +157,6 @@ open class MarkersRepo(
 
     fun updateMarkerDetails(markerWithUpdatedDetails: Marker): MarkersResult {
         Log.i("MarkerRepo: updateMarkerDetails: markerWithUpdatedDetails.id=${markerWithUpdatedDetails.id}")
-        // todo - should add marker if not found? Add upsert function?
         val originalMarker = this.marker(markerWithUpdatedDetails.id)
                 ?: run {
                     Log.w("MarkerRepo: updateMarkerDetails: marker not found, id: ${markerWithUpdatedDetails.id}")
@@ -205,7 +203,6 @@ open class MarkersRepo(
 
     fun updateMarkerBasicInfo(markerWithUpdatedBasicInfo: Marker): MarkersResult {
         Log.i("MarkerRepo: updateMarkerBasicInfo: markerWithUpdatedBasicInfo.id=${markerWithUpdatedBasicInfo.id}")
-        // todo - should add marker if not found? Add upsert function?
         val originalMarker =
             marker(markerWithUpdatedBasicInfo.id)
                 ?: run {
