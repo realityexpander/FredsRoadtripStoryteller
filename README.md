@@ -1,8 +1,7 @@
-# Google Maps Compose integration Example
-
+# Fred's Talking Historical Markers
 
 10/8/23
-Google Maps for Compose KMP experimental app
+Compose KMP experimental app using Google Maps for iOS and Android
 
 <img width="1700" alt="image" src="https://github.com/realityexpander/GoolgeMapsUsingCocoaPodsExample/assets/5157474/7b0395d3-04e6-48df-9219-990cb10d81e1">
 
