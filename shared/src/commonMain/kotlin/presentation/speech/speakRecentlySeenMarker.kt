@@ -1,12 +1,11 @@
 package presentation.speech
 
-import data.LoadingState
+import data.util.LoadingState
 import data.MarkersRepo
 import data.appSettings
 import data.loadMarkerDetails.calculateMarkerDetailsPageUrl
 import data.loadMarkerDetails.parseMarkerDetailsPageHtml
 import data.loadMarkerDetails.sampleData.almadenVineyardsM2580
-import data.loadMarkers.MarkersResult
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import isTextToSpeechSpeaking

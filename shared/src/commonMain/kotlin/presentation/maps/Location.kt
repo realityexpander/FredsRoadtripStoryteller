@@ -1,4 +1,4 @@
-package maps
+package presentation.maps
 
 import kotlinx.serialization.Serializable
 

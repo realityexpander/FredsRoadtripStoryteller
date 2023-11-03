@@ -6,6 +6,7 @@ import data.loadMarkerDetails.sampleData.deAnzaExpeditionM38342
 import data.loadMarkerDetails.sampleData.elTepoztecoNationalParkM207314
 import data.loadMarkerDetails.sampleData.firstCityCouncilOfTepoztlanM207310
 import json
+import presentation.maps.Marker
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -262,7 +263,7 @@ class ParseMarkerDetailsPageHtmlTest {
         val result = parseMarkerDetailsPageHtml(markerInfoPageHtml)
         val markerDetails = result.second!!
 
-         println(json.encodeToString(maps.Marker.serializer(), markerDetails))
+         println(json.encodeToString(Marker.serializer(), markerDetails))
 
         // Title
         assertTrue(

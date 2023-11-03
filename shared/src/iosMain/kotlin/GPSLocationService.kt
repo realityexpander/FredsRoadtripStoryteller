@@ -1,7 +1,7 @@
 import androidx.compose.runtime.AtomicReference
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
-import maps.Heading
+import presentation.maps.Heading
 import maps.Location
 import platform.CoreLocation.CLDeviceOrientationPortrait
 import platform.CoreLocation.CLHeading

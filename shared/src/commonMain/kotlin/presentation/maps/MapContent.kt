@@ -1,4 +1,4 @@
-package maps
+package presentation.maps
 
 import GoogleMaps
 import androidx.compose.foundation.layout.Column

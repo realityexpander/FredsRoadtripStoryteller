@@ -2,8 +2,8 @@ package com.realityexpander.data
 
 import data.AppSettings
 import data.MarkersRepo
-import maps.LatLong
-import maps.Marker
+import presentation.maps.LatLong
+import presentation.maps.Marker
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

@@ -1,6 +1,6 @@
 package presentation.speech
 
-import maps.Marker
+import presentation.maps.Marker
 import maps.RecentlySeenMarker
 import speakTextToSpeech
 

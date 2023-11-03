@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import data.AppSettings
 import data.AppSettings.Companion.kMarkersLastUpdatedLocation
-import data.LoadingState
+import data.util.LoadingState
 import data.MarkersRepo
 import data.loadMarkers.sampleData.kUseRealNetwork
 import data.loadMarkers.sampleData.simpleMarkersPageHtml
@@ -31,10 +31,10 @@ import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import maps.Location
-import maps.Marker
-import maps.MarkerIdStr
+import presentation.maps.Marker
 import network.httpClient
+import presentation.maps.Location
+import presentation.maps.MarkerIdStr
 import co.touchlab.kermit.Logger as Log
 
 @Serializable
@@ -173,7 +173,8 @@ fun loadMarkers(
             processingHtmlPageNum
         ) {
         // Guard
-        if(processingHtmlPageNum == 0) return@remember mutableStateOf<LoadingState<String>>(LoadingState.Finished)
+        if(processingHtmlPageNum == 0) return@remember mutableStateOf<LoadingState<String>>(
+            LoadingState.Finished)
 
         // Step 2 - Initiate Load a page of raw marker HTML from the network
         if (!processingMarkersResultState.isParseMarkersPageFinished) {

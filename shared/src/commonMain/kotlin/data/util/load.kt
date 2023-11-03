@@ -1,4 +1,4 @@
-package data
+package data.util
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect

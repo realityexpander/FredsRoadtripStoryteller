@@ -1,10 +1,10 @@
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import maps.CameraLocationBounds
-import maps.CameraPosition
-import maps.LatLong
+import presentation.maps.CameraLocationBounds
+import presentation.maps.CameraPosition
+import presentation.maps.LatLong
 import maps.Location
-import maps.Marker
+import presentation.maps.Marker
 
 @Composable
 expect fun GoogleMaps(
@@ -31,6 +31,6 @@ expect fun GoogleMaps(
 
 // LEAVE FOR REFERENCE
 //onMarkerClick: (maps.MapMarker) -> Unit = {},
-//onMapClick: (maps.LatLong) -> Unit = {},
-//onMapLongClick: (maps.LatLong) -> Unit = {},
+//onMapClick: (presentation.maps.LatLong) -> Unit = {},
+//onMapLongClick: (presentation.maps.LatLong) -> Unit = {},
 

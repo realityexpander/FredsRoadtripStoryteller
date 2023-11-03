@@ -1,6 +1,6 @@
 package network
 
-import maps.LatLong
+import presentation.maps.LatLong
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -8,9 +8,9 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
-// Define maps.LatLong for kotlinx serialization
+// Define presentation.maps.LatLong for kotlinx serialization
 @Serializable
-@SerialName("maps.LatLong")
+@SerialName("presentation.maps.LatLong")
 private class LatLongSurrogate(val lat: Double, val long: Double) {
     init {
         require(

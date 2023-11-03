@@ -1,11 +1,11 @@
 package data.loadMarkerDetails
 
-import maps.Marker
+import presentation.maps.Marker
 import co.touchlab.kermit.Logger
 import com.mohamedrejeb.ksoup.entities.KsoupEntities
 import com.mohamedrejeb.ksoup.html.parser.KsoupHtmlHandler
 import com.mohamedrejeb.ksoup.html.parser.KsoupHtmlParser
-import data.LoadingState
+import data.util.LoadingState
 import data.loadMarkers.kBaseHmdbDotOrgUrl
 
 

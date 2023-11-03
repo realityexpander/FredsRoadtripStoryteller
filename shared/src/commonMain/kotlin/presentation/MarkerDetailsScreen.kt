@@ -59,14 +59,14 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import data.LoadingState
+import data.util.LoadingState
 import io.kamel.core.ExperimentalKamelApi
 import io.kamel.core.Resource
 import io.kamel.image.KamelImage
 import io.kamel.image.KamelImageBox
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch
-import maps.Marker
+import presentation.maps.Marker
 import presentation.uiComponents.PreviewPlaceholder
 import stopTextToSpeech
 

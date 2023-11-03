@@ -1,13 +1,13 @@
 package data.loadMarkerDetails
 
-import maps.Marker
+import presentation.maps.Marker
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import data.LoadingState
+import data.util.LoadingState
 import data.loadMarkerDetails.sampleData.almadenVineyardsM2580
 import io.ktor.client.call.body
 import io.ktor.client.request.get

@@ -42,11 +42,11 @@ import cocoapods.GoogleMaps.kGMSTypeSatellite
 import presentation.uiComponents.SwitchWithLabel
 import kotlinx.cinterop.ExperimentalForeignApi
 import data.loadMarkers.milesToMeters
-import maps.CameraLocationBounds
-import maps.CameraPosition
-import maps.LatLong
+import presentation.maps.CameraLocationBounds
+import presentation.maps.CameraPosition
+import presentation.maps.LatLong
 import maps.Location
-import maps.Marker
+import presentation.maps.Marker
 import platform.CoreLocation.CLLocationCoordinate2DMake
 import platform.UIKit.UIColor
 

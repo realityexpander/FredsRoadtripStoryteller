@@ -1,6 +1,5 @@
-import kotlinx.serialization.Serializable
-import maps.Heading
-import maps.Location
+import presentation.maps.Heading
+import presentation.maps.Location
 
 // Define a common class for location service
 expect class GPSLocationService() {

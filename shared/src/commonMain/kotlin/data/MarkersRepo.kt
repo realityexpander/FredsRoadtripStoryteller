@@ -2,7 +2,7 @@ package data
 
 import data.loadMarkers.MarkersResult
 import kotlinx.coroutines.flow.MutableStateFlow
-import maps.Marker
+import presentation.maps.Marker
 import maps.MarkerIdStr
 import co.touchlab.kermit.Logger as Log
 

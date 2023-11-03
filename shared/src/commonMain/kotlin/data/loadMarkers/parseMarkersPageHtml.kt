@@ -3,8 +3,8 @@ package data.loadMarkers
 import com.mohamedrejeb.ksoup.entities.KsoupEntities
 import com.mohamedrejeb.ksoup.html.parser.KsoupHtmlHandler
 import com.mohamedrejeb.ksoup.html.parser.KsoupHtmlParser
-import maps.LatLong
-import maps.Marker
+import presentation.maps.LatLong
+import presentation.maps.Marker
 import maps.MarkerIdStr
 import co.touchlab.kermit.Logger as Log
 

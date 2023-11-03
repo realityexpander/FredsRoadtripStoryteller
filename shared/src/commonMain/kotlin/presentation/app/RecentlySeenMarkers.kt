@@ -43,8 +43,8 @@ import androidx.compose.ui.unit.dp
 import data.MarkersRepo
 import data.appSettings
 import kotlinx.coroutines.launch
-import maps.MarkerIdStr
-import maps.RecentlySeenMarker
+import presentation.maps.MarkerIdStr
+import presentation.maps.RecentlySeenMarker
 import presentation.uiComponents.lightenBy
 
 @Composable
@@ -53,7 +53,7 @@ fun RecentlySeenMarkers(
     onClickRecentlySeenMarkerItem: ((MarkerIdStr) -> Unit) = {},
     currentlySpeakingMarker: RecentlySeenMarker? = null,
     isTextToSpeechCurrentlySpeaking: Boolean = false,
-    onClickStartSpeakingMarker: (RecentlySeenMarker, shouldSpeakDetails: Boolean) -> Unit = {_,_ -> Unit},
+    onClickStartSpeakingMarker: (RecentlySeenMarker, shouldSpeakDetails: Boolean) -> Unit = { _, _ -> Unit},
     onClickStopSpeakingMarker: () -> Unit = {},
     markersRepo: MarkersRepo
 ) {

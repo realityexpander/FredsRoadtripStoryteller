@@ -50,7 +50,7 @@ import data.AppSettings.Companion.kMarkersLastUpdatedLocation
 import data.AppSettings.Companion.kMarkersResult
 import data.AppSettings.Companion.kRecentlySeenMarkersSet
 import data.AppSettings.Companion.kUiRecentlySeenMarkersList
-import data.LoadingState
+import data.util.LoadingState
 import data.MarkersRepo
 import data.appSettings
 import data.loadMarkerDetails.loadMarkerDetails
@@ -64,17 +64,17 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
 import kotlinx.serialization.json.Json
-import maps.Location
-import maps.MapContent
-import maps.Marker
-import maps.MarkerIdStr
-import maps.RecentlySeenMarker
-import maps.RecentlySeenMarkersList
+import presentation.maps.MapContent
+import presentation.maps.Marker
 import presentation.MarkerDetailsScreen
 import presentation.SettingsScreen
 import presentation.app.AppDrawerContent
 import presentation.app.AppTheme
 import presentation.app.RecentlySeenMarkers
+import presentation.maps.Location
+import presentation.maps.MarkerIdStr
+import presentation.maps.RecentlySeenMarker
+import presentation.maps.RecentlySeenMarkersList
 import presentation.speech.speakMarker
 import presentation.speech.speakRecentlySeenMarker
 import kotlin.random.Random
@@ -383,7 +383,7 @@ fun App(
         // Update isCurrentlySpeaking UI flag
         LaunchedEffect(Unit) {
             while (true) {
-                delay(100)
+                delay(250)
                 isTextToSpeechCurrentlySpeaking = isTextToSpeechSpeaking()
             }
         }
@@ -844,7 +844,6 @@ private fun addSeenMarkersToRecentlySeenList(
     recentlySeenMarkersSet: MutableSet<RecentlySeenMarker>,
     uiRecentlySeenMarkersList: SnapshotStateList<RecentlySeenMarker>,
     onUpdateIsSeenMapMarkers: (SnapshotStateList<Marker>) -> Unit,
-    onUpdateCurrentlySpeaking: (Boolean, RecentlySeenMarker) -> Unit = { _, _ -> }
 ) {
     val updatedMarkers: SnapshotStateList<Marker> =
         listOf<Marker>().toMutableStateList() // start with empty list
@@ -876,8 +875,7 @@ private fun addSeenMarkersToRecentlySeenList(
                 val newlySeenMarker = RecentlySeenMarker(
                     marker.id,
                     marker.title,
-                    Clock.System.now().toEpochMilliseconds(),
-                    recentlySeenMarkersSet.size + 1
+                    Clock.System.now().toEpochMilliseconds()
                 )
                 recentlySeenMarkersSet.add(newlySeenMarker)
                 uiRecentlySeenMarkersList.add(newlySeenMarker)

@@ -13,9 +13,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import presentation.app.AppTheme
-import data.LoadingState
-import maps.LatLong
-import maps.Marker
+import data.util.LoadingState
+import presentation.maps.LatLong
+import presentation.maps.Marker
 import presentation.MarkerDetailsScreen
 
 
@@ -44,7 +44,8 @@ fun MarkerDetailsPreview(
         inscription = "Incised inscription",
         englishInscription = "This is the English inscription",
         spanishInscription = "This is the Inscripciôn en Espanol",
-    ))
+    )
+ )
 ){
     AppTheme {
         Surface {

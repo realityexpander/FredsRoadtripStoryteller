@@ -59,11 +59,11 @@ import com.google.maps.android.heatmaps.HeatmapTileProvider
 import com.google.maps.android.heatmaps.WeightedLatLng
 import data.loadMarkers.milesToMeters
 import kotlinx.coroutines.launch
-import maps.CameraLocationBounds
-import maps.CameraPosition
-import maps.LatLong
+import presentation.maps.CameraLocationBounds
+import presentation.maps.CameraPosition
+import presentation.maps.LatLong
 import maps.Location
-import maps.Marker
+import presentation.maps.Marker
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import presentation.uiComponents.PreviewPlaceholder
@@ -165,7 +165,7 @@ actual fun GoogleMaps(
         }
     }
 
-    // Set Camera to maps.LatLong position (doesn't change zoom level)
+    // Set Camera to presentation.maps.LatLong position (doesn't change zoom level)
     // Note: only allowed to change the camera position once per change in cameraLocationLatLong.
     //       This is to prevent the screen from locking the location. By only allowing the camera
     //       to change once, the user can pan around the map without the camera jumping back to

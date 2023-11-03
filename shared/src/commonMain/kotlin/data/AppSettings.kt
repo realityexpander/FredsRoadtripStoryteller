@@ -6,8 +6,8 @@ import data.loadMarkers.MarkersResult
 import json
 import kForceClearSettingsAtLaunch
 import kotlinx.serialization.encodeToString
-import maps.Location
-import maps.RecentlySeenMarkersList
+import presentation.maps.Location
+import presentation.maps.RecentlySeenMarkersList
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 import kotlin.reflect.safeCast
