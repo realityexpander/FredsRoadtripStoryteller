@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import data.loadMarkers.MarkersResult
@@ -94,25 +95,27 @@ fun AppDrawerContent(
             contentDescription = "Seen",
             modifier = Modifier
                 .weight(.3f)
-                .height(20.dp)
-                .offset((-6).dp, 0.dp)
+                .height(18.dp)
+                .offset((-6).dp, 2.dp)
         )
         Icon(
             imageVector = Icons.Default.VolumeUp,
             contentDescription = "Spoken",
             modifier = Modifier
                 .weight(.3f)
-                .height(20.dp)
-                .offset((-4).dp, 0.dp)
+                .height(18.dp)
+                .offset((-4).dp, 2.dp)
         )
         Text(
             "ID",
             modifier = Modifier
-                .padding(start=16.dp, end = 8.dp)
-                .weight(1.2f),
+                .padding(start=0.dp, end = 8.dp)
+                .weight(1.2f)
+                .offset((-4).dp, 0.dp),
             fontStyle = FontStyle.Italic,
             fontSize = MaterialTheme.typography.body2.fontSize,
             fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Start,
         )
     }
 

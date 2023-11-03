@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomSheetScaffold
+import androidx.compose.material.BottomSheetScaffoldState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -530,6 +531,8 @@ fun App(
                 mutableStateOf(appSettings.isRecentlySeenMarkersPanelVisible)
             }
 
+            FixScreenRotationLeavesDrawerPartiallyOpenIssue(bottomSheetScaffoldState)
+
             Scaffold(
                 scaffoldState = scaffoldState,
                 topBar = {
@@ -754,6 +757,34 @@ fun App(
                         markersRepo = markersRepo,
                     )
                 }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+private fun FixScreenRotationLeavesDrawerPartiallyOpenIssue(bottomSheetScaffoldState: BottomSheetScaffoldState) {
+    // Fix a bug in Material 2 where the drawer isn't fully closed when the screen is rotated
+    val initialHiddenDrawerOffset by remember {
+        mutableStateOf(bottomSheetScaffoldState.drawerState.offset)
+    }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(250)
+
+            // get screen orientation
+            val curHiddenDrawerOffset = bottomSheetScaffoldState.drawerState.offset
+            if (bottomSheetScaffoldState.drawerState.isClosed
+                && curHiddenDrawerOffset == initialHiddenDrawerOffset
+            ) {
+                bottomSheetScaffoldState.drawerState.close() // yes, constantly closing this for now. Maybe material 3 will fix this issue
+            }
+
+            if (bottomSheetScaffoldState.drawerState.isClosed
+                && curHiddenDrawerOffset != initialHiddenDrawerOffset
+            ) {
+                break // Once the screen is closed while rotated, stop checking.
             }
         }
     }

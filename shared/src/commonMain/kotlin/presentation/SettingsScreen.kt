@@ -5,10 +5,12 @@ import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.BottomSheetScaffoldState
 import androidx.compose.material.Button
@@ -68,8 +70,7 @@ fun SettingsScreen(
 
     Column(
         Modifier.fillMaxWidth()
-            .padding(16.dp)
-            .scrollable(scrollState, orientation = Orientation.Vertical),
+            .padding(16.dp),
         horizontalAlignment = Alignment.Start,
     ) {
         Row {
@@ -95,95 +96,101 @@ fun SettingsScreen(
             }
         }
 
-        SettingsSwitch(
-            title = "Speak marker when new marker is found",
-            isChecked = shouldSpeakWhenUnseenMarkerFound,
-            onUpdateChecked = {
-                settings?.shouldSpeakWhenUnseenMarkerFound = it
-                shouldSpeakWhenUnseenMarkerFound = it
-            }
-        )
+        Column(
+            modifier = Modifier
+                .verticalScroll(scrollState),
+        ) {
 
-        SettingsSwitch(
-            title = "Speak full marker details when new marker is found",
-            isChecked = shouldSpeakDetailsWhenUnseenMarkerFound,
-            enabled = shouldSpeakWhenUnseenMarkerFound, // linked to above setting
-            onUpdateChecked = {
-                settings?.shouldSpeakDetailsWhenUnseenMarkerFound = it
-                shouldSpeakDetailsWhenUnseenMarkerFound = it
-            }
-        )
+            SettingsSwitch(
+                title = "Speak marker when new marker is found",
+                isChecked = shouldSpeakWhenUnseenMarkerFound,
+                onUpdateChecked = {
+                    settings?.shouldSpeakWhenUnseenMarkerFound = it
+                    shouldSpeakWhenUnseenMarkerFound = it
+                }
+            )
 
-        SettingsSwitch(
-            title = "Start background tracking when app launches",
-            isChecked = shouldStartBackgroundTrackingWhenAppLaunches,
-            onUpdateChecked = {
-                settings?.shouldStartBackgroundTrackingWhenAppLaunches = it
-                shouldStartBackgroundTrackingWhenAppLaunches = it
-            }
-        )
+            SettingsSwitch(
+                title = "Speak full marker details when new marker is found",
+                isChecked = shouldSpeakDetailsWhenUnseenMarkerFound,
+                enabled = shouldSpeakWhenUnseenMarkerFound, // linked to above setting
+                onUpdateChecked = {
+                    settings?.shouldSpeakDetailsWhenUnseenMarkerFound = it
+                    shouldSpeakDetailsWhenUnseenMarkerFound = it
+                }
+            )
 
-        SettingsSlider(
-            title = "Seen Radius (miles)",
-            currentValue = seenRadiusMiles,
-            onUpdateValue = {
-                settings?.seenRadiusMiles = it
-                onTalkRadiusChange(it)
-            }
-        )
+            SettingsSwitch(
+                title = "Start background tracking when app launches",
+                isChecked = shouldStartBackgroundTrackingWhenAppLaunches,
+                onUpdateChecked = {
+                    settings?.shouldStartBackgroundTrackingWhenAppLaunches = it
+                    shouldStartBackgroundTrackingWhenAppLaunches = it
+                }
+            )
 
-        SettingsSwitch(
-            title = "Show marker data last searched location",
-            isChecked = shouldShowMarkerDataLastSearchedLocation,
-            onUpdateChecked = {
-                settings?.isMarkersLastUpdatedLocationVisible = it
-                shouldShowMarkerDataLastSearchedLocation = it
-                onIsCachedMarkersLastUpdatedLocationVisibleChange(it)
-            }
-        )
+            SettingsSlider(
+                title = "Seen Radius (miles)",
+                currentValue = seenRadiusMiles,
+                onUpdateValue = {
+                    settings?.seenRadiusMiles = it
+                    onTalkRadiusChange(it)
+                }
+            )
 
-        // Show feedback button on Android only
-        // - to turn on dev mode: adb shell setprop debug.firebase.appdistro.devmode true // false to turn off
-        if (getPlatformName().contains("Android")) {
+            SettingsSwitch(
+                title = "Show marker data last searched location",
+                isChecked = shouldShowMarkerDataLastSearchedLocation,
+                onUpdateChecked = {
+                    settings?.isMarkersLastUpdatedLocationVisible = it
+                    shouldShowMarkerDataLastSearchedLocation = it
+                    onIsCachedMarkersLastUpdatedLocationVisibleChange(it)
+                }
+            )
+
+            // Show feedback button on Android only
+            // - to turn on dev mode: adb shell setprop debug.firebase.appdistro.devmode true // false to turn off
+            if (getPlatformName().contains("Android")) {
+                Spacer(modifier = Modifier.padding(8.dp))
+                Button(
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally),
+                    onClick = {
+                        coroutineScope.launch {
+                            bottomSheetScaffoldState.bottomSheetState.collapse()
+                            // trigger feedback
+                            triggerDeveloperFeedback()
+                        }
+                    }) {
+                    Text("Send Feedback to Developer")
+                }
+            }
+
             Spacer(modifier = Modifier.padding(8.dp))
+            Divider(modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.padding(8.dp))
+
+            // Reset Marker Info Cache
             Button(
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally),
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = MaterialTheme.colors.error,
+                    contentColor = MaterialTheme.colors.onError
+                ),
                 onClick = {
                     coroutineScope.launch {
-                        bottomSheetScaffoldState.bottomSheetState.collapse()
-                        // trigger feedback
-                        triggerDeveloperFeedback()
+                        // show confirmation dialog
+                        isResetMarkerSettingsAlertDialogVisible = true
                     }
                 }) {
-                Text("Send Feedback to Developer")
-            }
-        }
-
-        Spacer(modifier = Modifier.padding(8.dp))
-        Divider(modifier = Modifier.fillMaxWidth())
-        Spacer(modifier = Modifier.padding(8.dp))
-
-        // Reset Marker Info Cache
-        Button(
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = MaterialTheme.colors.error,
-                contentColor = MaterialTheme.colors.onError
-            ),
-            onClick = {
-                coroutineScope.launch {
-                    // show confirmation dialog
-                    isResetMarkerSettingsAlertDialogVisible = true
-                }
-            }) {
                 Text("Reset Marker Info Cache")
             }
-        Text(
-            "Cache size: ${settings?.markersResult?.markerIdToMarker?.size} markers",
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally),
-        )
+            Text(
+                "Cache size: ${settings?.markersResult?.markerIdToMarker?.size} markers",
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally),
+            )
+        }
 
         // Show Reset Settings Alert Dialog
         if (isResetMarkerSettingsAlertDialogVisible)
