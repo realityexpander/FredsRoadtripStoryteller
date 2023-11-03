@@ -78,7 +78,7 @@ fun MarkerDetailsScreen(
     bottomSheetScaffoldState: BottomSheetScaffoldState,
     markerLoadingState: LoadingState<Marker>,
     onClickStartSpeakingMarker: (Marker) -> Unit = {},
-    isCurrentlySpeaking: Boolean = false,
+    isTextToSpeechCurrentlySpeaking: Boolean = false,
 ) {
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
@@ -290,7 +290,7 @@ fun MarkerDetailsScreen(
                                 .align(Alignment.End)
                                 .padding(8.dp),
                             onClick = {
-                                if(isCurrentlySpeaking)
+                                if(isTextToSpeechCurrentlySpeaking)
                                     stopTextToSpeech()
                                 else {
                                     onClickStartSpeakingMarker(markerLoadingState.data)
@@ -298,7 +298,7 @@ fun MarkerDetailsScreen(
                             },
                             enabled = true,
                         ) {
-                            if(isCurrentlySpeaking) {
+                            if(isTextToSpeechCurrentlySpeaking) {
                                 Icon(
                                     imageVector = Icons.Filled.Stop,
                                     contentDescription = "Stop Speaking Marker",

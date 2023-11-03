@@ -89,24 +89,6 @@ fun AppDrawerContent(
             fontSize = MaterialTheme.typography.body2.fontSize,
             fontWeight = FontWeight.Bold,
         )
-//        Text(
-//            "Seen",
-//            modifier = Modifier.weight(.8f)
-//                .padding(end = 8.dp),
-//            fontStyle = FontStyle.Italic,
-//            fontSize = MaterialTheme.typography.body2.fontSize,
-//            fontWeight = FontWeight.Bold,
-//            textAlign = TextAlign.End
-//        )
-//        Text(
-//            "Spoken",
-//            modifier = Modifier.weight(.8f)
-//                .padding(end = 8.dp),
-//            fontStyle = FontStyle.Italic,
-//            fontSize = MaterialTheme.typography.body2.fontSize,
-//            fontWeight = FontWeight.Bold,
-//            textAlign = TextAlign.End
-//        )
         Icon(
             imageVector = Icons.Default.Visibility,
             contentDescription = "Seen",
@@ -121,7 +103,7 @@ fun AppDrawerContent(
             modifier = Modifier
                 .weight(.3f)
                 .height(20.dp)
-                .offset((-6).dp, 0.dp)
+                .offset((-4).dp, 0.dp)
         )
         Text(
             "ID",

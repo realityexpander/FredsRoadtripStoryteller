@@ -521,7 +521,7 @@ fun App(
                         MarkerDetailsScreen(
                             bottomSheetScaffoldState,
                             markerDetailsResult,
-                            isCurrentlySpeaking = isTextToSpeechSpeaking(),
+                            isTextToSpeechCurrentlySpeaking = isTextToSpeechCurrentlySpeaking,
                             onClickStartSpeakingMarker = { speakMarker ->
                                 markersRepo.updateMarkerIsSpoken(speakMarker, isSpoken = true)
                                 currentlySpeakingMarker = speakMarker(speakMarker, true)
@@ -536,7 +536,6 @@ fun App(
             drawerContent = {
                 AppDrawerContent(
                     bottomSheetScaffoldState,
-//                    markersResult,
                     markersRepo.markersResult(),
                     onSetBottomSheetActiveScreen = { screen ->
                         bottomSheetActiveScreen = screen
