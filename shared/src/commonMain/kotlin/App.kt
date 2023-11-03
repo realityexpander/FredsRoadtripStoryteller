@@ -536,7 +536,8 @@ fun App(
             drawerContent = {
                 AppDrawerContent(
                     bottomSheetScaffoldState,
-                    markersResult,
+//                    markersResult,
+                    markersRepo.markersResult(),
                     onSetBottomSheetActiveScreen = { screen ->
                         bottomSheetActiveScreen = screen
                     },

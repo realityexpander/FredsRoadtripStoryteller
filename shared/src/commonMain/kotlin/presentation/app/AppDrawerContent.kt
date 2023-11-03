@@ -22,13 +22,14 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import data.loadMarkers.MarkersResult
@@ -38,8 +39,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun AppDrawerContent(
     bottomSheetScaffoldState: BottomSheetScaffoldState,
-    fetchedMarkersResult: MarkersResult,
-    onSetBottomSheetActiveScreen: (BottomSheetScreen) -> Unit = {}
+    markersResult: MarkersResult,
+    onSetBottomSheetActiveScreen: (BottomSheetScreen) -> Unit = {},
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -83,32 +84,57 @@ fun AppDrawerContent(
     ) {
         Text(
             "Loaded Markers",
-            modifier = Modifier.weight(3f),
+            modifier = Modifier.weight(2.5f),
             fontStyle = FontStyle.Italic,
             fontSize = MaterialTheme.typography.body2.fontSize,
             fontWeight = FontWeight.Bold,
+        )
+//        Text(
+//            "Seen",
+//            modifier = Modifier.weight(.8f)
+//                .padding(end = 8.dp),
+//            fontStyle = FontStyle.Italic,
+//            fontSize = MaterialTheme.typography.body2.fontSize,
+//            fontWeight = FontWeight.Bold,
+//            textAlign = TextAlign.End
+//        )
+//        Text(
+//            "Spoken",
+//            modifier = Modifier.weight(.8f)
+//                .padding(end = 8.dp),
+//            fontStyle = FontStyle.Italic,
+//            fontSize = MaterialTheme.typography.body2.fontSize,
+//            fontWeight = FontWeight.Bold,
+//            textAlign = TextAlign.End
+//        )
+        Icon(
+            imageVector = Icons.Default.Visibility,
+            contentDescription = "Seen",
+            modifier = Modifier
+                .weight(.3f)
+                .height(20.dp)
+                .offset((-6).dp, 0.dp)
+        )
+        Icon(
+            imageVector = Icons.Default.VolumeUp,
+            contentDescription = "Spoken",
+            modifier = Modifier
+                .weight(.3f)
+                .height(20.dp)
+                .offset((-6).dp, 0.dp)
         )
         Text(
             "ID",
             modifier = Modifier
                 .padding(start=16.dp, end = 8.dp)
-                .weight(1.3f),
+                .weight(1.2f),
             fontStyle = FontStyle.Italic,
             fontSize = MaterialTheme.typography.body2.fontSize,
             fontWeight = FontWeight.Bold,
-        )
-        Text(
-            "Seen",
-            modifier = Modifier.weight(.8f)
-                .padding(end = 8.dp),
-            fontStyle = FontStyle.Italic,
-            fontSize = MaterialTheme.typography.body2.fontSize,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.End
         )
     }
 
-    if(fetchedMarkersResult.markerIdToMarker.isEmpty()) {
+    if(markersResult.markerIdToMarker.isEmpty()) {
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             "No markers loaded yet, drive around to load some!",
@@ -128,7 +154,7 @@ fun AppDrawerContent(
             ),
 
     ) {
-        fetchedMarkersResult.markerIdToMarker
+        markersResult.markerIdToMarker
             .entries
             .reversed()
             .forEach { marker ->
@@ -150,13 +176,54 @@ fun AppDrawerContent(
                 ) {
                     Text(
                         text = marker.value.title,
-                        modifier = Modifier.weight(3f),
+                        modifier = Modifier.weight(2.5f),
                         softWrap = false,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         fontStyle = FontStyle.Normal,
                         fontSize = MaterialTheme.typography.body1.fontSize,
                     )
+
+                    // isSeen
+                    if(marker.value.isSeen) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Seen",
+                            modifier = Modifier
+                                .weight(.3f)
+                                .height(16.dp)
+                        )
+                    }
+                    else {
+                        // "leave blank"
+                        Spacer(
+                            modifier = Modifier
+                                .padding(end = 2.dp)
+                                .weight(.3f)
+                                .height(16.dp)
+                        )
+                    }
+
+                    // isSpoken
+                    if(marker.value.isSpoken) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Spoken",
+                            modifier = Modifier
+                                .weight(.3f)
+                                .height(16.dp)
+                        )
+                    }
+                    else {
+                        // "leave blank"
+                        Spacer(
+                            modifier = Modifier
+                                .padding(end = 2.dp)
+                                .weight(.3f)
+                                .height(16.dp)
+                        )
+                    }
+
                     Text(
                         text = marker.key,
                         modifier = Modifier
@@ -165,23 +232,6 @@ fun AppDrawerContent(
                         fontStyle = FontStyle.Normal,
                         fontSize = MaterialTheme.typography.body1.fontSize,
                     )
-
-                    if(marker.value.isSeen) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Seen",
-                            modifier = Modifier
-                                .weight(.4f)
-                        )
-                    }
-                    else {
-                        // "leave blank"
-                        Spacer(
-                            modifier = Modifier
-                                .padding(end = 2.dp)
-                                .weight(.4f)
-                        )
-                    }
                 }
             }
     }
