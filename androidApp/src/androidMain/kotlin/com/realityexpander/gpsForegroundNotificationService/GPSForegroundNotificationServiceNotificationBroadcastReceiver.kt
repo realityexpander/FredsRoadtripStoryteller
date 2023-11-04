@@ -1,4 +1,4 @@
-package com.realityexpander
+package com.realityexpander.gpsForegroundNotificationService
 
 import android.content.BroadcastReceiver
 import android.content.Context

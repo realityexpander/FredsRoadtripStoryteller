@@ -20,6 +20,7 @@ import com.google.android.gms.maps.MapsInitializer
 import com.google.firebase.FirebaseApp
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.logEvent
+import com.realityexpander.gpsForegroundNotificationService.GPSForegroundNotificationService
 import data.appSettings
 import intentFlow
 import kotlinx.coroutines.CoroutineScope

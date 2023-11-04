@@ -44,11 +44,11 @@
 
         <!-- important to set the foreground service type to location -->
         <service
-            android:name=".GPSForegroundNotificationService"
+            android:name=".gpsForegroundNotificationService.GPSForegroundNotificationService"
             android:foregroundServiceType="location" />
 
         <!-- Receives the "OnNotificationEvent" broadcast from notification -->
-        <receiver android:name=".GPSForegroundNotificationServiceNotificationBroadcastReceiver"/>
+        <receiver android:name=".gpsForegroundNotificationService.GPSForegroundNotificationServiceNotificationBroadcastReceiver"/>
 
     </application>
 

@@ -1,4 +1,4 @@
-package com.realityexpander
+package com.realityexpander.gpsForegroundNotificationService
 
 import GPSLocationService
 import android.app.NotificationManager
@@ -9,11 +9,16 @@ import android.app.PendingIntent.getBroadcast
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
-import com.realityexpander.GPSForegroundNotificationServiceNotificationBroadcastReceiver.Companion.GPS_FOREGROUND_SERVICE_NOTIFICATION_MuteAllTextToSpeech_ACTION
-import com.realityexpander.GPSForegroundNotificationServiceNotificationBroadcastReceiver.Companion.GPS_FOREGROUND_SERVICE_NOTIFICATION_StopSpeakingTextToSpeech_ACTION
-import com.realityexpander.GPSForegroundNotificationServiceNotificationBroadcastReceiver.Companion.kNotificationActionRequestCode
+import androidx.core.content.ContextCompat
+import com.realityexpander.MainActivity
+import com.realityexpander.gpsForegroundNotificationService.GPSForegroundNotificationServiceNotificationBroadcastReceiver.Companion.GPS_FOREGROUND_SERVICE_NOTIFICATION_MuteAllTextToSpeech_ACTION
+import com.realityexpander.gpsForegroundNotificationService.GPSForegroundNotificationServiceNotificationBroadcastReceiver.Companion.GPS_FOREGROUND_SERVICE_NOTIFICATION_StopSpeakingTextToSpeech_ACTION
+import com.realityexpander.gpsForegroundNotificationService.GPSForegroundNotificationServiceNotificationBroadcastReceiver.Companion.kNotificationActionRequestCode
 import data.appSettings
 //import com.realityexpander.common.R  // uses the shared module R file
 import com.realityexpander.R as AppR  // uses the AndroidMain module R file
@@ -60,6 +65,18 @@ class GPSForegroundNotificationService: Service() {
         return super.onStartCommand(intent, flags, startId)
     }
 
+    private fun getBitmapFromVectorDrawable(context: Context?, drawableId: Int): Bitmap {
+        val drawable = ContextCompat.getDrawable(context!!, drawableId)
+        val bitmap = Bitmap.createBitmap(
+            drawable!!.intrinsicWidth,
+            drawable.intrinsicHeight, Bitmap.Config.ARGB_8888
+        )
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+        return bitmap
+    }
+
     private fun start() {
         val muteTextToSpeechAction = createStopSpeakingTextToSpeechAction()
         val cancelSpeakingMarkersAction = createMuteAllTextToSpeechAction()
@@ -69,6 +86,7 @@ class GPSForegroundNotificationService: Service() {
             .setContentText("Location: retrieving...")  // initial message before location is retrieved
             .setSubText("Tap to open app")
             .setSmallIcon(AppR.drawable.round_add_location_24) // uses the AndroidMain module R file
+            .setLargeIcon(getBitmapFromVectorDrawable(this, AppR.drawable.round_add_location_24)) // uses the AndroidMain module R file
             .setOngoing(true)
             .setDefaults(NotificationCompat.VISIBILITY_PUBLIC)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
@@ -144,10 +162,16 @@ class GPSForegroundNotificationService: Service() {
         if (appSettings.shouldSpeakWhenUnseenMarkerFound) {
             val lastSpokenMarker = appSettings.lastSpokenMarker
             if (lastSpokenMarker.id.isNotBlank()) {
+                val title = "Last spoken marker: ${lastSpokenMarker.title}"
                 val updatedNotification =
                     notification
-                        .setContentTitle("Last spoken marker: ${lastSpokenMarker.title}")
+                        .setContentTitle(title)
                         .setContentText(lastSpokenMarker.id)
+                        .setStyle(
+                            NotificationCompat.InboxStyle()
+                                .addLine(lastSpokenMarker.title)
+                                .addLine(lastSpokenMarker.id)
+                        )
 
                 notificationManager.notify(
                     kGPSLocationForegroundServiceNotificationId,
@@ -160,10 +184,16 @@ class GPSForegroundNotificationService: Service() {
         // Update for last seen marker
         val lastSeenMarker = appSettings.uiRecentlySeenMarkersList.list.firstOrNull()
         lastSeenMarker?.let {
+            val title = "Last seen marker: ${lastSeenMarker.title}"
             val updatedNotification =
                 notification
-                    .setContentTitle("Last seen marker: ${lastSeenMarker.title}")
+                    .setContentTitle(title)
                     .setContentText(lastSeenMarker.id)
+                    .setStyle(
+                        NotificationCompat.InboxStyle()
+                            .addLine(lastSeenMarker.title)
+                            .addLine(lastSeenMarker.id)
+                    )
 
             notificationManager.notify(
                 kGPSLocationForegroundServiceNotificationId,
