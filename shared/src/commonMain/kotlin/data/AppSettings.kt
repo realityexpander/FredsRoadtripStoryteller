@@ -7,6 +7,7 @@ import json
 import kForceClearSettingsAtLaunch
 import kotlinx.serialization.encodeToString
 import presentation.maps.Location
+import presentation.maps.RecentlySeenMarker
 import presentation.maps.RecentlySeenMarkersList
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -26,6 +27,7 @@ class AppSettings(val settingsInstance: Settings) {
     // Typesafe accessors for settings
     // is there a way to put these into the map automatically & keep typesafe w/o using casts?
     // REMEMBER TO ADD NEW SETTINGS TO THE MAP! - FORMATTING IS INTENTIONAL
+    // ALSO REMEMBER TO ADD NEW TYPES TO THE WHEN STATEMENT IN THE DELEGATE GETTER/SETTER
     var markersResult by
         SettingsDelegate(settingsInstance,
        kMarkersResult, defaultValue = MarkersResult())
@@ -47,6 +49,9 @@ class AppSettings(val settingsInstance: Settings) {
     var uiRecentlySeenMarkersList by
         SettingsDelegate(settingsInstance,
        kUiRecentlySeenMarkersList, defaultValue = RecentlySeenMarkersList())
+    var lastSpokenMarker: RecentlySeenMarker by
+        SettingsDelegate(settingsInstance,
+       kLastSpokenMarker, defaultValue = RecentlySeenMarker("",""))
 
     // • For Settings panel
     var shouldSpeakWhenUnseenMarkerFound by
@@ -92,7 +97,49 @@ class AppSettings(val settingsInstance: Settings) {
          uiRecentlySeenMarkersList,
         kShouldSpeakDetailsWhenUnseenMarkerFound to
          shouldSpeakDetailsWhenUnseenMarkerFound,
+        kLastSpokenMarker to
+         lastSpokenMarker
     )
+
+    // - REMEMBER TO ADD NEW SETTINGS TO THE CONST LIST! - FORMATTING IS INTENTIONAL
+    companion object {
+        fun create(): AppSettings {
+            return AppSettings(Settings())
+        }
+        fun use(settings: Settings): AppSettings {
+            return AppSettings(settings)
+        }
+
+        // Settings Keys
+        const val kMarkersResult =
+            "kMarkersResult"
+        const val kMarkersLastUpdatedLocation =
+            "kMarkersLastUpdatedLocation"
+        const val kLastKnownUserLocation =
+            "kLastKnownUserLocation"
+        const val kIsPermissionsGranted =
+            "kIsPermissionsGranted"
+        const val kIsRecentlySeenMarkersPanelVisible =
+            "kIsRecentlySeenMarkersPanelVisible"
+        const val kRecentlySeenMarkersSet =
+            "kRecentlySeenMarkersSet"
+        const val kUiRecentlySeenMarkersList =
+            "kUiRecentlySeenMarkersList"
+        const val kLastSpokenMarker =
+            "kLastSpokenMarker"
+
+        // • For Settings panel
+        const val kShouldSpeakWhenUnseenMarkerFound =
+            "kShouldSpeakWhenUnseenMarkerFound"
+        const val kShouldSpeakDetailsWhenUnseenMarkerFound =
+            "kShouldSpeakDetailsWhenUnseenMarkerFound"
+        const val kShouldStartBackgroundTrackingWhenAppLaunches =
+            "kShouldStartBackgroundTrackingWhenAppLaunches"
+        const val kSeenRadiusMiles =
+            "kSeenRadiusMiles"
+        const val kIsMarkersLastUpdatedLocationVisible =
+            "kIsMarkersLastUpdatedLocationVisible"
+    }
 
     // Use [] access operator
     // Note: Not typesafe, so you have to cast the type for `get`.
@@ -173,43 +220,6 @@ class AppSettings(val settingsInstance: Settings) {
             Log.d { "Settings: ${entry.key} = ${entry.value}" }
         }
     }
-
-    companion object {
-        fun create(): AppSettings {
-            return AppSettings(Settings())
-        }
-        fun use(settings: Settings): AppSettings {
-            return AppSettings(settings)
-        }
-
-        // Settings Keys
-        const val kMarkersResult =
-                 "kMarkersResult"
-        const val kMarkersLastUpdatedLocation =
-                 "kMarkersLastUpdatedLocation"
-        const val kLastKnownUserLocation =
-                 "kLastKnownUserLocation"
-        const val kIsPermissionsGranted =
-                 "kIsPermissionsGranted"
-        const val kIsRecentlySeenMarkersPanelVisible =
-                 "kIsRecentlySeenMarkersPanelVisible"
-        const val kRecentlySeenMarkersSet =
-                 "kRecentlySeenMarkersSet"
-        const val kUiRecentlySeenMarkersList =
-                 "kUiRecentlySeenMarkersList"
-
-        // • For Settings panel
-        const val kShouldSpeakWhenUnseenMarkerFound =
-                 "kShouldSpeakWhenUnseenMarkerFound"
-        const val kShouldSpeakDetailsWhenUnseenMarkerFound =
-                 "kShouldSpeakDetailsWhenUnseenMarkerFound"
-        const val kShouldStartBackgroundTrackingWhenAppLaunches =
-                 "kShouldStartBackgroundTrackingWhenAppLaunches"
-        const val kSeenRadiusMiles =
-                 "kSeenRadiusMiles"
-        const val kIsMarkersLastUpdatedLocationVisible =
-                 "kIsMarkersLastUpdatedLocationVisible"
-    }
 }
 
 @Suppress("UNCHECKED_CAST") // You can see we are checking the type in the `when` statement... so this is safe, Kotlin compiler people...
@@ -247,6 +257,11 @@ class SettingsDelegate<T>(
                     settings.getStringOrNull(key) ?: return defaultValue
                 ) as T
             }
+            is RecentlySeenMarker -> {
+                json.decodeFromString<RecentlySeenMarker>(
+                    settings.getStringOrNull(key) ?: return defaultValue
+                ) as T
+            }
             else -> throw IllegalArgumentException("Unsupported type, key= $key, " +
                     "type of defaultValue= ${defaultValue!!::class.simpleName}")
         }
@@ -273,6 +288,8 @@ class SettingsDelegate<T>(
                 settings.putString(key, json.encodeToString(value as MarkersResult))
             is RecentlySeenMarkersList ->
                 settings.putString(key, json.encodeToString(value as RecentlySeenMarkersList))
+            is RecentlySeenMarker ->
+                settings.putString(key, json.encodeToString(value as RecentlySeenMarker))
             else -> throw IllegalArgumentException("Unsupported type, key= $key, " +
                     "type of defaultValue= ${defaultValue!!::class.simpleName}")
         }

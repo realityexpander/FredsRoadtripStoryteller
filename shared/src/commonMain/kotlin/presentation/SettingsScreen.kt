@@ -21,6 +21,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,7 +33,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import data.AppSettings
+import data.appSettings
 import getPlatformName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import presentation.uiComponents.SettingsSlider
 import presentation.uiComponents.SettingsSwitch
@@ -64,6 +68,14 @@ fun SettingsScreen(
     var shouldSpeakDetailsWhenUnseenMarkerFound by remember {
         mutableStateOf(settings?.shouldSpeakDetailsWhenUnseenMarkerFound ?: false)
     }
+
+    // Poll for changes from the App Foreground Notification cancelling the Speak Marker feature
+    shouldSpeakWhenUnseenMarkerFound =
+        PollForNotificationActionSettingsChanges(
+            bottomSheetScaffoldState,
+            coroutineScope,
+            shouldSpeakWhenUnseenMarkerFound
+        )
 
     Column(
         Modifier.fillMaxWidth()
@@ -205,6 +217,34 @@ fun SettingsScreen(
                 }
             )
     }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+private fun PollForNotificationActionSettingsChanges(
+    bottomSheetScaffoldState: BottomSheetScaffoldState,
+    coroutineScope: CoroutineScope,
+    shouldSpeakWhenUnseenMarkerFound: Boolean
+): Boolean {
+    var localShouldSpeakWhenUnseenMarkerFound = shouldSpeakWhenUnseenMarkerFound
+
+    // Poll for changes from the App Foreground Notification disabling the speak marker feature
+    DisposableEffect(bottomSheetScaffoldState.bottomSheetState.isExpanded) {
+        var isFinished = false
+        if (bottomSheetScaffoldState.bottomSheetState.isExpanded) {
+            // Poll the appSettings for changes to the Speak Marker feature
+            coroutineScope.launch {
+                while (!isFinished) {
+                    localShouldSpeakWhenUnseenMarkerFound = appSettings.shouldSpeakWhenUnseenMarkerFound
+                    delay(1000)
+                }
+            }
+        }
+        onDispose {
+            isFinished = true
+        }
+    }
+    return localShouldSpeakWhenUnseenMarkerFound
 }
 
 @Composable

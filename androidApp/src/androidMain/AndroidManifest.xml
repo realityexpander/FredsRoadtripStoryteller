@@ -25,6 +25,7 @@
             android:exported="true"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|mnc|colorMode|density|fontScale|fontWeightAdjustment|keyboard|layoutDirection|locale|mcc|navigation|smallestScreenSize|touchscreen|uiMode"
             android:name=".MainActivity"
+            android:launchMode="singleTop"
         >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -43,8 +44,11 @@
 
         <!-- important to set the foreground service type to location -->
         <service
-            android:name=".GPSLocationForegroundNotificationService"
+            android:name=".GPSForegroundNotificationService"
             android:foregroundServiceType="location" />
+
+        <!-- Receives the "OnNotificationEvent" broadcast from notification -->
+        <receiver android:name=".GPSForegroundNotificationServiceNotificationBroadcastReceiver"/>
 
     </application>
 

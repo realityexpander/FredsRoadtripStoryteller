@@ -56,7 +56,7 @@ import data.MarkersRepo
 import data.appSettings
 import data.loadMarkerDetails.loadMarkerDetails
 import data.loadMarkers.MarkersResult
-import data.loadMarkers.distanceBetween
+import data.loadMarkers.distanceBetweenInMiles
 import data.loadMarkers.loadMarkers
 import data.loadMarkers.sampleData.kUseRealNetwork
 import kotlinx.coroutines.delay
@@ -125,7 +125,7 @@ fun App(
         var isTextToSpeechCurrentlySpeaking by remember {
             mutableStateOf(false)
         }
-        var currentlySpeakingMarker: RecentlySeenMarker? by remember {
+        var currentSpeakingMarker: RecentlySeenMarker? by remember {
             mutableStateOf(null)
         }
         var seenRadiusMiles by remember {
@@ -145,9 +145,9 @@ fun App(
 
         // UI markers data last update-at location
         var isMarkersLastUpdatedLocationVisible by
-        remember(appSettings.isMarkersLastUpdatedLocationVisible) {
-            mutableStateOf(appSettings.isMarkersLastUpdatedLocationVisible)
-        }
+            remember(appSettings.isMarkersLastUpdatedLocationVisible) {
+                mutableStateOf(appSettings.isMarkersLastUpdatedLocationVisible)
+            }
         // Location where markers data was last updated
         var markersLastUpdatedLocation by remember {
             mutableStateOf(appSettings.markersLastUpdatedLocation)
@@ -190,6 +190,7 @@ fun App(
                 //    kTepoztlanFakeDataset,
                 //    kSingleItemPageFakeDataset,
                 useFakeDataSetId = kUseRealNetwork,
+                coroutineScope = coroutineScope
             )
 
         var shouldRedrawMapMarkers by remember {
@@ -198,7 +199,9 @@ fun App(
 
         // Update the UI Map markers AFTER markers "basic info" index page has finished parsing
         // & save to settings
-        val markers = remember(markersResult.isParseMarkersPageFinished) {
+        val markers = remember(markersResult.isParseMarkersPageFinished, userLocation) {
+            if(shouldRedrawMapMarkers) return@remember previousMarkers // already redrawing, so don't update again. (prevents flickering)
+
             // Done parsing the markers basic info page?
             if (!markersResult.isParseMarkersPageFinished) {
                 // During load & parse of new markers, use the cached markers (prevents flickering)
@@ -207,16 +210,15 @@ fun App(
 
             // Update the markers list with the updated marker data
             mutableStateListOf<Marker>().also { snapShot ->
-                println("***in markers = remember(markersResult.isParseMarkersPageFinished=${markersResult.isParseMarkersPageFinished}")
-                markersResult.markerIdToMarker.forEach { marker ->
-                    markersRepo.upsertMarkerBasicInfo(marker.value) // only basic info needs to be updated
-                }
-                markersRepo.updateIsParseMarkersPageFinished(true)
-
-                // Force a redraw of the map & markers
-                updateCurrentUiMarkers(markers = snapShot, previousMarkers, markersRepo)
                 coroutineScope.launch {
-                    yield() // allow the UI to update // todo test if needed
+                    markersRepo.updateIsParseMarkersPageFinished(true)
+                    markersResult.markerIdToMarker.forEach { marker ->
+                        markersRepo.upsertMarkerBasicInfo(marker.value) // only basic info needs to be updated
+                    }
+
+                    // Force a redraw of the map & markers
+                    updateCurrentUiMarkers(markers = snapShot, previousMarkers, markersRepo)
+                    yield() // allow the UI to update
                     shouldRedrawMapMarkers = true
                 }
 
@@ -316,7 +318,7 @@ fun App(
                                     ) {
                                         val nextUnspokenMarker =
                                             appSettings.uiRecentlySeenMarkersList.list.first()
-                                        currentlySpeakingMarker =
+                                        currentSpeakingMarker =
                                             speakRecentlySeenMarker(
                                                 nextUnspokenMarker,
                                                 appSettings.shouldSpeakDetailsWhenUnseenMarkerFound,
@@ -391,7 +393,7 @@ fun App(
                             isTextToSpeechCurrentlySpeaking = true
                             yield() // allow UI to update
 
-                            currentlySpeakingMarker = speakRecentlySeenMarker(
+                            currentSpeakingMarker = speakRecentlySeenMarker(
                                 speakMarker,
                                 appSettings.shouldSpeakDetailsWhenUnseenMarkerFound,
                                 coroutineScope,
@@ -421,8 +423,9 @@ fun App(
             sheetContent = {
                 when (bottomSheetActiveScreen) {
                     is BottomSheetScreen.SettingsScreen -> {
+
                         SettingsScreen(
-                            appSettings,
+                            settings = appSettings,
                             bottomSheetScaffoldState,
                             seenRadiusMiles,
                             onSeenRadiusChange = { updatedRadiusMiles ->
@@ -440,6 +443,7 @@ fun App(
                                         recentlySeenMarkersSet,
                                         uiRecentlySeenMarkersList
                                     )
+                                    shouldRedrawMapMarkers = true
                                     userLocation = jiggleLocationToForceUiUpdate(userLocation)
                                 }
                             },
@@ -478,7 +482,6 @@ fun App(
                                 return@remember localMarker ?: Marker()
                             }
                         }
-                        val isMarkerDetailsAlreadyLoaded = marker.isDetailsLoaded
 
                         markerDetailsResult = loadMarkerDetails(marker)
 
@@ -489,7 +492,7 @@ fun App(
                                 (markerDetailsResult as? LoadingState.Loaded<Marker>)?.data
                             if (updatedDetailsMarker != null
                                 && markerDetailsResult is LoadingState.Loaded
-                                && !isMarkerDetailsAlreadyLoaded
+                                && !marker.isDetailsLoaded
                                 && updatedDetailsMarker.isDetailsLoaded
                             ) {
                                 // Update the markers and save to settings
@@ -506,8 +509,12 @@ fun App(
                             markerDetailsResult,
                             isTextToSpeechCurrentlySpeaking = isTextToSpeechCurrentlySpeaking,
                             onClickStartSpeakingMarker = { speakMarker ->
-                                markersRepo.updateMarkerIsSpoken(speakMarker, isSpoken = true)
-                                currentlySpeakingMarker = speakMarker(speakMarker, true)
+                                markersRepo.updateMarkerIsSpoken(speakMarker, isSpoken = true)  // todo - should be a function and calls speakRecentlySeenMarker()
+                                appSettings.lastSpokenMarker = RecentlySeenMarker(
+                                    speakMarker.id,
+                                    speakMarker.title
+                                )
+                                currentSpeakingMarker = speakMarker(speakMarker, true)
                             },
                         )
                     }
@@ -726,14 +733,14 @@ fun App(
                                 }
                             }
                         },
-                        currentlySpeakingMarker = currentlySpeakingMarker,
+                        currentlySpeakingMarker = currentSpeakingMarker,
                         isTextToSpeechCurrentlySpeaking = isTextToSpeechCurrentlySpeaking,
                         onClickStartSpeakingMarker = { recentlySeenMarker, shouldSpeakDetails: Boolean ->
                             stopTextToSpeech()
 
                             coroutineScope.launch {
                                 delay(50) // allow UI to update
-                                currentlySpeakingMarker =
+                                currentSpeakingMarker =
                                     speakRecentlySeenMarker(
                                         recentlySeenMarker,
                                         shouldSpeakDetails = shouldSpeakDetails,
@@ -796,9 +803,9 @@ private fun updateCurrentUiMarkers(
 // todo refactor? maybe use callback and set `shouldRedrawMapMarkers = true`
 private fun jiggleLocationToForceUiUpdate(userLocation: Location) = Location(
     userLocation.latitude +
-            Random.nextDouble(0.0001, 0.0002),
+            Random.nextDouble(-0.00001, 0.00001),
     userLocation.longitude +
-            Random.nextDouble(0.0001, 0.0002)
+            Random.nextDouble(-0.00001, 0.00001)
 )
 
 private fun resetMarkerCacheSettings(
@@ -838,16 +845,15 @@ private fun addSeenMarkersToRecentlySeenList(
         // if marker is within talk radius, add to recently seen list
         val markerLat = marker.position.latitude
         val markerLong = marker.position.longitude
-        val distanceFromMarkerToUserLocationMiles = distanceBetween(
+        val distanceFromMarkerToUserLocationMiles = distanceBetweenInMiles(
             userLocation.latitude,
             userLocation.longitude,
             markerLat,
-            markerLong
+            markerLong,
         )
 
-        val kSeenRadiusFudgeFactor = 1.609344 // trying mile to km factor
         // add marker to recently seen set?
-        if (distanceFromMarkerToUserLocationMiles < seenRadiusMiles * kSeenRadiusFudgeFactor) {
+        if (distanceFromMarkerToUserLocationMiles < seenRadiusMiles) {
             fun MutableSet<RecentlySeenMarker>.containsMarker(marker: Marker): Boolean {
                 return any { recentMapMarker ->
                     recentMapMarker.id == marker.id
@@ -865,9 +871,8 @@ private fun addSeenMarkersToRecentlySeenList(
                 recentlySeenMarkersSet.add(newlySeenMarker)
                 uiRecentlySeenMarkersList.add(newlySeenMarker)
                 Log.d(
-                    "Added Marker ${marker.id} is within talk radius of ${seenRadiusMiles * kSeenRadiusFudgeFactor} miles, " +
+                    "Added Marker ${marker.id} is within talk radius of $seenRadiusMiles miles, " +
                             "distance=$distanceFromMarkerToUserLocationMiles miles, " +
-                            "kTalkRadiusFudgeFactor= $kSeenRadiusFudgeFactor, " +
                             "total recentlySeenMarkers=${recentlySeenMarkersSet.size}"
                 )
                 updatedMarkers.add(marker.copy(isSeen = true))

@@ -162,16 +162,16 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     // Turn off the notification service for the GPS service, which prevents background location updates
     private fun stopBackgroundUpdates() {
-        Intent(applicationContext, GPSLocationForegroundNotificationService::class.java).apply {
-            action = GPSLocationForegroundNotificationService.ACTION_STOP_NOTIFICATION_SERVICE
+        Intent(applicationContext, GPSForegroundNotificationService::class.java).apply {
+            action = GPSForegroundNotificationService.ACTION_STOP_NOTIFICATION_SERVICE
             appContext.startService(this) // sends command to stop service
         }
     }
 
     // Turn on the notification service for the GPS service, which allows background location updates
     private fun startBackgroundUpdates() {
-        Intent(applicationContext, GPSLocationForegroundNotificationService::class.java).apply {
-            action = GPSLocationForegroundNotificationService.ACTION_START_NOTIFICATION_SERVICE
+        Intent(applicationContext, GPSForegroundNotificationService::class.java).apply {
+            action = GPSForegroundNotificationService.ACTION_START_NOTIFICATION_SERVICE
             appContext.startService(this) // sends command to start service
         }
     }
@@ -181,7 +181,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
         println("onNewIntent: intent: $intent")
 
-        if(intent?.action == GPSLocationForegroundNotificationService.ACTION_STOP_NOTIFICATION_SERVICE) {
+        if(intent?.action == GPSForegroundNotificationService.ACTION_STOP_NOTIFICATION_SERVICE) {
             stopBackgroundUpdates()
         }
     }
@@ -218,5 +218,5 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 @Preview
 @Composable
 fun Test() {
-    Text("Hello World")
+    Text("Hello World") // previews work here
 }

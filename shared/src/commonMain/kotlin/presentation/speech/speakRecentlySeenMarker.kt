@@ -15,8 +15,10 @@ import data.network.httpClient
 import presentation.maps.RecentlySeenMarker
 import co.touchlab.kermit.Logger as Log
 
-var lastSpeakMarker: RecentlySeenMarker? = null
-
+/**
+ * Speaks the marker details, if the marker is not already spoken.
+ * @return the marker that was spoken, or null if the marker was already spoken.
+ */
 fun speakRecentlySeenMarker(
     speakMarker: RecentlySeenMarker,
     shouldSpeakDetails: Boolean = appSettings.shouldSpeakDetailsWhenUnseenMarkerFound,
@@ -26,13 +28,12 @@ fun speakRecentlySeenMarker(
     onUpdateLoadingState: (LoadingState<String>) -> Unit = { },
 ): RecentlySeenMarker? {
     if (isTextToSpeechSpeaking()) {
-        Log.d("speakRecentlySeenMarker: isTextToSpeechSpeaking() is true, so returning early.")
-        return lastSpeakMarker
+        return appSettings.lastSpokenMarker
     }
 
     val marker = markersRepo.marker(speakMarker.id)
         ?: throw Exception("Marker not found for id: ${speakMarker.id}")
-    lastSpeakMarker = speakMarker
+    appSettings.lastSpokenMarker = speakMarker
 
     // Update the 'isSpoken' flag
     markersRepo.updateMarkerIsSpoken(marker, isSpoken = true)
@@ -84,14 +85,14 @@ fun speakRecentlySeenMarker(
                     }
                 }
 
-                return lastSpeakMarker // early return due to async loading
+                return appSettings.lastSpokenMarker // early return due to async loading
             }
 
             // Already have the details, so just speak the marker.
             speakMarker(marker, shouldSpeakDetails)
     } else {
         speakMarker(
-            markersRepo.marker(speakMarker.id) ?: return lastSpeakMarker,
+            markersRepo.marker(speakMarker.id) ?: return appSettings.lastSpokenMarker,
             shouldSpeakDetails = false
         )
     }

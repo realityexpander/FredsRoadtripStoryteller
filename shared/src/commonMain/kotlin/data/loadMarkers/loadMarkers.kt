@@ -25,14 +25,14 @@ import data.loadMarkers.sampleData.simpleMarkersPageHtml
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
-import kotlinx.datetime.Clock
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import presentation.maps.Marker
 import data.network.httpClient
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
 import presentation.maps.Location
 import presentation.maps.MarkerIdStr
 import co.touchlab.kermit.Logger as Log
@@ -87,12 +87,12 @@ fun loadMarkers(
     // Debugging/Testing parameters
     showLoadingState: Boolean = false, // 0 = use real data, >1 = use fake data (1 = 3 pages around googleplex, 2 = 1 page around tepoztlan)
     useFakeDataSetId: Int = 0,
+    coroutineScope: CoroutineScope = rememberCoroutineScope()
 ): MarkersResult {
-    val coroutineScope = rememberCoroutineScope()
 
     // If the user location is not set, return an empty result
     if (userLocation.latitude == 0.0 && userLocation.longitude == 0.0)
-        return MarkersResult()
+        return markersRepo.markersResult()
 
     var markersLoadingState: LoadingState<String> by remember { mutableStateOf(LoadingState.Loading) }
     LaunchedEffect(markersLoadingState.hashCode()) {
@@ -103,7 +103,7 @@ fun loadMarkers(
     var processingHtmlPageNum by remember { mutableStateOf(1) }
     var processingMarkersResultState by remember(markersRepo.markers().size) { // checks if repo is cleared or not set yet.
         if(markersRepo.markers().isNotEmpty()) {
-            return@remember mutableStateOf(markersRepo.markersResult().copy()) // todo test - does this need to return a copy?
+            return@remember mutableStateOf(markersRepo.markersResult()) // todo test - does this need to return a copy?
         }
 
         processingHtmlPageNum = 1
@@ -167,7 +167,7 @@ fun loadMarkers(
     }
 
     var markerHtmlPageUrl by remember { mutableStateOf<String?>(null) }
-    var shouldUpdateCache by remember { mutableStateOf(false) }
+    var didUpdateMarkers by remember { mutableStateOf(false) }
     var networkLoadingState by remember(
             processingMarkersResultState.isParseMarkersPageFinished,
             processingHtmlPageNum
@@ -180,7 +180,7 @@ fun loadMarkers(
         if (!processingMarkersResultState.isParseMarkersPageFinished) {
             Log.d("Loading page number $processingHtmlPageNum")
             markersLoadingState = LoadingState.Loading
-            shouldUpdateCache = true
+            didUpdateMarkers = true
 
             // Define URL to load from network
             markerHtmlPageUrl = "https://www.hmdb.org/results.asp?Search=Coord" +
@@ -203,23 +203,16 @@ fun loadMarkers(
             markerIdToRawMarkerDetailStrings = mutableMapOf(), // Clear the strings (they are no longer needed)
         )
 
-        // Save the cachedResultState to persistent storage (Settings) (if it was updated from the network)
-        if (shouldUpdateCache) {
-            coroutineScope.launch {
-                appSettings.markersLastUpdatedLocation =
-                    userLocation.also { onUpdateMarkersLastUpdatedLocation(userLocation) }
-
-                // Update the markers in the repo
-                finalMarkersResultState.markerIdToMarker.forEach {
-                    markersRepo.addMarker(it.value)
+        // Update the last updated location
+        if(didUpdateMarkers) {
+            appSettings.markersLastUpdatedLocation =
+                userLocation.also {
+                    onUpdateMarkersLastUpdatedLocation(userLocation)
                 }
-
-                Log.d("Saved markers to Settings, total count: ${finalMarkersResultState.markerIdToMarker.size}")
-            }
         }
 
         // 6 PROCESS COMPLETE
-        Log.d("Finished loading all pages, total markers= ${finalMarkersResultState.markerIdToMarker.size}")
+        Log.d("Finished parsing & loading all pages, total markers= ${finalMarkersResultState.markerIdToMarker.size}")
         markersLoadingState = LoadingState.Finished
         processingHtmlPageNum = 0
         processingMarkersResultState = processingMarkersResultState.copy(
@@ -247,10 +240,12 @@ fun loadMarkers(
                 // Step 3 - Load the raw HTML from the network (or fake data)
                 val rawHtmlString =
                     if(useFakeDataSetId == kUseRealNetwork) {
-                        val response = httpClient.get(assetUrl)  // network load
-                        val rawHtml: String = response.body()
-                        // Log.d("Loaded page successfully, data length: ${rawHtml.length}, coordinates: ${userLocation.latitude}, ${userLocation.longitude}")
-                        rawHtml
+                        coroutineScope.async {
+                            val response = httpClient.get(assetUrl)  // network load
+                            val rawHtml: String = response.body()
+                            // Log.d("Loaded page successfully, data length: ${rawHtml.length}, coordinates: ${userLocation.latitude}, ${userLocation.longitude}")
+                            rawHtml
+                        }.await()
                     } else {
                         // use FAKE loading from fakeDataSet
                         simpleMarkersPageHtml(processingHtmlPageNum, useFakeDataSetId)
@@ -338,7 +333,7 @@ fun loadMarkers(
 
                 LoadingState.Finished  // loading state of the network load
             } catch (e: Exception) {
-                shouldUpdateCache = false
+                didUpdateMarkers = false
                 processingMarkersResultState = processingMarkersResultState.copy(
                     isParseMarkersPageFinished = true,
                     loadingState = LoadingState.Error(e.cause?.message ?: "Loading error - ${e.message}")
@@ -383,6 +378,7 @@ fun loadMarkers(
         }
     }
 
-    return processingMarkersResultState
+//    return processingMarkersResultState
+    return finalMarkersResultState
 }
 

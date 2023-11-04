@@ -9,8 +9,8 @@ import co.touchlab.kermit.Logger as Log
 open class MarkersRepo(
     private val appSettings: AppSettings,
     val updateMarkersResultFlow: MutableStateFlow<MarkersResult> = MutableStateFlow(appSettings.markersResult),
-    private var markersResult: MarkersResult = appSettings.markersResult
 ) {
+
     init {
        Log.d { "MarkersRepo: init, instance=$this" }
        updateMarkersResult(appSettings.markersResult)
@@ -18,9 +18,9 @@ open class MarkersRepo(
 
     // Completely replaces the current MarkersResult with a new value
     private fun updateMarkersResult(newMarkersResult: MarkersResult) {
+        //Log.i("MarkersRepo: updateMarkersResult: newMarkersResult.size=${newMarkersResult.markerIdToMarker.size}")
         appSettings.markersResult = newMarkersResult
-        this.markersResult = appSettings.markersResult
-        updateMarkersResultFlow.tryEmit(appSettings.markersResult)
+        updateMarkersResultFlow.tryEmit(newMarkersResult)
     }
 
     fun markersResult() = appSettings.markersResult
@@ -28,7 +28,6 @@ open class MarkersRepo(
     fun addMarker(marker: Marker): MarkersResult {
         this.marker(marker.id)?.run {
             // Log.w("MarkerRepo: addMarker: marker already exists, id: ${marker.id}, add ignored.")
-            updateMarkersResult(appSettings.markersResult) // trigger update to flow anyway
             return markersResult()
         }
 
@@ -44,7 +43,7 @@ open class MarkersRepo(
     }
 
     fun removeMarker(id: MarkerIdStr): MarkersResult {
-        Log.i("MarkerRepo: removeMarker: id=$id")
+        // Log.i("MarkerRepo: removeMarker: id=$id")
         this.marker(id) ?: run {
             updateMarkersResult(appSettings.markersResult) // trigger update to flow anyway
             return markersResult()
@@ -69,7 +68,7 @@ open class MarkersRepo(
     }
 
     fun clearAllMarkers(): MarkersResult {
-        Log.i("MarkerRepo: clearAllMarkers")
+        // Log.i("MarkerRepo: clearAllMarkers")
         updateMarkersResult(
             markersResult().copy(
                 markerIdToMarker = emptyMap()
@@ -81,7 +80,7 @@ open class MarkersRepo(
 
     // Note: Blows away all previous data.  Use with caution.
     fun replaceMarker(replacementMarker: Marker): MarkersResult {
-        Log.i("MarkerRepo: updateAllDataForMarker: replacementMarker.id=${replacementMarker.id}")
+        // Log.i("MarkerRepo: updateAllDataForMarker: replacementMarker.id=${replacementMarker.id}")
         updateMarkersResult(
             markersResult().copy(
                 markerIdToMarker =
@@ -94,7 +93,7 @@ open class MarkersRepo(
     }
 
     fun updateMarkerIsSeen(markerToUpdate: Marker, isSeen: Boolean): MarkersResult {
-        Log.i("MarkerRepo: updateMarkerIsSeen: markerToUpdate.id=${markerToUpdate.id}, isSeen=$isSeen")
+        // Log.i("MarkerRepo: updateMarkerIsSeen: markerToUpdate.id=${markerToUpdate.id}, isSeen=$isSeen")
         val originalMarker =
             this.marker(markerToUpdate.id)
                 ?: run {
@@ -130,7 +129,7 @@ open class MarkersRepo(
                 Log.w("MarkerRepo: updateMarkerIsSpoken: marker id found")
                 return markersResult()
             }
-        Log.i("MarkerRepo: updateMarkerIsSpoken: markerToUpdate.id=$updateId, isSpoken=$isSpoken")
+        // Log.i("MarkerRepo: updateMarkerIsSpoken: markerToUpdate.id=$updateId, isSpoken=$isSpoken")
         val originalMarker =
             this.marker(updateId)
                 ?: run {
@@ -156,7 +155,7 @@ open class MarkersRepo(
     }
 
     fun updateMarkerDetails(markerWithUpdatedDetails: Marker): MarkersResult {
-        Log.i("MarkerRepo: updateMarkerDetails: markerWithUpdatedDetails.id=${markerWithUpdatedDetails.id}")
+        // Log.i("MarkerRepo: updateMarkerDetails: markerWithUpdatedDetails.id=${markerWithUpdatedDetails.id}")
         val originalMarker = this.marker(markerWithUpdatedDetails.id)
                 ?: run {
                     Log.w("MarkerRepo: updateMarkerDetails: marker not found, id: ${markerWithUpdatedDetails.id}")
@@ -191,7 +190,7 @@ open class MarkersRepo(
     }
 
     fun upsertMarkerDetails(marker: Marker): MarkersResult {
-        Log.i("MarkerRepo: upsertMarkerDetails: marker.id=${marker.id}")
+        // Log.i("MarkerRepo: upsertMarkerDetails: marker.id=${marker.id}")
         marker(marker.id)?.let {
             updateMarkerDetails(marker)
         } ?: run {
@@ -202,7 +201,7 @@ open class MarkersRepo(
     }
 
     fun updateMarkerBasicInfo(markerWithUpdatedBasicInfo: Marker): MarkersResult {
-        Log.i("MarkerRepo: updateMarkerBasicInfo: markerWithUpdatedBasicInfo.id=${markerWithUpdatedBasicInfo.id}")
+        // Log.i("MarkerRepo: updateMarkerBasicInfo: markerWithUpdatedBasicInfo.id=${markerWithUpdatedBasicInfo.id}")
         val originalMarker =
             marker(markerWithUpdatedBasicInfo.id)
                 ?: run {
@@ -227,7 +226,7 @@ open class MarkersRepo(
     }
 
     fun upsertMarkerBasicInfo(marker: Marker): MarkersResult {
-        Log.i("MarkerRepo: upsertMarkerBasicInfo: marker.id=${marker.id}")
+        // Log.i("MarkerRepo: upsertMarkerBasicInfo: marker.id=${marker.id}")
         marker(marker.id)?.let {
             updateMarkerBasicInfo(marker)
         } ?: run {
@@ -238,7 +237,7 @@ open class MarkersRepo(
     }
 
     fun updateIsParseMarkersPageFinished(isFinished: Boolean): MarkersResult {
-        Log.i("MarkerRepo: setIsParseMarkersPageFinished: isFinished=$isFinished")
+        // Log.i("MarkerRepo: setIsParseMarkersPageFinished: isFinished=$isFinished")
         updateMarkersResult(
             markersResult().copy(
                 isParseMarkersPageFinished = isFinished

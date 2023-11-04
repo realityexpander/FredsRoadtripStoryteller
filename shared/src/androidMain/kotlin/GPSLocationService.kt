@@ -71,8 +71,8 @@ actual class GPSLocationService  {
     @SuppressLint("MissingPermission") // suppress missing permission check warning, we are checking permissions in the method.
     // actual suspend fun onUpdatedGPSLocation(callback: (Location?) -> Flow<Location>) {  // LEAVE FOR REFERENCE - emits a flow of locations
     actual suspend fun onUpdatedGPSLocation(
-        errorCallback: (String) -> Unit,
-        locationCallback: (Location?) -> Unit
+        errorCallback: (errorMessage: String) -> Unit,
+        locationCallback: (newLocation: Location?) -> Unit
     ) {
         startGPSLocationUpdates(errorCallback, locationCallback) // keeps requesting location updates
     }
