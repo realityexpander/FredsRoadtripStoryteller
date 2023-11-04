@@ -5,6 +5,12 @@ import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.sin
 
+fun distanceBetweenInMiles(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double =
+    distanceBetween(lat1, lon1, lat2, lon2, shouldUseKm = false)
+
+fun distanceBetweenInKm(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double =
+    distanceBetween(lat1, lon1, lat2, lon2, shouldUseKm = true)
+
 // Returns distance in miles (or kilometers if shouldUseKM is true)
 // from https://dzone.com/articles/distance-calculation-using-3
 fun distanceBetween(lat1: Double, lon1: Double, lat2: Double, lon2: Double, shouldUseKm: Boolean = true): Double {
