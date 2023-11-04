@@ -6,3 +6,6 @@ fun Double.metersToMiles(): Double {
 fun Double.milesToMeters(): Double {
     return this * 1609.34
 }
+fun Double.milesToKilometers(): Double {
+    return this * 1.60934
+}
