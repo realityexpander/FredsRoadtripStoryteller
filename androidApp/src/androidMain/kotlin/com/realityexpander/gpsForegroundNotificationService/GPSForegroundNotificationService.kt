@@ -10,15 +10,14 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.realityexpander.MainActivity
-import com.realityexpander.gpsForegroundNotificationService.GPSForegroundNotificationServiceNotificationBroadcastReceiver.Companion.GPS_FOREGROUND_SERVICE_NOTIFICATION_MuteAllTextToSpeech_ACTION
-import com.realityexpander.gpsForegroundNotificationService.GPSForegroundNotificationServiceNotificationBroadcastReceiver.Companion.GPS_FOREGROUND_SERVICE_NOTIFICATION_StopSpeakingTextToSpeech_ACTION
-import com.realityexpander.gpsForegroundNotificationService.GPSForegroundNotificationServiceNotificationBroadcastReceiver.Companion.kNotificationActionRequestCode
+import com.realityexpander.gpsForegroundNotificationService.NotificationActionBroadcastReceiver.Companion.GPS_FOREGROUND_SERVICE_NOTIFICATION_MuteAllTextToSpeech_ACTION
+import com.realityexpander.gpsForegroundNotificationService.NotificationActionBroadcastReceiver.Companion.GPS_FOREGROUND_SERVICE_NOTIFICATION_StopSpeakingTextToSpeech_ACTION
+import com.realityexpander.gpsForegroundNotificationService.NotificationActionBroadcastReceiver.Companion.kNotificationActionRequestCode
 import data.appSettings
 //import com.realityexpander.common.R  // uses the shared module R file
 import com.realityexpander.R as AppR  // uses the AndroidMain module R file
@@ -238,7 +237,7 @@ class GPSForegroundNotificationService: Service() {
     private fun createStopSpeakingTextToSpeechAction(): NotificationCompat.Action {
         // Setup action to create "Mute Speaking" button
         val muteTextToSpeechActionIntent =
-            Intent(applicationContext, GPSForegroundNotificationServiceNotificationBroadcastReceiver::class.java).apply {
+            Intent(applicationContext, NotificationActionBroadcastReceiver::class.java).apply {
                 action = GPS_FOREGROUND_SERVICE_NOTIFICATION_StopSpeakingTextToSpeech_ACTION
             }
         val muteTextToSpeechActionPendingIntent: PendingIntent =
@@ -263,7 +262,7 @@ class GPSForegroundNotificationService: Service() {
     private fun createMuteAllTextToSpeechAction(): NotificationCompat.Action {
         // Setup action to create "Cancel Speaking" button
         val cancelSpeakingMarkersActionIntent =
-            Intent(applicationContext, GPSForegroundNotificationServiceNotificationBroadcastReceiver::class.java).apply {
+            Intent(applicationContext, NotificationActionBroadcastReceiver::class.java).apply {
                 action = GPS_FOREGROUND_SERVICE_NOTIFICATION_MuteAllTextToSpeech_ACTION
             }
         val cancelSpeakingMarkersActionPendingIntent: PendingIntent =

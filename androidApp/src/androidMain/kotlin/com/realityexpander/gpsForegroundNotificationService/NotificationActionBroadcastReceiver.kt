@@ -7,10 +7,10 @@ import data.appSettings
 import tts
 
 // Accepts intents for Actions from the GPS tracking Foreground-Service Notification
-class GPSForegroundNotificationServiceNotificationBroadcastReceiver : BroadcastReceiver() {
+class NotificationActionBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
-        println("NotificationBroadcastReceiver: onReceive: intent: $intent")
+        println("NotificationActionBroadcastReceiver: onReceive: intent: $intent")
         context ?: return
         intent ?: return
 

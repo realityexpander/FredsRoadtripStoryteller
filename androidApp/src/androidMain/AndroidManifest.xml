@@ -48,7 +48,7 @@
             android:foregroundServiceType="location" />
 
         <!-- Receives the "OnNotificationEvent" broadcast from notification -->
-        <receiver android:name=".gpsForegroundNotificationService.GPSForegroundNotificationServiceNotificationBroadcastReceiver"/>
+        <receiver android:name=".gpsForegroundNotificationService.NotificationActionBroadcastReceiver"/>
 
     </application>
 
