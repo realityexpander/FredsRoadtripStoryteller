@@ -42,8 +42,9 @@ fun MarkerDetailsPreview(
         subtitle = "Test Subtitle a very long subtitle with data n stuff",
         location = "Location Description",
         inscription = "Incised inscription",
-        englishInscription = "This is the English inscription",
-        spanishInscription = "This is the Inscripciôn en Espanol",
+        englishInscription = "This is the English inscription - Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis.\n\n et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. ",
+        spanishInscription = "This is the Inscripciôn en Espanol - Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis.\n\n et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. ",
+        photoAttributions = listOf("Photographed by Bilbo Baggins", "Photographed by Frodo Baggins"),
     )
  )
 ){

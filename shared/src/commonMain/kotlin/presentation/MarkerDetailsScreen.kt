@@ -38,6 +38,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CloudDownload
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.runtime.Composable
@@ -66,7 +67,6 @@ import io.kamel.image.KamelImage
 import io.kamel.image.KamelImageBox
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch
-import presentation.maps.Location
 import presentation.maps.Marker
 import presentation.uiComponents.PreviewPlaceholder
 import stopTextToSpeech
@@ -80,6 +80,7 @@ fun MarkerDetailsScreen(
     markerLoadingState: LoadingState<Marker>,
     onClickStartSpeakingMarker: (Marker) -> Unit = {},
     isTextToSpeechCurrentlySpeaking: Boolean = false,
+    onLocateMarkerOnMap: (Marker) -> Unit = {},
 ) {
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
@@ -207,7 +208,7 @@ fun MarkerDetailsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight(.9f)
-                    .padding(start = 16.dp, end = 16.dp, bottom = 0.dp, top = 8.dp)
+                    .padding(start = 16.dp, end = 16.dp, bottom = 0.dp, top = 0.dp)
             ) {
                 val painterResource: Resource<Painter> =
                     asyncPainterResource(
@@ -230,7 +231,7 @@ fun MarkerDetailsScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(6f)
+                            .weight(7f)
                             .padding(bottom = 0.dp, top = 4.dp),
                         horizontalAlignment = Alignment.Start,
                         verticalArrangement = Arrangement.Top,
@@ -260,7 +261,8 @@ fun MarkerDetailsScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
-                            .padding(bottom = 0.dp, top = 4.dp),
+//                            .padding(4.dp)
+                        ,
                         horizontalAlignment = Alignment.End,
                         verticalArrangement = Arrangement.Top,
                     ) {
@@ -268,9 +270,10 @@ fun MarkerDetailsScreen(
                         IconButton(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .offset(16.dp, (-8).dp)
-                                .padding(8.dp)
-                                .weight(.5f),
+                                .offset(12.dp, (-8).dp)
+//                                .padding(4.dp)
+//                                .weight(4f)
+                            ,
                             onClick = {
                                 coroutineScope.launch {
                                     bottomSheetScaffoldState.bottomSheetState.collapse()
@@ -278,42 +281,11 @@ fun MarkerDetailsScreen(
                             },
                         ) {
                             Icon(
+                                modifier = Modifier
+                                    .padding(4.dp),
                                 imageVector = Icons.Default.Close,
                                 contentDescription = "Close",
                             )
-                        }
-
-                        // Speak Button
-                        IconButton(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(.5f)
-                                .align(Alignment.End)
-                                .padding(8.dp),
-                            onClick = {
-                                if(isTextToSpeechCurrentlySpeaking)
-                                    stopTextToSpeech()
-                                else {
-                                    onClickStartSpeakingMarker(markerLoadingState.data)
-                                }
-                            },
-                            enabled = true,
-                        ) {
-                            if(isTextToSpeechCurrentlySpeaking) {
-                                Icon(
-                                    imageVector = Icons.Filled.Stop,
-                                    contentDescription = "Stop Speaking Marker",
-                                    tint = MaterialTheme.colors.onBackground,
-                                    modifier = Modifier.width(36.dp).height(36.dp)
-                                )
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Filled.VolumeUp,
-                                    contentDescription = "Speak Marker",
-                                    tint = MaterialTheme.colors.onBackground,
-                                    modifier = Modifier.width(36.dp).height(36.dp)
-                                )
-                            }
                         }
                     }
                 }
@@ -321,7 +293,7 @@ fun MarkerDetailsScreen(
                 // Marker Info Content
                 Column(
                     Modifier
-                        .fillMaxHeight()
+//                        .fillMaxHeight()
                         .weight(4f)
                         .verticalScroll(
                             scrollState,
@@ -505,14 +477,68 @@ fun MarkerDetailsScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.padding(8.dp))
+                    Row(
+                        modifier = Modifier.heightIn(0.dp, 36.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
 
-                    // Marker Id
-                    Text(
-                        "ID: ${markerLoadingState.data.id}",
-                        fontSize = MaterialTheme.typography.body1.fontSize,
-                        fontWeight = FontWeight.Bold,
-                    )
+                    ) {
+                        // Marker Id
+                        Text(
+                            "ID: ${markerLoadingState.data.id}",
+                            modifier = Modifier.weight(2f)
+                            ,
+                            fontSize = MaterialTheme.typography.body1.fontSize,
+                            fontWeight = FontWeight.Bold,
+                        )
+
+                        // Locate on Map Button
+                        IconButton(
+                            modifier = Modifier.weight(.5f),
+                            onClick = {
+                                // close the bottom sheet
+                                coroutineScope.launch {
+                                    bottomSheetScaffoldState.bottomSheetState.collapse()
+                                    onLocateMarkerOnMap(markerLoadingState.data)
+                                }
+                            },
+                            enabled = true,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.MyLocation,
+                                contentDescription = "Find Marker on Map",
+                                tint = MaterialTheme.colors.onBackground,
+                            )
+                        }
+
+                        // Speak Button
+                        IconButton(
+                            modifier = Modifier.weight(.5f),
+                            onClick = {
+                                if (isTextToSpeechCurrentlySpeaking)
+                                    stopTextToSpeech()
+                                else {
+                                    onClickStartSpeakingMarker(markerLoadingState.data)
+                                }
+                            },
+                            enabled = true,
+                        ) {
+                            if (isTextToSpeechCurrentlySpeaking) {
+                                Icon(
+                                    imageVector = Icons.Filled.Stop,
+                                    contentDescription = "Stop Speaking Marker",
+                                    tint = MaterialTheme.colors.onBackground,
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Filled.VolumeUp,
+                                    contentDescription = "Speak Marker",
+                                    tint = MaterialTheme.colors.onBackground,
+                                )
+                            }
+                        }
+                    }
+
 
                     // Inscription
                     if (markerLoadingState.data.englishInscription.isNotBlank()) { // todo add spanish translation
