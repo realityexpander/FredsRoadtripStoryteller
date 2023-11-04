@@ -761,29 +761,6 @@ fun App(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-private fun FixScreenRotationLeavesDrawerPartiallyOpenIssue(bottomSheetScaffoldState: BottomSheetScaffoldState) {
-    // Fix a bug in Material 2 where the drawer isn't fully closed when the screen is rotated
-    var isFinished by remember(bottomSheetScaffoldState.drawerState.isOpen) {
-        if(bottomSheetScaffoldState.drawerState.isClosed) {
-            mutableStateOf(false)
-        } else
-            mutableStateOf(true)
-    }
-    LaunchedEffect(Unit, bottomSheetScaffoldState.drawerState.isOpen) {
-        delay(250)
-        while (!isFinished) {
-            if (bottomSheetScaffoldState.drawerState.isClosed) {
-                bottomSheetScaffoldState.drawerState.close() // yes it polls but it's only 250ms
-            }
-            if(bottomSheetScaffoldState.drawerState.isOpen) {
-                isFinished = true
-            }
-        }
-    }
-}
-
 private fun calcLoadingStateIcon(it: LoadingState<String>) =
     when (it) {
         is LoadingState.Loading -> {
@@ -816,7 +793,7 @@ private fun updateCurrentUiMarkers(
 }
 
 // force a change in location to trigger a reload of the markers
-// todo maybe use callback and set `shouldRedrawMapMarkers = true`
+// todo refactor? maybe use callback and set `shouldRedrawMapMarkers = true`
 private fun jiggleLocationToForceUiUpdate(userLocation: Location) = Location(
     userLocation.latitude +
             Random.nextDouble(0.0001, 0.0002),
@@ -935,6 +912,29 @@ private fun addSeenMarkersToRecentlySeenList(
             RecentlySeenMarkersList(recentlySeenMarkersSet.toList())
         appSettings.uiRecentlySeenMarkersList =
             RecentlySeenMarkersList(uiRecentlySeenMarkersList.toList())
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+private fun FixScreenRotationLeavesDrawerPartiallyOpenIssue(bottomSheetScaffoldState: BottomSheetScaffoldState) {
+    // Fix a bug in Material 2 where the drawer isn't fully closed when the screen is rotated
+    var isFinished by remember(bottomSheetScaffoldState.drawerState.isOpen) {
+        if(bottomSheetScaffoldState.drawerState.isClosed) {
+            mutableStateOf(false)
+        } else
+            mutableStateOf(true)
+    }
+    LaunchedEffect(Unit, bottomSheetScaffoldState.drawerState.isOpen) {
+        delay(250)
+        while (!isFinished) {
+            if (bottomSheetScaffoldState.drawerState.isClosed) {
+                bottomSheetScaffoldState.drawerState.close() // yes it polls but it's only 250ms
+            }
+            if(bottomSheetScaffoldState.drawerState.isOpen) {
+                isFinished = true
+            }
+        }
     }
 }
 
