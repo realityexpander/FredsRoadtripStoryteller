@@ -67,7 +67,6 @@ import com.google.maps.android.heatmaps.WeightedLatLng
 import com.realityexpander.common.R
 import data.loadMarkers.milesToMeters
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import presentation.maps.CameraLocationBounds
@@ -90,13 +89,14 @@ actual fun GoogleMaps(
     userLocation: LatLong?,
     markers: List<Marker>?,
     shouldRedrawMapMarkers: Boolean,
-    cameraOnetimePosition: CameraPosition?, // Best for setting initial camera position bc zoom level is forced
-    cameraLocationLatLong: LatLong?, // Best for tracking user location
-    cameraLocationBounds: CameraLocationBounds?, // Best for showing a bunch of markers
+    cameraInitialPosition: CameraPosition?, // Best for setting initial camera position bc zoom level is forced
+    shouldCenterCameraOnLocationLatLong: LatLong?, // Best for tracking user location
+    onDidCenterCameraOnLocation: () -> Unit, // Best for showing a bunch of markers
+    cameraLocationBounds: CameraLocationBounds?,
     polyLine: List<LatLong>?,
     onMapClick: ((LatLong) -> Unit)?,
     onMapLongClick: ((LatLong) -> Unit)?,
-    onMarkerClick: ((Marker) -> Unit)?,
+    onMarkerInfoClick: ((Marker) -> Unit)?,
     seenRadiusMiles: Double,
     cachedMarkersLastUpdatedLocation: Location?,
     onToggleIsTrackingEnabledClick: (() -> Unit)?,
@@ -147,8 +147,8 @@ actual fun GoogleMaps(
     var showSomething by remember { mutableStateOf(false) } // LEAVE FOR TESTING PURPOSES
 
     // Usually used to setup the initial camera position (doesn't support tracking due to forcing zoom level)
-    LaunchedEffect(cameraOnetimePosition) {
-        cameraOnetimePosition?.let { cameraPosition ->
+    LaunchedEffect(cameraInitialPosition) {
+        cameraInitialPosition?.let { cameraPosition ->
             cameraPositionState.move(
                 CameraUpdateFactory.newLatLngZoom(
                     LatLng(
@@ -191,13 +191,13 @@ actual fun GoogleMaps(
     //       to change once, the user can pan around the map without the camera jumping back to
     //       the cameraLocationLatLong position.
     var previousCameraLocationLatLong by remember { mutableStateOf<LatLong?>(null) }
-    LaunchedEffect(cameraLocationLatLong) {
-        cameraLocationLatLong?.let { cameraLocationLatLong ->
-            if (previousCameraLocationLatLong == cameraLocationLatLong) {
-                return@LaunchedEffect
-            }
+    LaunchedEffect(shouldCenterCameraOnLocationLatLong) {
+        if (previousCameraLocationLatLong == shouldCenterCameraOnLocationLatLong) {
+            return@LaunchedEffect
+        }
 
-            previousCameraLocationLatLong = cameraLocationLatLong
+        previousCameraLocationLatLong = shouldCenterCameraOnLocationLatLong
+        shouldCenterCameraOnLocationLatLong?.let { cameraLocationLatLong ->
             cameraPositionState.animate(
                 CameraUpdateFactory.newLatLng(
                     LatLng(
@@ -206,6 +206,7 @@ actual fun GoogleMaps(
                     )
                 )
             )
+            onDidCenterCameraOnLocation()
         }
     }
 
@@ -253,11 +254,7 @@ actual fun GoogleMaps(
             modifier = Modifier.background(MaterialTheme.colors.background, RectangleShape),
             uiSettings = uiSettings,
             properties = properties,
-            onMapClick = { latLng: LatLng ->
-                onMapClick?.let {
-                    onMapClick(LatLong(latLng.latitude, latLng.longitude))
-                }
-            },
+            onMapClick = {},
         ) {
 
             // Heat Map Overlay
@@ -430,10 +427,6 @@ actual fun GoogleMaps(
                         return@remember result
                     }
                 },
-                onClusterClick = { cluster ->
-                    Log.d { "cluster clicked" }
-                    true
-                },
                 onClusterItemInfoWindowClick = { clusterItem ->
                     coroutineScope.launch {
                         val selectedMarker = Marker(
@@ -445,7 +438,7 @@ actual fun GoogleMaps(
                             title = clusterItem.title ?: "",
                             alpha = 1.0f,
                         )
-                        onMarkerClick?.run { onMarkerClick(selectedMarker) }
+                        onMarkerInfoClick?.run { onMarkerInfoClick(selectedMarker) }
                     }
                 },
                 clusterItemContent = { clusterItem ->
@@ -462,11 +455,12 @@ actual fun GoogleMaps(
                         //    color = Color.White
                         //)
                         val marker = markers?.find { it.id == clusterItem.snippet }
-                        val painterResourceFilename = if (marker?.isSeen == true) {
-                            "marker_lightgray.png"
-                        } else {
-                            "marker_red.png"
-                        }
+                        val painterResourceFilename =
+                            if (marker?.isSeen == true) {
+                                "marker_lightgray.png"
+                            } else {
+                                "marker_red.png"
+                            }
 
                         if(LocalInspectionMode.current) {
                                 PreviewPlaceholder("Location marker $painterResourceFilename")
@@ -489,18 +483,15 @@ actual fun GoogleMaps(
                 }
             )
 
-            // Information marker
+            // Information marker - Known bug when opening second info marker there is a noticeable flicker when the info window "jumps up" above the marker icon
             shouldShowInfoMarker?.let { marker ->
-                // Hide the previous info marker
-                infoMarker?.run {
-                    infoMarkerMarkerState.hideInfoWindow()
-                }
+                // Clear the previous info marker (if any)
                 infoMarker = null // allows the current infoMarker to be cleared
+                onDidShowInfoMarker()
 
                 // Show the new info marker
                 coroutineScope.launch {
                     infoMarker = marker
-                    onDidShowInfoMarker()
                 }
             }
             infoMarker?.let { marker ->
@@ -511,19 +502,21 @@ actual fun GoogleMaps(
                         marker.position.latitude,
                         marker.position.longitude
                     )
-                )
+                ).also {
+                    it.showInfoWindow()
+                }
                 Marker(
-                    state = infoMarkerMarkerState.also { it.showInfoWindow() },
+                    state = infoMarkerMarkerState, //.also { it.showInfoWindow() },
                     alpha = marker.alpha,
                     title = marker.title,
                     snippet = marker.id,
                     icon = bitmapDescriptorFromVector(
                         context = LocalContext.current,
-                        vectorResId = R.drawable.invisible_map_icon_24 // invisible icon
+                        vectorResId = R.drawable.invisible_map_icon_24 // invisible icon, 48x48
                     ),
                     visible = true,
                     onInfoWindowClick = {
-                        onMarkerClick?.run { onMarkerClick(marker) }
+                        onMarkerInfoClick?.run { onMarkerInfoClick(marker) }
                     }
                 )
             }

@@ -256,12 +256,11 @@ fun MarkerDetailsScreen(
                         )
                     }
 
-                    // Close & Speak Button
+                    // Close Button
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
-//                            .padding(4.dp)
                         ,
                         horizontalAlignment = Alignment.End,
                         verticalArrangement = Arrangement.Top,
@@ -270,10 +269,7 @@ fun MarkerDetailsScreen(
                         IconButton(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .offset(12.dp, (-8).dp)
-//                                .padding(4.dp)
-//                                .weight(4f)
-                            ,
+                                .offset(12.dp, (-8).dp),
                             onClick = {
                                 coroutineScope.launch {
                                     bottomSheetScaffoldState.bottomSheetState.collapse()
@@ -293,7 +289,6 @@ fun MarkerDetailsScreen(
                 // Marker Info Content
                 Column(
                     Modifier
-//                        .fillMaxHeight()
                         .weight(4f)
                         .verticalScroll(
                             scrollState,
@@ -477,6 +472,7 @@ fun MarkerDetailsScreen(
                         )
                     }
 
+                    // ID, Locate on Map, Speak
                     Row(
                         modifier = Modifier.heightIn(0.dp, 36.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,

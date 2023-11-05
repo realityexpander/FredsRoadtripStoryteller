@@ -60,13 +60,14 @@ actual fun GoogleMaps(
     userLocation: LatLong?,
     markers: List<Marker>?,
     shouldRedrawMapMarkers: Boolean,
-    cameraOnetimePosition: CameraPosition?,  // best for tracking user location
-    cameraLocationLatLong: LatLong?,  // best for showing a bunch of markers
-    cameraLocationBounds: CameraLocationBounds?, // usually only used for initial camera position bc zoom level is forced
-    polyLine: List<LatLong>?,
-    onMapClick: ((LatLong) -> Unit)?,  // shows the user's location with a 100m radius circle
+    cameraInitialPosition: CameraPosition?,  // best for tracking user location
+    shouldCenterCameraOnLocationLatLong: LatLong?,  // best for showing a bunch of markers
+    onDidCenterCameraOnLocation: () -> Unit, // usually only used for initial camera position bc zoom level is forced
+    cameraLocationBounds: CameraLocationBounds?,
+    polyLine: List<LatLong>?,  // shows the user's location with a 100m radius circle
+    onMapClick: ((LatLong) -> Unit)?,
     onMapLongClick: ((LatLong) -> Unit)?,
-    onMarkerClick: ((Marker) -> Unit)?,
+    onMarkerInfoClick: ((Marker) -> Unit)?,
     seenRadiusMiles: Double,
     cachedMarkersLastUpdatedLocation: Location?,
     onToggleIsTrackingEnabledClick: (() -> Unit)?,
@@ -116,14 +117,14 @@ actual fun GoogleMaps(
         }
     }
 
-    LaunchedEffect(cameraOnetimePosition) {
-        if (cameraOnetimePosition != null) {
+    LaunchedEffect(cameraInitialPosition) {
+        if (cameraInitialPosition != null) {
             didCameraPositionChange = true
         }
     }
 
-    LaunchedEffect(cameraLocationLatLong) {
-        if (cameraLocationLatLong != null) {
+    LaunchedEffect(shouldCenterCameraOnLocationLatLong) {
+        if (shouldCenterCameraOnLocationLatLong != null) {
             didCameraLocationLatLongChange = true
         }
     }
@@ -185,7 +186,7 @@ actual fun GoogleMaps(
                     }
                 } else {
                     if(!isMapSetupCompleted) { // Sets the camera once during setup, this allows the user to move the map around
-                        cameraOnetimePosition?.let { cameraPosition ->
+                        cameraInitialPosition?.let { cameraPosition ->
                             view.animateWithCameraUpdate(
                                 GMSCameraUpdate.setTarget(
                                     CLLocationCoordinate2DMake(
@@ -218,7 +219,7 @@ actual fun GoogleMaps(
 
                 if(didCameraPositionChange) {
                     didCameraPositionChange = false
-                    cameraOnetimePosition?.let { cameraPosition ->
+                    cameraInitialPosition?.let { cameraPosition ->
                         view.setCamera(
                             GMSCameraPosition.cameraWithLatitude(
                                 cameraPosition.target.latitude,
@@ -231,7 +232,7 @@ actual fun GoogleMaps(
 
                 if(didCameraLocationLatLongChange) {
                     didCameraLocationLatLongChange = false
-                    cameraLocationLatLong?.let { cameraLocation ->
+                    shouldCenterCameraOnLocationLatLong?.let { cameraLocation ->
                         view.animateWithCameraUpdate(
                             GMSCameraUpdate.setTarget(
                                 CLLocationCoordinate2DMake(

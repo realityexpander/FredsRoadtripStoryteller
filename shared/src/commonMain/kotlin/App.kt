@@ -136,7 +136,7 @@ fun App(
         var isTrackingEnabled by remember {
             mutableStateOf(appSettings.shouldStartBackgroundTrackingWhenAppLaunches)
         }
-        var centerOnUserCameraLocation by remember {
+        var shouldCenterCameraOnLocation by remember {
             mutableStateOf<Location?>(null) // used to center map on user location
         }
         var userLocation: Location by remember {
@@ -520,8 +520,10 @@ fun App(
                                 currentSpeakingMarker = speakMarker(speakMarker, true)
                             },
                             onLocateMarkerOnMap = { locateMarker ->
-                                centerOnUserCameraLocation = locateMarker.position.toLocation()
-                                shouldShowInfoMarker = locateMarker
+                                coroutineScope.launch {
+                                    shouldCenterCameraOnLocation = locateMarker.position.toLocation()
+                                    shouldShowInfoMarker = locateMarker
+                                }
                             },
                         )
                     }
@@ -684,7 +686,10 @@ fun App(
                                     shouldRedrawMapMarkers = false
                                 },
                                 isTrackingEnabled = isTrackingEnabled,
-                                centerOnUserCameraLocation = centerOnUserCameraLocation,
+                                shouldCenterCameraOnLocation = shouldCenterCameraOnLocation,
+                                onDidCenterOnLocation = {
+                                    shouldCenterCameraOnLocation = null
+                                },
                                 seenRadiusMiles = seenRadiusMiles,
                                 cachedMarkersLastUpdatedLocation =
                                 remember(
@@ -707,11 +712,11 @@ fun App(
                                     }
                                 },
                                 onFindMeButtonClicked = {
-                                    centerOnUserCameraLocation = userLocation.copy()
+                                    shouldCenterCameraOnLocation = userLocation.copy()
                                 },
                                 isMarkersLastUpdatedLocationVisible = isMarkersLastUpdatedLocationVisible,
                                 isMapOptionSwitchesVisible = !isRecentlySeenMarkersPanelVisible,  // hide map options when showing marker list
-                                onMarkerClick = { marker ->
+                                onMarkerInfoClick = { marker ->
                                     // Show marker details
                                     coroutineScope.launch {
                                         bottomSheetActiveScreen =

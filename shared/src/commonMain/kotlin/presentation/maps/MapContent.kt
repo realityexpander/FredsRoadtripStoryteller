@@ -22,14 +22,15 @@ fun MapContent(
     shouldRedrawMapMarkers: Boolean,
     onDidRedrawMapMarkers: () -> Unit = {},
     isTrackingEnabled: Boolean = false,
-    centerOnUserCameraLocation: Location? = null,
+    shouldCenterCameraOnLocation: Location? = null,
+    onDidCenterOnLocation: () -> Unit = {},
     seenRadiusMiles: Double = .5,
     cachedMarkersLastUpdatedLocation: Location? = null,
     onToggleIsTrackingEnabled: (() -> Unit)? = null,
     onFindMeButtonClicked: (() -> Unit)? = null,
     isMarkersLastUpdatedLocationVisible: Boolean = false,
     isMapOptionSwitchesVisible: Boolean = true,
-    onMarkerClick: ((Marker) -> Unit)? = null,
+    onMarkerInfoClick: ((Marker) -> Unit)? = null,
     shouldShowInfoMarker: Marker? = null,
     onDidShowInfoMarker: () -> Unit = {}
 ): Boolean {
@@ -49,7 +50,7 @@ fun MapContent(
                 ),
                 markers = markers.ifEmpty { null },
                 shouldRedrawMapMarkers = shouldRedrawMapMarkers,
-                cameraOnetimePosition =
+                cameraInitialPosition =
                     if (isFirstUpdate) {  // set initial camera position
                         CameraPosition(
                             target = LatLong(
@@ -60,18 +61,19 @@ fun MapContent(
                         )
                     } else
                         null,
-                cameraLocationLatLong = remember(centerOnUserCameraLocation) {
+                shouldCenterCameraOnLocationLatLong = remember(shouldCenterCameraOnLocation) {
                     // 37.422160,
                     // -122.084270  // googleplex
-                    centerOnUserCameraLocation?.let {
+                    shouldCenterCameraOnLocation?.let {
                         LatLong(
-                            centerOnUserCameraLocation.latitude,
-                            centerOnUserCameraLocation.longitude
+                            shouldCenterCameraOnLocation.latitude,
+                            shouldCenterCameraOnLocation.longitude
                         )
                     } ?: run {
                         null
                     }
                 },
+                onDidCenterCameraOnLocation = onDidCenterOnLocation,
                 cameraLocationBounds = remember {  // Center around bound of markers
                     mapBounds?.let {
                         CameraLocationBounds(
@@ -82,7 +84,7 @@ fun MapContent(
                         null // won't center around bounds
                     }
                 },
-                onMarkerClick = onMarkerClick,
+                onMarkerInfoClick = onMarkerInfoClick,
                 seenRadiusMiles = seenRadiusMiles,
                 cachedMarkersLastUpdatedLocation = cachedMarkersLastUpdatedLocation,
                 onToggleIsTrackingEnabledClick = onToggleIsTrackingEnabled,
