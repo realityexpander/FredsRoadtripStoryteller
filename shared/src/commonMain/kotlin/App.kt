@@ -109,7 +109,6 @@ fun App(
 ) {
     AppTheme {
         val coroutineScope = rememberCoroutineScope()
-
         val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
         val scaffoldState = rememberScaffoldState()
         var bottomSheetActiveScreen by remember {
@@ -117,7 +116,7 @@ fun App(
         }
 
         // Error Message state & value
-        var isShowingError by remember {
+        var errorMessageStr by remember {
             mutableStateOf<String?>(null)
         }
 
@@ -266,7 +265,7 @@ fun App(
             gpsLocationService.onUpdatedGPSLocation(
                 errorCallback = { errorMessage ->
                     Log.w("Error: $errorMessage")
-                    isShowingError = errorMessage
+                    errorMessageStr = errorMessage
                 }
             ) { updatedLocation ->
                 //    val locationTemp = Location(
@@ -277,11 +276,11 @@ fun App(
                 //    )
                 //    myLocation = locationTemp ?: run { // use fake location above
                 userLocation = updatedLocation ?: run {
-                    isShowingError = "Unable to get current location"
-                    Log.w(isShowingError.toString())
+                    errorMessageStr = "Unable to get current location"
+                    Log.w(errorMessageStr.toString())
                     return@run userLocation // just return most recent location
                 }
-                isShowingError = null
+                errorMessageStr = null
             }
 
             // Save last known location & add any recently seen markers
@@ -328,7 +327,7 @@ fun App(
                                                 coroutineScope,
                                                 onError = { errorMessage ->
                                                     Log.w(errorMessage)
-                                                    isShowingError = errorMessage
+                                                    errorMessageStr = errorMessage
                                                 },
                                                 markersRepo = markersRepo,
                                                 onUpdateLoadingState = { loadingState -> // todo make function
@@ -402,7 +401,7 @@ fun App(
                                 coroutineScope,
                                 onError = { errorMessage ->
                                     Log.w(errorMessage)
-                                    isShowingError = errorMessage
+                                    errorMessageStr = errorMessage
                                 },
                                 markersRepo = markersRepo,
                                 onUpdateLoadingState = { loadingState ->
@@ -475,13 +474,13 @@ fun App(
                                 markerIdFromParamId
                                     ?: markerIdFromMarker
                                     ?: run {
-                                        isShowingError =
+                                        errorMessageStr =
                                             "Error: Unable to find marker id=$markerIdFromMarker"
                                         return@remember localMarker ?: Marker()
                                     }
 
                             markersRepo.marker(markerId) ?: run {
-                                isShowingError = "Error: Unable to find marker with id=$markerId"
+                                errorMessageStr = "Error: Unable to find marker with id=$markerId"
                                 return@remember localMarker ?: Marker()
                             }
                         }
@@ -654,11 +653,11 @@ fun App(
                 ) {
 
                     // Show Error
-                    AnimatedVisibility(isShowingError != null) {
+                    AnimatedVisibility(errorMessageStr != null) {
                         Text(
                             modifier = Modifier.fillMaxWidth()
                                 .background(MaterialTheme.colors.error),
-                            text = "Error: $isShowingError",
+                            text = "Error: $errorMessageStr",
                             textAlign = TextAlign.Center,
                             fontStyle = FontStyle.Normal,
                             fontWeight = FontWeight.Medium,
@@ -763,7 +762,7 @@ fun App(
                                         coroutineScope,
                                         onError = { errorMessage ->
                                             Log.w(errorMessage)
-                                            isShowingError = errorMessage
+                                            errorMessageStr = errorMessage
                                         },
                                         markersRepo = markersRepo,
                                         onUpdateLoadingState = { loadingState -> // todo make function

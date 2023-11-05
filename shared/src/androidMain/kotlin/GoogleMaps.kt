@@ -254,7 +254,10 @@ actual fun GoogleMaps(
             modifier = Modifier.background(MaterialTheme.colors.background, RectangleShape),
             uiSettings = uiSettings,
             properties = properties,
-            onMapClick = {},
+            onMapClick = {
+                infoMarkerMarkerState.hideInfoWindow()
+                infoMarker = null
+            },
         ) {
 
             // Heat Map Overlay
