@@ -95,10 +95,9 @@ const val kMaxMarkerDetailsAgeSeconds = 60 * 60 * 24 * 30  // 30 days
 sealed class BottomSheetScreen {
     data object SettingsScreen : BottomSheetScreen()
 
-    // Can pass in a MapMarker or just an id string
     data class MarkerDetailsScreen(
-        val marker: Marker? = null,
-        val id: String? = marker?.id
+        val marker: Marker? = null,  // Can pass in a MapMarker...
+        val id: String? = marker?.id // ...or just an id string
     ) : BottomSheetScreen()
 }
 
