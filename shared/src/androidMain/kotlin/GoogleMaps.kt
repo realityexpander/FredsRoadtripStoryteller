@@ -1,3 +1,6 @@
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -34,10 +37,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MapStyleOptions
@@ -49,23 +56,25 @@ import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.MapsComposeExperimentalApi
 import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.TileOverlay
 import com.google.maps.android.compose.clustering.Clustering
 import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.rememberMarkerState
 import com.google.maps.android.compose.rememberTileOverlayState
 import com.google.maps.android.heatmaps.HeatmapTileProvider
 import com.google.maps.android.heatmaps.WeightedLatLng
+import com.realityexpander.common.R
 import data.loadMarkers.milesToMeters
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.painterResource
 import presentation.maps.CameraLocationBounds
 import presentation.maps.CameraPosition
 import presentation.maps.LatLong
-import presentation.maps.Marker
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
 import presentation.maps.Location
+import presentation.maps.Marker
 import presentation.uiComponents.PreviewPlaceholder
 import presentation.uiComponents.SwitchWithLabel
 import co.touchlab.kermit.Logger as Log
@@ -92,8 +101,19 @@ actual fun GoogleMaps(
     cachedMarkersLastUpdatedLocation: Location?,
     onToggleIsTrackingEnabledClick: (() -> Unit)?,
     onFindMeButtonClick: (() -> Unit)?,
-    isMarkersLastUpdatedLocationVisible: Boolean
+    isMarkersLastUpdatedLocationVisible: Boolean,
+    shouldShowInfoMarker: Marker?,
+    onDidShowInfoMarker: () -> Unit
 ) {
+
+    fun bitmapDescriptorFromVector(context: Context, vectorResId: Int): BitmapDescriptor? {
+        return ContextCompat.getDrawable(context, vectorResId)?.run {
+            setBounds(0, 0, intrinsicWidth, intrinsicHeight)
+            val bitmap = Bitmap.createBitmap(intrinsicWidth, intrinsicHeight, Bitmap.Config.ARGB_8888)
+            draw(Canvas(bitmap))
+            BitmapDescriptorFactory.fromBitmap(bitmap)
+        }
+    }
 
     val cameraPositionState = rememberCameraPositionState()
     val uiSettings by remember {
@@ -207,7 +227,6 @@ actual fun GoogleMaps(
 
     Box(modifier.fillMaxSize()) {
 
-        val myMarkers = remember { mutableStateOf(listOf<Marker>()) }
         val coroutineScope = rememberCoroutineScope()
         val cachedMarkers = remember { mutableStateListOf<ClusterItem>() }
         var cachedTileProvider by remember {
@@ -225,14 +244,18 @@ actual fun GoogleMaps(
             )
         }
 
+        // Information marker - visible after user clicks "find marker" button in details panel
+        var infoMarker by remember { mutableStateOf<Marker?>(null) }
+        var infoMarkerMarkerState = rememberMarkerState()
+
         GoogleMap(
             cameraPositionState = cameraPositionState,
             modifier = Modifier.background(MaterialTheme.colors.background, RectangleShape),
             uiSettings = uiSettings,
             properties = properties,
             onMapClick = { latLng: LatLng ->
-                onMapClick?.let { nativeFun ->
-                    nativeFun(LatLong(latLng.latitude, latLng.longitude))
+                onMapClick?.let {
+                    onMapClick(LatLong(latLng.latitude, latLng.longitude))
                 }
             },
         ) {
@@ -282,17 +305,6 @@ actual fun GoogleMaps(
                     visible = isHeatMapEnabled,
                     fadeIn = true,
                     transparency = 0.0f
-                )
-            }
-
-            // temporary markers
-            myMarkers.value.forEach { marker ->
-                Marker(
-                    state = MarkerState(
-                        position = LatLng(marker.position.latitude, marker.position.longitude)
-                    ),
-                    alpha = marker.alpha,
-                    title = marker.title,
                 )
             }
 
@@ -408,7 +420,6 @@ actual fun GoogleMaps(
                                 override fun getSnippet(): String = marker.id
                                 override fun getPosition(): LatLng =
                                     LatLng(marker.position.latitude, marker.position.longitude)
-
                                 override fun getZIndex(): Float = 1.0f
                             }
                         } ?: listOf<ClusterItem>()
@@ -434,21 +445,9 @@ actual fun GoogleMaps(
                             title = clusterItem.title ?: "",
                             alpha = 1.0f,
                         )
-                        onMarkerClick?.let { nativeFun ->
-                            nativeFun(selectedMarker)
-                        }
+                        onMarkerClick?.run { onMarkerClick(selectedMarker) }
                     }
                 },
-//                clusterContent = { cluster ->
-//                    Log.d { "clusterContent" }
-//                    Marker(
-//                        state = MarkerState(
-//                            position = LatLng(cluster.position.latitude, cluster.position.longitude)
-//                        ),
-//                        alpha = 1.0f,
-//                        title = cluster.items.size.toString()
-//                    )
-//                },
                 clusterItemContent = { clusterItem ->
                     Box(
                         modifier = Modifier
@@ -469,7 +468,7 @@ actual fun GoogleMaps(
                             "marker_red.png"
                         }
 
-                            if(LocalInspectionMode.current) {
+                        if(LocalInspectionMode.current) {
                                 PreviewPlaceholder("Location marker $painterResourceFilename")
                             } else {
                                 Image(
@@ -490,24 +489,44 @@ actual fun GoogleMaps(
                 }
             )
 
+            // Information marker
+            shouldShowInfoMarker?.let { marker ->
+                // Hide the previous info marker
+                infoMarker?.run {
+                    infoMarkerMarkerState.hideInfoWindow()
+                }
+                infoMarker = null // allows the current infoMarker to be cleared
 
-            // LEAVE FOR REFERENCE
-            // Raw markers (not clustered)
-//            markers?.forEach { marker ->
-////                Log.d { "marker = ${marker.key}: ${marker.position.latitude}, ${marker.position.longitude}" }
-//                Marker(
-////                    state = rememberMarkerState(
-////                        key = marker.key,
-////                        position = LatLng(marker.position.latitude, marker.position.longitude)
-////                    ),
-//                    state = MarkerState(
-//                        position = LatLng(marker.position.latitude, marker.position.longitude)
-//                    ),
-//                    alpha = marker.alpha,
-//                    title = marker.title
-//                )
-//            }
-
+                // Show the new info marker
+                coroutineScope.launch {
+                    infoMarker = marker
+                    onDidShowInfoMarker()
+                }
+            }
+            infoMarker?.let { marker ->
+                // Render the info marker
+                infoMarkerMarkerState = rememberMarkerState(
+                    key = marker.id,
+                    position = LatLng(
+                        marker.position.latitude,
+                        marker.position.longitude
+                    )
+                )
+                Marker(
+                    state = infoMarkerMarkerState.also { it.showInfoWindow() },
+                    alpha = marker.alpha,
+                    title = marker.title,
+                    snippet = marker.id,
+                    icon = bitmapDescriptorFromVector(
+                        context = LocalContext.current,
+                        vectorResId = R.drawable.invisible_map_icon_24 // invisible icon
+                    ),
+                    visible = true,
+                    onInfoWindowClick = {
+                        onMarkerClick?.run { onMarkerClick(marker) }
+                    }
+                )
+            }
         }
 
         // Local Map Controls

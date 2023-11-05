@@ -29,7 +29,9 @@ fun MapContent(
     onFindMeButtonClicked: (() -> Unit)? = null,
     isMarkersLastUpdatedLocationVisible: Boolean = false,
     isMapOptionSwitchesVisible: Boolean = true,
-    onMarkerClick: ((Marker) -> Unit)? = null
+    onMarkerClick: ((Marker) -> Unit)? = null,
+    shouldShowInfoMarker: Marker? = null,
+    onDidShowInfoMarker: () -> Unit = {}
 ): Boolean {
     var didMapMarkersRedraw by remember(shouldRedrawMapMarkers) { mutableStateOf(true) }
     var isFirstUpdate by remember { mutableStateOf(true) } // force map to update at least once
@@ -39,6 +41,7 @@ fun MapContent(
 
             GoogleMaps(
                 modifier = modifier,
+                isMapOptionSwitchesVisible = isMapOptionSwitchesVisible,
                 isTrackingEnabled = isTrackingEnabled,
                 userLocation = LatLong( // passed to map to track location
                     userLocation.latitude,
@@ -79,13 +82,14 @@ fun MapContent(
                         null // won't center around bounds
                     }
                 },
+                onMarkerClick = onMarkerClick,
                 seenRadiusMiles = seenRadiusMiles,
                 cachedMarkersLastUpdatedLocation = cachedMarkersLastUpdatedLocation,
                 onToggleIsTrackingEnabledClick = onToggleIsTrackingEnabled,
                 onFindMeButtonClick = onFindMeButtonClicked,
                 isMarkersLastUpdatedLocationVisible = isMarkersLastUpdatedLocationVisible,
-                isMapOptionSwitchesVisible = isMapOptionSwitchesVisible,
-                onMarkerClick = onMarkerClick
+                shouldShowInfoMarker = shouldShowInfoMarker,
+                onDidShowInfoMarker = onDidShowInfoMarker
             )
 
             // Guard against initial location being (0.0, 0.0)

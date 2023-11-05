@@ -1,4 +1,4 @@
-package com.realityexpander
+package com.realityexpander.util
 
 import android.Manifest
 import android.content.Context

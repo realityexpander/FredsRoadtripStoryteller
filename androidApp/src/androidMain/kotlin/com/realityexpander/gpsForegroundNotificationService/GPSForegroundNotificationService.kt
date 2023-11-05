@@ -9,12 +9,10 @@ import android.app.PendingIntent.getBroadcast
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat
 import com.realityexpander.MainActivity
+import com.realityexpander.util.getBitmapFromVectorDrawable
 import com.realityexpander.gpsForegroundNotificationService.NotificationActionBroadcastReceiver.Companion.GPS_FOREGROUND_SERVICE_NOTIFICATION_MuteAllTextToSpeech_ACTION
 import com.realityexpander.gpsForegroundNotificationService.NotificationActionBroadcastReceiver.Companion.GPS_FOREGROUND_SERVICE_NOTIFICATION_StopSpeakingTextToSpeech_ACTION
 import com.realityexpander.gpsForegroundNotificationService.NotificationActionBroadcastReceiver.Companion.kNotificationActionRequestCode
@@ -62,18 +60,6 @@ class GPSForegroundNotificationService: Service() {
             ACTION_STOP_NOTIFICATION_SERVICE -> stop()
         }
         return super.onStartCommand(intent, flags, startId)
-    }
-
-    private fun getBitmapFromVectorDrawable(context: Context?, drawableId: Int): Bitmap {
-        val drawable = ContextCompat.getDrawable(context!!, drawableId)
-        val bitmap = Bitmap.createBitmap(
-            drawable!!.intrinsicWidth,
-            drawable.intrinsicHeight, Bitmap.Config.ARGB_8888
-        )
-        val canvas = Canvas(bitmap)
-        drawable.setBounds(0, 0, canvas.width, canvas.height)
-        drawable.draw(canvas)
-        return bitmap
     }
 
     private fun start() {

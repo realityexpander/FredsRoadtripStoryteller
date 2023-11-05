@@ -76,6 +76,7 @@ import presentation.maps.Location
 import presentation.maps.MarkerIdStr
 import presentation.maps.RecentlySeenMarker
 import presentation.maps.RecentlySeenMarkersList
+import presentation.maps.toLocation
 import presentation.speech.speakMarker
 import presentation.speech.speakRecentlySeenMarker
 import kotlin.random.Random
@@ -195,6 +196,9 @@ fun App(
 
         var shouldRedrawMapMarkers by remember {
             mutableStateOf(true)
+        }
+        var shouldShowInfoMarker by remember {
+            mutableStateOf<Marker?>(null)
         }
 
         // Update the UI Map markers AFTER markers "basic info" index page has finished parsing
@@ -516,6 +520,10 @@ fun App(
                                 )
                                 currentSpeakingMarker = speakMarker(speakMarker, true)
                             },
+                            onLocateMarkerOnMap = { locateMarker ->
+                                centerOnUserCameraLocation = locateMarker.position.toLocation()
+                                shouldShowInfoMarker = locateMarker
+                            },
                         )
                     }
                 }
@@ -537,7 +545,7 @@ fun App(
                 mutableStateOf(appSettings.isRecentlySeenMarkersPanelVisible)
             }
 
-            FixScreenRotationLeavesDrawerPartiallyOpenIssue(bottomSheetScaffoldState)
+            FixIssue_ScreenRotationLeavesDrawerPartiallyOpen(bottomSheetScaffoldState)
 
             Scaffold(
                 scaffoldState = scaffoldState,
@@ -714,6 +722,10 @@ fun App(
                                         }
                                     }
                                 },
+                                shouldShowInfoMarker = shouldShowInfoMarker,
+                                onDidShowInfoMarker = {
+                                    shouldShowInfoMarker = null
+                                }
                             )
                         if (didMapMarkersUpdate) {
                             // The map has been updated, so don't redraw it again.
@@ -922,7 +934,7 @@ private fun addSeenMarkersToRecentlySeenList(
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-private fun FixScreenRotationLeavesDrawerPartiallyOpenIssue(bottomSheetScaffoldState: BottomSheetScaffoldState) {
+private fun FixIssue_ScreenRotationLeavesDrawerPartiallyOpen(bottomSheetScaffoldState: BottomSheetScaffoldState) {
     // Fix a bug in Material 2 where the drawer isn't fully closed when the screen is rotated
     var isFinished by remember(bottomSheetScaffoldState.drawerState.isOpen) {
         if(bottomSheetScaffoldState.drawerState.isClosed) {

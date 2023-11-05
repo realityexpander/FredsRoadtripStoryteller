@@ -26,6 +26,8 @@ expect fun GoogleMaps(
     onToggleIsTrackingEnabledClick: (() -> Unit)? = null,
     onFindMeButtonClick: (() -> Unit)? = null,
     isMarkersLastUpdatedLocationVisible: Boolean = false,
+    shouldShowInfoMarker: Marker? = null,
+    onDidShowInfoMarker: () -> Unit = {},
 )
 
 

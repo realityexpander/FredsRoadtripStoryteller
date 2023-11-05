@@ -9,3 +9,7 @@ data class Location(val latitude: Double, val longitude: Double)
 fun Location.isLocationValid(): Boolean {
     return latitude != 0.0 && longitude != 0.0
 }
+
+fun LatLong.toLocation(): Location {
+    return Location(latitude, longitude)
+}

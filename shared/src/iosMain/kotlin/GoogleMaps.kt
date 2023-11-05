@@ -71,7 +71,9 @@ actual fun GoogleMaps(
     cachedMarkersLastUpdatedLocation: Location?,
     onToggleIsTrackingEnabledClick: (() -> Unit)?,
     onFindMeButtonClick: (() -> Unit)?,
-    isMarkersLastUpdatedLocationVisible: Boolean
+    isMarkersLastUpdatedLocationVisible: Boolean,
+    shouldShowInfoMarker: Marker?,
+    onDidShowInfoMarker: () -> Unit
 ) {
 
     var isMapSetupCompleted by remember { mutableStateOf(false) }

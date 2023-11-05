@@ -3,6 +3,7 @@ package com.realityexpander.gpsForegroundNotificationService
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import co.touchlab.kermit.Logger as Log
 import data.appSettings
 import tts
 
@@ -10,7 +11,7 @@ import tts
 class NotificationActionBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
-        println("NotificationActionBroadcastReceiver: onReceive: intent: $intent")
+        // Log.i("NotificationActionBroadcastReceiver: onReceive: intent: $intent")
         context ?: return
         intent ?: return
 
