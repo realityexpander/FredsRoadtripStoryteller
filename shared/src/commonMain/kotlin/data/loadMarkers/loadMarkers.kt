@@ -18,22 +18,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import data.AppSettings
 import data.AppSettings.Companion.kMarkersLastUpdatedLocation
-import data.util.LoadingState
 import data.MarkersRepo
 import data.loadMarkers.sampleData.kUseRealNetwork
 import data.loadMarkers.sampleData.simpleMarkersPageHtml
+import data.network.httpClient
+import data.util.LoadingState
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import presentation.maps.Marker
-import data.network.httpClient
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.async
 import presentation.maps.Location
+import presentation.maps.Marker
 import presentation.maps.MarkerIdStr
 import co.touchlab.kermit.Logger as Log
 
@@ -240,7 +241,7 @@ fun loadMarkers(
                 // Step 3 - Load the raw HTML from the network (or fake data)
                 val rawHtmlString =
                     if(useFakeDataSetId == kUseRealNetwork) {
-                        coroutineScope.async {
+                        coroutineScope.async(Dispatchers.IO) {
                             val response = httpClient.get(assetUrl)  // network load
                             val rawHtml: String = response.body()
                             // Log.d("Loaded page successfully, data length: ${rawHtml.length}, coordinates: ${userLocation.latitude}, ${userLocation.longitude}")
@@ -252,7 +253,7 @@ fun loadMarkers(
                     }
 
                 // Step 4 - Parse the HTML to extract the marker info
-                withContext(Dispatchers.Default) {
+                withContext(Dispatchers.IO) {
                     // Log.d("Before parsing raw HTML, markerInfos.size: ${markersResultState.markerInfos.size}, markerIdToRawMarkerInfoStrings.size: ${markersResultState.markerIdToRawMarkerInfoStrings.size}")
 
                     // Guard against blank data
@@ -278,7 +279,6 @@ fun loadMarkers(
                             processingMarkersResultState.copy(isParseMarkersPageFinished = true)
                         return@withContext
                     }
-
                     // Merge the new parsed marker data with the previous marker data.
                     // Note: needed to preserve previous results of "loadMarkerDetails" and "isSeen"
                     processingMarkersResultState = processingMarkersResultState.copy(
@@ -290,7 +290,8 @@ fun loadMarkers(
                             processingMarkersResultState.markerIdToMarker +
                                 // Merge the new parsed marker basic info with the current marker
                                 parsedMarkersResult.markerIdToMarker.map { parsedBasicInfoMarker ->
-                                    val preserveMarker = processingMarkersResultState.markerIdToMarker[parsedBasicInfoMarker.key]
+                                    val preserveMarker =
+                                        processingMarkersResultState.markerIdToMarker[parsedBasicInfoMarker.key]
                                     val mergedMarker = preserveMarker?.copy(
                                         position = parsedBasicInfoMarker.value.position,
                                         title = parsedBasicInfoMarker.value.title,
@@ -302,6 +303,7 @@ fun loadMarkers(
                                 }
                             ).toMap(),
                     )
+
                     if (processingHtmlPageNum == 1) {
                         processingMarkersResultState = processingMarkersResultState.copy(
                             rawMarkerCountFromFirstPageHtmlOfMultiPageResult =
@@ -378,7 +380,7 @@ fun loadMarkers(
         }
     }
 
-//    return processingMarkersResultState
-    return finalMarkersResultState
+    return processingMarkersResultState
+//    return finalMarkersResultState
 }
 

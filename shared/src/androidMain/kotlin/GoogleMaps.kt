@@ -1,6 +1,3 @@
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Canvas
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -26,12 +23,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NoLiveLiterals
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,10 +38,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.BitmapDescriptor
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MapStyleOptions
@@ -66,7 +60,10 @@ import com.google.maps.android.heatmaps.HeatmapTileProvider
 import com.google.maps.android.heatmaps.WeightedLatLng
 import com.realityexpander.common.R
 import data.loadMarkers.milesToMeters
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import presentation.maps.CameraLocationBounds
@@ -74,6 +71,7 @@ import presentation.maps.CameraPosition
 import presentation.maps.LatLong
 import presentation.maps.Location
 import presentation.maps.Marker
+import presentation.maps.MarkerIdStr
 import presentation.uiComponents.PreviewPlaceholder
 import presentation.uiComponents.SwitchWithLabel
 import co.touchlab.kermit.Logger as Log
@@ -89,9 +87,10 @@ actual fun GoogleMaps(
     userLocation: LatLong?,
     markers: List<Marker>?,
     shouldRedrawMapMarkers: Boolean,
-    cameraInitialPosition: CameraPosition?, // Best for setting initial camera position bc zoom level is forced
-    shouldCenterCameraOnLocationLatLong: LatLong?, // Best for tracking user location
-    onDidCenterCameraOnLocation: () -> Unit, // Best for showing a bunch of markers
+    onDidRedrawMapMarkers: () -> Unit, // Best for setting initial camera position bc zoom level is forced
+    shouldSetInitialCameraPosition: CameraPosition?, // Best for tracking user location
+    shouldCenterCameraOnLatLong: LatLong?, // Best for showing a bunch of markers
+    onDidCenterCameraOnLatLong: () -> Unit,
     cameraLocationBounds: CameraLocationBounds?,
     polyLine: List<LatLong>?,
     onMapClick: ((LatLong) -> Unit)?,
@@ -105,16 +104,6 @@ actual fun GoogleMaps(
     shouldShowInfoMarker: Marker?,
     onDidShowInfoMarker: () -> Unit
 ) {
-
-    fun bitmapDescriptorFromVector(context: Context, vectorResId: Int): BitmapDescriptor? {
-        return ContextCompat.getDrawable(context, vectorResId)?.run {
-            setBounds(0, 0, intrinsicWidth, intrinsicHeight)
-            val bitmap = Bitmap.createBitmap(intrinsicWidth, intrinsicHeight, Bitmap.Config.ARGB_8888)
-            draw(Canvas(bitmap))
-            BitmapDescriptorFactory.fromBitmap(bitmap)
-        }
-    }
-
     val cameraPositionState = rememberCameraPositionState()
     val uiSettings by remember {
         mutableStateOf(
@@ -147,8 +136,11 @@ actual fun GoogleMaps(
     var showSomething by remember { mutableStateOf(false) } // LEAVE FOR TESTING PURPOSES
 
     // Usually used to setup the initial camera position (doesn't support tracking due to forcing zoom level)
-    LaunchedEffect(cameraInitialPosition) {
-        cameraInitialPosition?.let { cameraPosition ->
+    LaunchedEffect(shouldSetInitialCameraPosition) {
+        shouldSetInitialCameraPosition?.let { cameraPosition ->
+            //Log.d("♢ 💿 GoogleMaps-Android 👾: LaunchedEffect(shouldSetInitialCameraPosition), " +
+            //        "shouldSetInitialCameraPosition = ${shouldSetInitialCameraPosition.target}, " +
+            //        "zoom= ${shouldSetInitialCameraPosition.zoom}")
             cameraPositionState.move(
                 CameraUpdateFactory.newLatLngZoom(
                     LatLng(
@@ -161,17 +153,17 @@ actual fun GoogleMaps(
             )
         }
 
-        // Follow the camera position
-        snapshotFlow { cameraPositionState.position }
-            .collect { position ->
-                // Log.d { "position = ${position.target.latitude}, ${position.target.longitude}" }
-            }
+        //    // Follow the camera position - LEAVE FOR REFERENCE
+        //    snapshotFlow { cameraPositionState.position }
+        //        .collect { position ->
+        //            // Log.d { "position = ${position.target.latitude}, ${position.target.longitude}" }
+        //        }
     }
 
-    // Set Camera to Bounds (zoom level is forced)
+    // Set Camera to Bounds
+    // Note: Zoom level is reset
     LaunchedEffect(cameraLocationBounds) {
         cameraLocationBounds?.let { cameraPositionBounds ->
-            // Log.d { "cameraLocationBounds = ${cameraPositionBounds.coordinates}"  }
             // Build the bounding box
             val latLngBounds = LatLngBounds.builder().apply {
                 cameraPositionBounds.coordinates.forEach { latLong ->
@@ -191,13 +183,14 @@ actual fun GoogleMaps(
     //       to change once, the user can pan around the map without the camera jumping back to
     //       the cameraLocationLatLong position.
     var previousCameraLocationLatLong by remember { mutableStateOf<LatLong?>(null) }
-    LaunchedEffect(shouldCenterCameraOnLocationLatLong) {
-        if (previousCameraLocationLatLong == shouldCenterCameraOnLocationLatLong) {
+    LaunchedEffect(shouldCenterCameraOnLatLong) {
+        if (previousCameraLocationLatLong == shouldCenterCameraOnLatLong) {
             return@LaunchedEffect
         }
 
-        previousCameraLocationLatLong = shouldCenterCameraOnLocationLatLong
-        shouldCenterCameraOnLocationLatLong?.let { cameraLocationLatLong ->
+        previousCameraLocationLatLong = shouldCenterCameraOnLatLong
+        shouldCenterCameraOnLatLong?.let { cameraLocationLatLong ->
+            println("♢ 💿 GoogleMaps-Android 👾: LaunchedEffect(shouldCenterCameraOnLatLong), shouldCenterCameraOnLatLong = $shouldCenterCameraOnLatLong")
             cameraPositionState.animate(
                 CameraUpdateFactory.newLatLng(
                     LatLng(
@@ -206,7 +199,7 @@ actual fun GoogleMaps(
                     )
                 )
             )
-            onDidCenterCameraOnLocation()
+            onDidCenterCameraOnLatLong()
         }
     }
 
@@ -228,9 +221,29 @@ actual fun GoogleMaps(
 
     Box(modifier.fillMaxSize()) {
 
+        class ClusterItemWithIsSeen(
+            val id: MarkerIdStr,
+            val clusterItem: ClusterItem,
+            var isSeen: Boolean = false
+        ) : ClusterItem {
+            override fun getPosition(): LatLng {
+                return clusterItem.position
+            }
+            override fun getTitle(): String? {
+                return clusterItem.title
+            }
+            override fun getSnippet(): String? {
+                return clusterItem.snippet
+            }
+            override fun getZIndex(): Float? {
+                return clusterItem.zIndex
+            }
+        }
+
         val coroutineScope = rememberCoroutineScope()
-        val cachedMarkers = remember { mutableStateListOf<ClusterItem>() }
-        var cachedTileProvider by remember {
+        val previousMarkerIdStrToClusterItems =
+            remember { mutableStateMapOf<MarkerIdStr, ClusterItemWithIsSeen>() }
+        var heatmapTileProvider by remember {
             mutableStateOf(
                 HeatmapTileProvider.Builder()
                     .weightedData(
@@ -248,6 +261,7 @@ actual fun GoogleMaps(
         // Information marker - visible after user clicks "find marker" button in details panel
         var infoMarker by remember { mutableStateOf<Marker?>(null) }
         var infoMarkerMarkerState = rememberMarkerState()
+        var infoMarkerInfoWindowOpenSequencePhase by remember { mutableIntStateOf(0) }
 
         GoogleMap(
             cameraPositionState = cameraPositionState,
@@ -259,19 +273,18 @@ actual fun GoogleMaps(
                 infoMarker = null
             },
         ) {
-
             // Heat Map Overlay
             if (markers != null) {
                 TileOverlay(
                     tileProvider = remember(shouldRedrawMapMarkers, markers) {
                         if (!shouldRedrawMapMarkers) {
                             // Log.d { "Using cached heatmap items, cachedHeatmap = $cachedTileProvider" }
-                            return@remember cachedTileProvider
+                            return@remember heatmapTileProvider
                         } else {
                             // check if the markers are different than the cached markers
-                            if (markers.size == cachedMarkers.size) {
+                            if (markers.size == previousMarkerIdStrToClusterItems.size) {
                                 // Log.d { "Using cached heatmap items because list of markers has not changed, cachedHeatmap = $cachedTileProvider" }
-                                return@remember cachedTileProvider
+                                return@remember heatmapTileProvider
                             }
 
                             // Calculate the heatmap
@@ -297,7 +310,7 @@ actual fun GoogleMaps(
                                 .radius(25) // convolution filter size in pixels
                                 .build()
                             // Log.d("Recalculating heatmap items, markers.size= ${markers.size}, HeatmapTileProvider= $result")
-                            cachedTileProvider = result
+                            heatmapTileProvider = result
                             return@remember result
                         }
                     },
@@ -396,6 +409,14 @@ actual fun GoogleMaps(
                 }
             }
 
+            println("♢ ⚝⚝⚝ Clustering, previousClusterMarkers.size = ${previousMarkerIdStrToClusterItems.size}, \n" +
+                    "  ⎣ shouldRedrawMapMarkers = $shouldRedrawMapMarkers \n" +
+                    "  ⎣ markers.size = ${markers?.size}, \n" +
+                    "  ⎣ previousClusterItems.size = ${previousMarkerIdStrToClusterItems.size}, \n" +
+//                    "  ⎣ markers.isSeen = ${markers?.map { it.id +"->"+ it.isSeen }}"
+                    "  ⎣ markers.isSeen.size = ${markers?.map { it.id +"->"+ it.isSeen }?.size ?: 0}"
+            )
+
             Clustering(
                 items = remember(shouldRedrawMapMarkers, markers, isMarkersEnabled) {
                     if (!isMarkersEnabled) {
@@ -404,31 +425,75 @@ actual fun GoogleMaps(
                     }
 
                     if (!shouldRedrawMapMarkers) {
-                        // Log.d { "Using cached cluster items, cachedMarkers.size = ${cachedMarkers.size}" }
-                        return@remember cachedMarkers
-                    } else {
-                        // check if the markers are different than the cached markers
-                        if (markers?.size == cachedMarkers.size) {
-                            // Log.d { "Using cached cluster items because list of markers has not changed, cachedMarkers.size = ${cachedMarkers.size}" }
-                            return@remember cachedMarkers
-                        }
+                        //Log.d { "♢ No redraw necessary, Using previousClusterItems items, previousClusterItems.size = ${previousClusterItems.size}" }
+                        return@remember previousMarkerIdStrToClusterItems.values.toList()
+                    }
 
-                        // Calculate the cluster items
-                        val result = markers?.map { marker ->
-                            object : ClusterItem {
+                    // todo - should build the item list in the background
+
+                    // check if the markers are different than the cached markers
+                    if (markers?.size == previousMarkerIdStrToClusterItems.size
+                        && markers.all { marker -> // check all markers isSeen has changed
+//                            println(
+//                                "♢ ⚝⚝⚝ Clustering, checking isSeen, marker.id = ${marker.id}, " +
+//                                        "marker.isSeen == previousClusteringItem.isSeen = " +
+//                                        "${marker.isSeen == previousMarkerIdStrToClusterItems[marker.id]?.isSeen}"
+//                            )
+                            marker.isSeen == previousMarkerIdStrToClusterItems[marker.id]?.isSeen
+                        }
+                    ) {
+                        Log.d { "♢ Using previousClusterItems because list of markers has not changed, previousClusterItems.size = ${previousMarkerIdStrToClusterItems.size}" }
+                        onDidRedrawMapMarkers()
+
+//                        // todo this doesn't seem right fix
+//                        return@remember previousMarkerIdStrToClusterItems.values.toList()
+                        return@remember markers.map { marker ->
+                            previousMarkerIdStrToClusterItems[marker.id]
+                                ?: ClusterItemWithIsSeen(
+                                    id = marker.id,
+                                    clusterItem = object : ClusterItem {
+                                        override fun getTitle(): String = marker.title
+                                        override fun getSnippet(): String = marker.id
+                                        override fun getPosition(): LatLng =
+                                            LatLng(
+                                                marker.position.latitude,
+                                                marker.position.longitude
+                                            )
+
+                                        override fun getZIndex(): Float = 1.0f
+                                    },
+                                    isSeen = marker.isSeen
+                                )
+                        }
+                    }
+
+                    // Calculate the cluster items
+                    println("♢ ⚝⚝⚝ 🔧 Clustering, START calculating new cluster items")
+                    val updatedClusterItemList = markers?.map { marker ->
+                        ClusterItemWithIsSeen(
+                            id = marker.id,
+                            clusterItem = object : ClusterItem {
                                 override fun getTitle(): String = marker.title
                                 override fun getSnippet(): String = marker.id
                                 override fun getPosition(): LatLng =
                                     LatLng(marker.position.latitude, marker.position.longitude)
-                                override fun getZIndex(): Float = 1.0f
-                            }
-                        } ?: listOf<ClusterItem>()
-                        // Log.d { "Recalculating cluster items, markers.size= ${markers?.size}, result.size= ${result.size}" }
-                        cachedMarkers.clear()
-                        cachedMarkers.addAll(result)
 
-                        return@remember result
+                                override fun getZIndex(): Float = 1.0f
+                            },
+                            isSeen = marker.isSeen
+                        )
+                    } ?: listOf<ClusterItemWithIsSeen>()
+                    println("♢ ⚝⚝⚝ 🔧 Clustering, END updatedClusterItemList.size = ${updatedClusterItemList.size}")
+
+                    Log.d { "♢ Recalculated updatedClusterItemList: markers.size= ${markers?.size}, updatedClusterItemList.size= ${updatedClusterItemList.size}" }
+                    previousMarkerIdStrToClusterItems.clear()
+                    updatedClusterItemList.forEach { clusterItem ->
+                        previousMarkerIdStrToClusterItems[clusterItem.id] = clusterItem
                     }
+                    println("♢ clusterItemList = ${updatedClusterItemList.joinToString(", ") { it.id + "->" + it.isSeen }}")
+                    onDidRedrawMapMarkers()
+
+                    return@remember updatedClusterItemList
                 },
                 onClusterItemInfoWindowClick = { clusterItem ->
                     coroutineScope.launch {
@@ -444,20 +509,22 @@ actual fun GoogleMaps(
                         onMarkerInfoClick?.run { onMarkerInfoClick(selectedMarker) }
                     }
                 },
+                onClusterItemClick = {
+                    // Hide the current marker infoWindow (if any)
+                    infoMarker = null
+                    infoMarkerMarkerState.hideInfoWindow()
+                    false // did not completely handle the click
+                },
                 clusterItemContent = { clusterItem ->
                     Box(
                         modifier = Modifier
                             .requiredHeight(50.dp)
                             .requiredWidth(50.dp)
-                            //.background(
-                            //   Color.Blue.copy(alpha = 0.5f)
-                            //)
                     ) {
-                        //Text(
-                        //    text = clusterItem.title ?: "",
-                        //    color = Color.White
-                        //)
                         val marker = markers?.find { it.id == clusterItem.snippet }
+//                        println("♢ ⚝⚝⚝ Clustering: clusterItemContent, marker.id = ${marker?.id}, " +
+//                                "marker.isSeen = ${marker?.isSeen}")
+
                         val painterResourceFilename =
                             if (marker?.isSeen == true) {
                                 "marker_lightgray.png"
@@ -477,6 +544,7 @@ actual fun GoogleMaps(
                                 )
                             }
 
+                        // LEAVE FOR REFERENCE for iOS
                         //    Icon(
                         //        imageVector = Icons.Filled.LocationCity,
                         //        contentDescription = "Play",
@@ -486,10 +554,14 @@ actual fun GoogleMaps(
                 }
             )
 
-            // Information marker - Known bug when opening second info marker there is a noticeable flicker when the info window "jumps up" above the marker icon
+            // Information marker
+            // - Note: Known bug when opening second info marker there is a noticeable flicker
+            //   (1/60th frame) when the info window "jumps up" above the marker icon.
+            //   No fix known, afaik.
             shouldShowInfoMarker?.let { marker ->
                 // Clear the previous info marker (if any)
                 infoMarker = null // allows the current infoMarker to be cleared
+                infoMarkerInfoWindowOpenSequencePhase = 0
                 onDidShowInfoMarker()
 
                 // Show the new info marker
@@ -498,24 +570,30 @@ actual fun GoogleMaps(
                 }
             }
             infoMarker?.let { marker ->
-                // Render the info marker
-                infoMarkerMarkerState = rememberMarkerState(
-                    key = marker.id,
-                    position = LatLng(
-                        marker.position.latitude,
-                        marker.position.longitude
-                    )
-                ).also {
-                    it.showInfoWindow()
+                // Render the info marker (yes, it requires it to be rendered twice, IDK WHY DAMMIT)
+                if(infoMarkerInfoWindowOpenSequencePhase < 2) {
+                    infoMarkerMarkerState = rememberMarkerState(
+                        key = marker.id,
+                        position = LatLng(
+                            marker.position.latitude,
+                            marker.position.longitude
+                        )
+                    ).also {
+                        if (infoMarkerInfoWindowOpenSequencePhase < 2) {
+                            it.showInfoWindow()
+                            infoMarkerInfoWindowOpenSequencePhase++
+                        }
+                    }
                 }
+
                 Marker(
-                    state = infoMarkerMarkerState, //.also { it.showInfoWindow() },
+                    state = infoMarkerMarkerState,
                     alpha = marker.alpha,
                     title = marker.title,
                     snippet = marker.id,
                     icon = bitmapDescriptorFromVector(
                         context = LocalContext.current,
-                        vectorResId = R.drawable.invisible_map_icon_24 // invisible icon, 48x48
+                        vectorResId = R.drawable.invisible_map_icon_24 // invisible icon, 48x48, spacer for the infoWindow
                     ),
                     visible = true,
                     onInfoWindowClick = {

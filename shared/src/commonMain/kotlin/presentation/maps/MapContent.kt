@@ -10,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import co.touchlab.kermit.Logger as Log
 
 @Composable
 fun MapContent(
@@ -19,13 +20,13 @@ fun MapContent(
     userLocation: Location,
     markers: List<Marker>,
     mapBounds: List<LatLong>? = null,
-    shouldRedrawMapMarkers: Boolean,
-    onDidRedrawMapMarkers: () -> Unit = {},
+    shouldRedrawMarkers: Boolean,
+    onDidRedrawMarkers: () -> Unit = {},
     isTrackingEnabled: Boolean = false,
     shouldCenterCameraOnLocation: Location? = null,
-    onDidCenterOnLocation: () -> Unit = {},
+    onDidCenterCameraOnLocation: () -> Unit = {},
     seenRadiusMiles: Double = .5,
-    cachedMarkersLastUpdatedLocation: Location? = null,
+    cachedMarkersLastUpdatedLocation: Location? = null,  // todo change to "settings"?
     onToggleIsTrackingEnabled: (() -> Unit)? = null,
     onFindMeButtonClicked: (() -> Unit)? = null,
     isMarkersLastUpdatedLocationVisible: Boolean = false,
@@ -33,13 +34,20 @@ fun MapContent(
     onMarkerInfoClick: ((Marker) -> Unit)? = null,
     shouldShowInfoMarker: Marker? = null,
     onDidShowInfoMarker: () -> Unit = {}
-): Boolean {
-    var didMapMarkersRedraw by remember(shouldRedrawMapMarkers) { mutableStateOf(true) }
+) {
     var isFirstUpdate by remember { mutableStateOf(true) } // force map to update at least once
+    var didSetInitialCameraPosition by remember { mutableStateOf(false) } // Move to initial location on first update
 
-    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-        if (isFinishedLoadingMarkerData || !isFirstUpdate || didMapMarkersRedraw) {
+    // Guard against initial location being (0.0, 0.0) (prevents initial map drawing in the middle of the atlantic ocean near africa)
+    if(!initialUserLocation.isLocationValid()) return
 
+    Column(
+        Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        // Log.d("💿 MapContent: isFinishedLoadingMarkerData=$isFinishedLoadingMarkerData, isFirstUpdate=$isFirstUpdate, shouldRedrawMapMarkers=$shouldRedrawMarkers")
+        if (isFinishedLoadingMarkerData || !isFirstUpdate || shouldRedrawMarkers) { // todo use shouldRedrawMapMarkers instead of didMapMarkersRedraw
             GoogleMaps(
                 modifier = modifier,
                 isMapOptionSwitchesVisible = isMapOptionSwitchesVisible,
@@ -49,9 +57,15 @@ fun MapContent(
                     userLocation.longitude
                 ),
                 markers = markers.ifEmpty { null },
-                shouldRedrawMapMarkers = shouldRedrawMapMarkers,
-                cameraInitialPosition =
-                    if (isFirstUpdate) {  // set initial camera position
+                shouldRedrawMapMarkers = shouldRedrawMarkers,
+                onDidRedrawMapMarkers = onDidRedrawMarkers,
+                shouldSetInitialCameraPosition =
+                    if (!isFirstUpdate && !didSetInitialCameraPosition) {  // set initial camera position after first update
+//                        Log.d("💿 MapContent.shouldSetInitialCameraPosition: isFirstUpdate=true,\n" +
+//                                "  setting initial camera position,\n" +
+//                                "  initialUserLocation=(${initialUserLocation.latitude}, ${initialUserLocation.longitude})"
+//                        )
+                        didSetInitialCameraPosition = true // only allow set initial camera position once
                         CameraPosition(
                             target = LatLong(
                                 initialUserLocation.latitude,
@@ -61,20 +75,25 @@ fun MapContent(
                         )
                     } else
                         null,
-                shouldCenterCameraOnLocationLatLong = remember(shouldCenterCameraOnLocation) {
+                shouldCenterCameraOnLatLong = remember(shouldCenterCameraOnLocation) {
                     // 37.422160,
                     // -122.084270  // googleplex
-                    shouldCenterCameraOnLocation?.let {
-                        LatLong(
-                            shouldCenterCameraOnLocation.latitude,
-                            shouldCenterCameraOnLocation.longitude
-                        )
-                    } ?: run {
+                    if(!isFirstUpdate) {
+                        Log.d("💿 MapContent.shouldCenterCameraOnLatLong: ➤➤➤ Centering camera position")
+                        shouldCenterCameraOnLocation?.let {
+                            LatLong(
+                                shouldCenterCameraOnLocation.latitude,
+                                shouldCenterCameraOnLocation.longitude
+                            )
+                        } ?: run {
+                            null
+                        }
+                    } else {
                         null
                     }
                 },
-                onDidCenterCameraOnLocation = onDidCenterOnLocation,
-                cameraLocationBounds = remember {  // Center around bound of markers
+                onDidCenterCameraOnLatLong = onDidCenterCameraOnLocation,
+                cameraLocationBounds = remember {  // Center around bound of markers // note: does not allow user to move map
                     mapBounds?.let {
                         CameraLocationBounds(
                             coordinates = mapBounds,
@@ -94,12 +113,8 @@ fun MapContent(
                 onDidShowInfoMarker = onDidShowInfoMarker
             )
 
-            // Guard against initial location being (0.0, 0.0)
-            if(initialUserLocation.isLocationValid()) isFirstUpdate = false
-            if(initialUserLocation.isLocationValid()) didMapMarkersRedraw = false
-            if(initialUserLocation.isLocationValid()) onDidRedrawMapMarkers()
+            // Indicate first update has occurred
+            isFirstUpdate = false
         }
     }
-
-    return didMapMarkersRedraw
 }

@@ -60,11 +60,12 @@ actual fun GoogleMaps(
     userLocation: LatLong?,
     markers: List<Marker>?,
     shouldRedrawMapMarkers: Boolean,
-    cameraInitialPosition: CameraPosition?,  // best for tracking user location
-    shouldCenterCameraOnLocationLatLong: LatLong?,  // best for showing a bunch of markers
-    onDidCenterCameraOnLocation: () -> Unit, // usually only used for initial camera position bc zoom level is forced
-    cameraLocationBounds: CameraLocationBounds?,
-    polyLine: List<LatLong>?,  // shows the user's location with a 100m radius circle
+    onDidRedrawMapMarkers: () -> Unit,  // best for tracking user location
+    shouldSetInitialCameraPosition: CameraPosition?,  // best for showing a bunch of markers
+    shouldCenterCameraOnLatLong: LatLong?, // usually only used for initial camera position bc zoom level is forced
+    onDidCenterCameraOnLatLong: () -> Unit,
+    cameraLocationBounds: CameraLocationBounds?,  // shows the user's location with a 100m radius circle
+    polyLine: List<LatLong>?,
     onMapClick: ((LatLong) -> Unit)?,
     onMapLongClick: ((LatLong) -> Unit)?,
     onMarkerInfoClick: ((Marker) -> Unit)?,
@@ -117,14 +118,14 @@ actual fun GoogleMaps(
         }
     }
 
-    LaunchedEffect(cameraInitialPosition) {
-        if (cameraInitialPosition != null) {
+    LaunchedEffect(shouldSetInitialCameraPosition) {
+        if (shouldSetInitialCameraPosition != null) {
             didCameraPositionChange = true
         }
     }
 
-    LaunchedEffect(shouldCenterCameraOnLocationLatLong) {
-        if (shouldCenterCameraOnLocationLatLong != null) {
+    LaunchedEffect(shouldCenterCameraOnLatLong) {
+        if (shouldCenterCameraOnLatLong != null) {
             didCameraLocationLatLongChange = true
         }
     }
@@ -186,7 +187,7 @@ actual fun GoogleMaps(
                     }
                 } else {
                     if(!isMapSetupCompleted) { // Sets the camera once during setup, this allows the user to move the map around
-                        cameraInitialPosition?.let { cameraPosition ->
+                        shouldSetInitialCameraPosition?.let { cameraPosition ->
                             view.animateWithCameraUpdate(
                                 GMSCameraUpdate.setTarget(
                                     CLLocationCoordinate2DMake(
@@ -219,7 +220,7 @@ actual fun GoogleMaps(
 
                 if(didCameraPositionChange) {
                     didCameraPositionChange = false
-                    cameraInitialPosition?.let { cameraPosition ->
+                    shouldSetInitialCameraPosition?.let { cameraPosition ->
                         view.setCamera(
                             GMSCameraPosition.cameraWithLatitude(
                                 cameraPosition.target.latitude,
@@ -232,7 +233,7 @@ actual fun GoogleMaps(
 
                 if(didCameraLocationLatLongChange) {
                     didCameraLocationLatLongChange = false
-                    shouldCenterCameraOnLocationLatLong?.let { cameraLocation ->
+                    shouldCenterCameraOnLatLong?.let { cameraLocation ->
                         view.animateWithCameraUpdate(
                             GMSCameraUpdate.setTarget(
                                 CLLocationCoordinate2DMake(
