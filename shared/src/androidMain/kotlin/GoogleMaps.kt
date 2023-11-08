@@ -446,25 +446,25 @@ actual fun GoogleMaps(
                         onDidRedrawMapMarkers()
 
 //                        // todo this doesn't seem right fix
-//                        return@remember previousMarkerIdStrToClusterItems.values.toList()
-                        return@remember markers.map { marker ->
-                            previousMarkerIdStrToClusterItems[marker.id]
-                                ?: ClusterItemWithIsSeen(
-                                    id = marker.id,
-                                    clusterItem = object : ClusterItem {
-                                        override fun getTitle(): String = marker.title
-                                        override fun getSnippet(): String = marker.id
-                                        override fun getPosition(): LatLng =
-                                            LatLng(
-                                                marker.position.latitude,
-                                                marker.position.longitude
-                                            )
-
-                                        override fun getZIndex(): Float = 1.0f
-                                    },
-                                    isSeen = marker.isSeen
-                                )
-                        }
+                        return@remember previousMarkerIdStrToClusterItems.values.toList()
+//                        return@remember markers.map { marker ->
+//                            previousMarkerIdStrToClusterItems[marker.id]
+//                                ?: ClusterItemWithIsSeen(
+//                                    id = marker.id,
+//                                    clusterItem = object : ClusterItem {
+//                                        override fun getTitle(): String = marker.title
+//                                        override fun getSnippet(): String = marker.id
+//                                        override fun getPosition(): LatLng =
+//                                            LatLng(
+//                                                marker.position.latitude,
+//                                                marker.position.longitude
+//                                            )
+//
+//                                        override fun getZIndex(): Float = 1.0f
+//                                    },
+//                                    isSeen = marker.isSeen
+//                                )
+//                        }
                     }
 
                     // Calculate the cluster items

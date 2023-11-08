@@ -49,9 +49,9 @@ class AppSettings(val settingsInstance: Settings) {
     var uiRecentlySeenMarkersList by
         SettingsDelegate(settingsInstance,
        kUiRecentlySeenMarkersList, defaultValue = RecentlySeenMarkersList())
-    var lastSpokenMarker: RecentlySeenMarker by
+    var lastSpokenRecentlySeenMarker: RecentlySeenMarker by
         SettingsDelegate(settingsInstance,
-       kLastSpokenMarker, defaultValue = RecentlySeenMarker("",""))
+       kLastSpokenRecentlySeenMarker, defaultValue = RecentlySeenMarker("",""))
 
     // • For Settings panel
     var shouldSpeakWhenUnseenMarkerFound by
@@ -97,8 +97,8 @@ class AppSettings(val settingsInstance: Settings) {
          uiRecentlySeenMarkersList,
         kShouldSpeakDetailsWhenUnseenMarkerFound to
          shouldSpeakDetailsWhenUnseenMarkerFound,
-        kLastSpokenMarker to
-         lastSpokenMarker
+        kLastSpokenRecentlySeenMarker to
+         lastSpokenRecentlySeenMarker
     )
 
     // - REMEMBER TO ADD NEW SETTINGS TO THE CONST LIST! - FORMATTING IS INTENTIONAL
@@ -125,8 +125,8 @@ class AppSettings(val settingsInstance: Settings) {
             "kRecentlySeenMarkersSet"
         const val kUiRecentlySeenMarkersList =
             "kUiRecentlySeenMarkersList"
-        const val kLastSpokenMarker =
-            "kLastSpokenMarker"
+        const val kLastSpokenRecentlySeenMarker =
+            "kLastSpokenRecentlySeenMarker"
 
         // • For Settings panel
         const val kShouldSpeakWhenUnseenMarkerFound =

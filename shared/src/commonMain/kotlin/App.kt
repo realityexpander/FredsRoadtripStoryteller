@@ -645,7 +645,7 @@ fun App(
                             isTextToSpeechCurrentlySpeaking = isTextToSpeechCurrentlySpeaking,
                             onClickStartSpeakingMarker = { speakMarker ->
                                 markersRepo.updateMarkerIsSpoken(speakMarker, isSpoken = true)  // todo - should be a function and calls speakRecentlySeenMarker()
-                                appSettings.lastSpokenMarker = RecentlySeenMarker(
+                                appSettings.lastSpokenRecentlySeenMarker = RecentlySeenMarker(
                                     speakMarker.id,
                                     speakMarker.title
                                 )

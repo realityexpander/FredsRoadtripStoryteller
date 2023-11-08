@@ -28,12 +28,12 @@ fun speakRecentlySeenMarker(
     onUpdateLoadingState: (LoadingState<String>) -> Unit = { },
 ): RecentlySeenMarker? {
     if (isTextToSpeechSpeaking()) {
-        return appSettings.lastSpokenMarker
+        return appSettings.lastSpokenRecentlySeenMarker
     }
 
     val marker = markersRepo.marker(speakMarker.id)
         ?: throw Exception("Marker not found for id: ${speakMarker.id}")
-    appSettings.lastSpokenMarker = speakMarker
+    appSettings.lastSpokenRecentlySeenMarker = speakMarker
 
     // Update the 'isSpoken' flag
     markersRepo.updateMarkerIsSpoken(marker, isSpoken = true)
@@ -85,14 +85,14 @@ fun speakRecentlySeenMarker(
                     }
                 }
 
-                return appSettings.lastSpokenMarker // early return due to async loading
+                return appSettings.lastSpokenRecentlySeenMarker // early return due to async loading
             }
 
             // Already have the details, so just speak the marker.
             speakMarker(marker, shouldSpeakDetails)
     } else {
         speakMarker(
-            markersRepo.marker(speakMarker.id) ?: return appSettings.lastSpokenMarker,
+            markersRepo.marker(speakMarker.id) ?: return appSettings.lastSpokenRecentlySeenMarker,
             shouldSpeakDetails = false
         )
     }
