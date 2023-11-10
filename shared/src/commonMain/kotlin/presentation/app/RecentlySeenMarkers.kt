@@ -149,7 +149,7 @@ fun RecentlySeenMarkers(
                                 markersRepo.updateMarkerIsSpoken(id=speakingMarker.id, isSpoken=true)
                                 onClickStartSpeakingMarker(
                                     speakingMarker,
-                                    appSettings.shouldSpeakDetailsWhenUnseenMarkerFound
+                                    appSettings.isSpeakDetailsWhenUnseenMarkerFoundEnabled
                                 )
                             }
                         ) {

@@ -5,6 +5,10 @@ import com.russhwolf.settings.set
 import data.loadMarkers.MarkersResult
 import json
 import kForceClearSettingsAtLaunch
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import presentation.maps.Location
 import presentation.maps.RecentlySeenMarker
@@ -54,15 +58,15 @@ class AppSettings(val settingsInstance: Settings) {
        kLastSpokenRecentlySeenMarker, defaultValue = RecentlySeenMarker("",""))
 
     // • For Settings panel
-    var shouldSpeakWhenUnseenMarkerFound by
+    var isSpeakWhenUnseenMarkerFoundEnabled by
         SettingsDelegate(settingsInstance,
-       kShouldSpeakWhenUnseenMarkerFound, defaultValue = true)
-    var shouldSpeakDetailsWhenUnseenMarkerFound by
+       kIsSpeakWhenUnseenMarkerFoundEnabled, defaultValue = true)
+    var isSpeakDetailsWhenUnseenMarkerFoundEnabled by
         SettingsDelegate(settingsInstance,
-       kShouldSpeakDetailsWhenUnseenMarkerFound, defaultValue = false)
-    var shouldStartBackgroundTrackingWhenAppLaunches by
+       kIsSpeakDetailsWhenUnseenMarkerFoundEnabled, defaultValue = false)
+    var isStartBackgroundTrackingWhenAppLaunchesEnabled by
         SettingsDelegate(settingsInstance,
-       kShouldStartBackgroundTrackingWhenAppLaunches, defaultValue = false)
+       kIsStartBackgroundTrackingWhenAppLaunchesEnabled, defaultValue = false)
     var seenRadiusMiles by
         SettingsDelegate(settingsInstance,
        kSeenRadiusMiles, defaultValue = 0.5)
@@ -83,10 +87,10 @@ class AppSettings(val settingsInstance: Settings) {
          isPermissionsGranted,
         kIsRecentlySeenMarkersPanelVisible to
          isRecentlySeenMarkersPanelVisible,
-        kShouldSpeakWhenUnseenMarkerFound to
-         shouldSpeakWhenUnseenMarkerFound,
-        kShouldStartBackgroundTrackingWhenAppLaunches to
-         shouldStartBackgroundTrackingWhenAppLaunches,
+        kIsSpeakWhenUnseenMarkerFoundEnabled to
+         isSpeakWhenUnseenMarkerFoundEnabled,
+        kIsStartBackgroundTrackingWhenAppLaunchesEnabled to
+         isStartBackgroundTrackingWhenAppLaunchesEnabled,
         kSeenRadiusMiles to
          seenRadiusMiles,
         kIsMarkersLastUpdatedLocationVisible to
@@ -95,8 +99,8 @@ class AppSettings(val settingsInstance: Settings) {
          recentlySeenMarkersSet,
         kUiRecentlySeenMarkersList to
          uiRecentlySeenMarkersList,
-        kShouldSpeakDetailsWhenUnseenMarkerFound to
-         shouldSpeakDetailsWhenUnseenMarkerFound,
+        kIsSpeakDetailsWhenUnseenMarkerFoundEnabled to
+         isSpeakDetailsWhenUnseenMarkerFoundEnabled,
         kLastSpokenRecentlySeenMarker to
          lastSpokenRecentlySeenMarker
     )
@@ -129,12 +133,12 @@ class AppSettings(val settingsInstance: Settings) {
             "kLastSpokenRecentlySeenMarker"
 
         // • For Settings panel
-        const val kShouldSpeakWhenUnseenMarkerFound =
-            "kShouldSpeakWhenUnseenMarkerFound"
-        const val kShouldSpeakDetailsWhenUnseenMarkerFound =
-            "kShouldSpeakDetailsWhenUnseenMarkerFound"
-        const val kShouldStartBackgroundTrackingWhenAppLaunches =
-            "kShouldStartBackgroundTrackingWhenAppLaunches"
+        const val kIsSpeakWhenUnseenMarkerFoundEnabled =
+            "kIsSpeakWhenUnseenMarkerFoundEnabled"
+        const val kIsSpeakDetailsWhenUnseenMarkerFoundEnabled =
+            "kIsSpeakDetailsWhenUnseenMarkerFoundEnabled"
+        const val kIsStartBackgroundTrackingWhenAppLaunchesEnabled =
+            "kIsStartBackgroundTrackingWhenAppLaunchesEnabled"
         const val kSeenRadiusMiles =
             "kSeenRadiusMiles"
         const val kIsMarkersLastUpdatedLocationVisible =
@@ -178,13 +182,16 @@ class AppSettings(val settingsInstance: Settings) {
 
     // Obliterates all values in the settings store
     fun clearAllSettings() { // This is useful for testing
-        settingsInstance.clear()
+        val coroutineScope = CoroutineScope(Dispatchers.IO)
+        coroutineScope.launch {
+            settingsInstance.clear()
 
-        // Re-add all the settings
-        settingsMap.clear()
-        settingsMap = createSettingsMap()
+            // Re-add all the settings
+            settingsMap.clear()
+            settingsMap = createSettingsMap()
 
-        Log.w{ "AppSettings: Cleared all settings!"}
+            Log.w { "AppSettings: Cleared all settings!" }
+        }
     }
 
     fun clear(key: String) {
@@ -196,28 +203,32 @@ class AppSettings(val settingsInstance: Settings) {
     }
 
     fun printAppSettings() {
-        println("markersResult.size= ${markersResult.markerIdToMarker.size}")
+        val coroutineScope = CoroutineScope(Dispatchers.IO)
 
-        // Show all keys
-        Log.d { "All keys from settings: ${settingsInstance.keys.joinToString("") { "$it\n ⎣_" }}" }
-        if(settingsInstance.keys.isEmpty()) Log.d { "No keys in settings" }
+        coroutineScope.launch {
+            println("markersResult.size= ${markersResult.markerIdToMarker.size}")
 
-        // Show current settings
-        settingsMap.forEach { entry ->
-            if(entry.key == kMarkersResult) { // Don't want to display all the markers
-                Log.d { "Settings: ${entry.key} = ${(entry.value as MarkersResult).markerIdToMarker.size} markers" }
-                return@forEach
-            }
-            if(entry.key == kRecentlySeenMarkersSet) { // Don't want to display all the markers
-                Log.d { "Settings: ${entry.key} = ${(entry.value as RecentlySeenMarkersList).list.size} markers in seen set" }
-                return@forEach
-            }
-            if(entry.key == kUiRecentlySeenMarkersList) { // Don't want to display all the markers
-                Log.d { "Settings: ${entry.key} = ${(entry.value as RecentlySeenMarkersList).list.size} markers in seen list" }
-                return@forEach
-            }
+            // Show all keys
+            Log.d { "All keys from settings: ${settingsInstance.keys.joinToString("") { "$it\n ⎣_" }}" }
+            if (settingsInstance.keys.isEmpty()) Log.d { "No keys in settings" }
 
-            Log.d { "Settings: ${entry.key} = ${entry.value}" }
+            // Show current settings
+            settingsMap.forEach { entry ->
+                if (entry.key == kMarkersResult) { // Don't want to display all the markers
+                    Log.d { "Settings: ${entry.key} = ${(entry.value as MarkersResult).markerIdToMarker.size} markers" }
+                    return@forEach
+                }
+                if (entry.key == kRecentlySeenMarkersSet) { // Don't want to display all the markers
+                    Log.d { "Settings: ${entry.key} = ${(entry.value as RecentlySeenMarkersList).list.size} markers in seen set" }
+                    return@forEach
+                }
+                if (entry.key == kUiRecentlySeenMarkersList) { // Don't want to display all the markers
+                    Log.d { "Settings: ${entry.key} = ${(entry.value as RecentlySeenMarkersList).list.size} markers in seen list" }
+                    return@forEach
+                }
+
+                Log.d { "Settings: ${entry.key} = ${entry.value}" }
+            }
         }
     }
 }

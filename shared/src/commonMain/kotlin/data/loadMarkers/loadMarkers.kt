@@ -254,6 +254,7 @@ fun loadMarkers(
 
                 // Step 4 - Parse the HTML to extract the marker info
                 withContext(Dispatchers.IO) {
+                    yield()
                     // Log.d("Before parsing raw HTML, markerInfos.size: ${markersResultState.markerInfos.size}, markerIdToRawMarkerInfoStrings.size: ${markersResultState.markerIdToRawMarkerInfoStrings.size}")
 
                     // Guard against blank data
@@ -271,6 +272,7 @@ fun loadMarkers(
                     // 4.1 - Parse the raw page HTML into a list of `MarkerInfo` objects & metadata about the scraped data
                     // Log.d("Parsing HTML.. Current markers in cache (before parsing) count: ${parsedMarkersResultState.markerInfos.size}")
                     val parsedMarkersResult = parseMarkersPageHtml(rawHtmlString)
+                    yield()
 
                     // Check for zero `raw html` marker entries
                     if (parsedMarkersResult.rawMarkerCountFromFirstPageHtmlOfMultiPageResult == 0) {

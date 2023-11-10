@@ -144,7 +144,7 @@ class GPSForegroundNotificationService: Service() {
         notificationManager: NotificationManager,
         newLocation: Location?
     ) {
-        if (appSettings.shouldSpeakWhenUnseenMarkerFound) {
+        if (appSettings.isSpeakWhenUnseenMarkerFoundEnabled) {
             val lastSpokenMarker = appSettings.lastSpokenRecentlySeenMarker
             if (lastSpokenMarker.id.isNotBlank()) {
                 val title = "Last spoken marker: ${lastSpokenMarker.title}"

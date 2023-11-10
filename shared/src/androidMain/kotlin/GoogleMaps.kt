@@ -64,6 +64,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
+import kotlinx.datetime.Clock
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import presentation.maps.CameraLocationBounds
@@ -331,19 +333,19 @@ actual fun GoogleMaps(
                     strokeWidth = 4.0f
                 )
 
-//                // If tracking, move the camera to the user's location
-//                coroutineScope.launch {
-//                    if (isTrackingEnabled) {
-//                        cameraPositionState.animate(
-//                            CameraUpdateFactory.newLatLng(
-//                                LatLng(
-//                                    myLocation.latitude,
-//                                    myLocation.longitude
-//                                )
-//                            )
-//                        )
-//                    }
-//                }
+                //    // If tracking, move the camera to the user's location
+                //    coroutineScope.launch {
+                //        if (isTrackingEnabled) {
+                //            cameraPositionState.animate(
+                //                CameraUpdateFactory.newLatLng(
+                //                    LatLng(
+                //                        myLocation.latitude,
+                //                        myLocation.longitude
+                //                    )
+                //                )
+                //            )
+                //        }
+                //    }
             }
 
             // Render the polyline
@@ -409,13 +411,13 @@ actual fun GoogleMaps(
                 }
             }
 
-            println("♢ ⚝⚝⚝ Clustering, previousClusterMarkers.size = ${previousMarkerIdStrToClusterItems.size}, \n" +
-                    "  ⎣ shouldRedrawMapMarkers = $shouldRedrawMapMarkers \n" +
-                    "  ⎣ markers.size = ${markers?.size}, \n" +
-                    "  ⎣ previousClusterItems.size = ${previousMarkerIdStrToClusterItems.size}, \n" +
-//                    "  ⎣ markers.isSeen = ${markers?.map { it.id +"->"+ it.isSeen }}"
-                    "  ⎣ markers.isSeen.size = ${markers?.map { it.id +"->"+ it.isSeen }?.size ?: 0}"
-            )
+//            println("♢ ⚝⚝⚝ pre Clustering, \n" +
+//                    "  ⎣ shouldRedrawMapMarkers = $shouldRedrawMapMarkers \n" +
+//                    "  ⎣ markers.size = ${markers?.size}, \n" +
+//                    "  ⎣ previousClusterItems.size = ${previousMarkerIdStrToClusterItems.size}, \n" +
+////                    "  ⎣ markers.isSeen = ${markers?.map { it.id +"->"+ it.isSeen }}"
+//                    "  ⎣ markers.isSeen.size = ${markers?.map { it.id +"->"+ it.isSeen }?.size ?: 0}"
+//            )
 
             Clustering(
                 items = remember(shouldRedrawMapMarkers, markers, isMarkersEnabled) {
@@ -425,50 +427,23 @@ actual fun GoogleMaps(
                     }
 
                     if (!shouldRedrawMapMarkers) {
-                        //Log.d { "♢ No redraw necessary, Using previousClusterItems items, previousClusterItems.size = ${previousClusterItems.size}" }
+                        Log.d("♢ No redraw necessary, Using previousClusterItems items, previousClusterItems.size = ${previousMarkerIdStrToClusterItems.size}")
                         return@remember previousMarkerIdStrToClusterItems.values.toList()
                     }
-
-                    // todo - should build the item list in the background
 
                     // check if the markers are different than the cached markers
                     if (markers?.size == previousMarkerIdStrToClusterItems.size
                         && markers.all { marker -> // check all markers isSeen has changed
-//                            println(
-//                                "♢ ⚝⚝⚝ Clustering, checking isSeen, marker.id = ${marker.id}, " +
-//                                        "marker.isSeen == previousClusteringItem.isSeen = " +
-//                                        "${marker.isSeen == previousMarkerIdStrToClusterItems[marker.id]?.isSeen}"
-//                            )
                             marker.isSeen == previousMarkerIdStrToClusterItems[marker.id]?.isSeen
                         }
                     ) {
-                        Log.d { "♢ Using previousClusterItems because list of markers has not changed, previousClusterItems.size = ${previousMarkerIdStrToClusterItems.size}" }
+                        Log.d("♢ Using previousClusterItems because no isSeen in the list of markers has changed, previousClusterItems.size = ${previousMarkerIdStrToClusterItems.size}")
                         onDidRedrawMapMarkers()
-
-//                        // todo this doesn't seem right fix
-                        return@remember previousMarkerIdStrToClusterItems.values.toList()
-//                        return@remember markers.map { marker ->
-//                            previousMarkerIdStrToClusterItems[marker.id]
-//                                ?: ClusterItemWithIsSeen(
-//                                    id = marker.id,
-//                                    clusterItem = object : ClusterItem {
-//                                        override fun getTitle(): String = marker.title
-//                                        override fun getSnippet(): String = marker.id
-//                                        override fun getPosition(): LatLng =
-//                                            LatLng(
-//                                                marker.position.latitude,
-//                                                marker.position.longitude
-//                                            )
-//
-//                                        override fun getZIndex(): Float = 1.0f
-//                                    },
-//                                    isSeen = marker.isSeen
-//                                )
-//                        }
                     }
 
                     // Calculate the cluster items
-                    println("♢ ⚝⚝⚝ 🔧 Clustering, START calculating new cluster items")
+                    // Log.d("♢ ⚝⚝⚝ 🔧 Clustering, START calculating new cluster items")
+                    val startTime = Clock.System.now()
                     val updatedClusterItemList = markers?.map { marker ->
                         ClusterItemWithIsSeen(
                             id = marker.id,
@@ -483,14 +458,17 @@ actual fun GoogleMaps(
                             isSeen = marker.isSeen
                         )
                     } ?: listOf<ClusterItemWithIsSeen>()
-                    println("♢ ⚝⚝⚝ 🔧 Clustering, END updatedClusterItemList.size = ${updatedClusterItemList.size}")
-
-                    Log.d { "♢ Recalculated updatedClusterItemList: markers.size= ${markers?.size}, updatedClusterItemList.size= ${updatedClusterItemList.size}" }
+                    // Log.d("♢ ⚝⚝⚝ 🔧 Clustering, END updatedClusterItemList.size = ${updatedClusterItemList.size}")
                     previousMarkerIdStrToClusterItems.clear()
                     updatedClusterItemList.forEach { clusterItem ->
                         previousMarkerIdStrToClusterItems[clusterItem.id] = clusterItem
                     }
-                    println("♢ clusterItemList = ${updatedClusterItemList.joinToString(", ") { it.id + "->" + it.isSeen }}")
+                    //Log.d("♢ ⚝⚝⚝ 🔧 clusterItemList = ${updatedClusterItemList.joinToString(", ") { it.id + "->" + it.isSeen }}")
+                    //Log.d("♢ ⚝⚝⚝ 🔧 clusterItemList.size = ${updatedClusterItemList.size}")
+                    //Log.d("♢ ⚝⚝⚝ 🟨 🔧 Recalculated updatedClusterItemList: \n" +
+                    //        "  ⎣ markers.size= ${markers?.size}, \n" +
+                    //        "  ⎣ updatedClusterItemList.size= ${updatedClusterItemList.size}\n" +
+                    //        "  ⎣ time= ${Clock.System.now() - startTime}"
                     onDidRedrawMapMarkers()
 
                     return@remember updatedClusterItemList
@@ -522,9 +500,6 @@ actual fun GoogleMaps(
                             .requiredWidth(50.dp)
                     ) {
                         val marker = markers?.find { it.id == clusterItem.snippet }
-//                        println("♢ ⚝⚝⚝ Clustering: clusterItemContent, marker.id = ${marker?.id}, " +
-//                                "marker.isSeen = ${marker?.isSeen}")
-
                         val painterResourceFilename =
                             if (marker?.isSeen == true) {
                                 "marker_lightgray.png"
@@ -700,235 +675,236 @@ actual fun GoogleMaps(
 fun mapStyle(): String {
     return """
     [
+  {
+    "elementType": "geometry",
+    "stylers": [
       {
-        "elementType": "geometry",
-        "stylers": [
-          {
-            "color": "#242f3e"
-          }
-        ]
-      },
-      {
-        "elementType": "geometry.fill",
-        "stylers": [
-          {
-            "lightness": -5
-          }
-        ]
-      },
-      {
-        "elementType": "labels.text.fill",
-        "stylers": [
-          {
-            "color": "#746855"
-          }
-        ]
-      },
-      {
-        "elementType": "labels.text.stroke",
-        "stylers": [
-          {
-            "color": "#242f3e"
-          }
-        ]
-      },
-      {
-        "featureType": "administrative.land_parcel",
-        "elementType": "labels",
-        "stylers": [
-          {
-            "visibility": "off"
-          }
-        ]
-      },
-      {
-        "featureType": "administrative.locality",
-        "elementType": "labels.text.fill",
-        "stylers": [
-          {
-            "color": "#d59563"
-          }
-        ]
-      },
-      {
-        "featureType": "poi",
-        "elementType": "labels.text.fill",
-        "stylers": [
-          {
-            "color": "#d59563"
-          }
-        ]
-      },
-      {
-        "featureType": "poi.business",
-        "stylers": [
-          {
-            "visibility": "off"
-          }
-        ]
-      },
-      {
-        "featureType": "poi.park",
-        "elementType": "geometry",
-        "stylers": [
-          {
-            "color": "#263c3f"
-          }
-        ]
-      },
-      {
-        "featureType": "poi.park",
-        "elementType": "labels.text",
-        "stylers": [
-          {
-            "visibility": "off"
-          }
-        ]
-      },
-      {
-        "featureType": "poi.park",
-        "elementType": "labels.text.fill",
-        "stylers": [
-          {
-            "color": "#6b9a76"
-          }
-        ]
-      },
-      {
-        "featureType": "road",
-        "elementType": "geometry",
-        "stylers": [
-          {
-            "color": "#38414e"
-          }
-        ]
-      },
-      {
-        "featureType": "road",
-        "elementType": "geometry.stroke",
-        "stylers": [
-          {
-            "color": "#212a37"
-          }
-        ]
-      },
-      {
-        "featureType": "road",
-        "elementType": "labels.text.fill",
-        "stylers": [
-          {
-            "color": "#9ca5b3"
-          }
-        ]
-      },
-      {
-        "featureType": "road.arterial",
-        "elementType": "labels",
-        "stylers": [
-          {
-            "visibility": "off"
-          }
-        ]
-      },
-      {
-        "featureType": "road.highway",
-        "elementType": "geometry",
-        "stylers": [
-          {
-            "color": "#746855"
-          }
-        ]
-      },
-      {
-        "featureType": "road.highway",
-        "elementType": "geometry.stroke",
-        "stylers": [
-          {
-            "color": "#1f2835"
-          }
-        ]
-      },
-      {
-        "featureType": "road.highway",
-        "elementType": "labels",
-        "stylers": [
-          {
-            "visibility": "off"
-          }
-        ]
-      },
-      {
-        "featureType": "road.highway",
-        "elementType": "labels.text.fill",
-        "stylers": [
-          {
-            "color": "#f3d19c"
-          }
-        ]
-      },
-      {
-        "featureType": "road.local",
-        "stylers": [
-          {
-            "visibility": "off"
-          }
-        ]
-      },
-      {
-        "featureType": "road.local",
-        "elementType": "labels",
-        "stylers": [
-          {
-            "visibility": "off"
-          }
-        ]
-      },
-      {
-        "featureType": "transit",
-        "elementType": "geometry",
-        "stylers": [
-          {
-            "color": "#2f3948"
-          }
-        ]
-      },
-      {
-        "featureType": "transit.station",
-        "elementType": "labels.text.fill",
-        "stylers": [
-          {
-            "color": "#d59563"
-          }
-        ]
-      },
-      {
-        "featureType": "water",
-        "elementType": "geometry",
-        "stylers": [
-          {
-            "color": "#17263c"
-          }
-        ]
-      },
-      {
-        "featureType": "water",
-        "elementType": "labels.text.fill",
-        "stylers": [
-          {
-            "color": "#515c6d"
-          }
-        ]
-      },
-      {
-        "featureType": "water",
-        "elementType": "labels.text.stroke",
-        "stylers": [
-          {
-            "color": "#17263c"
-          }
-        ]
+        "color": "#242f3e"
       }
     ]
+  },
+  {
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#746855"
+      }
+    ]
+  },
+  {
+    "elementType": "labels.text.stroke",
+    "stylers": [
+      {
+        "color": "#242f3e"
+      }
+    ]
+  },
+  {
+    "featureType": "administrative.land_parcel",
+    "elementType": "labels",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "administrative.locality",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#d59563"
+      }
+    ]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "labels.text",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#d59563"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.business",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#263c3f"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "labels.text",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#6b9a76"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#38414e"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "color": "#212a37"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#9ca5b3"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#746855"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "color": "#1f2835"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#f3d19c"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway.controlled_access",
+    "stylers": [
+      {
+        "visibility": "simplified"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway.controlled_access",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "visibility": "simplified"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway.controlled_access",
+    "elementType": "labels",
+    "stylers": [
+      {
+        "visibility": "on"
+      }
+    ]
+  },
+  {
+    "featureType": "road.local",
+    "elementType": "labels",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "transit",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#2f3948"
+      }
+    ]
+  },
+  {
+    "featureType": "transit.station",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#d59563"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#17263c"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#515c6d"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "labels.text.stroke",
+    "stylers": [
+      {
+        "color": "#17263c"
+      }
+    ]
+  }
+]
     """.trimIndent()
 
 }

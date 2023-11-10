@@ -43,8 +43,8 @@ actual class GPSLocationService  {
     private var locationUpdateCallback: ((Location?) -> Unit)? = null
     private var internalLocationCallback: LocationCallback? = null
 
-    private val locationRequest = LocationRequest.Builder(1000)
-        .setIntervalMillis(1000)
+    private val locationRequest = LocationRequest.Builder(kUpdateInterval)
+        .setIntervalMillis(kUpdateInterval)
         .setPriority(Priority.PRIORITY_LOW_POWER)
         .setMinUpdateDistanceMeters(1.0f)
         .setWaitForAccurateLocation(false)
@@ -172,5 +172,7 @@ actual class GPSLocationService  {
     companion object {
         const val ACTION_START_BACKGROUND_UPDATES = "ACTION_START_BACKGROUND_UPDATES"
         const val ACTION_STOP_BACKGROUND_UPDATES = "ACTION_STOP_BACKGROUND_UPDATES"
+
+        const val kUpdateInterval = 1000L
     }
 }

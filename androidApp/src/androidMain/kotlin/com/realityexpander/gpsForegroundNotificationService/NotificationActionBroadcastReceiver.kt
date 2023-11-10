@@ -3,7 +3,6 @@ package com.realityexpander.gpsForegroundNotificationService
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import co.touchlab.kermit.Logger as Log
 import data.appSettings
 import tts
 
@@ -20,7 +19,7 @@ class NotificationActionBroadcastReceiver : BroadcastReceiver() {
         }
         if(intent.action == GPS_FOREGROUND_SERVICE_NOTIFICATION_MuteAllTextToSpeech_ACTION) {
             tts?.stop()
-            appSettings.shouldSpeakWhenUnseenMarkerFound = false
+            appSettings.isSpeakWhenUnseenMarkerFoundEnabled = false
         }
     }
 

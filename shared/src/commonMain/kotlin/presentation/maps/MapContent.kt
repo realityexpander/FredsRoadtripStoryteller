@@ -61,10 +61,10 @@ fun MapContent(
                 onDidRedrawMapMarkers = onDidRedrawMarkers,
                 shouldSetInitialCameraPosition =
                     if (!isFirstUpdate && !didSetInitialCameraPosition) {  // set initial camera position after first update
-//                        Log.d("💿 MapContent.shouldSetInitialCameraPosition: isFirstUpdate=true,\n" +
-//                                "  setting initial camera position,\n" +
-//                                "  initialUserLocation=(${initialUserLocation.latitude}, ${initialUserLocation.longitude})"
-//                        )
+                        //Log.d("💿 MapContent.shouldSetInitialCameraPosition: isFirstUpdate=true,\n" +
+                        //        "  setting initial camera position,\n" +
+                        //        "  initialUserLocation=(${initialUserLocation.latitude}, ${initialUserLocation.longitude})"
+                        //)
                         didSetInitialCameraPosition = true // only allow set initial camera position once
                         CameraPosition(
                             target = LatLong(

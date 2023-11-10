@@ -1,7 +1,12 @@
 package data
 
 import data.loadMarkers.MarkersResult
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import presentation.maps.Marker
 import presentation.maps.MarkerIdStr
 import co.touchlab.kermit.Logger as Log
@@ -10,6 +15,8 @@ open class MarkersRepo(
     private val appSettings: AppSettings,
     val updateMarkersResultFlow: MutableStateFlow<MarkersResult> = MutableStateFlow(appSettings.markersResult),
 ) {
+    private var inMemoryMarkersResult = appSettings.markersResult
+    val coroutineScope = CoroutineScope(Dispatchers.IO)
 
     init {
        Log.d { "MarkersRepo: init, instance=$this" }
@@ -19,77 +26,84 @@ open class MarkersRepo(
     // Completely replaces the current MarkersResult with a new value
     private fun updateMarkersResult(newMarkersResult: MarkersResult) {
         //Log.i("MarkersRepo: updateMarkersResult: newMarkersResult.size=${newMarkersResult.markerIdToMarker.size}")
-        appSettings.markersResult = newMarkersResult
-        updateMarkersResultFlow.tryEmit(newMarkersResult)
+        inMemoryMarkersResult = newMarkersResult
+
+        // debounce the update to improve performance
+        coroutineScope.launch {
+            delay(100) // debounce
+//            delay(250) // debounce
+            appSettings.markersResult = newMarkersResult
+            updateMarkersResultFlow.emit(newMarkersResult)
+        }
     }
 
+    // Pulls from the SSoT in the appSettings, slower than using inMemoryMarkersResult
     fun markersResult() = appSettings.markersResult
 
     fun addMarker(marker: Marker): MarkersResult {
         this.marker(marker.id)?.run {
             // Log.w("MarkerRepo: addMarker: marker already exists, id: ${marker.id}, add ignored.")
-            return markersResult()
+            return inMemoryMarkersResult
         }
 
         updateMarkersResult(
-            markersResult().copy(
+            inMemoryMarkersResult.copy(
                 markerIdToMarker =
-                    markersResult().markerIdToMarker +
+                    inMemoryMarkersResult.markerIdToMarker +
                         (marker.id to marker)
             )
         )
 
-        return markersResult()
+        return inMemoryMarkersResult
     }
 
     fun removeMarker(id: MarkerIdStr): MarkersResult {
         // Log.i("MarkerRepo: removeMarker: id=$id")
         this.marker(id) ?: run {
             updateMarkersResult(appSettings.markersResult) // trigger update to flow anyway
-            return markersResult()
+            return inMemoryMarkersResult
         }
 
         updateMarkersResult(
-            markersResult().copy(
+            inMemoryMarkersResult.copy(
                 markerIdToMarker =
-                    markersResult().markerIdToMarker - id
+                    inMemoryMarkersResult.markerIdToMarker - id
                 )
         )
 
-        return markersResult()
+        return inMemoryMarkersResult
     }
 
     fun marker(id: MarkerIdStr): Marker? {
-        return markersResult().markerIdToMarker[id]
+        return inMemoryMarkersResult.markerIdToMarker[id] // todo use inMemoryMarkersResult for all other methods
     }
 
     fun markers(): List<Marker> {
-        return markersResult().markerIdToMarker.values.toList()
+        return inMemoryMarkersResult.markerIdToMarker.values.toList()
     }
 
     fun clearAllMarkers(): MarkersResult {
-        // Log.i("MarkerRepo: clearAllMarkers")
         updateMarkersResult(
-            markersResult().copy(
+            inMemoryMarkersResult.copy(
                 markerIdToMarker = emptyMap()
             )
         )
 
-        return markersResult()
+        return inMemoryMarkersResult
     }
 
     // Note: Blows away all previous data.  Use with caution.
     fun replaceMarker(replacementMarker: Marker): MarkersResult {
         // Log.i("MarkerRepo: updateAllDataForMarker: replacementMarker.id=${replacementMarker.id}")
         updateMarkersResult(
-            markersResult().copy(
+            inMemoryMarkersResult.copy(
                 markerIdToMarker =
-                    appSettings.markersResult.markerIdToMarker +
+                    inMemoryMarkersResult.markerIdToMarker +
                         (replacementMarker.id to replacementMarker)
             )
         )
 
-        return markersResult()
+        return inMemoryMarkersResult
     }
 
     fun updateMarkerIsSeen(markerToUpdate: Marker, isSeen: Boolean): MarkersResult {
@@ -98,24 +112,24 @@ open class MarkersRepo(
             this.marker(markerToUpdate.id)
                 ?: run {
                     Log.w("MarkerRepo: updateMarkerIsSeen: marker not found, id: ${markerToUpdate.id}")
-                    return appSettings.markersResult
+                    return inMemoryMarkersResult
                 }
         if(originalMarker.isSeen == isSeen) { // no change
             updateMarkersResult(appSettings.markersResult)
-            return markersResult()
+            return inMemoryMarkersResult
         }
 
         updateMarkersResult(
-            markersResult().copy(
+            inMemoryMarkersResult.copy(
                 markerIdToMarker =
-                    appSettings.markersResult.markerIdToMarker +
+                    inMemoryMarkersResult.markerIdToMarker +
                         (originalMarker.id to originalMarker.copy(
                             isSeen = isSeen
                         ))
             )
         )
 
-        return markersResult()
+        return inMemoryMarkersResult
     }
 
     fun updateMarkerIsSpoken(
@@ -127,45 +141,44 @@ open class MarkersRepo(
             id ?: markerToUpdate?.id
             ?: run {
                 Log.w("MarkerRepo: updateMarkerIsSpoken: marker id found")
-                return markersResult()
+                return inMemoryMarkersResult
             }
         // Log.i("MarkerRepo: updateMarkerIsSpoken: markerToUpdate.id=$updateId, isSpoken=$isSpoken")
         val originalMarker =
             this.marker(updateId)
                 ?: run {
                     Log.w("MarkerRepo: updateMarkerIsSpoken: marker not found, id: $updateId")
-                    return markersResult()
+                    return inMemoryMarkersResult
                 }
         if(originalMarker.isSpoken == isSpoken) { // no change
-            updateMarkersResult(appSettings.markersResult)
-            return appSettings.markersResult
+            return inMemoryMarkersResult
         }
 
         updateMarkersResult(
-            markersResult().copy(
+            inMemoryMarkersResult.copy(
                 markerIdToMarker =
-                    appSettings.markersResult.markerIdToMarker +
+                inMemoryMarkersResult.markerIdToMarker +
                         (originalMarker.id to originalMarker.copy(
-                            isSpoken = isSpoken
-                        ))
+                                isSpoken = isSpoken
+                            )
+                        )
             )
         )
 
-        return markersResult()
+        return inMemoryMarkersResult
     }
 
     fun updateMarkerDetails(markerWithUpdatedDetails: Marker): MarkersResult {
-        // Log.i("MarkerRepo: updateMarkerDetails: markerWithUpdatedDetails.id=${markerWithUpdatedDetails.id}")
         val originalMarker = this.marker(markerWithUpdatedDetails.id)
                 ?: run {
                     Log.w("MarkerRepo: updateMarkerDetails: marker not found, id: ${markerWithUpdatedDetails.id}")
-                    return appSettings.markersResult
+                    return inMemoryMarkersResult
                 }
 
         updateMarkersResult(
-            markersResult().copy(
+            inMemoryMarkersResult.copy(
                 markerIdToMarker =
-                    markersResult().markerIdToMarker +
+                    inMemoryMarkersResult.markerIdToMarker +
                         (originalMarker.id to originalMarker.copy(
                             isDetailsLoaded = true, // force to indicate details have been loaded
                             markerDetailsPageUrl = markerWithUpdatedDetails.markerDetailsPageUrl,
@@ -186,33 +199,41 @@ open class MarkersRepo(
 
         )
 
-        return markersResult()
+        return inMemoryMarkersResult
     }
 
     fun upsertMarkerDetails(marker: Marker): MarkersResult {
-        // Log.i("MarkerRepo: upsertMarkerDetails: marker.id=${marker.id}")
         marker(marker.id)?.let {
             updateMarkerDetails(marker)
         } ?: run {
             addMarker(marker)
         }
 
-        return markersResult()
+        return inMemoryMarkersResult
     }
 
     fun updateMarkerBasicInfo(markerWithUpdatedBasicInfo: Marker): MarkersResult {
-        // Log.i("MarkerRepo: updateMarkerBasicInfo: markerWithUpdatedBasicInfo.id=${markerWithUpdatedBasicInfo.id}")
         val originalMarker =
             marker(markerWithUpdatedBasicInfo.id)
                 ?: run {
                     Log.w("MarkerRepo: updateMarkerBasicInfo: marker not found, id: ${markerWithUpdatedBasicInfo.id}")
-                    return appSettings.markersResult
+                    return inMemoryMarkersResult
                 }
 
+        // Check for changes - optimization
+        if(originalMarker.position == markerWithUpdatedBasicInfo.position &&
+            originalMarker.title == markerWithUpdatedBasicInfo.title &&
+            originalMarker.subtitle == markerWithUpdatedBasicInfo.subtitle &&
+            originalMarker.alpha == markerWithUpdatedBasicInfo.alpha
+        ) { // no change
+            return inMemoryMarkersResult
+        }
+        println("🚹🚹🚹 🛜 MarkerRepo: updateMarkerBasicInfo: markerWithUpdatedBasicInfo.id=${markerWithUpdatedBasicInfo.id}")
+
         updateMarkersResult(
-            markersResult().copy(
+            inMemoryMarkersResult.copy(
                 markerIdToMarker =
-                    markersResult().markerIdToMarker +
+                    inMemoryMarkersResult.markerIdToMarker +
                         (originalMarker.id to originalMarker.copy(
                             position = markerWithUpdatedBasicInfo.position,
                             title = markerWithUpdatedBasicInfo.title,
@@ -222,7 +243,7 @@ open class MarkersRepo(
             )
         )
 
-        return markersResult()
+        return inMemoryMarkersResult
     }
 
     fun upsertMarkerBasicInfo(marker: Marker): MarkersResult {
@@ -231,19 +252,19 @@ open class MarkersRepo(
             updateMarkerBasicInfo(marker)
         } ?: run {
             addMarker(marker)
+            println("🚹🚹🚹 MarkerRepo: upsertMarkerBasicInfo: added marker.id=${marker.id}")
         }
 
-        return markersResult()
+        return inMemoryMarkersResult
     }
 
     fun updateIsParseMarkersPageFinished(isFinished: Boolean): MarkersResult {
-        // Log.i("MarkerRepo: setIsParseMarkersPageFinished: isFinished=$isFinished")
         updateMarkersResult(
-            markersResult().copy(
+            inMemoryMarkersResult.copy(
                 isParseMarkersPageFinished = isFinished
             )
         )
 
-        return markersResult()
+        return inMemoryMarkersResult
     }
 }

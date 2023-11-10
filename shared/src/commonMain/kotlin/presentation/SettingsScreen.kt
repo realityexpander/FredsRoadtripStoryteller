@@ -57,16 +57,16 @@ fun SettingsScreen(
     val coroutineScope = rememberCoroutineScope()
 
     var shouldStartBackgroundTrackingWhenAppLaunches by remember {
-        mutableStateOf(settings?.shouldStartBackgroundTrackingWhenAppLaunches ?: false)
+        mutableStateOf(settings?.isStartBackgroundTrackingWhenAppLaunchesEnabled ?: false)
     }
     var shouldShowMarkerDataLastSearchedLocation by remember {
         mutableStateOf(settings?.isMarkersLastUpdatedLocationVisible ?: false)
     }
     var shouldSpeakWhenUnseenMarkerFound by remember {
-        mutableStateOf(settings?.shouldSpeakWhenUnseenMarkerFound ?: false)
+        mutableStateOf(settings?.isSpeakWhenUnseenMarkerFoundEnabled ?: false)
     }
     var shouldSpeakDetailsWhenUnseenMarkerFound by remember {
-        mutableStateOf(settings?.shouldSpeakDetailsWhenUnseenMarkerFound ?: false)
+        mutableStateOf(settings?.isSpeakDetailsWhenUnseenMarkerFoundEnabled ?: false)
     }
 
     // Poll for changes from the App Foreground Notification cancelling the Speak Marker feature
@@ -114,7 +114,7 @@ fun SettingsScreen(
                 title = "Speak marker when new marker is found",
                 isChecked = shouldSpeakWhenUnseenMarkerFound,
                 onUpdateChecked = {
-                    settings?.shouldSpeakWhenUnseenMarkerFound = it
+                    settings?.isSpeakWhenUnseenMarkerFoundEnabled = it
                     shouldSpeakWhenUnseenMarkerFound = it
                 }
             )
@@ -124,7 +124,7 @@ fun SettingsScreen(
                 isChecked = shouldSpeakDetailsWhenUnseenMarkerFound,
                 enabled = shouldSpeakWhenUnseenMarkerFound, // linked to above setting
                 onUpdateChecked = {
-                    settings?.shouldSpeakDetailsWhenUnseenMarkerFound = it
+                    settings?.isSpeakDetailsWhenUnseenMarkerFoundEnabled = it
                     shouldSpeakDetailsWhenUnseenMarkerFound = it
                 }
             )
@@ -133,7 +133,7 @@ fun SettingsScreen(
                 title = "Start background tracking when app launches",
                 isChecked = shouldStartBackgroundTrackingWhenAppLaunches,
                 onUpdateChecked = {
-                    settings?.shouldStartBackgroundTrackingWhenAppLaunches = it
+                    settings?.isStartBackgroundTrackingWhenAppLaunchesEnabled = it
                     shouldStartBackgroundTrackingWhenAppLaunches = it
                 }
             )
@@ -235,7 +235,7 @@ private fun PollForNotificationActionSettingsChanges(
             // Poll the appSettings for changes to the Speak Marker feature
             coroutineScope.launch {
                 while (!isFinished) {
-                    localShouldSpeakWhenUnseenMarkerFound = appSettings.shouldSpeakWhenUnseenMarkerFound
+                    localShouldSpeakWhenUnseenMarkerFound = appSettings.isSpeakWhenUnseenMarkerFoundEnabled
                     delay(1000)
                 }
             }
