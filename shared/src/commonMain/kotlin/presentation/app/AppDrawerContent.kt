@@ -33,14 +33,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import data.loadMarkers.MarkersResult
+import data.loadMarkers.LoadMarkersResult
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun AppDrawerContent(
     bottomSheetScaffoldState: BottomSheetScaffoldState,
-    markersResult: MarkersResult,
+    loadMarkersResult: LoadMarkersResult,
     onSetBottomSheetActiveScreen: (BottomSheetScreen) -> Unit = {},
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -119,7 +119,7 @@ fun AppDrawerContent(
         )
     }
 
-    if(markersResult.markerIdToMarker.isEmpty()) {
+    if(loadMarkersResult.markerIdToMarker.isEmpty()) {
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             "No markers loaded yet, drive around to load some!",
@@ -139,7 +139,7 @@ fun AppDrawerContent(
             ),
 
     ) {
-        markersResult.markerIdToMarker
+        loadMarkersResult.markerIdToMarker
             .entries
             .reversed()
             .forEach { marker ->

@@ -168,7 +168,7 @@ class MarkersRepoTest {
             alpha = 0.5f,
             isSeen = false,
         )
-        val updatedMarker = marker.copy(
+        val updatedDetailsMarker = marker.copy(
             isDetailsLoaded = true,
             markerDetailsPageUrl = "updated markerDetailsPageUrl",
             mainPhotoUrl = "updated mainPhotoUrl",
@@ -178,14 +178,17 @@ class MarkersRepoTest {
             inscription = "updated inscription",
             englishInscription = "updated englishInscription",
             spanishInscription = "updated spanishInscription",
+            erected = "updated erected",
+            credits = "updated credits",
+            location = "updated location",
         )
 
         // Act
-        markerRepo.upsertMarkerDetails(updatedMarker)
+        markerRepo.upsertMarkerDetails(updatedDetailsMarker)
 
         // Assert
-        assertEquals(markerRepo.marker(marker.id), updatedMarker)
-        assertEquals(markerRepo.markersResult().markerIdToMarker["M1"], updatedMarker)
+        assertEquals(markerRepo.marker(marker.id), updatedDetailsMarker)
+        assertEquals(markerRepo.markersResult().markerIdToMarker["M1"], updatedDetailsMarker)
     }
 
     @Test

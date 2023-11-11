@@ -33,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
@@ -104,7 +105,7 @@ actual fun GoogleMaps(
     onFindMeButtonClick: (() -> Unit)?,
     isMarkersLastUpdatedLocationVisible: Boolean,
     shouldShowInfoMarker: Marker?,
-    onDidShowInfoMarker: () -> Unit
+    onDidShowInfoMarker: () -> Unit,
 ) {
     val cameraPositionState = rememberCameraPositionState()
     val uiSettings by remember {
@@ -220,6 +221,9 @@ actual fun GoogleMaps(
             }
         }
     }
+
+    val lightGrayMarkerPainterResource = painterResource("marker_lightgray.png")
+    val redMarkerPainterResource = painterResource("marker_red.png")
 
     Box(modifier.fillMaxSize()) {
 
@@ -368,7 +372,7 @@ actual fun GoogleMaps(
                 )
             }
 
-            // Show Last cache loaded location
+            // Show Last marker Index loaded location
             if(isMarkersLastUpdatedLocationVisible) {
                 cachedMarkersLastUpdatedLocation?.let { cachedMarkersLastUpdatedLocation ->
                     Circle(
@@ -411,23 +415,14 @@ actual fun GoogleMaps(
                 }
             }
 
-//            println("♢ ⚝⚝⚝ pre Clustering, \n" +
-//                    "  ⎣ shouldRedrawMapMarkers = $shouldRedrawMapMarkers \n" +
-//                    "  ⎣ markers.size = ${markers?.size}, \n" +
-//                    "  ⎣ previousClusterItems.size = ${previousMarkerIdStrToClusterItems.size}, \n" +
-////                    "  ⎣ markers.isSeen = ${markers?.map { it.id +"->"+ it.isSeen }}"
-//                    "  ⎣ markers.isSeen.size = ${markers?.map { it.id +"->"+ it.isSeen }?.size ?: 0}"
-//            )
-
             Clustering(
                 items = remember(shouldRedrawMapMarkers, markers, isMarkersEnabled) {
                     if (!isMarkersEnabled) {
-                        // Log.d { "Using empty cluster items" }
                         return@remember listOf<ClusterItem>()
                     }
 
                     if (!shouldRedrawMapMarkers) {
-                        Log.d("♢ No redraw necessary, Using previousClusterItems items, previousClusterItems.size = ${previousMarkerIdStrToClusterItems.size}")
+                        Log.d("♢ shouldRedrawMapMarkers=false, No redraw necessary, Using previousClusterItems items, previousClusterItems.size = ${previousMarkerIdStrToClusterItems.size}")
                         return@remember previousMarkerIdStrToClusterItems.values.toList()
                     }
 
@@ -441,7 +436,7 @@ actual fun GoogleMaps(
                         onDidRedrawMapMarkers()
                     }
 
-                    // Calculate the cluster items
+                    // Calculate the cluster items - must update to change the isSeen property
                     // Log.d("♢ ⚝⚝⚝ 🔧 Clustering, START calculating new cluster items")
                     val startTime = Clock.System.now()
                     val updatedClusterItemList = markers?.map { marker ->
@@ -459,14 +454,11 @@ actual fun GoogleMaps(
                         )
                     } ?: listOf<ClusterItemWithIsSeen>()
                     // Log.d("♢ ⚝⚝⚝ 🔧 Clustering, END updatedClusterItemList.size = ${updatedClusterItemList.size}")
-                    previousMarkerIdStrToClusterItems.clear()
+                    previousMarkerIdStrToClusterItems.clear() // if new markers are null, just clear the previous list.
                     updatedClusterItemList.forEach { clusterItem ->
                         previousMarkerIdStrToClusterItems[clusterItem.id] = clusterItem
                     }
-                    //Log.d("♢ ⚝⚝⚝ 🔧 clusterItemList = ${updatedClusterItemList.joinToString(", ") { it.id + "->" + it.isSeen }}")
-                    //Log.d("♢ ⚝⚝⚝ 🔧 clusterItemList.size = ${updatedClusterItemList.size}")
                     //Log.d("♢ ⚝⚝⚝ 🟨 🔧 Recalculated updatedClusterItemList: \n" +
-                    //        "  ⎣ markers.size= ${markers?.size}, \n" +
                     //        "  ⎣ updatedClusterItemList.size= ${updatedClusterItemList.size}\n" +
                     //        "  ⎣ time= ${Clock.System.now() - startTime}"
                     onDidRedrawMapMarkers()
@@ -500,24 +492,23 @@ actual fun GoogleMaps(
                             .requiredWidth(50.dp)
                     ) {
                         val marker = markers?.find { it.id == clusterItem.snippet }
-                        val painterResourceFilename =
-                            if (marker?.isSeen == true) {
-                                "marker_lightgray.png"
-                            } else {
-                                "marker_red.png"
-                            }
+                        val painterRes = if(marker?.isSeen == true) {
+                            lightGrayMarkerPainterResource
+                        } else {
+                            redMarkerPainterResource
+                        }
 
-                        if(LocalInspectionMode.current) {
-                                PreviewPlaceholder("Location marker $painterResourceFilename")
-                            } else {
-                                Image(
-                                    painter = painterResource(painterResourceFilename),
-                                    contentDescription = "location marker",
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.Fit,
-                                    // colorFilter = ColorFilter.tint(Color.Green, BlendMode.SrcAtop) // changes color and blows away alpha
-                                )
-                            }
+                        if(!LocalInspectionMode.current) {
+                            Image(
+                                painter = painterRes,
+                                contentDescription = "historical marker",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Fit,
+                                // colorFilter = ColorFilter.tint(Color.Green, BlendMode.SrcAtop) // changes color and blows away alpha
+                            )
+                        } else {
+                            PreviewPlaceholder("Location marker, isSeen=${marker?.isSeen}")
+                        }
 
                         // LEAVE FOR REFERENCE for iOS
                         //    Icon(

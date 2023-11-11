@@ -10,10 +10,10 @@ import co.touchlab.kermit.Logger as Log
 
 const val kBaseHmdbDotOrgUrl = "https://www.hmdb.org/"
 
-fun parseMarkersPageHtml(rawPageHtml: String): MarkersResult {
+fun parseMarkersPageHtml(rawPageHtml: String): LoadMarkersResult {
     if (rawPageHtml.isBlank()) {
         Log.w { "htmlResponse is Blank" }
-        return MarkersResult()
+        return LoadMarkersResult()
     }
 
     var isSingleMarkerPage = false
@@ -325,7 +325,7 @@ fun parseMarkersPageHtml(rawPageHtml: String): MarkersResult {
         else
             rawMarkerCountFromFirstPageHtmlOfMultiPageResult // more than one page of markers.
 
-    return MarkersResult(
+    return LoadMarkersResult(
         markerIdToRawMarkerDetailStringMap, // used for multi-page processing.
         markerIdToMarker,
         totalMarkersAtLocation

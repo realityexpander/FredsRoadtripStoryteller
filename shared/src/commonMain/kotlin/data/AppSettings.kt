@@ -2,7 +2,7 @@ package data
 
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.set
-import data.loadMarkers.MarkersResult
+import data.loadMarkers.LoadMarkersResult
 import json
 import kForceClearSettingsAtLaunch
 import kotlinx.coroutines.CoroutineScope
@@ -32,9 +32,9 @@ class AppSettings(val settingsInstance: Settings) {
     // is there a way to put these into the map automatically & keep typesafe w/o using casts?
     // REMEMBER TO ADD NEW SETTINGS TO THE MAP! - FORMATTING IS INTENTIONAL
     // ALSO REMEMBER TO ADD NEW TYPES TO THE WHEN STATEMENT IN THE DELEGATE GETTER/SETTER
-    var markersResult by
+    var loadMarkersResult by
         SettingsDelegate(settingsInstance,
-       kMarkersResult, defaultValue = MarkersResult())
+       kMarkersResult, defaultValue = LoadMarkersResult())
     var markersLastUpdatedLocation by
         SettingsDelegate(settingsInstance,
        kMarkersLastUpdatedLocation, defaultValue = Location(0.0, 0.0))
@@ -78,7 +78,7 @@ class AppSettings(val settingsInstance: Settings) {
     var settingsMap = createSettingsMap()
     private fun createSettingsMap() = mutableMapOf<String, Any?>(
         kMarkersResult to
-         markersResult,
+         loadMarkersResult,
         kMarkersLastUpdatedLocation to
          markersLastUpdatedLocation,
         kLastKnownUserLocation to
@@ -206,7 +206,7 @@ class AppSettings(val settingsInstance: Settings) {
         val coroutineScope = CoroutineScope(Dispatchers.IO)
 
         coroutineScope.launch {
-            println("markersResult.size= ${markersResult.markerIdToMarker.size}")
+            println("markersResult.size= ${loadMarkersResult.markerIdToMarker.size}")
 
             // Show all keys
             Log.d { "All keys from settings: ${settingsInstance.keys.joinToString("") { "$it\n ⎣_" }}" }
@@ -215,7 +215,7 @@ class AppSettings(val settingsInstance: Settings) {
             // Show current settings
             settingsMap.forEach { entry ->
                 if (entry.key == kMarkersResult) { // Don't want to display all the markers
-                    Log.d { "Settings: ${entry.key} = ${(entry.value as MarkersResult).markerIdToMarker.size} markers" }
+                    Log.d { "Settings: ${entry.key} = ${(entry.value as LoadMarkersResult).markerIdToMarker.size} markers" }
                     return@forEach
                 }
                 if (entry.key == kRecentlySeenMarkersSet) { // Don't want to display all the markers
@@ -258,8 +258,8 @@ class SettingsDelegate<T>(
                     settings.getStringOrNull(key) ?: return defaultValue
                 ) as T
             }
-            is MarkersResult -> {
-                json.decodeFromString<MarkersResult>(
+            is LoadMarkersResult -> {
+                json.decodeFromString<LoadMarkersResult>(
                     settings.getStringOrNull(key) ?: return defaultValue
                 ) as T
             }
@@ -295,8 +295,8 @@ class SettingsDelegate<T>(
                 settings.putString(key, json.encodeToString(value as Location))
             is List<*> -> // Note: can't use List<String> here, because of type erasure, assumes List<String>
                 settings.putString(key, json.encodeToString(value as List<String>))
-            is MarkersResult ->
-                settings.putString(key, json.encodeToString(value as MarkersResult))
+            is LoadMarkersResult ->
+                settings.putString(key, json.encodeToString(value as LoadMarkersResult))
             is RecentlySeenMarkersList ->
                 settings.putString(key, json.encodeToString(value as RecentlySeenMarkersList))
             is RecentlySeenMarker ->
