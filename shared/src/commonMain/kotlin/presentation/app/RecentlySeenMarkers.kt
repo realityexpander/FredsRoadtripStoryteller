@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -47,6 +48,7 @@ import presentation.maps.MarkerIdStr
 import presentation.maps.RecentlySeenMarker
 import presentation.uiComponents.lightenBy
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun RecentlySeenMarkers(
     recentlySeenMarkersForUiList: SnapshotStateList<RecentlySeenMarker>,
@@ -170,7 +172,7 @@ fun RecentlySeenMarkers(
                 .background(MaterialTheme.colors.surface)
 
         ) {
-
+            // Header & "empty" placeholder
             if (recentlySeenMarkersForUiList.isEmpty()) {
                 // Show "empty" placeholder if no markers
                 item {
@@ -221,6 +223,7 @@ fun RecentlySeenMarkers(
                             color = MaterialTheme.colors.primary,
                             shape = RoundedCornerShape(8.dp)
                         )
+                        .animateItemPlacement(animationSpec = tween(500))
                     ,
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
