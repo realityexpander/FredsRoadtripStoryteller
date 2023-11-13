@@ -666,8 +666,8 @@ fun App(
                                         appSettings.isRecentlySeenMarkersPanelVisible =
                                             isRecentlySeenMarkersPanelVisible
                                     }
-                                }) { // show marker history panel
-                                    // Loading status icon
+                                }) {
+                                    // Loading status icon // todo - should use a sealed/enum class instead of using the icon
                                     AnimatedVisibility(
                                         loadingStateIcon != Icons.Default.Cloud,
                                         enter = fadeIn(tween(1500)),

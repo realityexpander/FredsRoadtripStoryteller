@@ -219,7 +219,7 @@ fun MarkerDetailsScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(.9f)
+                .fillMaxHeight(kMaxWeightOfBottomDrawer) // lets some map show through
                 .padding(start = 16.dp, end = 16.dp, bottom = 0.dp, top = 0.dp)
         ) {
             // Title & Close Button
