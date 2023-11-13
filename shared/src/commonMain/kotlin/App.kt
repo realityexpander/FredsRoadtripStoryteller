@@ -276,7 +276,7 @@ fun App(
 
                 userLocation = jiggleLocationToForceUiUpdate(userLocation)
                 shouldRedrawMapMarkers = true
-                yield() // todo needed? remove?
+                yield() // todo needed? remove soon?
 
             }
         }
