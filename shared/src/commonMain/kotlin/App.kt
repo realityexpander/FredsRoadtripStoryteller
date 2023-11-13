@@ -228,7 +228,6 @@ fun App(
                         markersRepo.upsertMarkerBasicInfo(marker) // only basic info needs to be updated
                     }
                     markersRepo.updateIsParseMarkersPageFinished(true) // ensures the markers are updated
-//                    loadMarkersResult.isParseMarkersPageFinished = true // ensures the markers are updated /// ??? new
 
                     Log.d("🎯 loadMarkers END UPDATE, total time = ${(Clock.System.now() - startTime)}\n")
                 }
@@ -255,12 +254,6 @@ fun App(
         LaunchedEffect(markersRepo.updateLoadMarkersResultFlow) {
             markersRepo.updateLoadMarkersResultFlow.collectLatest { loadMarkersResult ->
                 delay(250) // debounce - allow the loadMarkers to finish processing
-
-//                // Guard against overloading the UI with updates (important)
-//                if(!loadMarkersResult.isParseMarkersPageFinished) {
-//                    Log.d("🍉 SKIP markersRepo.updateMarkersResultFlow.collectLatest bc loadMarkersResult.isParseMarkersPageFinished=false")
-//                    return@collectLatest
-//                }
 
                 // Update the final markers list with the updated marker data
                 val startTime = Clock.System.now()
