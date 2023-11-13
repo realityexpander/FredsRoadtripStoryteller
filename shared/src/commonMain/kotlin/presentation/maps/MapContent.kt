@@ -15,7 +15,7 @@ import co.touchlab.kermit.Logger as Log
 @Composable
 fun MapContent(
     modifier: Modifier = Modifier,
-    isFinishedLoadingMarkerData: Boolean = false,  // only sets the initial position, not tracked. Use `userLocation` for tracking.
+    isParseMarkersPageFinished: Boolean = false,  // only sets the initial position, not tracked. Use `userLocation` for tracking.
     initialUserLocation: Location,
     userLocation: Location,
     markers: List<Marker>,
@@ -47,7 +47,7 @@ fun MapContent(
     ) {
 
         // Log.d("💿 MapContent: isFinishedLoadingMarkerData=$isFinishedLoadingMarkerData, isFirstUpdate=$isFirstUpdate, shouldRedrawMapMarkers=$shouldRedrawMarkers")
-        if (isFinishedLoadingMarkerData || !isFirstUpdate || shouldRedrawMarkers) { // todo use shouldRedrawMapMarkers instead of didMapMarkersRedraw
+        if (isParseMarkersPageFinished || !isFirstUpdate || shouldRedrawMarkers) { // todo use shouldRedrawMapMarkers instead of didMapMarkersRedraw
             GoogleMaps(
                 modifier = modifier,
                 isMapOptionSwitchesVisible = isMapOptionSwitchesVisible,

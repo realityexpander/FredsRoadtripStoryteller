@@ -747,7 +747,7 @@ fun App(
                         MapContent(
                             modifier = Modifier
                                 .fillMaxHeight(1.0f - transitionRecentMarkersPanelState),
-                            isFinishedLoadingMarkerData = loadMarkersResult.isParseMarkersPageFinished,
+                            isParseMarkersPageFinished = loadMarkersResult.isParseMarkersPageFinished,
                             initialUserLocation = appSettings.lastKnownUserLocation,
                             userLocation = userLocation,
                             markers = markersRepo.markers(),
