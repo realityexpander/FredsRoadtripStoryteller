@@ -59,6 +59,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -226,9 +227,6 @@ fun MarkerDetailsScreen(
             // Subtitle & Speak Button
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight()
-                    .weight(1f)
                     .padding(bottom = 0.dp, top = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
@@ -236,8 +234,7 @@ fun MarkerDetailsScreen(
                 // Title & Subtitle
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(7f)
+                        .weight(8f)
                         .padding(bottom = 0.dp, top = 4.dp),
                     horizontalAlignment = Alignment.Start,
                     verticalArrangement = Arrangement.Top,
@@ -246,7 +243,6 @@ fun MarkerDetailsScreen(
                     Text(
                         markerLoadingState.data.title,
                         modifier = Modifier
-                            .fillMaxWidth()
                             .padding(bottom = 0.dp, top = 4.dp),
                         fontSize = MaterialTheme.typography.h5.fontSize,
                         fontWeight = FontWeight.Bold,
@@ -255,11 +251,13 @@ fun MarkerDetailsScreen(
                     Text(
                         markerLoadingState.data.subtitle,
                         modifier = Modifier
-                            .fillMaxWidth()
                             .padding(top = 0.dp, bottom = 4.dp),
                         fontSize = MaterialTheme.typography.h6.fontSize,
                         fontWeight = FontWeight.Normal,
+                        maxLines =  3,
+                        overflow = TextOverflow.Ellipsis,
                     )
+                    Spacer(modifier = Modifier.padding(4.dp))
                 }
 
                 // Close Button

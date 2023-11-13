@@ -39,7 +39,7 @@ fun MarkerDetailsPreview(
         // title = "First City Council of Tepoztlan",
         title = "El Tepozteco National Park with a long title",
         alpha = 1f,
-        subtitle = "Test Subtitle a very long subtitle with data n stuff",
+        subtitle = "Test Subtitle a very long subtitle with data n stuff and this line goes on and on and its really long and unusually long and even goes to four lines on a landscape phone mode",
         location = "Location Description",
         inscription = "Incised inscription",
         englishInscription = "This is the English inscription - Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis.\n\n et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. ",
@@ -72,6 +72,19 @@ fun MarkerDetailsPreview(
         }
     }
 }
+
+@Preview(
+    name = "Marker Details (landscape)",
+    group = "Marker Details - Landscape",
+    uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL,
+    showSystemUi = false,
+    showBackground = true, device = "spec:parent=pixel_5,orientation=landscape",
+)
+@Composable
+fun MarkerDetailsPreviewLandscape() {
+    MarkerDetailsPreview()
+}
+
 @Preview(
     name = "Marker Details (loading error)",
     group = "Marker Details",
@@ -87,6 +100,7 @@ fun MarkerDetailsPreviewError() {
         )
     )
 }
+
 @Preview(
     name = "Marker Details (error)",
     group = "Marker Details",
