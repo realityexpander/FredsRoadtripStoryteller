@@ -221,7 +221,7 @@ fun App(
             mutableStateListOf<Marker>().also { markersSnapShot ->
                 // Log.d("🎯 loadMarkers START update")
                 coroutineScope.launch(Dispatchers.IO) {
-                    delay(200) // debounce
+//                    delay(200) // debounce // rodo remove soon - seems to not be necessary
                     val startTime = Clock.System.now()
 
                     loadMarkersResult.markerIdToMarker.values.forEach { marker ->

@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -145,6 +146,8 @@ fun MarkerDetailsScreen(
 
     // Show Loading
     if (markerLoadingState is LoadingState.Loading) {
+
+        // Close Button
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -181,15 +184,14 @@ fun MarkerDetailsScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            Icon(
-                imageVector = Icons.Default.CloudDownload,
-                contentDescription = "Loading Status",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(128.dp),
+            CircularProgressIndicator(
+                modifier = Modifier.size(64.dp),
+                color = MaterialTheme.colors.onSurface,
+                strokeWidth = 4.dp,
             )
+            Spacer(modifier = Modifier.padding(16.dp))
             Text(
-                "Loading...",
+                "Loading Details...",
                 modifier = Modifier.fillMaxWidth(),
                 fontSize = MaterialTheme.typography.h6.fontSize,
                 fontWeight = FontWeight.Bold,
