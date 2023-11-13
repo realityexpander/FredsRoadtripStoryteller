@@ -505,7 +505,6 @@ fun MarkerDetailsScreen(
                     }
                 }
 
-
                 // Inscription
                 if (markerLoadingState.data.englishInscription.isNotBlank()) { // todo add spanish translation
                     Text(
