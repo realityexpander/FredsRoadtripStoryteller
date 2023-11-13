@@ -141,7 +141,7 @@ actual fun GoogleMaps(
     // Usually used to setup the initial camera position (doesn't support tracking due to forcing zoom level)
     LaunchedEffect(shouldSetInitialCameraPosition) {
         shouldSetInitialCameraPosition?.let { cameraPosition ->
-            //Log.d("♢ 💿 GoogleMaps-Android 👾: LaunchedEffect(shouldSetInitialCameraPosition), " +
+            //Log.d("💿 GoogleMaps-Android 👾: LaunchedEffect(shouldSetInitialCameraPosition), " +
             //        "shouldSetInitialCameraPosition = ${shouldSetInitialCameraPosition.target}, " +
             //        "zoom= ${shouldSetInitialCameraPosition.zoom}")
             cameraPositionState.move(
@@ -193,7 +193,7 @@ actual fun GoogleMaps(
 
         previousCameraLocationLatLong = shouldCenterCameraOnLatLong
         shouldCenterCameraOnLatLong?.let { cameraLocationLatLong ->
-            println("♢ 💿 GoogleMaps-Android 👾: LaunchedEffect(shouldCenterCameraOnLatLong), shouldCenterCameraOnLatLong = $shouldCenterCameraOnLatLong")
+            println("💿 GoogleMaps-Android 👾: LaunchedEffect(shouldCenterCameraOnLatLong), shouldCenterCameraOnLatLong = $shouldCenterCameraOnLatLong")
             cameraPositionState.animate(
                 CameraUpdateFactory.newLatLng(
                     LatLng(
@@ -284,12 +284,12 @@ actual fun GoogleMaps(
                 TileOverlay(
                     tileProvider = remember(shouldRedrawMapMarkers, markers) {
                         if (!shouldRedrawMapMarkers) {
-                            // Log.d { "Using cached heatmap items, cachedHeatmap = $cachedTileProvider" }
+                            // Log.d { "💿 Using cached heatmap items, cachedHeatmap = $cachedTileProvider" }
                             return@remember heatmapTileProvider
                         } else {
                             // check if the markers are different than the cached markers
                             if (markers.size == previousMarkerIdStrToClusterItems.size) {
-                                // Log.d { "Using cached heatmap items because list of markers has not changed, cachedHeatmap = $cachedTileProvider" }
+                                // Log.d("💿 Using cached heatmap items because list of markers has not changed, cachedHeatmap = $cachedTileProvider")
                                 return@remember heatmapTileProvider
                             }
 
@@ -315,7 +315,7 @@ actual fun GoogleMaps(
                                     })
                                 .radius(25) // convolution filter size in pixels
                                 .build()
-                            // Log.d("Recalculating heatmap items, markers.size= ${markers.size}, HeatmapTileProvider= $result")
+                            // Log.d("💿 Recalculating heatmap items, markers.size= ${markers.size}, HeatmapTileProvider= $result")
                             heatmapTileProvider = result
                             return@remember result
                         }
@@ -422,7 +422,7 @@ actual fun GoogleMaps(
                     }
 
                     if (!shouldRedrawMapMarkers) {
-                        Log.d("♢ shouldRedrawMapMarkers=false, No redraw necessary, Using previousClusterItems items, previousClusterItems.size = ${previousMarkerIdStrToClusterItems.size}")
+                        Log.d("💿 shouldRedrawMapMarkers=false, No redraw necessary, Using previousClusterItems items, previousClusterItems.size = ${previousMarkerIdStrToClusterItems.size}")
                         return@remember previousMarkerIdStrToClusterItems.values.toList()
                     }
 
@@ -432,12 +432,12 @@ actual fun GoogleMaps(
                             marker.isSeen == previousMarkerIdStrToClusterItems[marker.id]?.isSeen
                         }
                     ) {
-                        Log.d("♢ Using previousClusterItems because no isSeen in the list of markers has changed, previousClusterItems.size = ${previousMarkerIdStrToClusterItems.size}")
+                        Log.d("💿 Using previousClusterItems because no isSeen in the list of markers has changed, previousClusterItems.size = ${previousMarkerIdStrToClusterItems.size}")
                         onDidRedrawMapMarkers()
                     }
 
                     // Calculate the cluster items - must update to change the isSeen property
-                    // Log.d("♢ ⚝⚝⚝ 🔧 Clustering, START calculating new cluster items")
+                    // Log.d("💿 ⚝⚝⚝ 🔧 Clustering, START calculating new cluster items")
                     val startTime = Clock.System.now()
                     val updatedClusterItemList = markers?.map { marker ->
                         ClusterItemWithIsSeen(
@@ -458,7 +458,7 @@ actual fun GoogleMaps(
                     updatedClusterItemList.forEach { clusterItem ->
                         previousMarkerIdStrToClusterItems[clusterItem.id] = clusterItem
                     }
-                    //Log.d("♢ ⚝⚝⚝ 🟨 🔧 Recalculated updatedClusterItemList: \n" +
+                    //Log.d("💿 ⚝⚝⚝ 🟨 🔧 Recalculated updatedClusterItemList: \n" +
                     //        "  ⎣ updatedClusterItemList.size= ${updatedClusterItemList.size}\n" +
                     //        "  ⎣ time= ${Clock.System.now() - startTime}"
                     onDidRedrawMapMarkers()

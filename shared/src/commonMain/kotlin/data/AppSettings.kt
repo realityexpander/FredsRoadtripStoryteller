@@ -4,7 +4,7 @@ import com.russhwolf.settings.Settings
 import com.russhwolf.settings.set
 import data.loadMarkers.LoadMarkersResult
 import json
-import kForceClearSettingsAtLaunch
+import kForceClearAllSettingsAtLaunch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -20,7 +20,7 @@ import co.touchlab.kermit.Logger as Log
 
 val appSettings = AppSettings.create()
     .apply {
-        if(kForceClearSettingsAtLaunch) { clearAllSettings() }
+        if(kForceClearAllSettingsAtLaunch) { clearAllSettings() }
         // Log.setMinSeverity(Severity.Warn)
         printAppSettings()
     }

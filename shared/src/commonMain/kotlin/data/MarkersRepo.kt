@@ -40,14 +40,11 @@ open class MarkersRepo(
         }
     }
 
-
-//    fun markersResult() = appSettings.loadMarkersResult // Pulls from the SSoT in the appSettings, slower than using inMemoryMarkersResult
-    fun markersResult() = inMemoryLoadMarkersResult // Uses the in-memory version, faster than using appSettings.loadMarkersResult
+    fun markersResult() = inMemoryLoadMarkersResult // Uses the in-memory lookup
 
     fun addMarker(marker: Marker): LoadMarkersResult {
         this.marker(marker.id)?.run {
             // Log.w("MarkerRepo: addMarker: marker already exists, id: ${marker.id}, add ignored.")
-//            return inMemoryMarkersResult
             return inMemoryLoadMarkersResult
         }
 
@@ -87,19 +84,13 @@ open class MarkersRepo(
     }
 
     fun clearAllMarkers(): LoadMarkersResult {
-//        updateLoadMarkersResult(
-//            inMemoryLoadMarkersResult.copy(
-//                markerIdToMarker = emptyMap(),
-//                isParseMarkersPageFinished = false,
-//                loadingState = LoadingState.Loading
-//            )
-//        )
-
         // Clearing markers is immediate.  No need to debounce.
         inMemoryLoadMarkersResult = inMemoryLoadMarkersResult.copy(
             markerIdToMarker = emptyMap(),
-            isParseMarkersPageFinished = false,
-            loadingState = LoadingState.Loading
+
+            // todo needed??
+//            isParseMarkersPageFinished = false,
+//            loadingState = LoadingState.Loading
         )
         ioCoroutineScope.launch {
             appSettings.loadMarkersResult = inMemoryLoadMarkersResult

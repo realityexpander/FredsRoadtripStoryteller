@@ -24,8 +24,11 @@ import data.loadMarkers.sampleData.kUseRealNetwork
 import data.loadMarkers.sampleData.simpleMarkersPageHtml
 import data.network.httpClient
 import data.util.LoadingState
+import data.util.toInstant
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.http.toHttpDate
+import io.ktor.util.date.GMTDate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -33,8 +36,14 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.resource
 import presentation.maps.Location
 import presentation.maps.Marker
 import presentation.maps.MarkerIdStr
@@ -45,7 +54,7 @@ data class LoadMarkersResult(
     val markerIdToRawMarkerDetailStrings: MutableMap<MarkerIdStr, String> = mutableMapOf(),
     val markerIdToMarker: Map<MarkerIdStr, Marker> = mutableMapOf(),
     val rawMarkerCountFromFirstPageHtmlOfMultiPageResult: Int = 0,
-    val isParseMarkersPageFinished: Boolean = false,
+    var isParseMarkersPageFinished: Boolean = false,
 
     @Contextual
     val loadingState: LoadingState<String> = LoadingState.Finished,
@@ -76,6 +85,7 @@ data class LoadMarkersResult(
        Plus side - there is no ping-pong between files. Its all here.
        I'm Experimenting with a pure compose architecture with no android idiom remnants.
 **/
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun loadMarkers(
     appSettings: AppSettings,
@@ -120,12 +130,18 @@ fun loadMarkers(
 
     // Keeps internal final state of the MarkersResult load & parse process
     var finalLoadMarkersResultState by remember(userLocation) {
+        println("📍☠️in loadMarkers: finalLoadMarkersResultState.remember(userLocation): \n" +
+            "  ⎣ processingLoadMarkersResultState.isParseMarkersPageFinished: ${processingLoadMarkersResultState.isParseMarkersPageFinished}, \n" +
+            "  ⎣ markersLoadingState: $markersLoadingState"
+        )
+
         // Guards
-        // - If processing markers (after network load) then return the LAST SAVED result from the MarkersRepo
-        if(!processingLoadMarkersResultState.isParseMarkersPageFinished) return@remember mutableStateOf(markersRepo.markersResult())
-        // - If processing Markers IS finished and loadingState IS NOT Finished, then return the current processing result.
+        // - If currently processing markers (after network load) then return the LAST SAVED result from the MarkersRepo
+        if(!processingLoadMarkersResultState.isParseMarkersPageFinished)
+            return@remember mutableStateOf(markersRepo.markersResult())
+        // - If currently processing Markers is FINISHED and loadingState is NOT FINISHED, then return the current processing result.
         if(markersLoadingState !is LoadingState.Finished) {
-            Log.w("✳️ in loadMarkers: finalLoadMarkersResultState.remember(userLocat): markersLoadingState is NOT Finished, even though isParseMarkersPageFinished==true, returning current result, this should not be possible.")
+            Log.w("📍 in loadMarkers: finalLoadMarkersResultState.remember(userLocation): markersLoadingState is NOT Finished, even though isParseMarkersPageFinished==true, returning current result, this should not be possible.")
             return@remember mutableStateOf(processingLoadMarkersResultState)
         }
 
@@ -148,7 +164,7 @@ fun loadMarkers(
                 if (userDistanceFromLastUpdatedLocationMiles > maxReloadDistanceMiles
                     && processingLoadMarkersResultState.isParseMarkersPageFinished
                 ) {
-                    Log.d("✳️ Step 1.1 - in loadMarkers(): User is outside the max re-load radius, attempting load from network..." )
+                    Log.d("📍 Step 1.1 - in loadMarkers(): User is outside the max re-load radius, attempting load from network..." )
                     processingLoadMarkersResultState = oldProcessingMarkerResult.copy(
                         isParseMarkersPageFinished = false,
                         loadingState = LoadingState.Loading // trigger loading state // todo remove
@@ -160,7 +176,7 @@ fun loadMarkers(
             return@remember mutableStateOf(processingLoadMarkersResultState) // return the cached result
         }
 
-        Log.d("in loadMarkers(): No cached markers found. Attempting load from network...")
+        Log.d("📍 in loadMarkers(): No cached markers found. Attempting load from network...")
         processingHtmlPageNum = 1 // reset the page number to 1
         processingLoadMarkersResultState = processingLoadMarkersResultState.copy(
             isParseMarkersPageFinished = false,
@@ -176,12 +192,12 @@ fun loadMarkers(
             processingHtmlPageNum
         ) {
         // Guard
-        if(processingHtmlPageNum == 0) return@remember mutableStateOf<LoadingState<String>>(
-            LoadingState.Finished)
+        if(processingHtmlPageNum == 0)
+            return@remember mutableStateOf<LoadingState<String>>(LoadingState.Finished)
 
         // Step 2 - Initiate Load a page of raw marker HTML from the network
         if (!processingLoadMarkersResultState.isParseMarkersPageFinished) {
-            Log.d("✳️ Step 2 - Loading page number $processingHtmlPageNum")
+            Log.d("📍 Step 2 - Loading page number $processingHtmlPageNum")
             markersLoadingState = LoadingState.Loading
             didUpdateMarkers = true
 
@@ -215,7 +231,8 @@ fun loadMarkers(
         }
 
         // 6 PROCESS COMPLETE
-        Log.d("✳️ Step 6 - Finished parsing & loading all pages, total markers= ${finalLoadMarkersResultState.markerIdToMarker.size}")
+        Log.d("📍 Step 6 - Finished parsing & loading all pages, " +
+                "total markers= ${finalLoadMarkersResultState.markerIdToMarker.size}")
         markersLoadingState = LoadingState.Finished
         processingHtmlPageNum = 0
         processingLoadMarkersResultState = processingLoadMarkersResultState.copy(
@@ -238,31 +255,34 @@ fun loadMarkers(
             yield() // allow the UI to update before loading the network data
 
             networkLoadingState = try {
-                Log.d("✳️⬇️ Step 3 - Loading... $assetUrl")
+                Log.d("📍⬇️ Step 3 - Loading... $assetUrl")
 
-                // Step 3 - Load the raw HTML from the network (or fake data)
+                // Step 3a - Load the raw HTML from the network (or fake data)
                 val rawHtmlString =
                     if(useFakeDataSetId == kUseRealNetwork) {
                         coroutineScope.async(Dispatchers.IO) {
                             val response = httpClient.get(assetUrl)  // network load
                             val rawHtml: String = response.body()
-                            // Log.d("✳️⬆️ Step 3 - Loaded page successfully, data length: ${rawHtml.length}, coordinates: ${userLocation.latitude}, ${userLocation.longitude}")
+
+                            Log.d("📍⬆️ Step 3a - Loaded page successfully, " +
+                                     "data length: ${rawHtml.length}, " +
+                                     "time to load: ${Clock.System.now().minus(response.requestTime.toInstant())}")
                             rawHtml
                         }.await()
                     } else {
                         // use FAKE loading from fakeDataSet
-                        // Log.d("✳️⬆️ Step 3 - Using fake data, page: $processingHtmlPageNum, useFakeDataSetId: $useFakeDataSetId")
+                        // Log.d("📍⬆️ Step 3a - Using fake data, page: $processingHtmlPageNum, useFakeDataSetId: $useFakeDataSetId")
                         simpleMarkersPageHtml(processingHtmlPageNum, useFakeDataSetId)
                     }
 
                 // Step 4 - Parse the HTML to extract the marker info
                 withContext(Dispatchers.IO) {
                     yield()
-                    // Log.d("✳️ Step 4 - Before parsing raw HTML, markerInfos.size: ${markersResultState.markerInfos.size}, markerIdToRawMarkerInfoStrings.size: ${markersResultState.markerIdToRawMarkerInfoStrings.size}")
+                    // Log.d("📍 Step 4 - Before parsing raw HTML, markerInfos.size: ${markersResultState.markerInfos.size}, markerIdToRawMarkerInfoStrings.size: ${markersResultState.markerIdToRawMarkerInfoStrings.size}")
 
                     // Guard against blank data
                     if (rawHtmlString.isBlank()) {
-                        Log.w("✳️ Step 4 - Blank data for page $processingHtmlPageNum, location: $userLocation")
+                        Log.w("📍 Step 4 - Blank data for page $processingHtmlPageNum, location: $userLocation")
                         networkLoadingState =
                             LoadingState.Error("Blank data for page $processingHtmlPageNum, location: $userLocation") // leave for debugging
                         processingLoadMarkersResultState = processingLoadMarkersResultState.copy(
@@ -276,12 +296,12 @@ fun loadMarkers(
                     // Log.d("Parsing HTML.. Current markers in cache (before parsing) count: ${parsedMarkersResultState.markerInfos.size}")
                     val parseStartTime = Clock.System.now()
                     val parsedMarkersResult = parseMarkersPageHtml(rawHtmlString)
-                    Log.d("✳️🛑 Step 4.1 - Parsed HTML in ${Clock.System.now() - parseStartTime}")
+                    Log.d("📍🛑 Step 4.1 - Parsed HTML in ${Clock.System.now() - parseStartTime}")
                     yield()
 
                     // Check for zero `raw html` marker entries
                     if (parsedMarkersResult.rawMarkerCountFromFirstPageHtmlOfMultiPageResult == 0) {
-                        Log.w("✳️ Step 4.1 - No raw html marker entries found for page: $processingHtmlPageNum, location: $userLocation")
+                        Log.w("📍 Step 4.1 - No raw html marker entries found for page: $processingHtmlPageNum, location: $userLocation")
                         processingLoadMarkersResultState =
                             processingLoadMarkersResultState.copy(isParseMarkersPageFinished = true)
                         return@withContext
@@ -317,7 +337,7 @@ fun loadMarkers(
                                 parsedMarkersResult.rawMarkerCountFromFirstPageHtmlOfMultiPageResult
                         )
                     }
-                    Log.d("✳️ Step 4.1 - Total parsed markers from basic info index page, markerInfos.size: ${processingLoadMarkersResultState.markerIdToMarker.size}, Parsed markerIdToRawMarkerInfoStrings count: ${processingLoadMarkersResultState.markerIdToRawMarkerDetailStrings.size}")
+                    Log.d("📍 Step 4.1 - Total parsed markers from basic info index page, markerInfos.size: ${processingLoadMarkersResultState.markerIdToMarker.size}, Parsed markerIdToRawMarkerInfoStrings count: ${processingLoadMarkersResultState.markerIdToRawMarkerDetailStrings.size}")
 
                     // 4.2 - Load more pages, if needed.
                     // - Marker list size comparison is based on the number of `markerIdToRawMarkerInfoStrings`, not the parsed
@@ -326,7 +346,7 @@ fun loadMarkers(
                     if (processingLoadMarkersResultState.markerIdToRawMarkerDetailStrings.size
                         < processingLoadMarkersResultState.rawMarkerCountFromFirstPageHtmlOfMultiPageResult
                     ) {
-                        Log.d("✳️ Step 4.2 - Loading next page..., markerIdToRawMarkerDetailStrings.size: ${processingLoadMarkersResultState.markerIdToRawMarkerDetailStrings.size}, rawMarkerCountFromFirstHtmlPage: ${processingLoadMarkersResultState.rawMarkerCountFromFirstPageHtmlOfMultiPageResult}")
+                        Log.d("📍 Step 4.2 - Loading next page..., markerIdToRawMarkerDetailStrings.size: ${processingLoadMarkersResultState.markerIdToRawMarkerDetailStrings.size}, rawMarkerCountFromFirstHtmlPage: ${processingLoadMarkersResultState.rawMarkerCountFromFirstPageHtmlOfMultiPageResult}")
                         processingHtmlPageNum++  // trigger the next page load
                     } else {
                         //Log.d("Finished processing all pages, total markers: ${markersResultState.markerInfos.size}")
@@ -347,7 +367,7 @@ fun loadMarkers(
                     isParseMarkersPageFinished = true,
                     loadingState = LoadingState.Error(e.cause?.message ?: "Loading error - ${e.message}")
                 )
-                Log.w("✳️ Step 3 - Failed to load page: $processingHtmlPageNum, assetUrl: $assetUrl, error: ${e.cause?.message}")
+                Log.w("📍 Step 3 - Failed to load page: $processingHtmlPageNum, assetUrl: $assetUrl, error: ${e.cause?.message}")
                 LoadingState.Error(e.cause?.message ?: "error")  // leave for debugging
             }
         }
@@ -364,7 +384,7 @@ fun loadMarkers(
         ) {
             when (val state = networkLoadingState) {
                 is LoadingState.Loading -> {
-                    Text(kAppName)
+                    Text("$kAppName Loading...")
                 }
 
                 is LoadingState.Loaded<String> -> {

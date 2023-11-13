@@ -300,11 +300,11 @@ fun parseMarkersPageHtml(rawPageHtml: String): LoadMarkersResult {
             }
 
             val lat = markerIdToMarker[markerId]?.position?.latitude ?: run {
-                Log.d { "Failed to find lat value for marker id: $markerId" }
+                Log.d { "📍 Failed to find lat value for marker id: $markerId" }
                 return@forEach
             }
             val long = markerIdToMarker[markerId]?.position?.longitude ?: run {
-                Log.d { "Failed to find long value for marker id: $markerId" }
+                Log.d { "📍 Failed to find long value for marker id: $markerId" }
                 return@forEach
             }
 
