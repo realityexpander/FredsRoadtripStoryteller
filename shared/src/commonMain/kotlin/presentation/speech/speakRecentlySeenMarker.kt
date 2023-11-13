@@ -12,6 +12,7 @@ import isTextToSpeechSpeaking
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import data.network.httpClient
+import kotlinx.coroutines.CancellationException
 import presentation.maps.RecentlySeenMarker
 import co.touchlab.kermit.Logger as Log
 
@@ -73,9 +74,13 @@ fun speakRecentlySeenMarker(
                             val markerDetailsPageHtml = almadenVineyardsM2580()
                             val (_, parsedDetailsMarker) =
                                 parseMarkerDetailsPageHtml(markerDetailsPageHtml)
+
                             Pair(parsedDetailsMarker, null)
                         }
+                    } catch(e: CancellationException) {
+                        throw e
                     } catch (e: Exception) {
+                        e.printStackTrace()
                         onUpdateLoadingState(LoadingState.Error(e.message ?: "Loading error"))
                         onError(
                             "Loading details error: " + (e.message ?: e.cause?.message

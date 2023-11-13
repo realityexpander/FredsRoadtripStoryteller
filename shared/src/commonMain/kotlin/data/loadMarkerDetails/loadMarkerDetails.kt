@@ -15,6 +15,7 @@ import kotlinx.coroutines.yield
 import data.network.httpClient
 import data.loadMarkers.kBaseHmdbDotOrgUrl
 import kMaxMarkerDetailsAgeSeconds
+import kotlinx.coroutines.CancellationException
 import kotlinx.datetime.Clock
 import co.touchlab.kermit.Logger as Log
 
@@ -85,7 +86,10 @@ fun loadMarkerDetails(marker: Marker, useFakeData: Boolean = false): LoadingStat
                 val result = parseMarkerDetailsPageHtml(markerDetailsPageHtml)
                 loadingState = LoadingState.Loaded(result.second!!)
             }
+        } catch(e: CancellationException) {
+            throw e
         } catch (e: Exception) {
+            e.printStackTrace()
             loadingState = LoadingState.Error(e.message ?: e.cause?.message ?: "Unknown Loading error for marker ${marker.id}")
         }
     }

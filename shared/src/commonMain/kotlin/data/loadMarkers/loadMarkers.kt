@@ -29,6 +29,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.http.toHttpDate
 import io.ktor.util.date.GMTDate
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -362,7 +363,10 @@ fun loadMarkers(
                 }
 
                 LoadingState.Finished  // loading state of the network load
+            } catch(e: CancellationException) {
+                throw e
             } catch (e: Exception) {
+                e.printStackTrace()
                 didUpdateMarkers = false
                 processingLoadMarkersResultState = processingLoadMarkersResultState.copy(
                     isParseMarkersPageFinished = true,

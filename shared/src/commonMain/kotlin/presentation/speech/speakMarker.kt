@@ -42,7 +42,7 @@ fun speakMarker(
 
         speakTextToSpeech(finalSpeechText)
     } else {
-        speakTextToSpeech("Seen marker " + marker.title) //  (present perfect tense) // https://www.thesaurus.com/e/grammar/seen-vs-saw/
+        speakTextToSpeech("Nearby marker " + marker.title) //  (present perfect tense) // https://www.thesaurus.com/e/grammar/seen-vs-saw/
     }
 
     return currentlySpeakingMarker

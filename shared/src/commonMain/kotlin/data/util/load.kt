@@ -19,6 +19,7 @@ inline fun <reified T> load(assetUrl: String): State<LoadingState<T>> {
             val data: T = response.body()
             loadingState.value = LoadingState.Loaded(data)
         } catch (e: Exception) {
+            e.printStackTrace()
             loadingState.value = LoadingState.Error(e.cause?.message ?: "error")
         }
     }
