@@ -9,8 +9,8 @@ Compose KMP experimental app using Google Maps for iOS and Android
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/784d6516-4d34-4478-a46a-35f368f1ebf0">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/784d6516-4d34-4478-a46a-35f368f1ebf0)
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/7cc0f8be-b5eb-4430-ac5e-c74c1c71ecdd">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/7cc0f8be-b5eb-4430-ac5e-c74c1c71ecdd)
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/c1894ee1-6ae3-4ed0-b5c2-b225a7f571ef">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/c1894ee1-6ae3-4ed0-b5c2-b225a7f571ef)
-
-
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/265ae655-f57c-48a7-a60e-9a515d49efd3">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/265ae655-f57c-48a7-a60e-9a515d49efd3)
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/ded7dd66-399b-41c7-9f74-00d8a27531dc">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/ded7dd66-399b-41c7-9f74-00d8a27531dc)
 
 
 
