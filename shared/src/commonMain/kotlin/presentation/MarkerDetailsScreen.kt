@@ -598,14 +598,14 @@ fun MarkerDetailsScreen(
             }
         }
 
-            // Show Pan/Zoom Image Dialog
-            if(isPanZoomImageDialogOpen) {
-                PanZoomImageDialog(
-                    onClose = { isPanZoomImageDialogOpen = false },
-                    imageUrl = panZoomDialogImageUrl
-                )
-            }
+        // Show Pan/Zoom Image Dialog
+        if(isPanZoomImageDialogOpen) {
+            PanZoomImageDialog(
+                onClose = { isPanZoomImageDialogOpen = false },
+                imageUrl = panZoomDialogImageUrl
+            )
         }
+    }
 }
 
 @Composable
