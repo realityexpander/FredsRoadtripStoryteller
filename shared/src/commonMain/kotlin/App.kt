@@ -361,14 +361,12 @@ fun App(
                                         yield()
 
                                         // Update `isSeen` in the markers repo (will trigger a redraw of the map & markers)
-//                                        coroutineScope.launch(Dispatchers.IO) {
-                                            updatedIsSeenMarkers.forEach { updatedMarker ->
-                                                markersRepo.updateMarkerIsSeen(
-                                                    updatedMarker,
-                                                    isSeen = true
-                                                )
-                                            }
-//                                        }
+                                        updatedIsSeenMarkers.forEach { updatedMarker ->
+                                            markersRepo.updateMarkerIsSeen(
+                                                updatedMarker,
+                                                isSeen = true
+                                            )
+                                        }
 
                                         // Speak the top marker
                                         if (!isTextToSpeechSpeaking()) { // Don't interrupt current speech
