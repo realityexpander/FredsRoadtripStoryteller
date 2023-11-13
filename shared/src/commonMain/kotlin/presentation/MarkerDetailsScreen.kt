@@ -3,6 +3,7 @@ package presentation
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,12 +16,10 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.BottomSheetScaffoldState
@@ -38,10 +37,10 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -61,6 +60,8 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import data.util.LoadingState
 import io.kamel.core.ExperimentalKamelApi
 import io.kamel.core.Resource
@@ -86,6 +87,7 @@ fun MarkerDetailsScreen(
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    var isPanZoomImageDialogOpen by remember { mutableStateOf(false) }
 
     // Show Error (if any)
     if (markerLoadingState is LoadingState.Error) {
@@ -205,361 +207,336 @@ fun MarkerDetailsScreen(
 
     // Show Loaded Marker Info
     if (markerLoadingState is LoadingState.Loaded<Marker>) {
+        val painterResource: Resource<Painter> =
+            asyncPainterResource(
+                data = markerLoadingState.data.mainPhotoUrl,
+                filterQuality = FilterQuality.Medium,
+            )
+        var panZoomDialogImageUrl by remember {
+            mutableStateOf(markerLoadingState.data.mainPhotoUrl)
+        }
 
-            Column(
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(.9f)
+                .padding(start = 16.dp, end = 16.dp, bottom = 0.dp, top = 0.dp)
+        ) {
+            // Title & Close Button
+            // Subtitle & Speak Button
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(.9f)
-                    .padding(start = 16.dp, end = 16.dp, bottom = 0.dp, top = 0.dp)
+                    .fillMaxHeight()
+                    .weight(1f)
+                    .padding(bottom = 0.dp, top = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
             ) {
-                val painterResource: Resource<Painter> =
-                    asyncPainterResource(
-                        data = markerLoadingState.data.mainPhotoUrl,
-                        filterQuality = FilterQuality.Medium,
-                    )
-
-                // Title & Close Button
-                // Subtitle & Speak Button
-                Row(
+                // Title & Subtitle
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .fillMaxHeight()
-                        .weight(1f)
+                        .weight(7f)
                         .padding(bottom = 0.dp, top = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.Top,
                 ) {
-                    // Title & Subtitle
-                    Column(
+                    // Title
+                    Text(
+                        markerLoadingState.data.title,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(7f)
                             .padding(bottom = 0.dp, top = 4.dp),
-                        horizontalAlignment = Alignment.Start,
-                        verticalArrangement = Arrangement.Top,
+                        fontSize = MaterialTheme.typography.h5.fontSize,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    // Subtitle
+                    Text(
+                        markerLoadingState.data.subtitle,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 0.dp, bottom = 4.dp),
+                        fontSize = MaterialTheme.typography.h6.fontSize,
+                        fontWeight = FontWeight.Normal,
+                    )
+                }
+
+                // Close Button
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                    ,
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.Top,
+                ) {
+                    // Close Button
+                    IconButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .offset(12.dp, (-8).dp),
+                        onClick = {
+                            coroutineScope.launch {
+                                bottomSheetScaffoldState.bottomSheetState.collapse()
+                            }
+                        },
                     ) {
-                        // Title
-                        Text(
-                            markerLoadingState.data.title,
+                        Icon(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 0.dp, top = 4.dp),
-                            fontSize = MaterialTheme.typography.h5.fontSize,
-                            fontWeight = FontWeight.Bold,
+                                .padding(4.dp),
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close",
                         )
-                        // Subtitle
+                    }
+                }
+            }
+
+            // Marker Info Content
+            Column(
+                Modifier
+                    .weight(4f)
+                    .verticalScroll(
+                        scrollState,
+                        enabled = true,
+                    ),
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.Top,
+            ) {
+
+                // Main Photo
+                if (LocalInspectionMode.current) {
+                    PreviewPlaceholder("Another Image")
+                } else {
+                    if (markerLoadingState.data.mainPhotoUrl.isNotEmpty()) {
+                        Surface(
+                            modifier = Modifier.background(
+                                MaterialTheme.colors.background,
+                                shape = MaterialTheme.shapes.medium,
+                            )
+                        ) {
+                            var isFinishedLoading by remember {
+                                mutableStateOf(false)
+                            }
+
+                            BoxWithConstraints(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(1280f / 959f)
+                                    .background(
+                                        MaterialTheme.colors.surface,
+                                        shape = MaterialTheme.shapes.medium
+                                    )
+                            ) {
+
+                                KamelImageBox(
+                                    resource = painterResource,
+                                    modifier = Modifier
+                                        .fillMaxWidth(),
+                                    onLoading = { progress ->
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize(),
+                                            contentAlignment = Alignment.Center,
+                                        ) {
+                                            if (progress < 0.05f) {
+                                                Text(
+                                                    "Loading marker image...",
+                                                    color = MaterialTheme.colors.onSurface,
+                                                )
+                                            } else {
+                                                CircularProgressIndicator(
+                                                    progress,
+                                                    color = MaterialTheme.colors.onSurface,
+                                                    backgroundColor = MaterialTheme.colors.onSurface.copy(
+                                                        alpha = 0.4f
+                                                    ),
+                                                )
+                                            }
+
+                                            // Prevent flicker of progress indicator (ugh)
+                                            if (progress > 0.85f) {
+                                                isFinishedLoading = true
+                                            }
+                                        }
+                                    },
+                                    onFailure = { exception: Throwable ->
+                                        coroutineScope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                message = "Image loading error: " + exception.message.toString(),
+                                                duration = SnackbarDuration.Long
+                                            )
+                                        }
+                                    },
+                                    animationSpec = if (isFinishedLoading)
+                                        TweenSpec(800)
+                                    else
+                                        null,
+                                    onSuccess = { painter ->
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .clip(MaterialTheme.shapes.medium)
+                                        ) {
+                                            Image(
+                                                painter,
+                                                markerLoadingState.data.title,
+                                                contentScale = ContentScale.Crop,
+                                                alignment = Alignment.Center,
+                                                modifier = Modifier.fillMaxSize()
+                                            )
+                                        }
+                                    }
+                                )
+
+                                // Zoom Image Button
+                                panZoomImageButton(
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .padding(8.dp),
+                                    onClick = {
+                                        isPanZoomImageDialogOpen = true
+                                        panZoomDialogImageUrl = markerLoadingState.data.mainPhotoUrl
+                                    }
+                                )
+                            }
+                        }
+                    } else {
+                        PreviewPlaceholder(
+                            "No image found for this marker",
+                            placeholderKind = ""
+                        )
+                    }
+                }
+
+                // Attributions for photo
+                if(markerLoadingState.data.photoAttributions.isNotEmpty()) {
+                    if (markerLoadingState.data.photoAttributions[0].isNotBlank()) {
                         Text(
-                            markerLoadingState.data.subtitle,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 0.dp, bottom = 4.dp),
-                            fontSize = MaterialTheme.typography.h6.fontSize,
-                            fontWeight = FontWeight.Normal,
+                            "Photo Credit: " + markerLoadingState.data.photoAttributions[0],
+                            fontSize = MaterialTheme.typography.overline.fontSize,
+                            textAlign = TextAlign.End,
+                        )
+                    }
+                }
+
+                // Show loading error (if any)
+                SnackbarHost(
+                    hostState = snackbarHostState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(0.dp, 64.dp)
+                ) { data ->
+                    Text(
+                        text = data.message,
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .fillMaxWidth()
+                            .background(
+                                MaterialTheme.colors.error,
+                                shape = MaterialTheme.shapes.medium
+                            ),
+                        color = MaterialTheme.colors.onError,
+                        textAlign = TextAlign.Center
+
+                    )
+                }
+
+                // ID, Locate on Map, Speak
+                Row(
+                    modifier = Modifier.heightIn(0.dp, 36.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+
+                ) {
+                    // Marker Id
+                    Text(
+                        "ID: ${markerLoadingState.data.id}",
+                        modifier = Modifier.weight(2f)
+                        ,
+                        fontSize = MaterialTheme.typography.body1.fontSize,
+                        fontWeight = FontWeight.Bold,
+                    )
+
+                    // Locate on Map Button
+                    IconButton(
+                        modifier = Modifier.weight(.5f),
+                        onClick = {
+                            // close the bottom sheet
+                            coroutineScope.launch {
+                                bottomSheetScaffoldState.bottomSheetState.collapse()
+                                onLocateMarkerOnMap(markerLoadingState.data)
+                            }
+                        },
+                        enabled = true,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.MyLocation,
+                            contentDescription = "Find Marker on Map",
+                            tint = MaterialTheme.colors.onBackground,
                         )
                     }
 
-                    // Close Button
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                        ,
-                        horizontalAlignment = Alignment.End,
-                        verticalArrangement = Arrangement.Top,
+                    // Speak Button
+                    IconButton(
+                        modifier = Modifier.weight(.5f),
+                        onClick = {
+                            if (isTextToSpeechCurrentlySpeaking)
+                                stopTextToSpeech()
+                            else {
+                                onClickStartSpeakingMarker(markerLoadingState.data)
+                            }
+                        },
+                        enabled = true,
                     ) {
-                        // Close Button
-                        IconButton(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .offset(12.dp, (-8).dp),
-                            onClick = {
-                                coroutineScope.launch {
-                                    bottomSheetScaffoldState.bottomSheetState.collapse()
-                                }
-                            },
-                        ) {
+                        if (isTextToSpeechCurrentlySpeaking) {
                             Icon(
-                                modifier = Modifier
-                                    .padding(4.dp),
-                                imageVector = Icons.Default.Close,
-                                contentDescription = "Close",
+                                imageVector = Icons.Filled.Stop,
+                                contentDescription = "Stop Speaking Marker",
+                                tint = MaterialTheme.colors.onBackground,
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Filled.VolumeUp,
+                                contentDescription = "Speak Marker",
+                                tint = MaterialTheme.colors.onBackground,
                             )
                         }
                     }
                 }
 
-                // Marker Info Content
-                Column(
-                    Modifier
-                        .weight(4f)
-                        .verticalScroll(
-                            scrollState,
-                            enabled = true,
-                        ),
-                    horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.Top,
-                ) {
 
-                    // Main Photo
-                    if (LocalInspectionMode.current) {
-                        PreviewPlaceholder("Another Image")
-                    } else {
-                        if (markerLoadingState.data.mainPhotoUrl.isNotEmpty()) {
-                            Surface(
-                                modifier = Modifier.background(
-                                    MaterialTheme.colors.background,
-                                    shape = MaterialTheme.shapes.medium,
-                                )
-                            ) {
-                                var scale by remember {
-                                    mutableStateOf(1f)
-                                }
-                                var offset by remember {
-                                    mutableStateOf(Offset.Zero)
-                                }
-                                //    var rotationZ by remember {
-                                //        mutableStateOf(0f)
-                                //    }
-                                var isFinishedLoading by remember {
-                                    mutableStateOf(false)
-                                }
+                // Inscription
+                if (markerLoadingState.data.englishInscription.isNotBlank()) { // todo add spanish translation
+                    Text(
+                        markerLoadingState.data.englishInscription,
+                        fontSize = MaterialTheme.typography.body2.fontSize,
+                    )
+                } else {
+                    Text(
+                        markerLoadingState.data.inscription,
+                        fontSize = MaterialTheme.typography.body2.fontSize,
+                    )
+                }
+                Spacer(modifier = Modifier.padding(8.dp))
+                Divider()
+                Spacer(modifier = Modifier.padding(8.dp))
 
-                                BoxWithConstraints(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .aspectRatio(1280f / 959f)
-                                        .background(
-                                            MaterialTheme.colors.surface,
-                                            shape = MaterialTheme.shapes.medium
-                                        )
-                                ) {
-
-                                    // Setup pan/zoom (not rotation) transformable state
-                                    @Suppress("UNUSED_ANONYMOUS_PARAMETER")
-                                    val state =
-                                        rememberTransformableState { zoomChange, panChange, rotationChange ->
-                                            scale = (scale * zoomChange).coerceIn(1f, 2.5f)
-
-                                            val extraWidth = (scale - 1) * constraints.maxWidth
-                                            val extraHeight = (scale - 1) * constraints.maxHeight
-
-                                            val maxX = extraWidth / 2
-                                            val maxY = extraHeight / 2
-
-                                            offset = Offset(
-                                                x = (offset.x + scale * panChange.x).coerceIn(
-                                                    -maxX,
-                                                    maxX
-                                                ),
-                                                y = (offset.y + scale * panChange.y).coerceIn(
-                                                    -maxY,
-                                                    maxY
-                                                ),
-                                            )
-
-                                            // rotationZ += rotationChange
-                                        }
-
-                                    KamelImageBox(
-                                        resource = painterResource,
-                                        modifier = Modifier
-                                            // .aspectRatio(16f / 9f)
-                                            .fillMaxWidth(),
-                                        onLoading = { progress ->
-                                            Box(
-                                                modifier = Modifier
-                                                    .fillMaxSize(),
-                                                contentAlignment = Alignment.Center,
-                                            ) {
-                                                if (progress < 0.05f) {
-                                                    Text(
-                                                        "Loading marker image...",
-                                                        color = MaterialTheme.colors.onSurface,
-                                                    )
-                                                } else {
-                                                    CircularProgressIndicator(
-                                                        progress,
-                                                        color = MaterialTheme.colors.onSurface,
-                                                        backgroundColor = MaterialTheme.colors.onSurface.copy(
-                                                            alpha = 0.4f
-                                                        ),
-                                                    )
-                                                }
-
-                                                // Prevent flicker of progress indicator (ugh)
-                                                if (progress > 0.85f) {
-                                                    isFinishedLoading = true
-                                                }
-                                            }
-                                        },
-                                        onFailure = { exception: Throwable ->
-                                            coroutineScope.launch {
-                                                snackbarHostState.showSnackbar(
-                                                    message = "Image loading error: " + exception.message.toString(),
-                                                    duration = SnackbarDuration.Long
-                                                )
-                                            }
-                                        },
-                                        animationSpec = if (isFinishedLoading)
-                                            TweenSpec(800)
-                                        else
-                                            null,
-                                        onSuccess = { painter ->
-                                            Box(
-                                                modifier = Modifier
-                                                    .fillMaxSize()
-                                                    .clip(MaterialTheme.shapes.medium)
-                                            ) {
-                                                Image(
-                                                    painter,
-                                                    markerLoadingState.data.title,
-                                                    contentScale = ContentScale.Crop,
-                                                    alignment = Alignment.Center,
-                                                    modifier = Modifier.fillMaxSize()
-                                                        .graphicsLayer {  // todo make paid feature
-                                                            scaleX = scale
-                                                            scaleY = scale
-                                                            translationX = offset.x
-                                                            translationY = offset.y
-                                                            // this.rotationZ = rotationZ  // allow rotation?
-                                                        }
-                                                        .transformable(
-                                                            state,
-                                                            lockRotationOnZoomPan = true
-                                                        )
-                                                )
-                                            }
-                                        }
-                                    )
-                                }
-                            }
-                        } else {
-                            PreviewPlaceholder(
-                                "No image found for this marker",
-                                placeholderKind = ""
-                            )
-                        }
-                    }
-
-                    // Attributions for photo
-                    if(markerLoadingState.data.photoAttributions.isNotEmpty()) {
-                        if (markerLoadingState.data.photoAttributions[0].isNotBlank()) {
-                            Text(
-                                "Photo Credit: " + markerLoadingState.data.photoAttributions[0],
-                                fontSize = MaterialTheme.typography.overline.fontSize,
-                                textAlign = TextAlign.End,
-                            )
-                        }
-                    }
-
-                    // Show loading error (if any)
-                    SnackbarHost(
-                        hostState = snackbarHostState,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(0.dp, 64.dp)
-                    ) { data ->
-                        Text(
-                            text = data.message,
+                // More Photos
+                markerLoadingState.data.markerPhotos.forEachIndexed { index, photoUrl ->
+                    if (index > 0) {
+                        Box(
                             modifier = Modifier
-                                .padding(8.dp)
                                 .fillMaxWidth()
+                                .aspectRatio(1280f / 959f)
                                 .background(
-                                    MaterialTheme.colors.error,
+                                    MaterialTheme.colors.surface,
                                     shape = MaterialTheme.shapes.medium
-                                ),
-                            color = MaterialTheme.colors.onError,
-                            textAlign = TextAlign.Center
-
-                        )
-                    }
-
-                    // ID, Locate on Map, Speak
-                    Row(
-                        modifier = Modifier.heightIn(0.dp, 36.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-
-                    ) {
-                        // Marker Id
-                        Text(
-                            "ID: ${markerLoadingState.data.id}",
-                            modifier = Modifier.weight(2f)
-                            ,
-                            fontSize = MaterialTheme.typography.body1.fontSize,
-                            fontWeight = FontWeight.Bold,
-                        )
-
-                        // Locate on Map Button
-                        IconButton(
-                            modifier = Modifier.weight(.5f),
-                            onClick = {
-                                // close the bottom sheet
-                                coroutineScope.launch {
-                                    bottomSheetScaffoldState.bottomSheetState.collapse()
-                                    onLocateMarkerOnMap(markerLoadingState.data)
-                                }
-                            },
-                            enabled = true,
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.MyLocation,
-                                contentDescription = "Find Marker on Map",
-                                tint = MaterialTheme.colors.onBackground,
-                            )
-                        }
-
-                        // Speak Button
-                        IconButton(
-                            modifier = Modifier.weight(.5f),
-                            onClick = {
-                                if (isTextToSpeechCurrentlySpeaking)
-                                    stopTextToSpeech()
-                                else {
-                                    onClickStartSpeakingMarker(markerLoadingState.data)
-                                }
-                            },
-                            enabled = true,
-                        ) {
-                            if (isTextToSpeechCurrentlySpeaking) {
-                                Icon(
-                                    imageVector = Icons.Filled.Stop,
-                                    contentDescription = "Stop Speaking Marker",
-                                    tint = MaterialTheme.colors.onBackground,
                                 )
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Filled.VolumeUp,
-                                    contentDescription = "Speak Marker",
-                                    tint = MaterialTheme.colors.onBackground,
-                                )
-                            }
-                        }
-                    }
-
-
-                    // Inscription
-                    if (markerLoadingState.data.englishInscription.isNotBlank()) { // todo add spanish translation
-                        Text(
-                            markerLoadingState.data.englishInscription,
-                            fontSize = MaterialTheme.typography.body2.fontSize,
-                        )
-                    } else {
-                        Text(
-                            markerLoadingState.data.inscription,
-                            fontSize = MaterialTheme.typography.body2.fontSize,
-                        )
-                    }
-                    Spacer(modifier = Modifier.padding(8.dp))
-                    Divider()
-                    Spacer(modifier = Modifier.padding(8.dp))
-
-                    // More Photos
-                    markerLoadingState.data.markerPhotos.forEachIndexed { index, it ->
-                        if (index > 0) {
+                        ) {
                             KamelImage(
                                 resource = asyncPainterResource(
-                                    data = it,
+                                    data = photoUrl,
                                     filterQuality = FilterQuality.Medium,
                                 ),
                                 contentDescription = null,
@@ -567,49 +544,257 @@ fun MarkerDetailsScreen(
                                     .fillMaxWidth(),
                                 contentScale = ContentScale.Crop,
                             )
-                            // Caption for photo
-                            if (markerLoadingState.data.photoCaptions[index].isNotBlank()) {
-                                Text(
-                                    markerLoadingState.data.photoCaptions[index],
-                                    fontSize = MaterialTheme.typography.caption.fontSize,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            }
-                            // Attributions for photo
-                            if (markerLoadingState.data.photoAttributions[index].isNotBlank()) {
-                                Text(
-                                    "Photo Credit: " + markerLoadingState.data.photoAttributions[index],
-                                    fontSize = MaterialTheme.typography.overline.fontSize,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            }
-                            Spacer(modifier = Modifier.padding(8.dp))
-                        }
-                    }
 
-                    // Extra Marker Data
-                    if (markerLoadingState.data.erected.isNotBlank()) {
-                        Text(
-                            "Erected " + markerLoadingState.data.erected,
-                            fontSize = MaterialTheme.typography.body1.fontSize,
-                        )
+                            // Zoom Image Button
+                            panZoomImageButton(
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(8.dp),
+                                onClick = {
+                                    isPanZoomImageDialogOpen = true
+                                    panZoomDialogImageUrl = photoUrl
+                                }
+                            )
+                        }
+                        // Caption for photo
+                        if (markerLoadingState.data.photoCaptions[index].isNotBlank()) {
+                            Text(
+                                markerLoadingState.data.photoCaptions[index],
+                                fontSize = MaterialTheme.typography.caption.fontSize,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                        // Attributions for photo
+                        if (markerLoadingState.data.photoAttributions[index].isNotBlank()) {
+                            Text(
+                                "Photo Credit: " + markerLoadingState.data.photoAttributions[index],
+                                fontSize = MaterialTheme.typography.overline.fontSize,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                        Spacer(modifier = Modifier.padding(8.dp))
                     }
+                }
+
+                // Extra Marker Data
+                if (markerLoadingState.data.erected.isNotBlank()) {
                     Text(
-                        "Marker Latitude: ${markerLoadingState.data.position.latitude}",
+                        "Erected " + markerLoadingState.data.erected,
                         fontSize = MaterialTheme.typography.body1.fontSize,
-                        fontWeight = FontWeight.Normal,
-                    )
-                    Text(
-                        "Marker Longitude: ${markerLoadingState.data.position.longitude}",
-                        fontSize = MaterialTheme.typography.body1.fontSize,
-                        fontWeight = FontWeight.Normal,
                     )
                 }
+                Text(
+                    "Marker Latitude: ${markerLoadingState.data.position.latitude}",
+                    fontSize = MaterialTheme.typography.body1.fontSize,
+                    fontWeight = FontWeight.Normal,
+                )
+                Text(
+                    "Marker Longitude: ${markerLoadingState.data.position.longitude}",
+                    fontSize = MaterialTheme.typography.body1.fontSize,
+                    fontWeight = FontWeight.Normal,
+                )
+            }
+        }
+
+            // Show Pan/Zoom Image Dialog
+            if(isPanZoomImageDialogOpen) {
+                PanZoomImageDialog(
+                    onClose = { isPanZoomImageDialogOpen = false },
+                    imageUrl = panZoomDialogImageUrl
+                )
             }
         }
 }
 
+@Composable
+private fun panZoomImageButton(
+    modifier : Modifier = Modifier,
+    onClick: () -> Unit = {},
+) {
+    IconButton(
+        onClick = onClick,
+        modifier = modifier
+            .padding(4.dp)
+            .background(
+                MaterialTheme.colors.surface.copy(alpha = 0.5f),
+                shape = MaterialTheme.shapes.medium
+            )
+    ) {
+        Icon(
+            imageVector = Icons.Default.ZoomIn,
+            contentDescription = "Zoom In",
+            modifier = Modifier
+                .size(36.dp)
+                .alpha(0.8f)
+        )
+    }
+}
+
+@OptIn(ExperimentalKamelApi::class)
+@Composable
+fun PanZoomImageDialog(
+    onClose: () -> Unit = {},
+    imageUrl: String = "",
+) {
+    val kMaxZoomInFactor = 5f
+
+    val painterResource: Resource<Painter> =
+        asyncPainterResource(
+            data = imageUrl,
+            filterQuality = FilterQuality.Medium,
+        )
+
+    var scale by remember {
+        mutableStateOf(1f)
+    }
+    var offset by remember {
+        mutableStateOf(Offset.Zero)
+    }
+    //    var rotationZ by remember {
+    //        mutableStateOf(0f)
+    //    }
+    var isFinishedLoading by remember {
+        mutableStateOf(false)
+    }
+
+    Dialog(
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true,
+            usePlatformDefaultWidth = false,
+        ),
+        onDismissRequest = {
+            onClose()
+        },
+    ) {
+
+        BoxWithConstraints(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    MaterialTheme.colors.surface,
+                    shape = MaterialTheme.shapes.medium
+                )
+        ) {
+
+            // Setup pan/zoom (not rotation) transformable state
+            @Suppress("UNUSED_ANONYMOUS_PARAMETER")
+            val state =
+                rememberTransformableState { zoomChange, panChange, rotationChange ->
+                    scale = (scale * zoomChange).coerceIn(1f, kMaxZoomInFactor)
+
+                    val extraWidth = (scale - 1) * constraints.maxWidth
+                    val extraHeight = (scale - 1) * constraints.maxHeight
+
+                    val maxX = extraWidth  / 2
+                    val maxY = extraHeight / 2
+
+                    offset = Offset(
+                        x = (offset.x + scale * panChange.x).coerceIn(-maxX, maxX),
+                        y = (offset.y + scale * panChange.y).coerceIn(-maxY, maxY)
+                    )
+
+                    // rotationZ += rotationChange
+                }
+
+            KamelImageBox(
+                resource = painterResource,
+                modifier = Modifier
+                    .fillMaxWidth(),
+                onLoading = { progress ->
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (progress < 0.05f) {
+                            Text(
+                                "Loading marker image...",
+                                color = MaterialTheme.colors.onSurface,
+                            )
+                        } else {
+                            CircularProgressIndicator(
+                                progress,
+                                color = MaterialTheme.colors.onSurface,
+                                backgroundColor = MaterialTheme.colors.onSurface.copy(
+                                    alpha = 0.4f
+                                ),
+                            )
+                        }
+
+                        // Prevent flicker of progress indicator (ugh)
+                        if (progress > 0.85f) {
+                            isFinishedLoading = true
+                        }
+                    }
+                },
+                onFailure = { exception: Throwable ->
+                    Text(
+                        "Image loading error: " + exception.message.toString(),
+                        color = MaterialTheme.colors.error,
+                    )
+                },
+                animationSpec = if (isFinishedLoading)
+                    TweenSpec(800)
+                else
+                    null,
+                onSuccess = { painter ->
+                    Image(
+                        painter,
+                        "Marker Image",
+                        contentScale = ContentScale.Fit,
+                        alignment = Alignment.Center,
+                        modifier = Modifier.fillMaxSize()
+                            .graphicsLayer {  // todo make paid feature
+                                scaleX = scale
+                                scaleY = scale
+                                translationX = offset.x
+                                translationY = offset.y
+                                // this.rotationZ = rotationZ  // allow rotation?
+                            }
+                            .transformable(
+                                state,
+                                lockRotationOnZoomPan = true
+                            )
+                    )
+                }
+            )
+
+            // Close Button
+            IconButton(
+                onClick = {
+                    onClose()
+                },
+                modifier = Modifier
+                    .padding(8.dp)
+                    .align(Alignment.TopEnd)
+                    .background(
+                        MaterialTheme.colors.surface.copy(alpha = 0.5f),
+                        shape = MaterialTheme.shapes.medium
+                    )
+                    .clickable { onClose() }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Close",
+                    modifier = Modifier.alpha(0.8f)
+                )
+            }
+
+            // Hint Text
+            Text(
+                "Pinch to zoom, drag to pan",
+                modifier = Modifier
+                    .padding(8.dp)
+                    .align(Alignment.BottomCenter)
+                    .background(
+                        MaterialTheme.colors.surface.copy(alpha = 0.5f),
+                        shape = MaterialTheme.shapes.medium
+                    )
+            )
+        }
+    }
+}
 
 
