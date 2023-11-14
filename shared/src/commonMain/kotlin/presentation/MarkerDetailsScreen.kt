@@ -88,7 +88,7 @@ fun MarkerDetailsScreen(
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    var isPanZoomImageDialogOpen by remember { mutableStateOf(false) }
+    var isPanZoomImageDialogVisible by remember { mutableStateOf(false) }
 
     // Show Error (if any)
     if (markerLoadingState is LoadingState.Error) {
@@ -393,7 +393,7 @@ fun MarkerDetailsScreen(
                                         .align(Alignment.TopEnd)
                                         .padding(8.dp),
                                     onClick = {
-                                        isPanZoomImageDialogOpen = true
+                                        isPanZoomImageDialogVisible = true
                                         panZoomDialogImageUrl = markerLoadingState.data.mainPhotoUrl
                                     }
                                 )
@@ -548,7 +548,7 @@ fun MarkerDetailsScreen(
                                     .align(Alignment.TopEnd)
                                     .padding(8.dp),
                                 onClick = {
-                                    isPanZoomImageDialogOpen = true
+                                    isPanZoomImageDialogVisible = true
                                     panZoomDialogImageUrl = photoUrl
                                 }
                             )
@@ -605,9 +605,9 @@ fun MarkerDetailsScreen(
         }
 
         // Show Pan/Zoom Image Dialog
-        if(isPanZoomImageDialogOpen) {
+        if(isPanZoomImageDialogVisible) {
             PanZoomImageDialog(
-                onClose = { isPanZoomImageDialogOpen = false },
+                onClose = { isPanZoomImageDialogVisible = false },
                 imageUrl = panZoomDialogImageUrl
             )
         }
