@@ -84,6 +84,7 @@ fun AppDrawerContent(
     }
     Spacer(modifier = Modifier.height(16.dp))
 
+    // Show onboarding button
     Button(
         onClick = {
             coroutineScope.launch {
@@ -114,7 +115,7 @@ fun AppDrawerContent(
         )
     }
 
-    // Show all loaded markers
+    // Header for list of loaded markers
     Row(
         modifier = Modifier
             .fillMaxWidth()
