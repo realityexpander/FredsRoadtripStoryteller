@@ -83,7 +83,6 @@ import presentation.maps.RecentlySeenMarkersList
 import presentation.maps.toLocation
 import presentation.speech.speakMarker
 import presentation.speech.speakRecentlySeenMarker
-import kotlin.coroutines.coroutineContext
 import kotlin.random.Random
 import co.touchlab.kermit.Logger as Log
 
@@ -93,10 +92,14 @@ val json = Json {
     ignoreUnknownKeys = true
 }
 
-const val kAppName = "Fred's History Hunt" // todo use resource?
+const val kAppNameStr = "Fred's History Hunt" // todo use resource?
 const val kForceClearAllSettingsAtLaunch = false
 const val kMaxReloadDistanceMiles = 2.0
 const val kMaxMarkerDetailsAgeSeconds = 60 * 60 * 24 * 30  // 30 days
+
+var versionNumber = "0.0.0" // todo get for iOS
+var buildNumber = "0" // todo get for iOS
+var installAtEpochSeconds = 0L // todo get for iOS?
 
 sealed class BottomSheetScreen {
     data object SettingsScreen : BottomSheetScreen()

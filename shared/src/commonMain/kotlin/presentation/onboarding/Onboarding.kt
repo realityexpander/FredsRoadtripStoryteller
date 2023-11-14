@@ -44,7 +44,7 @@ import org.jetbrains.compose.resources.painterResource
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalResourceApi::class)
 @Composable
-fun Onboarding(
+fun OnboardingDialog(
     onDismiss: () -> Unit = {}
 ) {
     val pages = listOf(

@@ -10,11 +10,9 @@ actual fun getPlatformName(): String = "Android"
 @Composable fun MainView() = App()
 
 lateinit var appContext: Context // Android specific context
-
 var tts: TextToSpeech? = null  // Android specific TextToSpeech
 
 // Android specific intent flow
 @Suppress("ObjectPropertyName")
 var _intentFlow: MutableSharedFlow<Intent> = MutableSharedFlow()
 val intentFlow: SharedFlow<Intent> = _intentFlow  // read-only shared flow
-

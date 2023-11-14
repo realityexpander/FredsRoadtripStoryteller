@@ -26,7 +26,7 @@ import data.util.LoadingState
 import data.util.toInstant
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import kAppName
+import kAppNameStr
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -38,7 +38,6 @@ import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import org.jetbrains.compose.resources.ExperimentalResourceApi
 import presentation.maps.Location
 import presentation.maps.Marker
 import presentation.maps.MarkerIdStr
@@ -403,7 +402,7 @@ fun loadMarkers(
         ) {
             when (val state = networkLoadingState) {
                 is LoadingState.Loading -> {
-                    Text("$kAppName Loading...")
+                    Text("$kAppNameStr Loading...")
                 }
 
                 is LoadingState.Loaded<String> -> {

@@ -1,7 +1,7 @@
 package presentation.app
 
 import BottomSheetScreen
-import Onboarding
+import OnboardingDialog
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -40,7 +40,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import data.loadMarkers.LoadMarkersResult
+import kAppNameStr
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
+import presentation.onboarding.AboutBoxDialog
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -51,6 +54,7 @@ fun AppDrawerContent(
 ) {
     val coroutineScope = rememberCoroutineScope()
     var isOnboardingDialogVisible by remember { mutableStateOf(false)}
+    var isAboutBoxDialogVisible by remember { mutableStateOf(false)}
 
     // Header
     Row(
@@ -61,7 +65,7 @@ fun AppDrawerContent(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            "Mystery Marker Madness",
+            kAppNameStr,
             fontSize = MaterialTheme.typography.h5.fontSize,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
@@ -88,8 +92,9 @@ fun AppDrawerContent(
     Button(
         onClick = {
             coroutineScope.launch {
-                bottomSheetScaffoldState.drawerState.close()
                 isOnboardingDialogVisible = true
+                yield()
+                bottomSheetScaffoldState.drawerState.close()
             }
         },
         modifier = Modifier
@@ -108,9 +113,41 @@ fun AppDrawerContent(
     }
     Spacer(modifier = Modifier.height(16.dp))
     if(isOnboardingDialogVisible) {
-        Onboarding(
+        OnboardingDialog(
             onDismiss = {
                 isOnboardingDialogVisible = false
+            }
+        )
+    }
+
+    // Show about box
+    Button(
+        onClick = {
+            coroutineScope.launch {
+                isAboutBoxDialogVisible = true
+                yield()
+                bottomSheetScaffoldState.drawerState.close()
+            }
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 8.dp, end = 8.dp),
+    ) {
+        Text(
+            "About this app",
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 8.dp, end = 8.dp),
+            fontStyle = FontStyle.Normal,
+            fontSize = MaterialTheme.typography.body1.fontSize,
+            textAlign = TextAlign.Center,
+        )
+    }
+    Spacer(modifier = Modifier.height(16.dp))
+    if(isAboutBoxDialogVisible) {
+        AboutBoxDialog(
+            onDismiss = {
+                isAboutBoxDialogVisible = false
             }
         )
     }

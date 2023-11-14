@@ -5,10 +5,15 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
+import androidx.annotation.RequiresApi
 import appContext
+import buildNumber
+import installAtEpochSeconds
+import versionNumber
 
 class App: Application() {
 
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate() {
         super.onCreate()
 
@@ -24,5 +29,14 @@ class App: Application() {
         }
 
         appContext = applicationContext
+
+        // get from gradle.properties
+        val packageName = applicationContext.packageName
+        versionNumber =
+            packageManager.getPackageInfo(packageName, 0).versionName
+        buildNumber =
+            packageManager.getPackageInfo(packageName, 0).longVersionCode.toString()
+        installAtEpochSeconds =
+            packageManager.getPackageInfo(packageName, 0).firstInstallTime
     }
 }
