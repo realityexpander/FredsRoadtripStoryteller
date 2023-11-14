@@ -21,31 +21,23 @@ import data.AppSettings
 import data.AppSettings.Companion.kMarkersLastUpdatedLocation
 import data.MarkersRepo
 import data.loadMarkers.sampleData.kUseRealNetwork
-import data.loadMarkers.sampleData.simpleMarkersPageHtml
+import data.loadMarkers.sampleData.generateTestPageHtml
 import data.network.httpClient
 import data.util.LoadingState
 import data.util.toInstant
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import io.ktor.http.toHttpDate
-import io.ktor.util.date.GMTDate
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
-import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.resource
 import presentation.maps.Location
 import presentation.maps.Marker
 import presentation.maps.MarkerIdStr
@@ -274,7 +266,7 @@ fun loadMarkers(
                     } else {
                         // use FAKE loading from fakeDataSet
                         // Log.d("📍⬆️ Step 3a - Using fake data, page: $processingHtmlPageNum, useFakeDataSetId: $useFakeDataSetId")
-                        simpleMarkersPageHtml(processingHtmlPageNum, useFakeDataSetId)
+                        generateTestPageHtml(processingHtmlPageNum, useFakeDataSetId)
                     }
 
                 // Step 4 - Parse the HTML to extract the marker info

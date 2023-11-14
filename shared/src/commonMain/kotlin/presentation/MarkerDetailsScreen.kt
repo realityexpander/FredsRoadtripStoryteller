@@ -575,23 +575,32 @@ fun MarkerDetailsScreen(
                     }
                 }
 
-                // Extra Marker Data
+                // Erected
                 if (markerLoadingState.data.erected.isNotBlank()) {
                     Text(
                         "Erected " + markerLoadingState.data.erected,
                         fontSize = MaterialTheme.typography.body1.fontSize,
                     )
                 }
-                Text(
-                    "Marker Latitude: ${markerLoadingState.data.position.latitude}",
-                    fontSize = MaterialTheme.typography.body1.fontSize,
-                    fontWeight = FontWeight.Normal,
-                )
-                Text(
-                    "Marker Longitude: ${markerLoadingState.data.position.longitude}",
-                    fontSize = MaterialTheme.typography.body1.fontSize,
-                    fontWeight = FontWeight.Normal,
-                )
+
+                // Location details
+                if(markerLoadingState.data.location.isNotBlank()) {
+                    Text(
+                        markerLoadingState.data.location,
+                        fontSize = MaterialTheme.typography.body1.fontSize,
+                    )
+                } else {
+                    Text(
+                        "Marker Latitude: ${markerLoadingState.data.position.latitude}",
+                        fontSize = MaterialTheme.typography.body1.fontSize,
+                        fontWeight = FontWeight.Normal,
+                    )
+                    Text(
+                        "Marker Longitude: ${markerLoadingState.data.position.longitude}",
+                        fontSize = MaterialTheme.typography.body1.fontSize,
+                        fontWeight = FontWeight.Normal,
+                    )
+                }
             }
         }
 

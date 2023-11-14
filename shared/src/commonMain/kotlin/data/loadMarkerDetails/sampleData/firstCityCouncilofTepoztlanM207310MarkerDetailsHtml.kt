@@ -1,6 +1,6 @@
 package data.loadMarkerDetails.sampleData
 
-fun firstCityCouncilOfTepoztlanM207310() = """
+fun firstCityCouncilOfTepoztlanM207310MarkerDetailsHtml() = """
 <!DOCTYPE html>
 <html lang="en">
 <head>

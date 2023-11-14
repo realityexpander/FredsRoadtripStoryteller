@@ -5,7 +5,7 @@ import data.MarkersRepo
 import data.appSettings
 import data.loadMarkerDetails.calculateMarkerDetailsPageUrl
 import data.loadMarkerDetails.parseMarkerDetailsPageHtml
-import data.loadMarkerDetails.sampleData.almadenVineyardsM2580
+import data.loadMarkerDetails.sampleData.almadenVineyardsM2580MarkerDetailsHtml
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import isTextToSpeechSpeaking
@@ -71,7 +71,7 @@ fun speakRecentlySeenMarker(
                             )
                         } else {
                             // loadingState = fakeLoadingStateForMarkerDetailsPageHtml(mapMarker)  // for debugging - LEAVE FOR REFERENCE
-                            val markerDetailsPageHtml = almadenVineyardsM2580()
+                            val markerDetailsPageHtml = almadenVineyardsM2580MarkerDetailsHtml()
                             val (_, parsedDetailsMarker) =
                                 parseMarkerDetailsPageHtml(markerDetailsPageHtml)
 

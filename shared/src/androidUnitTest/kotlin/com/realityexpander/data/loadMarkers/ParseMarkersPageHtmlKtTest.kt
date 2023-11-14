@@ -1,7 +1,7 @@
 package com.realityexpander.data.loadMarkers
 
 import data.loadMarkers.parseMarkersPageHtml
-import data.loadMarkers.sampleData.tepoztlanMarkersHtmlPage1
+import data.loadMarkers.sampleData.tepoztlanMarkersPage1Html
 import kotlin.test.Test
 import kotlin.test.assertFalse
 
@@ -9,7 +9,7 @@ class ParseMarkersPageHtmlTest {
 
     @Test
     fun `Parse markers page html should be Successful`() {
-        val markersPageHtml = tepoztlanMarkersHtmlPage1()
+        val markersPageHtml = tepoztlanMarkersPage1Html()
 
         val result = parseMarkersPageHtml(markersPageHtml)
 
@@ -22,7 +22,7 @@ class ParseMarkersPageHtmlTest {
         val subtitle = "This is a subtitle with no em-dashes"
         assertFalse(subtitle.contains("—"))
 
-        val markersPageHtml = tepoztlanMarkersHtmlPage1()
+        val markersPageHtml = tepoztlanMarkersPage1Html()
 
         val result = parseMarkersPageHtml(markersPageHtml)
         assertFalse(

@@ -1,6 +1,7 @@
 package data.loadMarkerDetails.sampleData
 
-fun almadenVineyardsM2580() = """
+fun deAnzaExpeditionM38342MarkerDetailsHtml() = """
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,21 +19,21 @@ fun almadenVineyardsM2580() = """
 <meta name="twitter:card" content="summary">
 <meta name="twitter:site" content="@HMdbEditors">
 <meta name="date" content="2023-02-07"> 
-<link rel="canonical" href="https://www.hmdb.org/m.asp?m=2580">
-<meta property="og:url" content="https://www.hmdb.org/m.asp?m=2580" />
-<meta name="twitter:url" content="https://www.hmdb.org/m.asp?m=2580">
+<link rel="canonical" href="https://www.hmdb.org/m.asp?m=38342">
+<meta property="og:url" content="https://www.hmdb.org/m.asp?m=38342" />
+<meta name="twitter:url" content="https://www.hmdb.org/m.asp?m=38342">
   
-<title>Almadén Vineyards Historical Marker</title>
-<meta property="og:title" content="Almadén Vineyards Historical Marker" />
-<meta name="twitter:title" content="Almadén Vineyards Historical Marker">
+<title>De Anza Expedition 1775 - 1776 Historical Marker</title>
+<meta property="og:title" content="De Anza Expedition 1775 - 1776 Historical Marker" />
+<meta name="twitter:title" content="De Anza Expedition 1775 - 1776 Historical Marker">
 
 
-<meta name="description" content="On this site in 1852 Charles LeFranc made the first commercial planting of fine European wine grapes in Santa Clara County and founded Almadén Vineyards. (A historical marker  located in San Jose in Santa Clara County, California.)">
+<meta name="description" content="Lieutenant Juan Bautista de Anza and party crossed this area in March 1776. (A historical marker  located in San Jose in Santa Clara County, California.)">
 <meta property="og:type" content="article" />
-<meta property="og:description" content="On this site in 1852 Charles LeFranc made the first commercial planting of fine European wine grapes in Santa Clara County and founded Almadén Vineyards. (A historical marker  located in San Jose in Santa Clara County, California.)" />
-<meta name="twitter:description" content="On this site in 1852 Charles LeFranc made the first commercial planting of fine European wine grapes in Santa Clara County and founded Almadén Vineyards. (A historical marker  located in San Jose in Santa Clara County, California.)">
+<meta property="og:description" content="Lieutenant Juan Bautista de Anza and party crossed this area in March 1776. (A historical marker  located in San Jose in Santa Clara County, California.)" />
+<meta name="twitter:description" content="Lieutenant Juan Bautista de Anza and party crossed this area in March 1776. (A historical marker  located in San Jose in Santa Clara County, California.)">
 
-<meta name="twitter:image" content="https://www.hmdb.org/Photos/7/Photo7252.jpg">
+<meta name="twitter:image" content="https://www.hmdb.org/Photos1/137/Photo137793.jpg">
 
 
 <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -157,7 +158,7 @@ function speak (message,button,lang,iteration) {
         
 // chop up into sentences because speechSynthesis can't handle long text.
     message=message+' [|].';
-    m = message.match(/([^\.!\?]+[\.!\?]+)|([^\.!\?]+$)/g);
+    m = message.match(/([^\.!\?]+[\.!\?]+)|([^\.!\?]+${'$'})/g);
     for (let chunk of m) {
          var msg = new SpeechSynthesisUtterance(chunk.replace(" [|].","")); 
          msg.voice=voice;
@@ -219,7 +220,7 @@ function stopSpeaking(button,lang) {
           if (tagValue.search("1010")==-1) // -1 indicates NOT tagged
           {  //it is NOT tagged so tag it.
              var H = new XMLHttpRequest();
-             H.open( "GET", "https://www.hmdb.org/tagwork.asp?task=taguntag&u=16077&m=2580&t="+tag+"&v=1",true ); // true for asynchronous request
+             H.open( "GET", "https://www.hmdb.org/tagwork.asp?task=taguntag&u=16077&m=38342&t="+tag+"&v=1",true ); // true for asynchronous request
              H.onload=function(e) { // fires when request completes
                  if (H.readyState==4) {
                       if (H.responseText=="Success") {
@@ -235,7 +236,7 @@ function stopSpeaking(button,lang) {
           else 
           {  //it is tagged, so untag it. 
              var H = new XMLHttpRequest();
-             H.open( "GET", "https://www.hmdb.org/tagwork.asp?task=taguntag&u=16077&m=2580&t="+tag+"&v=0", true); // true for asynchronous request
+             H.open( "GET", "https://www.hmdb.org/tagwork.asp?task=taguntag&u=16077&m=38342&t="+tag+"&v=0", true); // true for asynchronous request
              H.onload=function(e) {
                  if (H.readyState==4) {
                       if (H.responseText=="Success") {
@@ -278,41 +279,56 @@ function stopSpeaking(button,lang) {
 		}
 	};
 })(window);
-  </script><div class=articletoplinks><a href='photoadd.asp?MarkerID=2580'>Add&nbsp;Photo</a> &#8212; <a href='linkadd.asp?MarkerID=2580'>Add&nbsp;Link</a> &#8212; <a href='commentadd.asp?MarkerID=2580'>Add&nbsp;Commentary</a> &#8212; <a href='markeradd2.asp?MarkerID=2580'>Correct&nbsp;this&nbsp;page</a></div class=articletoplinks></div class=toplinks>
+  </script><div class=arrowprevious><a href='m.asp?m=155038'>&#9668;&nbsp;<span class=arrowtext>PREV.</span></a></div><div class=arrowprevious style='background-color:gray;'><a href='/results.asp?Search=Place&Town=San%20Jose&State=California&Page=1&m=38342'>&#9650;&nbsp;<span class=arrowtext>LIST</span></a></div><div class=arrownext><a href='m.asp?m=30549'><span class=arrowtext>NEXT</span>&nbsp;&#9658;</a></div><div class=articletoplinks><a href='photoadd.asp?MarkerID=38342'>Add&nbsp;Photo</a> &#8212; <a href='linkadd.asp?MarkerID=38342'>Add&nbsp;Link</a> &#8212; <a href='commentadd.asp?MarkerID=38342'>Add&nbsp;Commentary</a> &#8212; <a href='markeradd2.asp?MarkerID=38342'>Correct&nbsp;this&nbsp;page</a></div class=articletoplinks></div class=toplinks>
 <article class=bodyserif>
-<div ID=towncountryregion class='bodysansserif towncountryregion'>South San Jose  in Santa Clara County, California &#8212; <i>The&nbsp;American&nbsp;West (Pacific&nbsp;Coastal)</i></div><div class=shim6pt>&nbsp;</div><h1>Almadén Vineyards</h1><div class=shim12pt>&nbsp;</div><div class=shim12pt>&nbsp;</div><div style='all:initial;margin-left:0px;'><div class=photoright><div style='max-width:400px; margin-left: auto; margin-right: auto;'><a target=_blank href='PhotoFullSize.asp?PhotoID=7252'><img loading=lazy class=photoimage src=Photos/7/Photo7252.jpg?11252005 style='max-height:300px;' alt='State Historic Landmark 505 image. Click for full size.' title='State Historic Landmark 505. Click for full size.'></a><div class=imagecredit>Photographed By Leticia A. Kohnen,  June 7, 2007</div> <!-- imagecredit --> <div class=imagecaption>1. State Historic Landmark 505</div></div></div></div>
-
-<span class=sectionhead>Inscription. </span>
-<div id=inscription1 style='display:none;'>Almadén Vineyards. . On this site in 1852 Charles LeFranc made the first commercial planting of fine European wine grapes in Santa Clara County and founded Almadén Vineyards. LeFranc imported cuttings from vines in the celebrated wine districts of his native France, shipping them around the Horn by sail. . This historical marker  was erected  in 1953 by California State Parks Commission. It  is in South San Jose  in Santa Clara County California</div>
+<div ID=towncountryregion class='bodysansserif towncountryregion'>Dartmouth in&nbsp;San Jose in Santa Clara County, California &#8212; <i>The&nbsp;American&nbsp;West (Pacific&nbsp;Coastal)</i></div><div class=shim6pt>&nbsp;</div><h1>De Anza Expedition 1775 - 1776</h1><div class=shim12pt>&nbsp;</div><div class=shim12pt>&nbsp;</div><div style='all:initial;margin-left:0px;'><div class=photoright><div style='max-width:317px; margin-left: auto; margin-right: auto;'><a target=_blank href='PhotoFullSize.asp?PhotoID=137793'><img loading=lazy class=photoimage src=Photos1/137/Photo137793.jpg?11252005 style='max-height:399px;' alt='Juan Bautista de Anza Marker image. Click for full size.' title='Juan Bautista de Anza Marker. Click for full size.'></a><div class=imagecredit>Photographed By Sunny L. Wagstaff</div> <!-- imagecredit --> <div class=imagecaption>1. Juan Bautista de Anza Marker</div></div></div></div><span class=sectionhead>Inscription. </span><div id=inscription1 style='display:none;'>De Anza Expedition 1775 - 1776. . Lt. Juan Bautista de Anza and party crossed this area in March 1776. en route to select sites for the Presido and the Mission of San Francisco,   <i>In the center of the marker is a circular motif, designed by Doris Birkland Beezley, of a rider superimposed upon a sun-like set of compass points, with the "De Anza Expedition 1775 1776" written above the rider.</i> . This historical marker  is in Dartmouth in San Jose in Santa Clara County California</div>
       <script>
           var plainText = document.getElementById('inscription1').innerText;
           document.getElementById('inscription1').innerHTML = plainText;
       </script>
- <span id=speakbutton1 style='cursor:pointer;' onclick="speak(document.getElementById('inscription1').innerHTML,1,'en',0)"><img src=SpeakIcon.png title='Click to hear the inscription.'></span> &nbsp;On this site in 1852 Charles LeFranc made the first commercial planting of fine European wine grapes in Santa Clara County and founded Almadén Vineyards. LeFranc imported cuttings from vines in the celebrated wine districts of his native France, shipping them around the Horn by sail.<br>&nbsp;<br><span class=sectionhead>Erected </span>1953 by California State Parks Commission.  (Marker Number <b>505</b>.)<br>&nbsp;<br><span class=sectionhead>Topics and series.</span> This historical marker  is listed in these topic lists: <a href='Results.asp?Search=Topic&CategoryID=1'>Agriculture</a> &bull; <a href='Results.asp?Search=Topic&CategoryID=36'>Horticulture & Forestry</a> &bull; <a href='Results.asp?Search=Topic&CategoryID=8'>Industry & Commerce</a> &bull; <a href='Results.asp?Search=Topic&CategoryID=12'>Settlements & Settlers</a>. In addition, it is included in the <a href=results.asp?Search=Series&SeriesID=489>California Historical Landmarks</a> series list. A significant historical year for this entry is 1852.<br>&nbsp;<br>
- 
- <span class=sectionhead>Location. </span>37&deg;&nbsp;14.346&#8242;&nbsp;N, 121&deg;&nbsp;53.682&#8242;&nbsp;W. Marker is in San Jose, California, in Santa Clara County. It is in South San Jose. Marker is at the intersection of Blossom Hill Road and Dartmouth Dr. (County Route G-10) on Blossom Hill Road. Plaque is located on the soundwall, on the southeast side of the intersection of Blossom Hill Rd & Dartmouth Dr. <a href="map.asp?markers=2580,38342,41456,34165,129576,52123,155038,154876,154761" target=_blank>Touch for map</a>.  Marker is  at or near this postal address: 1530 Blossom Hill Rd, San Jose CA 95118, United States of America.  <a href='https://www.google.com/maps/dir/?api=1&destination=37.2391,-121.8947' target=_blank>Touch for directions.</a><!--googleoff: index--><br>&nbsp;<br><span class=sectionhead>Other nearby markers. </span><div style='all:initial;margin-left:0px;'><div class=photoleft><div style='max-width:400px; margin-left: auto; margin-right: auto;'><a target=_blank href='PhotoFullSize.asp?PhotoID=7253'><img loading=lazy class=photoimage src=Photos/7/Photo7253.jpg?11252005 style='max-height:300px;' alt='Alamaden Vineyard original Winery Building image. Click for full size.' title='Alamaden Vineyard original Winery Building. Click for full size.'></a><div class=imagecredit>Photographed By Leticia A. Kohnen,  June 7, 2007</div> <!-- imagecredit --> <div class=imagecaption>2. Alamaden Vineyard original Winery Building</div><div class=imagesubcaption  style=''>All that remains of the original winery is this brick building which housed the original wine making and storage rooms. It is now part of Almaden Park.</div></div></div></div>
-        <div id=QRCode class='imagecredit onlyprint' style='float:right;margin:10px 0 10px 15px;'>
-        <a href=https://www.hmdb.org/m.asp?m=2580>
-        <img src="https://api.qrserver.com/v1/create-qr-code/?data=https://www.hmdb.org/m.asp&quest;m=2580&amp;size=100x100" ></a>
-            <center><big>Click or scan to see<br>this page online</big></center>
-        </div>
-        At least 8 other markers are within 4 miles of this marker, measured as the crow flies. <a href=m.asp?m=38342>De Anza Expedition 1775 - 1776</a> (approx. 0.4 miles away); <a href=m.asp?m=41456>El Senador Mine</a> (approx. 2 miles away); <a href=m.asp?m=34165>El Senator Mine</a> (approx. 2 miles away); <a href=m.asp?m=129576>Goodrich Quarry</a> (approx. 2.7 miles away); <a href=m.asp?m=52123>Hamilton House</a> (approx. 3.6 miles away); <a href=m.asp?m=155038>History of Vieira Park</a> (approx. 3.8 miles away); <a href=m.asp?m=154876>The Teddy Roosevelt Tree</a> (approx. 3.9 miles away); <a href=m.asp?m=154761>Barron House</a> (approx. 4 miles away).  <a href="results.asp?Search=Place&Town=San Jose&State=California">Touch for a list and map</a> of all markers in San Jose.<!--googleon: index--><br>&nbsp;<br><span class=sectionhead><font color=silver>Additional keywords.</font> </span><font color=silver>California verticulture, California Wineries</font>
+ <span id=speakbutton1 style='cursor:pointer;' onclick="speak(document.getElementById('inscription1').innerHTML,1,'en',0)"><img src=SpeakIcon.png title='Click to hear the inscription.'></span> &nbsp;Lt. Juan Bautista de Anza and party crossed this area in March 1776. en route to select sites for the Presido and the Mission of San Francisco<br><br>
+
+<i>In the center of the marker is a circular motif, designed by Doris Birkland Beezley, of a rider superimposed upon a sun-like set of compass points, with the "De Anza Expedition 1775 1776" written above the rider.</i><br>&nbsp;<br><span class=sectionhead>Topics and series.</span> This historical marker  is listed in these topic lists: <a href='Results.asp?Search=Topic&CategoryID=56'>Exploration</a> &bull; <a href='Results.asp?Search=Topic&CategoryID=69'>Hispanic Americans</a>. In addition, it is included in the <a href=results.asp?Search=Series&SeriesID=135>Juan Bautista de Anza National Historic Trail</a> series list. A significant historical month for this entry is March 1776.<br>&nbsp;<br><span class=sectionhead>Location. </span>37&deg;&nbsp;14.675&#8242;&nbsp;N, 121&deg;&nbsp;53.487&#8242;&nbsp;W. Marker is in San Jose, California, in Santa Clara County. It is in Dartmouth. Marker is at the intersection of Meridian Avenue and Princeton Drive, on the right when traveling south on Meridian Avenue. Marker is located at DeAnza Park. <a href="map.asp?markers=38342,2580,41456,34165,129576,155038,52123,154761,52138" target=_blank>Touch for map</a>.  Marker is  in this post office area: San Jose CA 95118, United States of America.  <a href='https://www.google.com/maps/dir/?api=1&destination=37.244576,-121.891455' target=_blank>Touch for directions.</a><!--googleoff: index--><br>&nbsp;<br><span class=sectionhead>Other nearby markers. </span>At least 8 other markers are within 4 miles of this marker, measured as the crow flies. <a href=m.asp?m=2580>Almadén Vineyards</a> (approx. 0.4 miles away); <a href=m.asp?m=41456>El Senador Mine</a> (approx. 2.3 miles away); <a href=m.asp?m=34165>El Senator Mine</a>
+
+<fieldset id=incopyAd class=adleft><legend class=adtitle>Paid Advertisement</legend>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- Square display ad 1 -->
+<ins class="adsbygoogle"
+     style="display:block;"
+     data-ad-client="ca-pub-7431457857623754"
+     data-ad-slot="2131831404"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+<div class=adcaption>Click on the ad for more information.<br>Please report objectionable advertising to the Editor.</div></fieldset>
+
+
+                  <div id=QRCode class='imagecredit onlyprint' style='float:left;margin:10px 15px 10px 0;'>
+                  <a href=https://www.hmdb.org/m.asp?m=38342>
+                  <img src="https://api.qrserver.com/v1/create-qr-code/?data=https://www.hmdb.org/m.asp&quest;m=38342&amp;size=100x100" ></a>
+                      <center><big>Click or scan to see<br>this page online</big></center>
+                  </div>
+                   (approx. 2.3 miles away); <a href=m.asp?m=129576>Goodrich Quarry</a> (approx. 2.7 miles away); <a href=m.asp?m=155038>History of Vieira Park</a> (approx. 3.4 miles away); <a href=m.asp?m=52123>Hamilton House</a> (approx. 3.4 miles away); <a href=m.asp?m=154761>Barron House</a> (approx. 3.8 miles away); <a href=m.asp?m=52138>Keesling’s Shade Trees</a> (approx. 3.9 miles away).  <a href="results.asp?Search=Place&Town=San Jose&State=California">Touch for a list and map</a> of all markers in San Jose.<!--googleon: index--><br>&nbsp;<br><span class=sectionhead>More about this marker. </span>Marker is mounted on a cement block that is in bad shape.<br>&nbsp;<br><span class=sectionhead> Also see . . . </span><br>1.&nbsp;<a target=_blank href="http://www.youtube.com/watch?v=QxrZjxZmxKw">A KTEH TV Production of the DeAnza Trail on YouTube.</a>  In this video one learns the history and purpose of the DeAnza Expedition, the heritage of descendants of expedition members, and current sites along the trail. <span class=bodysansserifsmaller><i>(Submitted on  November 23, 2010.)</i></span>&nbsp;<br>
+<br>2.&nbsp;<a target=_blank href="http://www.desertusa.com/magjan98/jan_pap/du_anza.html">Juan Bautista de Anza - Blazed the Anza Trail</a>.  <i>Juan Bautista de Anza was the first European to establish an overland route from Mexico, through the Sonoran Desert, to the Pacific coast of California. New World Spanish explorers had been seeking such a route through the Desert Southwest for more than two centuries.</i> <span class=bodysansserifsmaller><i>(Submitted on  November 23, 2010.)</i></span>&nbsp;
+
 
 <!-- End of text, begin photos-only -->
 
-<div class=shim12pt>&nbsp;</div><div id=AdditionalPhotos style='text-align: center; width: 100%;'><div style='all:initial;margin-left:0px;'><div class=photoafter><div style='max-width:420px; margin-left: 10px; margin-right: 10px;'><a target=_blank href='PhotoFullSize.asp?PhotoID=7254'><img loading=lazy class=photoimage src=Photos/7/Photo7254.jpg?11252005 style='max-height:300px;' alt='Old Wine Press image. Click for full size.' title='Old Wine Press. Click for full size.'></a><div class=imagecredit style='padding-left: 10px; padding-right: 10px;'>Photographed By Leticia A. Kohnen,  June 7, 2007</div> <!-- imagecredit --> <div class=imagecaption style='padding-left: 10px; padding-right: 10px;'>3. Old Wine Press</div><div class=imagesubcaption  style='padding-left: 10px; padding-right: 10px;'>This hand operated wine press, once used at the winery is now the centerpiece of the park's rose garden.</div></div></div></div></div><div class=shim6pt>&nbsp;</div>&nbsp;<br><span class=sectionhead>Credits. </span><a name=WantList></a>This page was last revised on  February 7, 2023. It was originally submitted on  September 19, 2007, by Mathew H. Kohnen of San Jose, California.  This page has been viewed 1,834 times since then and 39 times this year. <b>Photos:</b>  &nbsp; <b>1, 2, 3.</b>&nbsp;submitted on  September 19, 2007, by Mathew H. Kohnen of San Jose, California.  &bull; J. J. Prats was the editor who published this page. 
+<div class=shim12pt>&nbsp;</div><div id=AdditionalPhotos style='text-align: center; width: 100%;'><div style='all:initial;margin-left:0px;'><div class=photoafter><div style='max-width:420px; margin-left: 10px; margin-right: 10px;'><a target=_blank href='PhotoFullSize.asp?PhotoID=137758'><img loading=lazy class=photoimage src=Photos1/137/Photo137758.jpg?11252005 style='max-height:286px;' alt='Juan Bautista de Anza Marker image. Click for full size.' title='Juan Bautista de Anza Marker. Click for full size.'></a><div class=imagecredit style='padding-left: 10px; padding-right: 10px;'>Photographed By Sunny L. Wagstaff,  August 5, 2010</div> <!-- imagecredit --> <div class=imagecaption style='padding-left: 10px; padding-right: 10px;'>2. Juan Bautista de Anza Marker</div></div></div></div></div><div class=shim6pt>&nbsp;</div>&nbsp;<br><span class=sectionhead>Credits. </span><a name=WantList></a>This page was last revised on  February 7, 2023. It was originally submitted on  November 23, 2010, by Sunny L. Wagstaff of San Jose, California.  This page has been viewed 1,114 times since then and 53 times this year. <b>Photos:</b>  &nbsp; <b>1, 2.</b>&nbsp;submitted on  November 23, 2010, by Sunny L. Wagstaff of San Jose, California.  &bull; Syd Whittle was the editor who published this page. 
 </article>
 
 <div class=noprint style="vertical-align:middle;"><br>
 <div style="float:left;"><span class=sectionhead>Share this page. &nbsp;</span></div>
-<div style="float:left;margin:5px;"><a href="mailto:?body=Here's a link to this marker at the Historical Marker Database. https://www.hmdb.org/m.asp%3Fm=2580&subject=Almadén Vineyards Historical Marker"><img src=emailicon.png height=20></a></div><div style="float:left;margin:5px;"><img src=FacebookF.png height=16> <div class="fb-like" data-href="https://www.hmdb.org/m.asp?m=2580" data-send="true" data-width="320" data-layout="button_count" data-show-faces="false" data-font="arial"></div></div>
+<div style="float:left;margin:5px;"><a href="mailto:?body=Here's a link to this marker at the Historical Marker Database. https://www.hmdb.org/m.asp%3Fm=38342&subject=De Anza Expedition 1775 - 1776 Historical Marker"><img src=emailicon.png height=20></a></div><div style="float:left;margin:5px;"><img src=FacebookF.png height=16> <div class="fb-like" data-href="https://www.hmdb.org/m.asp?m=38342" data-send="true" data-width="320" data-layout="button_count" data-show-faces="false" data-font="arial"></div></div>
 <div style="float:left;margin:5px;"><a href="https://twitter.com/share" class="twitter-share-button" data-show-count="true">Tweet</a><script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script></div>
 <div style="float:left;margin:5px;"><a href='https://www.tumblr.com/share' title='Share on Tumblr' style="display:inline-block; text-indent:-9999px; overflow:hidden; width:81px; height:20px; background:url('https://platform.tumblr.com/v1/share_1.png') top left no-repeat transparent;">Share on Tumblr</a></div>
-<div style="float:left;margin:5px;"><a data-pin-do="buttonPin" data-pin-count="beside" data-pin-save="true" href="https://www.pinterest.com/pin/create/button/?url=https%3A%2F%2Fwww.hmdb.org/m.asp%3Fm=2580&media=&description=Next%20stop%3A%20Pinterest"></a><script async defer src="//assets.pinterest.com/js/pinit.js"></script></div>
+<div style="float:left;margin:5px;"><a data-pin-do="buttonPin" data-pin-count="beside" data-pin-save="true" href="https://www.pinterest.com/pin/create/button/?url=https%3A%2F%2Fwww.hmdb.org/m.asp%3Fm=38342&media=&description=Next%20stop%3A%20Pinterest"></a><script async defer src="//assets.pinterest.com/js/pinit.js"></script></div>
 <div style='clear:left;'></div>
 </div>
 
-<div class=onlyprint style='float:right;margin-top:10px;margin-bottom:-10px;'>m=2580</div><br><div class='bottomlinks noprint'><div class=articletoplinks><a href='photoadd.asp?MarkerID=2580'>Add&nbsp;Photo</a> &#8212; <a href='linkadd.asp?MarkerID=2580'>Add&nbsp;Link</a> &#8212; <a href='commentadd.asp?MarkerID=2580'>Add&nbsp;Commentary</a> &#8212; <a href='markeradd2.asp?MarkerID=2580'>Correct&nbsp;this&nbsp;page</a></div class=articletoplinks></div class=bottomlinks><script>history.replaceState(null,null,'m.asp?m=2580');</script>
+<div class=onlyprint style='float:right;margin-top:10px;margin-bottom:-10px;'>m=38342</div><br><div class='bottomlinks noprint'><div class=arrowprevious><a href='m.asp?m=155038'>&#9668;&nbsp;<span class=arrowtext>PREV.</span></a></div><div class=arrowprevious style='background-color:gray;'><a href='/results.asp?Search=Place&Town=San%20Jose&State=California&Page=1&m=38342'>&#9650;&nbsp;<span class=arrowtext>LIST</span></a></div><div class=arrownext><a href='m.asp?m=30549'><span class=arrowtext>NEXT</span>&nbsp;&#9658;</a></div><div class=articletoplinks><a href='photoadd.asp?MarkerID=38342'>Add&nbsp;Photo</a> &#8212; <a href='linkadd.asp?MarkerID=38342'>Add&nbsp;Link</a> &#8212; <a href='commentadd.asp?MarkerID=38342'>Add&nbsp;Commentary</a> &#8212; <a href='markeradd2.asp?MarkerID=38342'>Correct&nbsp;this&nbsp;page</a></div class=articletoplinks></div class=bottomlinks><script>history.replaceState(null,null,'m.asp?m=38342');</script>
 </div><!-- Main division -->
 
 <div class=noprint style='text-align:center; margin:5pt 0 5pt 0;'><i><a href=https://www.cera.net target=_blank>CeraNet Cloud Computing</a> sponsors the&nbsp;Historical&nbsp;Marker&nbsp;Database.</i></div>
@@ -436,3 +452,4 @@ document.write("<br>Screen height " + window.innerHeight + "px");</script -->
 </body>
 </html>
 """
+

@@ -1,6 +1,8 @@
 package data.loadMarkers.sampleData
 
-val smallSampleMarkersHtmlPage1 = """
+// Simplified version of the real Sunnyvale markers page 1
+// Contains a single marker with id M113017.
+val simplifiedMarkersPageHtml = """
     <html>
         <head>
             <title>My Title</title>

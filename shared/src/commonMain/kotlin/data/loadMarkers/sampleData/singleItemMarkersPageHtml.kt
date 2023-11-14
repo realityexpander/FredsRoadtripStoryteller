@@ -1,10 +1,10 @@
 
 // This is a sample of the HTML that is returned from the server.
-// THis page represents a single marker. (only 1 marker on the page near Sunnyvale, CA)
+// THis page contains a single marker. (only 1 marker on the page near Sunnyvale, CA)
 // https://www.hmdb.org/m.asp?m=2580
 // 37.2391,-121.8947
 // Almadén Vineyards
-fun almadenVineyardsSingleItemPageHtmlPage1() = """
+fun almadenSingleItemPageHtmlPage1() = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -451,6 +451,40 @@ document.write("<br>Screen height " + window.innerHeight + "px");</script -->
 </body>
 </html>
 """.trimIndent()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 val fromRawHtml = """

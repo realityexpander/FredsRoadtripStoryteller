@@ -24,7 +24,11 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, Marker?> {
     fun markerInfoPageHandler(): KsoupHtmlHandler {
         var isCapturingText = false
         var isCapturingTitleText = false
-        var isCapturingInscriptionText = false
+        var isCapturingSubtitleText = false
+
+        var isCapturingDefaultInscriptionText = false
+        var didCaptureDefaultInscriptionText = false
+
         var isCapturingPhotoCaption = false
         var isCapturingPhotoAttribution = false
 
@@ -50,28 +54,49 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, Marker?> {
                     isCapturingTitleText = true
                 }
 
-                // inscription - Start (for english-only pages)
-                // <div id="inscription1" style="display:none;">Almadén Vineyards. . On this site in 1852 Charles LeFranc made the first commercial planting of fine European wine grapes in Santa Clara County and founded Almadén Vineyards. LeFranc imported cuttings from vines in the celebrated wine districts of his native France, shipping them around the Horn by sail. . This historical marker  was erected  in 1953 by California State Parks Commission. It  is in South San Jose  in Santa Clara County California</div>
-                if(tagName == "div" && attributes["id"] == "inscription1") {
+                // Subtitle - Start
+                // <h2>State Historic Landmark #505</h2>
+                if(tagName == "h2") {
                     isCapturingText = true
-                    isCapturingInscriptionText = true
+                    isCapturingSubtitleText = true
                 }
 
-                // Multi-language Inscription - Start
-                // <span id="speakbutton1" style="cursor:pointer;" onclick="speak(document.getElementById('inscription1').innerText,1,'en-US',0);"><img src="SpeakIcon.png" title="Click to hear the inscription."></span>
-                if(tagName =="span" && attributes["id"] == "speakbutton1") {
+                // inscription - Start (for english-only pages)
+                // <div id="inscription1" style="display:none;">Almadén Vineyards. . On this site in 1852 Charles LeFranc made the first commercial planting of fine European wine grapes in Santa Clara County and founded Almadén Vineyards. LeFranc imported cuttings from vines in the celebrated wine districts of his native France, shipping them around the Horn by sail. . This historical marker  was erected  in 1953 by California State Parks Commission. It  is in South San Jose  in Santa Clara County California</div>
+                if(tagName == "div"
+                    && attributes["id"] == "inscription1"
+                    && !didCaptureDefaultInscriptionText
+                ) {
+                    isCapturingText = true
+                    isCapturingDefaultInscriptionText = true
+                }
+                if(isCapturingDefaultInscriptionText
+                    && !didCaptureDefaultInscriptionText
+                ) {
+                    // Stop collecting inscription upon encountering "script" tag.
+                    // - (because inscription can have "bold" and "italic" html tags)
+                    if (tagName =="script") {
+                        isCapturingDefaultInscriptionText = false
+                        didCaptureDefaultInscriptionText = true
+                        isCapturingText = false
+                    }
+                }
+
+                // Multi-language Inscription - START
+                // <lang=es>
+                if(tagName == "lang=es") {
                     isCapturingText = true
                     isCapturingSpanishInscription = true // spanish starts first, will be set to false when "English translation:" is found
                     isCapturingEnglishInscription = false
                 }
 
-                // Multi-language Inscription - Pause text collection for ad copy
+                // Multi-language Inscription - PAUSE text collection for ad copy
                 // <fieldset id="incopyAd" class="adleft"><legend class="adtitle">Paid Advertisement</legend>
                 if(tagName == "fieldset" && attributes["id"] == "incopyAd") {
                     isCapturingEnglishInscriptionPaused = true
                 }
 
-                // Multi-language Inscription - End
+                // Multi-language Inscription - END
                 // <span class="sectionhead">Topics.</span>
                 if(isCapturingText && tagName == "span" && attributes["class"] == "sectionhead") {
                     isCapturingText = false
@@ -155,6 +180,7 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, Marker?> {
                     val decodedString =
                         KsoupEntities
                             .decodeHtml(text)
+                            .stripDoubleSpaceCommaDoubleSpace()
                             .stripDoubleSpace() + " " // require space at end to conform to text-formatting from site
                     if (decodedString.isBlank()) return@onText
 
@@ -169,20 +195,27 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, Marker?> {
                         isCapturingTitleText = false
                     }
 
-                    // Inscription (english-only text) (will be "English translation:" if multi-language)
-                    if(isCapturingInscriptionText) {
+                    // Subtitle Text
+                    if (isCapturingSubtitleText) {
                         markerResult = markerResult.copy(
-                            inscription = decodedString
+                            subtitle = decodedString
                         )
-                        isCapturingText = false  // Captures only one line of text
-                        isCapturingInscriptionText = false
+                        isCapturingText = false
+                        isCapturingSubtitleText = false
+                    }
+
+                    // Inscription (english-only text) (if multi-language, will be literal string: "English translation:" to indicate use the multi-language text)
+                    if(isCapturingDefaultInscriptionText) {
+                        markerResult = markerResult.copy(
+                            inscription = markerResult.inscription + decodedString
+                        )
                     }
 
                     // Spanish Inscription (multi-language text)
                     if(isCapturingSpanishInscription) {
                         if(decodedString.contains("English translation:", ignoreCase = true)) {
-                            isCapturingEnglishInscription = true
                             isCapturingSpanishInscription = false
+                            isCapturingEnglishInscription = true
                             return@onText
                         }
 
@@ -266,8 +299,9 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, Marker?> {
                         // Strip the final string of "Touch for map." or "Touch for directions."
                         markerResult = markerResult.copy(
                             location = markerResult.location
-                                .stripString("Touch for map.")
-                                .stripString("Touch for directions.")
+                                .stripString("Touch for map")
+                                .stripString("Touch for directions")
+                                .stripString(" . ")
                         )
                         return@onText
                     }
@@ -291,7 +325,7 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, Marker?> {
            || markerResult.inscription.contains("English translation", ignoreCase=true)
         ) {
             englishInscriptionLines
-                .subList(1, englishInscriptionLines.size)// skip the first line of the inscription (it's the title)
+                .subList(1, englishInscriptionLines.size) // skip the first line of the inscription (it's the title)
                 .joinToString("")
                 .processInscriptionString()
         } else {
@@ -309,10 +343,13 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, Marker?> {
             ""
         }
 
-    // Prepare final result -- NOTE: DOES NOT INCLUDE ID
+    // Prepare final result
     markerResult = markerResult.copy(
+        id = rawPageHtml.findFirstMarkerID(),
+        inscription = markerResult.inscription.processInscriptionString(),
         englishInscription = finalEnglishInscription,
         spanishInscription = finalSpanishInscription,
+        location = markerResult.location.stripString("Touch for map"),
         isDetailsLoaded = true
     )
 
@@ -338,15 +375,33 @@ fun String.stripNewlines(): String {
 fun String.stripTripleSpace(): String {
     return this.replace("   ", " ")
 }
+fun String.stripDoubleSpaceCommaDoubleSpace(): String {
+    return this.replace("  ,  ", "")
+}
+fun String.stripCommaDoubleSpace(): String {
+    return this.replace(" ,  ", "")
+}
 fun String.processInscriptionString(): String {
     return this
         .stripNewlines()
+        .stripString("Touch for map")
+        .stripString("Touch for directions")
         .stripDoubleSpace()
         .stripDoublePeriodAndSpace()
         .ensureSpaceAfterPeriod()
         .stripTripleSpace()
         .stripDoubleSpace()
+        .stripCommaDoubleSpace()
+        .stripString(" . ")
+        .stripString(",  ")
+        .stripString(" ,")
         .trim()
+}
+// Finds the first instance of "MarkerID=1234" and returns "M1234"
+fun String.findFirstMarkerID(): String {
+    val regex = Regex("""(?<=MarkerID=)\d+""")
+    val matchResult = regex.find(this)
+    return "M" + matchResult?.value
 }
 
 fun fakeLoadingStateForMarkerDetailsPageHtml(marker: Marker): LoadingState<Marker> {

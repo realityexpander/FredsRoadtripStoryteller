@@ -1,10 +1,11 @@
 package com.realityexpander.data.loadMarkerDetails
 
 import data.loadMarkerDetails.parseMarkerDetailsPageHtml
-import data.loadMarkerDetails.sampleData.almadenVineyardsM2580
-import data.loadMarkerDetails.sampleData.deAnzaExpeditionM38342
-import data.loadMarkerDetails.sampleData.elTepoztecoNationalParkM207314
-import data.loadMarkerDetails.sampleData.firstCityCouncilOfTepoztlanM207310
+import data.loadMarkerDetails.sampleData.almadenVineyardsM2580MarkerDetailsHtml
+import data.loadMarkerDetails.sampleData.deAnzaExpeditionM38342MarkerDetailsHtml
+import data.loadMarkerDetails.sampleData.elTepoztecoNationalParkM207314MarkerDetailsHtml
+import data.loadMarkerDetails.sampleData.firstCityCouncilOfTepoztlanM207310MarkerDetailsHtml
+import data.loadMarkerDetails.sampleData.mintBuildingM233374MarkerDetailsHtml
 import json
 import presentation.maps.Marker
 import kotlin.test.Test
@@ -15,12 +16,18 @@ class ParseMarkerDetailsPageHtmlTest {
 
     @Test
     fun `Parse MarkerDetails Page Html for almadenVineyardsM2580 is Successful`() {
-        val markerInfoPageHtml = almadenVineyardsM2580()
+        val markerInfoPageHtml = almadenVineyardsM2580MarkerDetailsHtml()
 
         val result = parseMarkerDetailsPageHtml(markerInfoPageHtml)
         val markerDetails = result.second!!
 
         //println(json.encodeToString(maps.MapMarker.serializer(), markerDetails))
+
+        // ID
+        assertTrue(
+            markerDetails.id == "M2580",
+            "ID was not found"
+        )
 
         // Title
         assertTrue(
@@ -90,12 +97,18 @@ class ParseMarkerDetailsPageHtmlTest {
 
     @Test
     fun `Parse MarkerDetails Page Html for deAnzaExpeditionM38342 is Successful`() {
-        val markerInfoPageHtml = deAnzaExpeditionM38342()
+        val markerInfoPageHtml = deAnzaExpeditionM38342MarkerDetailsHtml()
 
         val result = parseMarkerDetailsPageHtml(markerInfoPageHtml)
         val markerDetails = result.second!!
 
         // println(json.encodeToString(maps.MapMarker.serializer(), markerDetails))
+
+        // ID
+        assertTrue(
+            markerDetails.id == "M38342",
+            "ID was not found"
+        )
 
         // Title
         assertTrue(
@@ -165,17 +178,29 @@ class ParseMarkerDetailsPageHtmlTest {
 
     @Test
     fun `Parse MarkerDetails Page Html for elTepoztecoNationalParkM207314 is Successful`() {
-        val markerInfoPageHtml = elTepoztecoNationalParkM207314()
+        val markerInfoPageHtml = elTepoztecoNationalParkM207314MarkerDetailsHtml()
 
         val result = parseMarkerDetailsPageHtml(markerInfoPageHtml)
         val markerDetails = result.second!!
 
-         // println(json.encodeToString(maps.MapMarker.serializer(), markerDetails))
+        println(json.encodeToString(Marker.serializer(), markerDetails))
+
+        // ID
+        assertTrue(
+            markerDetails.id == "M207314",
+            "ID was not found"
+        )
 
         // Title
         assertTrue(
             markerDetails.title.contains("El Tepozteco National Park"),
             "Title was not found"
+        )
+
+        // Subtitle
+        assertTrue(
+            markerDetails.subtitle.contains(""),
+            "Subtitle was found and there shouldn't be one"
         )
 
         // Inscription
@@ -258,17 +283,29 @@ class ParseMarkerDetailsPageHtmlTest {
 
     @Test
     fun `Parse MarkerDetails Page Html for firstCityCouncilOfTepoztlanM207310 is Successful`() {
-        val markerInfoPageHtml = firstCityCouncilOfTepoztlanM207310()
+        val markerInfoPageHtml = firstCityCouncilOfTepoztlanM207310MarkerDetailsHtml()
 
         val result = parseMarkerDetailsPageHtml(markerInfoPageHtml)
         val markerDetails = result.second!!
 
-         println(json.encodeToString(Marker.serializer(), markerDetails))
+        println(json.encodeToString(Marker.serializer(), markerDetails))
+
+        // ID
+        assertTrue(
+            markerDetails.id == "M207310",
+            "ID was not found"
+        )
 
         // Title
         assertTrue(
             markerDetails.title.contains("First City Council of Tepoztlán"),
             "Title was not found"
+        )
+
+        // Subtitle
+        assertTrue(
+            markerDetails.subtitle.contains(""), // no subtitle
+            "Subtitle was not found"
         )
 
         // Inscription
@@ -342,10 +379,104 @@ class ParseMarkerDetailsPageHtmlTest {
             "Erected was not found"
         )
 
+        // Credits
+        assertTrue(
+            markerDetails.credits.contains(""), // no credits
+            "Credits were found and shouldn't have been"
+        )
+
         // Check that inscription has proper spaces between words
         assertTrue(
             markerDetails.englishInscription == "In 1820, on September 8, the day on which Tepuztecatl was celebrated, the town of Tepoztlan installed its first town hall. In 1826 the municipality of Tepoztlán, as part of the State of Mexico, was ratified. Honorable City Council of Tepoztlan Rogelio Torres Ortega, Municipal President of Tepoztlan 2019-2021 Government of the State of Morelos Cuauhtemoc Blanco Bravo, Governor of the State of Photographed By J. Makali Bruton, August 6, 2022 2. Additional tablets near the First City Council of Tepotzlán Marker Erected 2020.",
             "Inscription has improper spaces between words"
+        )
+    }
+
+    @Test
+    fun `Parse MarkerDetails Page Html for mintBuildingM233374 is Successful`() {
+        val markerInfoPageHtml = mintBuildingM233374MarkerDetailsHtml()
+
+        val result = parseMarkerDetailsPageHtml(markerInfoPageHtml)
+        val markerDetails = result.second!!
+
+        println(json.encodeToString(Marker.serializer(), markerDetails))
+
+        // ID
+        assertTrue(
+            markerDetails.id == "M233374",
+            "ID was not found"
+        )
+
+        // Title
+        assertTrue(
+            markerDetails.title.contains("Mint Building"),
+            "Title was not found"
+        )
+
+        // Subtitle
+        assertTrue(
+            markerDetails.subtitle.contains("Charles R. Jonas Federal Building"),
+            "Subtitle was not found"
+        )
+
+        // Inscription
+        assertTrue(
+            markerDetails.inscription.contains("Here stood the first branch Mint of the United States."),
+            "Inscription was not found"
+        )
+
+        // Main Photo URL
+        assertTrue(
+            markerDetails.mainPhotoUrl.contains("https://www.hmdb.org/Photos7/751/Photo751617.jpg?9242023125500AM"),
+            "Marker Photo Url was not found"
+        )
+
+        // Marker Photos
+        assertTrue(
+            markerDetails.markerPhotos.size == 5,
+            "Some Marker Photos are missing"
+        )
+        assertTrue(
+            markerDetails.markerPhotos[1] == "https://www.hmdb.org/Photos7/751/Photo751618.jpg?924202310700AM",
+            "Marker Photo at index 1 was not found"
+        )
+
+        // Photo Attributions
+        assertTrue(
+            markerDetails.photoAttributions.size == 5,
+            "Some Photo Attributions are missing"
+        )
+        assertTrue(
+            markerDetails.photoAttributions[0] == "Photographed By J.T. Lambrou, September 1, 2023",
+            "Photo Attribution at index 0 was not found"
+        )
+
+        // Photo Captions
+        assertTrue(
+            markerDetails.photoCaptions.size == 5,
+            "Some Photo Captions are missing"
+        )
+        assertTrue(
+            markerDetails.photoCaptions[0] == "1. Mint Building Marker",
+            "Photo Caption at index 0 was not found"
+        )
+
+        // Erected
+        assertTrue(
+            markerDetails.erected.contains(""), // no erected date
+            "Erected was found and should not have been"
+        )
+
+        // Credits
+        assertTrue(
+            markerDetails.credits.contains(""),  // no credits
+            "Credits was not found and should not have been"
+        )
+
+        // Location
+        assertTrue(
+            markerDetails.location.contains("35 ° 13.781′ N, 80 ° 50.785′ W. Marker is in Charlotte, North Carolina, in Mecklenburg County."),
+            "Location was not found"
         )
     }
 }

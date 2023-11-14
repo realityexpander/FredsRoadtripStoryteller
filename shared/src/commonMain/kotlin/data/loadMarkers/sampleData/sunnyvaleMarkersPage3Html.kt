@@ -1,6 +1,6 @@
 package data.loadMarkers.sampleData
 
-fun sunnyvaleMarkersHtmlPage3() = """
+fun sunnyvaleMarkersPage3Html() = """
     <!DOCTYPE html>
     <html lang="en">
     <head>

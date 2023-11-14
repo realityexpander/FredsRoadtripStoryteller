@@ -8,7 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import data.util.LoadingState
-import data.loadMarkerDetails.sampleData.almadenVineyardsM2580
+import data.loadMarkerDetails.sampleData.almadenVineyardsM2580MarkerDetailsHtml
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import kotlinx.coroutines.yield
@@ -82,7 +82,7 @@ fun loadMarkerDetails(marker: Marker, useFakeData: Boolean = false): LoadingStat
             } else {
                  // loadingState = fakeLoadingStateForMarkerDetailsPageHtml(mapMarker)  // for debugging - LEAVE FOR REFERENCE
 
-                val markerDetailsPageHtml = almadenVineyardsM2580()
+                val markerDetailsPageHtml = almadenVineyardsM2580MarkerDetailsHtml()
                 val result = parseMarkerDetailsPageHtml(markerDetailsPageHtml)
                 loadingState = LoadingState.Loaded(result.second!!)
             }

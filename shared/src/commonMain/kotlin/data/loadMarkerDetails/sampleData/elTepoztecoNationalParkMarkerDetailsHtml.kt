@@ -1,6 +1,6 @@
 package data.loadMarkerDetails.sampleData
 
-fun elTepoztecoNationalParkM207314() = """
+fun elTepoztecoNationalParkM207314MarkerDetailsHtml() = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -280,14 +280,33 @@ function stopSpeaking(button,lang) {
 })(window);
   </script><div class=articletoplinks><a href='photoadd.asp?MarkerID=207314'>Add&nbsp;Photo</a> &#8212; <a href='linkadd.asp?MarkerID=207314'>Add&nbsp;Link</a> &#8212; <a href='commentadd.asp?MarkerID=207314'>Add&nbsp;Commentary</a> &#8212; <a href='markeradd2.asp?MarkerID=207314'>Correct&nbsp;this&nbsp;page</a></div class=articletoplinks></div class=toplinks>
 <article class=bodyserif>
-<div ID=towncountryregion class='bodysansserif towncountryregion'>Tepoztlán, Morelos, Mexico &#8212; <i>The&nbsp;Central&nbsp;Highlands (North&nbsp;America)</i></div><div class=shim6pt>&nbsp;</div><h1>El Tepozteco National Park</h1><div class=shim12pt>&nbsp;</div><div class=shim12pt>&nbsp;</div><div style='all:initial;margin-left:0px;'><div class=photoright><div style='max-width:400px; margin-left: auto; margin-right: auto;'><a target=_blank href='PhotoFullSize.asp?PhotoID=681931'><img loading=lazy class=photoimage src=Photos6/681/Photo681931.jpg?1052022105400PM style='max-height:300px;' alt='El Tepozteco National Park Marker image. Click for full size.' title='El Tepozteco National Park Marker. Click for full size.'></a><div class=imagecredit>Photographed By J. Makali Bruton,  August 6, 2022</div> <!-- imagecredit --> <div class=imagecaption>1. El Tepozteco National Park Marker</div></div></div></div><span class=sectionhead>Inscription. </span><div id=inscription1 style='display:none;'><i>English translation:</i> , <b>El Tepozteco National Park</b> , This park was decreed as a Protected Area on January 22, 1937, has an area of 23,286 hectares and is located in the Municipality of Tepoztlán, Morelos.,  This Park is made up of six types of vegetation, from the Oyamel forest to the Low Deciduous Forest. As for fauna, there are 237 species of birds, 60 of mammals and 45 of reptiles., During your visit you can appreciate the natural beauty of this Park, which is incorporated into the "Chichinautzin Biological Corridor" and ranges from the Lagunas de Zempoala National Park to the northern area of the municipality of Atlatlahucan. The mountainous characteristics of the area have stimulated the isolation of animal and plant species, however, in this area there are 64 at risk. ,  With your help we keep this site. . This historical marker  is in Tepoztlán Morelos Mexico</div>
+<div ID=towncountryregion class='bodysansserif towncountryregion'>Tepoztlán, Morelos, Mexico &#8212; <i>The&nbsp;Central&nbsp;Highlands (North&nbsp;America)</i></div>
+
+<div class=shim6pt>&nbsp;</div>
+<h1>El Tepozteco National Park</h1>
+<div class=shim12pt>&nbsp;</div>
+<div class=shim12pt>&nbsp;</div>
+<div style='all:initial;margin-left:0px;'>
+    <div class=photoright>
+        <div style='max-width:400px; margin-left: auto; margin-right: auto;'>
+            <a target=_blank href='PhotoFullSize.asp?PhotoID=681931'>
+            <img loading=lazy class=photoimage src=Photos6/681/Photo681931.jpg?1052022105400PM style='max-height:300px;' alt='El Tepozteco National Park Marker image. Click for full size.' title='El Tepozteco National Park Marker. Click for full size.'></a>
+            <div class=imagecredit>Photographed By J. Makali Bruton,  August 6, 2022</div> 
+            <!-- imagecredit --> 
+            <div class=imagecaption>1. El Tepozteco National Park Marker</div>
+        </div>
+    </div>
+</div>
+
+<span class=sectionhead>Inscription. </span>
+
+<div id=inscription1 style='display:none;'><i>English translation:</i> , <b>El Tepozteco National Park</b> , This park was decreed as a Protected Area on January 22, 1937, has an area of 23,286 hectares and is located in the Municipality of Tepoztlán, Morelos.,  This Park is made up of six types of vegetation, from the Oyamel forest to the Low Deciduous Forest. As for fauna, there are 237 species of birds, 60 of mammals and 45 of reptiles., During your visit you can appreciate the natural beauty of this Park, which is incorporated into the "Chichinautzin Biological Corridor" and ranges from the Lagunas de Zempoala National Park to the northern area of the municipality of Atlatlahucan. The mountainous characteristics of the area have stimulated the isolation of animal and plant species, however, in this area there are 64 at risk. ,  With your help we keep this site. . This historical marker  is in Tepoztlán Morelos Mexico</div>
       <script>
           var plainText = document.getElementById('inscription1').innerText;
           document.getElementById('inscription1').innerHTML = plainText;
       </script>
- <span id=speakbutton1 style='cursor:pointer;' onclick="speak(document.getElementById('inscription1').innerHTML,1,'en',0)"><img src=SpeakIcon.png title='Click to hear the inscription.'></span> &nbsp;<br><br>
- 
- <lang=es><b>Parque Nacional El Tepozteco</b><br>Este parque fue decretado como Área Protegida el 22 de enero de 1937, tiene una superficie de 23, 286 hectáreas y se ubica en el Municipio de Tepoztlán, Morelos.<br><br>
+<span id=speakbutton1 style='cursor:pointer;' onclick="speak(document.getElementById('inscription1').innerHTML,1,'en',0)"><img src=SpeakIcon.png title='Click to hear the inscription.'></span> &nbsp;<br><br> 
+<lang=es><b>Parque Nacional El Tepozteco</b><br>Este parque fue decretado como Área Protegida el 22 de enero de 1937, tiene una superficie de 23, 286 hectáreas y se ubica en el Municipio de Tepoztlán, Morelos.<br><br>
 Conforman este Parque seis tipos de vegetación, desde el bosque de Oyamel hasta la
 Selva Baja Caducifolia. En cuanto a fauna, existen 237 especies de aves, 60 de mamífe-
 ros y 45 de reptiles.<br><br>Durante tu visita puedes apreciar la belleza natural
