@@ -56,6 +56,7 @@ google-play-services-android-location = { module = "com.google.android.gms:play-
 google-play-services-android-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "google-PlayServicesAndroidMaps" }
 kamel-image = { module = "media.kamel:kamel-image", version.ref = "kamelImage" }
 logger-kermit = { module = "co.touchlab:kermit", version.ref = "logger-kermit" }
+logger-kermit-crashlytics = { module = "co.touchlab:kermit-crashlytics", version.ref = "logger-kermit" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-CoroutinesCore" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-Datetime" }

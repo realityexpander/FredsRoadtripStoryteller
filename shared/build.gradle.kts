@@ -78,6 +78,7 @@ kotlin {
 
                 // Logging
                 api(libs.logger.kermit)
+                api(libs.logger.kermit.crashlytics)
                 api(libs.logger.slf4j.nop) // removes this warning: https://www.slf4j.org/codes.html#StaticLoggerBinder
 
                 // Date-time

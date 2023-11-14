@@ -8,14 +8,39 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import appContext
 import buildNumber
+import co.touchlab.kermit.ExperimentalKermitApi
+import co.touchlab.kermit.LogWriter
+import co.touchlab.kermit.Logger
+import co.touchlab.kermit.Severity
+import co.touchlab.kermit.crashlytics.CrashlyticsLogWriter
+import debugLog
 import installAtEpochSeconds
 import versionNumber
+import java.time.Clock
+import java.time.ZoneId
 
 class App: Application() {
 
+    @OptIn(ExperimentalKermitApi::class) // for crashlytics logger
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate() {
         super.onCreate()
+
+        Logger.addLogWriter(object: LogWriter() {
+            override fun log(severity: Severity, message: String, tag: String, throwable: Throwable?) {
+                    debugLog.add(
+                        "${Clock.system(ZoneId.systemDefault()).instant()}: " +
+                        "$severity " +
+                        "$tag: " +
+                        message
+                    )
+                    if(debugLog.size > 10000) {
+                        debugLog.removeAt(0)
+                    }
+                }
+            }
+        )
+        Logger.setLogWriters(CrashlyticsLogWriter())
 
         // Create the notification channel
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

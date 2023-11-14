@@ -4,9 +4,8 @@ import GPSLocationService
 import MainView
 import android.Manifest
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.speech.tts.TextToSpeech
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
@@ -18,6 +17,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import appContext
+import co.touchlab.kermit.LogWriter
+import co.touchlab.kermit.Severity
 import com.google.android.gms.maps.MapsInitializer
 import com.google.firebase.FirebaseApp
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -45,6 +46,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
          tts = TextToSpeech(this, this)
 
@@ -124,6 +126,9 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 }
                 if(intent.action == GPSLocationService.ACTION_START_BACKGROUND_UPDATES) {
                     startBackgroundUpdates()
+                }
+                if(intent.action == Intent.ACTION_VIEW) { // open a web link
+                    startActivity(intent)
                 }
             }
         }

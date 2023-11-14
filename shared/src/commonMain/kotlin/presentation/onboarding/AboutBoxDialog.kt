@@ -33,6 +33,7 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
+import openWebLink
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import versionNumber
@@ -81,7 +82,7 @@ fun AboutBoxDialog(
                         // Link to app website
                         Button(
                             onClick = {
-                                // todo - open browser to website
+                                openWebLink("https://github.com/realityexpander/FredsHistoryMarkers")
                                 onDismiss()
                             },
                         ) {
@@ -92,7 +93,7 @@ fun AboutBoxDialog(
                         // Link to HMDB.org
                         Button(
                             onClick = {
-                                // todo - open browser to website
+                                openWebLink("https://hmdb.org")
                                 onDismiss()
                             },
                         ) {
@@ -106,7 +107,7 @@ fun AboutBoxDialog(
                         if(installAtEpochSeconds> 0) {
                             val it = Instant.fromEpochMilliseconds(installAtEpochSeconds)
                                 .toLocalDateTime(TimeZone.currentSystemDefault())
-                            Text("installed at: ${it.date} ${it.time.hour}:${it.time.minute}" )
+                            Text("Installed at: ${it.date} ${it.time.hour}:${it.time.minute}" )
                         }
                     }
                 }
