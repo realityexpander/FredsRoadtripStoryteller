@@ -327,7 +327,6 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, Marker?> {
             englishInscriptionLines
                 .subList(1, englishInscriptionLines.size) // skip the first line of the inscription (it's the title)
                 .joinToString("")
-                .processInscriptionString()
         } else {
             ""
         }
@@ -338,7 +337,6 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, Marker?> {
             spanishInscriptionLines
                 .subList(1, spanishInscriptionLines.size) // skip the first line of the inscription (it's the title)
                 .joinToString("")
-                .processInscriptionString()
         } else {
             ""
         }
@@ -347,8 +345,8 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, Marker?> {
     markerResult = markerResult.copy(
         id = rawPageHtml.findFirstMarkerID(),
         inscription = markerResult.inscription.processInscriptionString(),
-        englishInscription = finalEnglishInscription,
-        spanishInscription = finalSpanishInscription,
+        englishInscription = finalEnglishInscription.processInscriptionString(),
+        spanishInscription = finalSpanishInscription.processInscriptionString(),
         location = markerResult.location.stripString("Touch for map"),
         isDetailsLoaded = true
     )
