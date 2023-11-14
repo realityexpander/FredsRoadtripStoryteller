@@ -16,17 +16,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kAppName
 import data.AppSettings
 import data.AppSettings.Companion.kMarkersLastUpdatedLocation
 import data.MarkersRepo
-import data.loadMarkers.sampleData.kUseRealNetwork
 import data.loadMarkers.sampleData.generateTestPageHtml
+import data.loadMarkers.sampleData.kUseRealNetwork
 import data.network.httpClient
 import data.util.LoadingState
 import data.util.toInstant
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import kAppName
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -42,7 +42,6 @@ import org.jetbrains.compose.resources.ExperimentalResourceApi
 import presentation.maps.Location
 import presentation.maps.Marker
 import presentation.maps.MarkerIdStr
-import kotlin.coroutines.coroutineContext
 import co.touchlab.kermit.Logger as Log
 
 @Serializable
@@ -81,7 +80,6 @@ data class LoadMarkersResult(
        Plus side - there is no ping-pong between files. Its all here.
        I'm Experimenting with a pure compose architecture with no android idiom remnants.
 **/
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun loadMarkers(
     appSettings: AppSettings,
