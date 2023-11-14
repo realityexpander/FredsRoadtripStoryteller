@@ -83,6 +83,7 @@ import presentation.maps.RecentlySeenMarkersList
 import presentation.maps.toLocation
 import presentation.speech.speakMarker
 import presentation.speech.speakRecentlySeenMarker
+import kotlin.coroutines.coroutineContext
 import kotlin.random.Random
 import co.touchlab.kermit.Logger as Log
 
@@ -217,23 +218,48 @@ fun App(
                 return@remember previousMarkers // use the cached markers (prevents flickering)
             }
 
+            // Log.d("🎯 loadMarkers START update")
+            coroutineScope.launch(Dispatchers.IO) {
+                val startTime = Clock.System.now()
+//                    delay(100) // debounce // todo remove soon - seems to not be necessary
+
+                loadMarkersResult.markerIdToMarker.values.forEach { marker ->
+                    //markersRepo.upsertMarkerBasicInfo(marker) // only basic info needs to be updated
+                    markersRepo.marker(marker.id) ?: run {
+                        markersRepo.addMarker(marker)
+                    }
+                }
+                markersRepo.updateIsParseMarkersPageFinished(true) // ensures the markers are updated
+
+                Log.d("🎯 loadMarkers END UPDATE1, processing time = ${(Clock.System.now() - startTime)}\n")
+            }
+
             // Update the markers with the latest data
             mutableStateListOf<Marker>().also { markersSnapShot ->
-                // Log.d("🎯 loadMarkers START update")
-                coroutineScope.launch(Dispatchers.IO) {
-//                    delay(200) // debounce // todo remove soon - seems to not be necessary
-                    val startTime = Clock.System.now()
 
-                    loadMarkersResult.markerIdToMarker.values.forEach { marker ->
-                        markersRepo.upsertMarkerBasicInfo(marker) // only basic info needs to be updated
-                    }
-                    markersRepo.updateIsParseMarkersPageFinished(true) // ensures the markers are updated
-
-                    Log.d("🎯 loadMarkers END UPDATE, total time = ${(Clock.System.now() - startTime)}\n")
-                }
-
-                markersSnapShot.clear()
+                val startTime = Clock.System.now()
+                markersSnapShot.clear() // moved from below todo remove
                 markersSnapShot.addAll(markersRepo.markers())
+//                 markersSnapShot.addAll(loadMarkersResult.markerIdToMarker.values) // todo try it - maybe faster
+                Log.d("🎯 loadMarkers END UPDATE2, processing time = ${(Clock.System.now() - startTime)}\n")
+
+//                // Log.d("🎯 loadMarkers START update")
+//                coroutineScope.launch(Dispatchers.IO) {
+//                    delay(50) // debounce todo testing
+////                    delay(100) // debounce // todo remove soon - seems to not be necessary
+//
+//                    loadMarkersResult.markerIdToMarker.values.forEach { marker ->
+//                        //markersRepo.upsertMarkerBasicInfo(marker) // only basic info needs to be updated
+//                        markersRepo.marker(marker.id) ?:
+//                            markersRepo.addMarker(marker)
+//                    }
+//                    markersRepo.updateIsParseMarkersPageFinished(true) // ensures the markers are updated
+//
+//                    Log.d("🎯 loadMarkers END UPDATE, processing time = ${(Clock.System.now() - startTime)}\n")
+//                }
+
+//                markersSnapShot.clear() // moved up todo remove
+//                markersSnapShot.addAll(markersRepo.markers())
             }
         }
         if (false) {
@@ -254,6 +280,7 @@ fun App(
         LaunchedEffect(markersRepo.updateLoadMarkersResultFlow) {
             markersRepo.updateLoadMarkersResultFlow.collectLatest { loadMarkersResult ->
                 delay(250) // debounce - allow the loadMarkers to finish processing
+                println("🍉 PRE coroutineScope: ${coroutineScope.coroutineContext}")
 
                 // Update the final markers list with the updated marker data
                 val startTime = Clock.System.now()
@@ -264,10 +291,15 @@ fun App(
 
                 // Update the final markers list with the updated marker data
                 finalMarkers = loadMarkersResult.markerIdToMarker.values.toMutableStateList()
+                yield() // todo needed? remove soon?
                 loadMarkers.clear()
+                yield() // todo needed? remove soon?
                 loadMarkers.addAll(loadMarkersResult.markerIdToMarker.values)
+                yield() // todo needed? remove soon?
                 previousMarkers.clear()
+                yield() // todo needed? remove soon?
                 previousMarkers.addAll(loadMarkersResult.markerIdToMarker.values)
+                yield() // todo needed? remove soon?
 
                 Log.d("🍉 END - markersRepo.updateMarkersResultFlow.collectLatest:\n" +
                     "    ⎣ finalMarkers.size = ${finalMarkers.size}\n" +
@@ -277,7 +309,6 @@ fun App(
                 userLocation = jiggleLocationToForceUiUpdate(userLocation)
                 shouldRedrawMapMarkers = true
                 yield() // todo needed? remove soon?
-
             }
         }
 

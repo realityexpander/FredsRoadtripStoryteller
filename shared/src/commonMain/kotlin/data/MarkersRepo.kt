@@ -34,7 +34,7 @@ open class MarkersRepo(
         ioCoroutineScope.launch {
             delay(50) // debounce
 
-            appSettings.loadMarkersResult = newLoadMarkersResult
+            appSettings.loadMarkersResult = newLoadMarkersResult // save to persistent storage
             updateLoadMarkersResultFlow.emit(newLoadMarkersResult)
         }
     }
@@ -50,8 +50,7 @@ open class MarkersRepo(
         updateLoadMarkersResult(
             inMemoryLoadMarkersResult.copy(
                 markerIdToMarker =
-                    inMemoryLoadMarkersResult.markerIdToMarker +
-                        (marker.id to marker)
+                    inMemoryLoadMarkersResult.markerIdToMarker + (marker.id to marker)
             )
         )
 

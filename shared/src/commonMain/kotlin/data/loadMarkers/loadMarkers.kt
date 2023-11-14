@@ -32,6 +32,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
@@ -41,6 +42,7 @@ import org.jetbrains.compose.resources.ExperimentalResourceApi
 import presentation.maps.Location
 import presentation.maps.Marker
 import presentation.maps.MarkerIdStr
+import kotlin.coroutines.coroutineContext
 import co.touchlab.kermit.Logger as Log
 
 @Serializable
@@ -128,6 +130,7 @@ fun loadMarkers(
             "  ⎣ processingLoadMarkersResultState.isParseMarkersPageFinished: ${processingLoadMarkersResultState.isParseMarkersPageFinished}, \n" +
             "  ⎣ markersLoadingState: $markersLoadingState"
         )
+        val startTime = Clock.System.now()
 
         // Guards
         // - If currently processing markers (after network load) then return the LAST SAVED result from the MarkersRepo
@@ -184,7 +187,9 @@ fun loadMarkers(
     var networkLoadingState by remember(
             processingLoadMarkersResultState.isParseMarkersPageFinished,
             processingHtmlPageNum
-        ) {
+    ) {
+        val startTime = Clock.System.now()
+
         // Guard
         if(processingHtmlPageNum == 0)
             return@remember mutableStateOf<LoadingState<String>>(LoadingState.Finished)
@@ -218,15 +223,19 @@ fun loadMarkers(
 
         // Update the last updated location
         if(didUpdateMarkers) {
-            appSettings.markersLastUpdatedLocation =
-                userLocation.also {
-                    onUpdateMarkersLastUpdatedLocation(userLocation)
-                }
+            coroutineScope.launch {
+                appSettings.markersLastUpdatedLocation =
+                    userLocation.also {
+                        onUpdateMarkersLastUpdatedLocation(userLocation)
+                    }
+            }
         }
 
         // 6 PROCESS COMPLETE
         Log.d("📍 Step 6 - Finished parsing & loading all pages, " +
-                "total markers= ${finalLoadMarkersResultState.markerIdToMarker.size}")
+                "total markers= ${finalLoadMarkersResultState.markerIdToMarker.size}, " +
+                "processing time= ${Clock.System.now() - startTime}"
+        )
         markersLoadingState = LoadingState.Finished
         processingHtmlPageNum = 0
         processingLoadMarkersResultState = processingLoadMarkersResultState.copy(
@@ -255,13 +264,26 @@ fun loadMarkers(
                 val rawHtmlString =
                     if(useFakeDataSetId == kUseRealNetwork) {
                         coroutineScope.async(Dispatchers.IO) {
-                            val response = httpClient.get(assetUrl)  // network load
-                            val rawHtml: String = response.body()
+                            try {
+                                val response = httpClient.get(assetUrl)  // network load
+                                val rawHtml: String = response.body()
 
-                            Log.d("📍⬆️ Step 3a - Loaded page successfully, " +
-                                     "data length: ${rawHtml.length}, " +
-                                     "time to load: ${Clock.System.now().minus(response.requestTime.toInstant())}")
-                            rawHtml
+                                Log.d(
+                                    "📍⬆️ Step 3a - Loaded page successfully, " +
+                                            "data length: ${rawHtml.length}, " +
+                                            "time to load: ${
+                                                Clock.System.now()
+                                                    .minus(response.requestTime.toInstant())
+                                            }"
+                                )
+                                rawHtml
+                            } catch (e: CancellationException) {
+                                throw e
+                            } catch (e: Exception) {
+                                Log.w("📍⬆️ Step 3a - Failed to load page: $processingHtmlPageNum, assetUrl: $assetUrl, error: ${e.cause?.message}")
+
+                                return@async ""  // return blank data
+                            }
                         }.await()
                     } else {
                         // use FAKE loading from fakeDataSet
@@ -364,6 +386,8 @@ fun loadMarkers(
                     isParseMarkersPageFinished = true,
                     loadingState = LoadingState.Error(e.cause?.message ?: "Loading error - ${e.message}")
                 )
+
+                yield()
                 Log.w("📍 Step 3 - Failed to load page: $processingHtmlPageNum, assetUrl: $assetUrl, error: ${e.cause?.message}")
                 LoadingState.Error(e.cause?.message ?: "error")  // leave for debugging
             }
