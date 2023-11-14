@@ -48,6 +48,7 @@ compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.r
 compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose" }
 google-firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "google-FirebaseBom" }
 google-firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "" } # no version needed
+google-firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics", version = "" } # no version needed
 google-firebase-appdistribution-api-ktx = { module = "com.google.firebase:firebase-appdistribution-api-ktx", version.ref="google-FirebaseAppdistribution" }
 google-firebase-appdistribution = { module = "com.google.firebase:firebase-appdistribution", version.ref = "google-FirebaseAppdistribution" }
 google-maps-android-compose = { module = "com.google.maps.android:maps-compose", version.ref = "google-MapsAndroidComposeVersion" }

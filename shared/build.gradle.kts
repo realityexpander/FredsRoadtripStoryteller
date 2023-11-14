@@ -109,6 +109,7 @@ kotlin {
                 api(platform(libs.google.firebase.bom.get())) // use `.get` bc its just a simple string with no version id
                 // Firebase SDK for Google Analytics
                 api(libs.google.firebase.analytics.ktx.get())
+                api(libs.google.firebase.crashlytics.get())
                 // Firebase feedback // todo move to beta variant for final release
                 implementation(libs.google.firebase.appdistribution.api.ktx)
                 implementation(libs.google.firebase.appdistribution)

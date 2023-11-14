@@ -130,6 +130,9 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 if(intent.action == Intent.ACTION_VIEW) { // open a web link
                     startActivity(intent)
                 }
+                if(intent.action == Intent.ACTION_SEND) { // send an email
+                    startActivity(Intent.createChooser(intent, "Send Email"))
+                }
             }
         }
 

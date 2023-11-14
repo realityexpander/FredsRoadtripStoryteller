@@ -16,6 +16,7 @@ pluginManagement {
         val composeVersion = extra["compose.version"] as String
         val googleMapsSecretsPluginVersion = extra["google.maps.secrets-gradle-plugin.version"] as String
         val googleServicesVersion = extra["google.services.version"] as String
+        val googleFirebaseCrashlyticsVersion = extra["google.firebase.crashlytics.version"] as String
 
         kotlin("jvm").version(kotlinVersion)
         kotlin("multiplatform").version(kotlinVersion)
@@ -33,6 +34,9 @@ pluginManagement {
 
         // For Google Services (Analytics, Feedback)
         id("com.google.gms.google-services").version(googleServicesVersion)
+
+        // Crashlytics
+        id("com.google.firebase.crashlytics").version(googleFirebaseCrashlyticsVersion)
     }
 }
 

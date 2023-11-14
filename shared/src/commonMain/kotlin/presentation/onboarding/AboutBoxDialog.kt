@@ -23,20 +23,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.UriHandler
+import androidx.compose.ui.text.input.KeyboardType.Companion.Uri
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import buildNumber
+import debugLog
 import installAtEpochSeconds
+import json
 import kAppNameStr
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.serialization.encodeToString
 import openWebLink
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
+import sendEmailAction
 import versionNumber
+import kotlin.io.encoding.Base64.Default.encode
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
@@ -108,6 +114,15 @@ fun AboutBoxDialog(
                             val it = Instant.fromEpochMilliseconds(installAtEpochSeconds)
                                 .toLocalDateTime(TimeZone.currentSystemDefault())
                             Text("Installed at: ${it.date} ${it.time.hour}:${it.time.minute}" )
+                        }
+                        // Send debug log
+                        Button(
+                            onClick = {
+                                onDismiss()
+                                sendEmailAction(body = json.encodeToString(debugLog))
+                            },
+                        ) {
+                            Text("Send debug log")
                         }
                     }
                 }

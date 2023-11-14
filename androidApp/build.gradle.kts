@@ -8,6 +8,8 @@ plugins {
 
     // Google Services - for feedback
     id("com.google.gms.google-services")
+    // Crashlytics
+    id("com.google.firebase.crashlytics")
 }
 
 kotlin {

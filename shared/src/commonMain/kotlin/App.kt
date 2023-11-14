@@ -100,6 +100,7 @@ const val kMaxMarkerDetailsAgeSeconds = 60 * 60 * 24 * 30  // 30 days
 var versionNumber = "0.0.0" // todo get for iOS
 var buildNumber = "0" // todo get for iOS
 var installAtEpochSeconds = 0L // todo get for iOS?
+var debugLog = mutableListOf("Debug log: start time:" + Clock.System.now())
 
 sealed class BottomSheetScreen {
     data object SettingsScreen : BottomSheetScreen()
@@ -735,7 +736,7 @@ fun App(
                                 Text(
                                     modifier = Modifier.fillMaxWidth()
                                         .background(MaterialTheme.colors.error),
-                                    text = "Error: ${(loadMarkersResult.loadingState as LoadingState.Error).errorMessage}",
+                                    text = "Error: ${(loadMarkersResult.loadingState).errorMessage}",
                                     fontStyle = FontStyle.Normal,
                                     fontWeight = FontWeight.Medium,
                                     color = MaterialTheme.colors.onError

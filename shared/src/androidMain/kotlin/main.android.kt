@@ -18,4 +18,4 @@ var tts: TextToSpeech? = null  // Android specific TextToSpeech
 var _intentFlow: MutableSharedFlow<Intent> = MutableSharedFlow()
 val intentFlow: SharedFlow<Intent> = _intentFlow  // read-only shared flow received on Android side
 
-var debugLog = mutableListOf("Android debug log: start time:" + Clock.System.now())
+//var debugLog = mutableListOf("Android debug log: start time:" + Clock.System.now())

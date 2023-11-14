@@ -40,7 +40,7 @@ class App: Application() {
                 }
             }
         )
-        Logger.setLogWriters(CrashlyticsLogWriter())
+        Logger.addLogWriter(CrashlyticsLogWriter())
 
         // Create the notification channel
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
