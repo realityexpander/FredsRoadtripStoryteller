@@ -46,7 +46,6 @@ import versionStr
 fun AboutBoxDialog(
     onDismiss: () -> Unit = {}
 ) {
-
     Dialog(
         properties = DialogProperties(
             dismissOnBackPress = true,
@@ -102,7 +101,7 @@ fun AboutBoxDialog(
                         ) {
                             Text("Visit HMDB.org")
                         }
-                        Text("Marker data from HMDB.org database")
+                        Text("Historical Marker data is from HMDB.org")
                         Spacer(modifier = Modifier.padding(8.dp))
 
                         // Version number
@@ -116,7 +115,7 @@ fun AboutBoxDialog(
                         Button(
                             onClick = {
                                 onDismiss()
-                                sendEmailAction(body = json.encodeToString(debugLog))
+                                sendEmailAction(body=json.encodeToString(debugLog))
                             },
                         ) {
                             Text("Send debug log")
