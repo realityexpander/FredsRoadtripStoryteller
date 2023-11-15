@@ -27,6 +27,7 @@ class App: Application() {
     override fun onCreate() {
         super.onCreate()
 
+        // Setup debugLog for emailing to developer
         Logger.addLogWriter(object: LogWriter() {
             override fun log(severity: Severity, message: String, tag: String, throwable: Throwable?) {
                     debugLog.add(
@@ -41,13 +42,14 @@ class App: Application() {
                 }
             }
         )
+        // Add Crashlytics to logger
         Logger.addLogWriter(CrashlyticsLogWriter())
 
         // Create the notification channel
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 "location",
-                "Location",
+                "Marker Status Notifications",
                 NotificationManager.IMPORTANCE_LOW // IMPORTANCE_HIGH will make the notification sound
             )
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
