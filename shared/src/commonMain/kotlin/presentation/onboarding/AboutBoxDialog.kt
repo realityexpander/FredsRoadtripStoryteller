@@ -23,26 +23,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.UriHandler
-import androidx.compose.ui.text.input.KeyboardType.Companion.Uri
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import buildNumber
+import buildNumberStr
 import debugLog
-import installAtEpochSeconds
+import installAtEpochMilli
 import json
 import kAppNameStr
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.encodeToString
-import openWebLink
+import openWebLinkAction
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import sendEmailAction
-import versionNumber
-import kotlin.io.encoding.Base64.Default.encode
+import versionStr
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
@@ -88,7 +85,7 @@ fun AboutBoxDialog(
                         // Link to app website
                         Button(
                             onClick = {
-                                openWebLink("https://github.com/realityexpander/FredsHistoryMarkers")
+                                openWebLinkAction("https://github.com/realityexpander/FredsHistoryMarkers")
                                 onDismiss()
                             },
                         ) {
@@ -99,7 +96,7 @@ fun AboutBoxDialog(
                         // Link to HMDB.org
                         Button(
                             onClick = {
-                                openWebLink("https://hmdb.org")
+                                openWebLinkAction("https://hmdb.org")
                                 onDismiss()
                             },
                         ) {
@@ -109,9 +106,9 @@ fun AboutBoxDialog(
                         Spacer(modifier = Modifier.padding(8.dp))
 
                         // Version number
-                        Text("$kAppNameStr version $versionNumber build $buildNumber") // todo  + $AppVersionStr)
-                        if(installAtEpochSeconds> 0) {
-                            val it = Instant.fromEpochMilliseconds(installAtEpochSeconds)
+                        Text("$kAppNameStr version $versionStr build $buildNumberStr") // todo  + $AppVersionStr)
+                        if(installAtEpochMilli> 0) {
+                            val it = Instant.fromEpochMilliseconds(installAtEpochMilli)
                                 .toLocalDateTime(TimeZone.currentSystemDefault())
                             Text("Installed at: ${it.date} ${it.time.hour}:${it.time.minute}" )
                         }

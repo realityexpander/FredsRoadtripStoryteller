@@ -97,9 +97,9 @@ const val kForceClearAllSettingsAtLaunch = false
 const val kMaxReloadDistanceMiles = 2.0
 const val kMaxMarkerDetailsAgeSeconds = 60 * 60 * 24 * 30  // 30 days
 
-var versionNumber = "0.0.0" // todo get for iOS
-var buildNumber = "0" // todo get for iOS
-var installAtEpochSeconds = 0L // todo get for iOS?
+var versionStr = "0.0.0" // todo get for iOS
+var buildNumberStr = "0" // todo get for iOS
+var installAtEpochMilli = 0L // todo get for iOS?
 var debugLog = mutableListOf("Debug log: start time:" + Clock.System.now())
 
 sealed class BottomSheetScreen {
