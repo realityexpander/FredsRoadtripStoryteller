@@ -17,6 +17,7 @@ import debugLog
 import installAtEpochSeconds
 import versionNumber
 import java.time.Clock
+import java.time.Instant
 import java.time.ZoneId
 
 class App: Application() {
@@ -63,5 +64,10 @@ class App: Application() {
             packageManager.getPackageInfo(packageName, 0).longVersionCode.toString()
         installAtEpochSeconds =
             packageManager.getPackageInfo(packageName, 0).firstInstallTime
+
+        Logger.d("App.onCreate(): Starting app, " +
+                "version $versionNumber " +
+                "build $buildNumber, " +
+                "first install at ${Instant.ofEpochMilli(installAtEpochSeconds)}")
     }
 }
