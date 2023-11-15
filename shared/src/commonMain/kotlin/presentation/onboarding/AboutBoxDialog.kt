@@ -35,7 +35,7 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.encodeToString
-import openWebLinkAction
+import openWebUrlAction
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import sendEmailAction
@@ -84,7 +84,7 @@ fun AboutBoxDialog(
                         // Link to app website
                         Button(
                             onClick = {
-                                openWebLinkAction("https://github.com/realityexpander/FredsHistoryMarkers")
+                                openWebUrlAction("https://github.com/realityexpander/FredsHistoryMarkers")
                                 onDismiss()
                             },
                         ) {
@@ -95,7 +95,7 @@ fun AboutBoxDialog(
                         // Link to HMDB.org
                         Button(
                             onClick = {
-                                openWebLinkAction("https://hmdb.org")
+                                openWebUrlAction("https://hmdb.org")
                                 onDismiss()
                             },
                         ) {

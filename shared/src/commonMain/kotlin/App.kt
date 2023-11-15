@@ -81,6 +81,7 @@ import presentation.maps.MarkerIdStr
 import presentation.maps.RecentlySeenMarker
 import presentation.maps.RecentlySeenMarkersList
 import presentation.maps.toLocation
+import presentation.onboarding.AboutBoxDialog
 import presentation.speech.speakMarker
 import presentation.speech.speakRecentlySeenMarker
 import kotlin.random.Random
@@ -124,6 +125,8 @@ fun App(
         var bottomSheetActiveScreen by remember {
             mutableStateOf<BottomSheetScreen>(BottomSheetScreen.SettingsScreen)
         }
+        var isOnboardingDialogVisible by remember { mutableStateOf(false)}
+        var isAboutBoxDialogVisible by remember { mutableStateOf(false)}
 
         // Error Message state & value
         var errorMessageStr by remember {
@@ -240,30 +243,12 @@ fun App(
 
             // Update the markers with the latest data
             mutableStateListOf<Marker>().also { markersSnapShot ->
-
                 val startTime = Clock.System.now()
-                markersSnapShot.clear() // moved from below todo remove
+                markersSnapShot.clear()
                 markersSnapShot.addAll(markersRepo.markers())
-//                 markersSnapShot.addAll(loadMarkersResult.markerIdToMarker.values) // todo try it - maybe faster
-                Log.d("🎯 loadMarkers END UPDATE2, processing time = ${(Clock.System.now() - startTime)}\n")
-
-//                // Log.d("🎯 loadMarkers START update")
-//                coroutineScope.launch(Dispatchers.IO) {
-//                    delay(50) // debounce todo testing
-////                    delay(100) // debounce // todo remove soon - seems to not be necessary
-//
-//                    loadMarkersResult.markerIdToMarker.values.forEach { marker ->
-//                        //markersRepo.upsertMarkerBasicInfo(marker) // only basic info needs to be updated
-//                        markersRepo.marker(marker.id) ?:
-//                            markersRepo.addMarker(marker)
-//                    }
-//                    markersRepo.updateIsParseMarkersPageFinished(true) // ensures the markers are updated
-//
-//                    Log.d("🎯 loadMarkers END UPDATE, processing time = ${(Clock.System.now() - startTime)}\n")
-//                }
-
-//                markersSnapShot.clear() // moved up todo remove
-//                markersSnapShot.addAll(markersRepo.markers())
+                Log.d("🎯 loadMarkers END UPDATE2, " +
+                        "markersRepo.size=${markersRepo.markers().size}, " +
+                        "processing time = ${(Clock.System.now() - startTime)}")
             }
         }
         if (false) {
@@ -277,42 +262,46 @@ fun App(
             //}
         }
 
-        var finalMarkers by remember {
-            mutableStateOf(markersRepo.markers())
+        val finalMarkers = remember {
+            mutableStateListOf<Marker>().apply {
+                addAll(markersRepo.markers())
+            }
         }
         // Set finalMarkers after any update to the MarkersRepo
         LaunchedEffect(markersRepo.updateLoadMarkersResultFlow) {
             markersRepo.updateLoadMarkersResultFlow.collectLatest { loadMarkersResult ->
-                delay(250) // debounce - allow the loadMarkers to finish processing
-                println("🍉 PRE coroutineScope: ${coroutineScope.coroutineContext}")
 
-                // Update the final markers list with the updated marker data
-                val startTime = Clock.System.now()
-                //Log.d("🍉 START markersRepo.updateMarkersResultFlow.collectLatest: \n" +
-                //    "    ⎣ finalMarkers.size = ${finalMarkers.size},\n" +
-                //    "    ⎣ loadMarkersResult.size = ${loadMarkersResult.markerIdToMarker.size},\n"
-                //)
+                coroutineScope.launch(Dispatchers.IO) {
+                    delay(250) // debounce - allow the loadMarkers to finish processing // todo needed?
+                    println("🍉 PRE coroutineScope: ${this.coroutineContext}")
 
-                // Update the final markers list with the updated marker data
-                finalMarkers = loadMarkersResult.markerIdToMarker.values.toMutableStateList()
-                yield() // todo needed? remove soon?
-                loadMarkers.clear()
-                yield() // todo needed? remove soon?
-                loadMarkers.addAll(loadMarkersResult.markerIdToMarker.values)
-                yield() // todo needed? remove soon?
-                previousMarkers.clear()
-                yield() // todo needed? remove soon?
-                previousMarkers.addAll(loadMarkersResult.markerIdToMarker.values)
-                yield() // todo needed? remove soon?
+                    // Update the final markers list with the updated marker data
+                    val startTime = Clock.System.now()
+                    //Log.d("🍉 START markersRepo.updateMarkersResultFlow.collectLatest: \n" +
+                    //    "    ⎣ finalMarkers.size = ${finalMarkers.size},\n" +
+                    //    "    ⎣ loadMarkersResult.size = ${loadMarkersResult.markerIdToMarker.size},\n"
+                    //)
 
-                Log.d("🍉 END - markersRepo.updateMarkersResultFlow.collectLatest:\n" +
-                    "    ⎣ finalMarkers.size = ${finalMarkers.size}\n" +
-                    "    ⎣ time to update all markers = ${(Clock.System.now() - startTime)}\n"
-                )
+                    // Update the final markers list with the updated marker data
+//                    finalMarkers = loadMarkersResult.markerIdToMarker.values.toMutableStateList()
+                    finalMarkers.clear()
+                    finalMarkers.addAll(loadMarkersResult.markerIdToMarker.values)
+                    loadMarkers.clear()
+                    loadMarkers.addAll(loadMarkersResult.markerIdToMarker.values)
+                    previousMarkers.clear()
+                    previousMarkers.addAll(loadMarkersResult.markerIdToMarker.values)
+                    yield() // todo needed? remove soon?
 
-                userLocation = jiggleLocationToForceUiUpdate(userLocation)
-                shouldRedrawMapMarkers = true
-                yield() // todo needed? remove soon?
+                    Log.d(
+                        "🍉 END - markersRepo.updateMarkersResultFlow.collectLatest:\n" +
+                                "    ⎣ finalMarkers.size = ${finalMarkers.size}\n" +
+                                "    ⎣ time to update all markers = ${(Clock.System.now() - startTime)}\n"
+                    )
+
+                    userLocation = jiggleLocationToForceUiUpdate(userLocation)
+                    shouldRedrawMapMarkers = true
+                    yield() // todo needed? remove soon?
+                }
             }
         }
 
@@ -346,7 +335,7 @@ fun App(
                     Log.w(errorMessageStr.toString())
                     return@run userLocation // just return most recent location
                 }
-                errorMessageStr = null
+                errorMessageStr = null // clear any previous error message
             }
 
             // Save last known location & add any recently seen markers
@@ -360,7 +349,7 @@ fun App(
                     if(!isProcessingRecentlySeenList) { // guard against re-enter while processing the list
                         isProcessingRecentlySeenList = true
 
-                        //Log.d("👁️ 2.START - Collecting recently seen markers after location update..., finalMarkers.size=${finalMarkers.size}")
+                        Log.d("👁️ 2.START - Collecting recently seen markers after location update..., finalMarkers.size=${finalMarkers.size}")
                         coroutineScope.launch(Dispatchers.IO) {
                             addSeenMarkersToRecentlySeenList(
                                 markersRepo.markers(), // SSoT is the Repo
@@ -373,7 +362,7 @@ fun App(
                                                           updatedUiRecentlySeenMarkers ->
                                     // Update the UI with the updated markers
                                     coroutineScope.launch {
-                                        //val startTime = Clock.System.now()
+                                        val startTime = Clock.System.now()
                                         //Log.d("👁️ 2.1-START, onUpdatedIsSeenMarkers")
 
                                         recentlySeenMarkersSet.clear()
@@ -428,11 +417,11 @@ fun App(
                                         shouldRedrawMapMarkers = true
                                         isProcessingRecentlySeenList = false
 
-                                        // Log.d("👁️ 2.1-END, processing time = ${(Clock.System.now() - startTime)}")
+                                        Log.d("👁️ 2.1-END, processing time = ${(Clock.System.now() - startTime)}")
                                     }
                                 },
                                 onFinishedProcessRecentlySeenList = { startTime ->
-                                    //Log.d("👁️ 5.END With NO-CHANGES - onFinishedProcessRecentlySeenList, processing time = ${(Clock.System.now() - startTime)}")
+                                    Log.d("👁️ 5.END With NO-CHANGES - onFinishedProcessRecentlySeenList, processing time = ${(Clock.System.now() - startTime)}")
                                     isProcessingRecentlySeenList = false
                                 }
                             )
@@ -549,14 +538,15 @@ fun App(
                                         markersRepo
                                     )
 
-                                    finalMarkers = markersRepo.markers()
+//                                    finalMarkers = markersRepo.markers()
+                                    finalMarkers.clear()
+                                    finalMarkers.addAll(markersRepo.markers())
                                     shouldRedrawMapMarkers = true
                                     userLocation = jiggleLocationToForceUiUpdate(userLocation)
                                 }
                             },
                         )
                     }
-
                     is BottomSheetScreen.MarkerDetailsScreen -> {
                         // Use id string (coming from map marker in google maps)
                         // or marker id (coming from item in marker details screen)
@@ -633,13 +623,17 @@ fun App(
             drawerScrimColor = Color.Black.copy(alpha = 0.5f),
             drawerGesturesEnabled = !bottomSheetScaffoldState.drawerState.isClosed,
             drawerContent = {
-                AppDrawerContent(
-                    bottomSheetScaffoldState,
-                    markersRepo.markersResult(),
-                    onSetBottomSheetActiveScreen = { screen ->
-                        bottomSheetActiveScreen = screen
-                    },
-                )
+                if(bottomSheetScaffoldState.drawerState.isOpen) {
+                    AppDrawerContent(
+                        bottomSheetScaffoldState,
+                        markersRepo.markers(), // not reactive?
+                        onSetBottomSheetActiveScreen = { screen ->
+                            bottomSheetActiveScreen = screen
+                        },
+                        onShowAboutBox = { isAboutBoxDialogVisible = true },
+                        onShowOnboarding = { isOnboardingDialogVisible = true },
+                    )
+                }
             }
         ) {
             var isRecentlySeenMarkersPanelVisible by remember {
@@ -785,7 +779,7 @@ fun App(
                             isParseMarkersPageFinished = loadMarkersResult.isParseMarkersPageFinished,
                             initialUserLocation = appSettings.lastKnownUserLocation,
                             userLocation = userLocation,
-                            markers = markersRepo.markers(),
+                            markers = markersRepo.markers(),  // finalMarkers
                             mapBounds = null,  // leave for future use
                             shouldRedrawMarkers = shouldRedrawMapMarkers, // redraw the map & markers
                             onDidRedrawMarkers = { // map & markers have been redrawn
@@ -857,7 +851,6 @@ fun App(
                         isTextToSpeechCurrentlySpeaking = isTextToSpeechCurrentlySpeaking,
                         onClickStartSpeakingMarker = { recentlySeenMarker, shouldSpeakDetails: Boolean ->
                             stopTextToSpeech()
-
                             coroutineScope.launch {
                                 delay(50) // allow UI to update
                                 currentSpeakingMarker =
@@ -883,6 +876,24 @@ fun App(
                         markersRepo = markersRepo,
                     )
                 }
+            }
+
+            // Show Onboarding
+            if (isOnboardingDialogVisible) {
+                OnboardingDialog(
+                    onDismiss = {
+                        isOnboardingDialogVisible = false
+                    }
+                )
+            }
+
+            // Show AboutBox
+            if (isAboutBoxDialogVisible) {
+                AboutBoxDialog(
+                    onDismiss = {
+                        isAboutBoxDialogVisible = false
+                    }
+                )
             }
         }
     }
@@ -949,6 +960,7 @@ private fun addSeenMarkersToRecentlySeenList(
         ) -> Unit = { _, _, _ -> },
     onFinishedProcessRecentlySeenList: (Instant) -> Unit = {},
 ) {
+
     val updatedIsSeenMarkers: SnapshotStateList<Marker> =
         listOf<Marker>().toMutableStateList() // start with empty list
     var didUpdateMarkers = false

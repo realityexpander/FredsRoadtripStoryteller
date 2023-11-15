@@ -2,14 +2,14 @@ import android.speech.tts.TextToSpeech
 import android.util.Log
 
 actual fun speakTextToSpeech(text: String) {
-    tts ?: Log.w("ttsSpeak", "tts is null")
+    textToSpeech ?: Log.w("ttsSpeak", "tts is null")
 
-    tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "")
+    textToSpeech?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "")
 }
 actual fun isTextToSpeechSpeaking(): Boolean {
-    return tts?.isSpeaking ?: false
+    return textToSpeech?.isSpeaking ?: false
 }
 
 actual fun stopTextToSpeech() {
-    tts?.stop()
+    textToSpeech?.stop()
 }

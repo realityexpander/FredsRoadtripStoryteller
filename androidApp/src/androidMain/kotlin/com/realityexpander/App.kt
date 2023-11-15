@@ -15,6 +15,9 @@ import co.touchlab.kermit.Severity
 import co.touchlab.kermit.crashlytics.CrashlyticsLogWriter
 import debugLog
 import installAtEpochMilli
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import versionStr
 import java.time.Clock
 import java.time.Instant
@@ -28,16 +31,24 @@ class App: Application() {
         super.onCreate()
 
         // Setup debugLog for emailing to developer
-        Logger.addLogWriter(object: LogWriter() {
-            override fun log(severity: Severity, message: String, tag: String, throwable: Throwable?) {
-                    debugLog.add(
-                        "${Clock.system(ZoneId.systemDefault()).instant()}: " +
-                        "$severity " +
-                        "$tag: " +
-                        message
-                    )
-                    if(debugLog.size > 10000) {
-                        debugLog.removeAt(0)
+        Logger.addLogWriter(
+            object: LogWriter() {
+                override fun log(
+                    severity: Severity,
+                    message: String,
+                    tag: String,
+                    throwable: Throwable?
+                ) {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        debugLog.add(
+                            "${Clock.system(ZoneId.systemDefault()).instant()}: " +
+                                    "$severity " +
+                                    "$tag: " +
+                                    message
+                        )
+                        if (debugLog.size > 5000) { // max line count, must keep under 1mb for Binder limitations
+                            debugLog.removeAt(0)
+                        }
                     }
                 }
             }

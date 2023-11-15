@@ -4,7 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import data.appSettings
-import tts
+import textToSpeech
 
 // Accepts intents for Actions from the GPS tracking Foreground-Service Notification
 class NotificationActionBroadcastReceiver : BroadcastReceiver() {
@@ -15,10 +15,10 @@ class NotificationActionBroadcastReceiver : BroadcastReceiver() {
         intent ?: return
 
         if(intent.action == GPS_FOREGROUND_SERVICE_NOTIFICATION_StopSpeakingTextToSpeech_ACTION) {
-            tts?.stop()
+            textToSpeech?.stop()
         }
         if(intent.action == GPS_FOREGROUND_SERVICE_NOTIFICATION_MuteAllTextToSpeech_ACTION) {
-            tts?.stop()
+            textToSpeech?.stop()
             appSettings.isSpeakWhenUnseenMarkerFoundEnabled = false
         }
     }

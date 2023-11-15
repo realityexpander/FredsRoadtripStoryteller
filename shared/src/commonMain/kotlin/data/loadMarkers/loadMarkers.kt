@@ -230,7 +230,7 @@ fun loadMarkers(
 
         // 6 PROCESS COMPLETE
         Log.d("📍 Step 6 - Finished parsing & loading all pages, " +
-                "total markers= ${finalLoadMarkersResultState.markerIdToMarker.size}, " +
+//                "total markers= ${finalLoadMarkersResultState.markerIdToMarker.size}, " +
                 "processing time= ${Clock.System.now() - startTime}"
         )
         markersLoadingState = LoadingState.Finished

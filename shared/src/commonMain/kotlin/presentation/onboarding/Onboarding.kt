@@ -50,8 +50,8 @@ fun OnboardingDialog(
     val pages = listOf(
         "onboarding_page1.png",
         "onboarding_page2.png",
-        "onboarding_page3.png",
         "onboarding_page4.png",
+        "onboarding_page3.png",
     )
 
     val pagerState = rememberPagerState(

@@ -4,7 +4,6 @@ import GPSLocationService
 import MainView
 import android.Manifest
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import androidx.activity.compose.setContent
@@ -17,8 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import appContext
-import co.touchlab.kermit.LogWriter
-import co.touchlab.kermit.Severity
 import com.google.android.gms.maps.MapsInitializer
 import com.google.firebase.FirebaseApp
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -33,7 +30,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import presentation.SplashScreenForPermissions
 import presentation.app.AppTheme
-import tts
+import textToSpeech
 import java.util.Locale
 import co.touchlab.kermit.Logger as Log
 
@@ -48,7 +45,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         super.onCreate(savedInstanceState)
 
         val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
-         tts = TextToSpeech(this, this)
+         textToSpeech = TextToSpeech(this, this)
 
         // https://proandroiddev.com/implementing-core-splashscreen-api-e62f0e690f74
         installSplashScreen().apply {
@@ -131,7 +128,12 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                     startActivity(intent)
                 }
                 if(intent.action == Intent.ACTION_SEND) { // send an email
-                    startActivity(Intent.createChooser(intent, "Send Email"))
+                    try {
+                        startActivity(Intent.createChooser(intent, "Send Email"))
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        Log.e("MainActivity: onCreate: startActivity(Intent.createChooser(intent, \"Send Email\")) failed: $e")
+                    }
                 }
             }
         }
@@ -150,11 +152,11 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
-            val result = tts!!.setLanguage(Locale.US)
+            val result = textToSpeech!!.setLanguage(Locale.US)
 
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 Log.e("TTS: The Language not supported!, result= $result")
-                tts = null
+                textToSpeech = null
             } else {
                 Log.d("TTS: Initialization success!")
             }
@@ -162,9 +164,9 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     }
 
     override fun onDestroy() {
-        if (tts != null) {
-            tts!!.stop()
-            tts!!.shutdown()
+        if (textToSpeech != null) {
+            textToSpeech!!.stop()
+            textToSpeech!!.shutdown()
         }
         stopBackgroundUpdates()
 

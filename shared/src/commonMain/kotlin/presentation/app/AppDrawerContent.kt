@@ -1,10 +1,10 @@
 package presentation.app
 
 import BottomSheetScreen
-import OnboardingDialog
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -12,8 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.BottomSheetScaffoldState
 import androidx.compose.material.Button
 import androidx.compose.material.ExperimentalMaterialApi
@@ -27,11 +27,11 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontStyle
@@ -39,24 +39,29 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import data.loadMarkers.LoadMarkersResult
 import kAppNameStr
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
-import presentation.onboarding.AboutBoxDialog
+import presentation.maps.Marker
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun AppDrawerContent(
     bottomSheetScaffoldState: BottomSheetScaffoldState,
-    loadMarkersResult: LoadMarkersResult,
+    finalMarkers: List<Marker>,
     onSetBottomSheetActiveScreen: (BottomSheetScreen) -> Unit = {},
+    onShowOnboarding: () -> Unit = {},
+    onShowAboutBox: () -> Unit = {},
 ) {
     val coroutineScope = rememberCoroutineScope()
-    var isOnboardingDialogVisible by remember { mutableStateOf(false)}
-    var isAboutBoxDialogVisible by remember { mutableStateOf(false)}
 
-    // Header
+    val entries: SnapshotStateList<Marker> = remember { mutableStateListOf() }
+    LaunchedEffect(finalMarkers) {
+        // Log.d("📌📌📌AppDrawerContent: LaunchedEffect(finalMarkers) calculating entries...")
+        entries.clear()
+        entries.addAll(finalMarkers.reversed())
+    }
+
     Row(
         Modifier
             .fillMaxWidth()
@@ -92,7 +97,7 @@ fun AppDrawerContent(
     Button(
         onClick = {
             coroutineScope.launch {
-                isOnboardingDialogVisible = true
+                onShowOnboarding()
                 yield()
                 bottomSheetScaffoldState.drawerState.close()
             }
@@ -112,19 +117,13 @@ fun AppDrawerContent(
         )
     }
     Spacer(modifier = Modifier.height(16.dp))
-    if(isOnboardingDialogVisible) {
-        OnboardingDialog(
-            onDismiss = {
-                isOnboardingDialogVisible = false
-            }
-        )
-    }
+
 
     // Show about box
     Button(
         onClick = {
             coroutineScope.launch {
-                isAboutBoxDialogVisible = true
+                onShowAboutBox()
                 yield()
                 bottomSheetScaffoldState.drawerState.close()
             }
@@ -144,13 +143,6 @@ fun AppDrawerContent(
         )
     }
     Spacer(modifier = Modifier.height(16.dp))
-    if(isAboutBoxDialogVisible) {
-        AboutBoxDialog(
-            onDismiss = {
-                isAboutBoxDialogVisible = false
-            }
-        )
-    }
 
     // Header for list of loaded markers
     Row(
@@ -184,7 +176,7 @@ fun AppDrawerContent(
         Text(
             "ID",
             modifier = Modifier
-                .padding(start=0.dp, end = 8.dp)
+                .padding(start = 0.dp, end = 8.dp)
                 .weight(1.2f)
                 .offset((-4).dp, 0.dp),
             fontStyle = FontStyle.Italic,
@@ -194,7 +186,7 @@ fun AppDrawerContent(
         )
     }
 
-    if(loadMarkersResult.markerIdToMarker.isEmpty()) {
+    if (finalMarkers.isEmpty()) {
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             "No markers loaded yet, drive around to load some!",
@@ -204,95 +196,91 @@ fun AppDrawerContent(
         )
     }
 
-    // List all loaded markers
-    Column(
+    LazyColumn(
         modifier = Modifier
-            .fillMaxHeight()
-            .verticalScroll(
-                state = rememberScrollState(),
-                enabled = true,
-            ),
-
+            .fillMaxHeight(),
+        state = rememberLazyListState(),
+        userScrollEnabled = true,
     ) {
-        loadMarkersResult.markerIdToMarker
-            .entries
-            .reversed()
-            .forEach { marker ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                        .clickable {
-                            coroutineScope.launch {
-                                println("Clicked on marker: ${marker.value.id}")
-                                onSetBottomSheetActiveScreen(
-                                    BottomSheetScreen.MarkerDetailsScreen(marker.value)
-                                )
-                                bottomSheetScaffoldState.drawerState.close()
-                                bottomSheetScaffoldState.bottomSheetState.expand()
-                            }
-                        },
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = marker.value.title,
-                        modifier = Modifier.weight(2.5f),
-                        softWrap = false,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        fontStyle = FontStyle.Normal,
-                        fontSize = MaterialTheme.typography.body1.fontSize,
-                    )
+        // Header
 
-                    // isSeen
-                    if(marker.value.isSeen) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Seen",
-                            modifier = Modifier
-                                .weight(.3f)
-                                .height(16.dp)
-                        )
-                    }
-                    else {
-                        // "leave blank"
-                        Spacer(
-                            modifier = Modifier
-                                .padding(end = 2.dp)
-                                .weight(.3f)
-                                .height(16.dp)
-                        )
-                    }
+        items(entries.size) { markerIdx ->
+            val marker = entries[markerIdx]
 
-                    // isSpoken
-                    if(marker.value.isSpoken) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Spoken",
-                            modifier = Modifier
-                                .weight(.3f)
-                                .height(16.dp)
-                        )
-                    }
-                    else {
-                        // "leave blank"
-                        Spacer(
-                            modifier = Modifier
-                                .padding(end = 2.dp)
-                                .weight(.3f)
-                                .height(16.dp)
-                        )
-                    }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .animateItemPlacement(animationSpec = tween(250))
+                    .clickable {
+                        coroutineScope.launch {
+                            println("Clicked on marker: ${marker.id}")
+                            bottomSheetScaffoldState.bottomSheetState.expand()
+                            onSetBottomSheetActiveScreen(
+                                BottomSheetScreen.MarkerDetailsScreen(id=marker.id)
+                            )
+                            bottomSheetScaffoldState.drawerState.close()
+                        }
+                    },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = marker.title,
+                    modifier = Modifier.weight(2.5f),
+                    softWrap = false,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontStyle = FontStyle.Normal,
+                    fontSize = MaterialTheme.typography.body1.fontSize,
+                )
 
-                    Text(
-                        text = marker.key,
+                // isSeen
+                if (marker.isSeen) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Seen",
                         modifier = Modifier
-                            .padding(end = 8.dp)
-                            .weight(1.2f),
-                        fontStyle = FontStyle.Normal,
-                        fontSize = MaterialTheme.typography.body1.fontSize,
+                            .weight(.3f)
+                            .height(16.dp)
+                    )
+                } else {
+                    // "leave blank"
+                    Spacer(
+                        modifier = Modifier
+                            .padding(end = 2.dp)
+                            .weight(.3f)
+                            .height(16.dp)
                     )
                 }
+
+                // isSpoken
+                if (marker.isSpoken) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Spoken",
+                        modifier = Modifier
+                            .weight(.3f)
+                            .height(16.dp)
+                    )
+                } else {
+                    // "leave blank"
+                    Spacer(
+                        modifier = Modifier
+                            .padding(end = 2.dp)
+                            .weight(.3f)
+                            .height(16.dp)
+                    )
+                }
+
+                Text(
+                    text = marker.id,
+                    modifier = Modifier
+                        .padding(end = 8.dp)
+                        .weight(1.2f),
+                    fontStyle = FontStyle.Normal,
+                    fontSize = MaterialTheme.typography.body1.fontSize,
+                )
             }
+        }
     }
 }
