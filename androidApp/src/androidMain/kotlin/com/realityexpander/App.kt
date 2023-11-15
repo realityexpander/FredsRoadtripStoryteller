@@ -46,7 +46,7 @@ class App: Application() {
                             "${Clock.system(ZoneId.systemDefault()).instant()}: " +
                                     "$severity $tag: " + message
                         )
-                        if (debugLog.size > 1000) { // max line count, must keep under 1mb for Binder limitations
+                        if (debugLog.size > 1500) { // max line count, must keep under 1mb for Binder limitations
                             debugLog.removeAt(0)
                         }
                     }

@@ -19,6 +19,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -31,6 +32,10 @@ import debugLog
 import installAtEpochMilli
 import json
 import kAppNameStr
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -47,6 +52,8 @@ import co.touchlab.kermit.Logger as Log
 fun AboutBoxDialog(
     onDismiss: () -> Unit = {}
 ) {
+    val coroutineScope = rememberCoroutineScope()
+
     Dialog(
         properties = DialogProperties(
             dismissOnBackPress = true,
@@ -116,8 +123,10 @@ fun AboutBoxDialog(
                         Button(
                             onClick = {
                                 onDismiss()
-                                Log.d("AboutBoxDialog: Send debug log, debugLog.size=${debugLog.size}, $kAppNameStr version $versionStr build $buildNumberStr")
-                                sendEmailAction(body=json.encodeToString(debugLog))
+                                coroutineScope.launch {
+                                    debugLog.add("AboutBoxDialog: Send debug log, debugLog.size=${debugLog.size}, $kAppNameStr version $versionStr build $buildNumberStr")
+                                    sendEmailAction(body = json.encodeToString(debugLog))
+                                }
                             },
                         ) {
                             Text("Send debug log")
