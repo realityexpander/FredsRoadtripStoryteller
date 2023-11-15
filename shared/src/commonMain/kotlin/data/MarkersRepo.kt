@@ -32,7 +32,7 @@ open class MarkersRepo(
 
         // debounce the update to improve performance
         ioCoroutineScope.launch {
-            delay(50) // debounce
+            delay(150) // debounce // 50 is too fast, 150 is good
 
             appSettings.loadMarkersResult = newLoadMarkersResult // save to persistent storage
             updateLoadMarkersResultFlow.emit(newLoadMarkersResult)
