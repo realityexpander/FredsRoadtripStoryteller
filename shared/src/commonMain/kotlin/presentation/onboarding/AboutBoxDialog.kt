@@ -40,6 +40,7 @@ import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import sendEmailAction
 import versionStr
+import co.touchlab.kermit.Logger as Log
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
@@ -115,6 +116,7 @@ fun AboutBoxDialog(
                         Button(
                             onClick = {
                                 onDismiss()
+                                Log.d("AboutBoxDialog: Send debug log, debugLog.size=${debugLog.size}, $kAppNameStr version $versionStr build $buildNumberStr")
                                 sendEmailAction(body=json.encodeToString(debugLog))
                             },
                         ) {

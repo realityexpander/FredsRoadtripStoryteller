@@ -39,12 +39,16 @@ class App: Application() {
                     tag: String,
                     throwable: Throwable?
                 ) {
-                    debugLog.add(
-                        "${Clock.system(ZoneId.systemDefault()).instant()}: " +
-                                "$severity $tag: " + message
-                    )
-                    if (debugLog.size > 5000) { // max line count, must keep under 1mb for Binder limitations
-                        debugLog.removeAt(0)
+                    CoroutineScope(Dispatchers.Main).launch {
+//                            _debugLogFlow.emit("debug string") // try instead of debugLog.add()
+
+                        debugLog.add(
+                            "${Clock.system(ZoneId.systemDefault()).instant()}: " +
+                                    "$severity $tag: " + message
+                        )
+                        if (debugLog.size > 1000) { // max line count, must keep under 1mb for Binder limitations
+                            debugLog.removeAt(0)
+                        }
                     }
                 }
             }

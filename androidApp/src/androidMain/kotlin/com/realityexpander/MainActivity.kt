@@ -140,11 +140,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 if(intent.action == "Navigation") { // open navigation
                     val lat = intent.getDoubleExtra("lat", 0.0)
                     val lng = intent.getDoubleExtra("lng", 0.0)
-                    val markerTitle = intent.getStringExtra("markerTitle") ?: "Marker"
-//                    val uri = Uri.parse("google.navigation:q=$lat,$lng")
-//                    val mapIntent = Intent(Intent.ACTION_VIEW, uri)
-//                    mapIntent.setPackage("com.google.android.apps.maps")
-//                    startActivity(mapIntent)
+                    val markerTitle = intent.getStringExtra("markerTitle") ?: ""
                     startNavigation(lat, lng, markerTitle)
                 }
             }
