@@ -505,8 +505,8 @@ actual fun GoogleMaps(
                     }
                     Box(
                         modifier = Modifier
-                            .requiredHeight(50.dp)
-                            .requiredWidth(50.dp)
+                            .requiredHeight(40.dp)
+                            .requiredWidth(40.dp)
                     ) {
                         Text(
                             text = cluster.items.size.toString(),
