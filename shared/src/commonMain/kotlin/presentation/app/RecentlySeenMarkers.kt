@@ -24,6 +24,8 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Directions
+import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.VolumeMute
 import androidx.compose.material.icons.filled.VolumeUp
@@ -44,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import data.MarkersRepo
 import data.appSettings
 import kotlinx.coroutines.launch
+import openNavigationAction
 import presentation.maps.MarkerIdStr
 import presentation.maps.RecentlySeenMarker
 import presentation.uiComponents.lightenBy
@@ -127,6 +130,14 @@ fun RecentlySeenMarkers(
                             fontWeight = FontWeight.Medium,
                         )
                     }
+
+                    NavigationButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(.5f),
+                        markersRepo,
+                        speakingMarker
+                    )
 
                     if (isTextToSpeechCurrentlySpeaking) {
                         IconButton(
@@ -259,6 +270,14 @@ fun RecentlySeenMarkers(
                             .fillMaxWidth()
                             .weight(.5f)
                     ) {
+                        NavigationButton(markersRepo = markersRepo, recentMarker = recentMarker)
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(.5f)
+                    ) {
                         if (markersRepo.marker(recentMarker.id)?.isSpoken == true) {
                             IconButton(
                                 onClick = {
@@ -290,5 +309,32 @@ fun RecentlySeenMarkers(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun NavigationButton(
+    modifier: Modifier = Modifier,
+    markersRepo: MarkersRepo,
+    recentMarker: RecentlySeenMarker
+) {
+    IconButton(
+        modifier = modifier,
+        onClick = {
+            // Lookup the marker in the repo and open navigation to it
+            markersRepo.marker(recentMarker.id)?.let { marker ->
+                openNavigationAction(
+                    lat = marker.position.latitude,
+                    lng = marker.position.longitude,
+                    markerTitle = marker.title
+                )
+            }
+        }
+    ) {
+        Icon(
+            imageVector = Icons.Default.Navigation,
+            contentDescription = "Navigate to Marker",
+            tint = MaterialTheme.colors.onBackground
+        )
     }
 }

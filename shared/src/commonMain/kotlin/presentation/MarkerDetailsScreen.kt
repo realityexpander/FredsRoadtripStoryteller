@@ -38,6 +38,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material.icons.filled.ZoomIn
@@ -70,6 +71,7 @@ import io.kamel.image.KamelImage
 import io.kamel.image.KamelImageBox
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch
+import openNavigationAction
 import presentation.maps.Marker
 import presentation.uiComponents.PreviewPlaceholder
 import stopTextToSpeech
@@ -440,7 +442,7 @@ fun MarkerDetailsScreen(
                     )
                 }
 
-                // ID, Locate on Map, Speak
+                // ID, Navigate to Marker, Locate on Map, Speak
                 Row(
                     modifier = Modifier.heightIn(0.dp, 36.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -455,6 +457,30 @@ fun MarkerDetailsScreen(
                         fontSize = MaterialTheme.typography.body1.fontSize,
                         fontWeight = FontWeight.Bold,
                     )
+
+                    // Navigate to Marker Button
+                    IconButton(
+                        modifier = Modifier.weight(.5f),
+                        onClick = {
+                            // close the bottom sheet
+                            coroutineScope.launch {
+                                bottomSheetScaffoldState.bottomSheetState.collapse()
+                                onLocateMarkerOnMap(markerLoadingState.data)
+                                openNavigationAction(
+                                    markerLoadingState.data.position.latitude,
+                                    markerLoadingState.data.position.longitude,
+                                    markerLoadingState.data.title
+                                )
+                            }
+                        },
+                        enabled = true,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Navigation,
+                            contentDescription = "Navigate to Marker",
+                            tint = MaterialTheme.colors.onBackground,
+                        )
+                    }
 
                     // Locate on Map Button
                     IconButton(

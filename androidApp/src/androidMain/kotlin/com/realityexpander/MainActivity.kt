@@ -3,7 +3,9 @@ package com.realityexpander
 import GPSLocationService
 import MainView
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import androidx.activity.compose.setContent
@@ -135,6 +137,16 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                         Log.e("MainActivity: onCreate: startActivity(Intent.createChooser(intent, \"Send Email\")) failed: $e")
                     }
                 }
+                if(intent.action == "Navigation") { // open navigation
+                    val lat = intent.getDoubleExtra("lat", 0.0)
+                    val lng = intent.getDoubleExtra("lng", 0.0)
+                    val markerTitle = intent.getStringExtra("markerTitle") ?: "Marker"
+//                    val uri = Uri.parse("google.navigation:q=$lat,$lng")
+//                    val mapIntent = Intent(Intent.ACTION_VIEW, uri)
+//                    mapIntent.setPackage("com.google.android.apps.maps")
+//                    startActivity(mapIntent)
+                    startNavigation(lat, lng, markerTitle)
+                }
             }
         }
 
@@ -224,6 +236,34 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION,
             ))
+        }
+    }
+
+    private fun startNavigation(
+        latitude: Double,
+        longitude: Double,
+        markerTitle: String,
+    ) {
+        val uriWaze = Uri.parse("https://waze.com/ul?ll=$latitude,$longitude&navigate=yes")
+        val intentWaze = Intent(Intent.ACTION_VIEW, uriWaze)
+        intentWaze.setPackage("com.waze")
+
+        val uriGoogle = "google.navigation:q=$latitude,$longitude"
+        val intentGoogleNav = Intent(Intent.ACTION_VIEW, Uri.parse(uriGoogle))
+        intentGoogleNav.setPackage("com.google.android.apps.maps")
+
+        val title = "Choose nav for marker:\n$markerTitle"
+        val chooserIntent = Intent.createChooser(intentGoogleNav, title)
+        val arr = arrayOfNulls<Intent>(1)
+        arr[0] = intentWaze
+        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, arr)
+
+        try {
+            startActivity(chooserIntent)
+        } catch (e: ActivityNotFoundException) {
+            // If Waze is not installed, open it in Google Play:
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.waze"))
+            startActivity(intent)
         }
     }
 }
