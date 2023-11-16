@@ -35,7 +35,7 @@ class MarkersRepoTest {
 
         // Assert
         assertEquals(markerRepo.marker(marker.id), marker)
-        assertEquals(markerRepo.markersResult().markerIdToMarker["M1"], marker)
+        assertEquals(markerRepo.markersResult().markerIdToMarkerMap["M1"], marker)
     }
 
     @Test
@@ -49,7 +49,7 @@ class MarkersRepoTest {
 
         // Assert
         assertEquals(markerRepo.marker(marker.id), null)
-        assertEquals(markerRepo.markersResult().markerIdToMarker["M1"], null)
+        assertEquals(markerRepo.markersResult().markerIdToMarkerMap["M1"], null)
     }
 
     @Test
@@ -64,7 +64,7 @@ class MarkersRepoTest {
 
         // Assert
         assertEquals(markerRepo.marker(marker.id), updatedMarker)
-        assertEquals(markerRepo.markersResult().markerIdToMarker["M1"], updatedMarker)
+        assertEquals(markerRepo.markersResult().markerIdToMarkerMap["M1"], updatedMarker)
     }
 
     @Test
@@ -80,8 +80,8 @@ class MarkersRepoTest {
 
         // Assert
         assertEquals(markerRepo.marker(marker.id), null)
-        assertEquals(markerRepo.markersResult().markerIdToMarker["M1"], null)
-        assertEquals(markerRepo.markersResult().markerIdToMarker["M2"], null)
+        assertEquals(markerRepo.markersResult().markerIdToMarkerMap["M1"], null)
+        assertEquals(markerRepo.markersResult().markerIdToMarkerMap["M2"], null)
     }
 
     @Test
@@ -97,7 +97,7 @@ class MarkersRepoTest {
 
         // Assert
         assertEquals(markers, listOf(marker1, marker2))
-        assertEquals(markerRepo.markersResult().markerIdToMarker.size, 2)
+        assertEquals(markerRepo.markersResult().markerIdToMarkerMap.size, 2)
     }
     
     @Test
@@ -154,7 +154,7 @@ class MarkersRepoTest {
 
         // Assert
         assertEquals(markerRepo.marker(marker.id), updatedMarker)
-        assertEquals(markerRepo.markersResult().markerIdToMarker["M1"], updatedMarker)
+        assertEquals(markerRepo.markersResult().markerIdToMarkerMap["M1"], updatedMarker)
     }
 
     @Test
@@ -188,7 +188,7 @@ class MarkersRepoTest {
 
         // Assert
         assertEquals(markerRepo.marker(marker.id), updatedDetailsMarker)
-        assertEquals(markerRepo.markersResult().markerIdToMarker["M1"], updatedDetailsMarker)
+        assertEquals(markerRepo.markersResult().markerIdToMarkerMap["M1"], updatedDetailsMarker)
     }
 
     @Test
@@ -224,7 +224,7 @@ class MarkersRepoTest {
 
         // Assert
         assertEquals(markerRepo.marker(marker.id), updatedMarker)
-        assertEquals(markerRepo.markersResult().markerIdToMarker[marker.id], updatedMarker)
+        assertEquals(markerRepo.markersResult().markerIdToMarkerMap[marker.id], updatedMarker)
     }
 
     @Test
@@ -259,7 +259,7 @@ class MarkersRepoTest {
 
         // Assert
         assertEquals(markerRepo.marker(marker.id), updatedMarker)
-        assertEquals(markerRepo.markersResult().markerIdToMarker[marker.id], updatedMarker)
+        assertEquals(markerRepo.markersResult().markerIdToMarkerMap[marker.id], updatedMarker)
     }
 
     @Test
@@ -305,7 +305,7 @@ class MarkersRepoTest {
 
         // Assert
         assertEquals(markerRepo.marker(marker.id), updatedMarker)
-        assertEquals(markerRepo.markersResult().markerIdToMarker[marker.id], updatedMarker)
+        assertEquals(markerRepo.markersResult().markerIdToMarkerMap[marker.id], updatedMarker)
     }
 
     @Test
@@ -338,7 +338,7 @@ class MarkersRepoTest {
 
         // Assert
         assertEquals(markerRepo.marker(marker.id), updatedMarker)
-        assertEquals(markerRepo.markersResult().markerIdToMarker[marker.id], updatedMarker)
+        assertEquals(markerRepo.markersResult().markerIdToMarkerMap[marker.id], updatedMarker)
     }
 
     @Test
@@ -371,7 +371,7 @@ class MarkersRepoTest {
 
         // Assert
         assertEquals(markerRepo.marker(marker.id), updatedMarker)
-        assertEquals(markerRepo.markersResult().markerIdToMarker[marker.id], updatedMarker)
+        assertEquals(markerRepo.markersResult().markerIdToMarkerMap[marker.id], updatedMarker)
     }
 
     @Test
@@ -404,6 +404,6 @@ class MarkersRepoTest {
 
         // Assert
         assertEquals(markerRepo.marker(marker.id), updatedMarker)
-        assertEquals(markerRepo.markersResult().markerIdToMarker[marker.id], updatedMarker)
+        assertEquals(markerRepo.markersResult().markerIdToMarkerMap[marker.id], updatedMarker)
     }
 }

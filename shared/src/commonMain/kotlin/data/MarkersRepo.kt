@@ -1,14 +1,15 @@
 package data
 
 import data.loadMarkers.LoadMarkersResult
-import data.util.LoadingState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.internal.SynchronizedObject
+import kotlinx.coroutines.internal.synchronized
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import presentation.maps.Marker
 import presentation.maps.MarkerIdStr
 import co.touchlab.kermit.Logger as Log
@@ -18,7 +19,9 @@ open class MarkersRepo(
     val updateLoadMarkersResultFlow: MutableStateFlow<LoadMarkersResult> = MutableStateFlow(appSettings.loadMarkersResult),
 ) {
     private var inMemoryLoadMarkersResult = appSettings.loadMarkersResult
-    val ioCoroutineScope = CoroutineScope(Dispatchers.IO)
+    private val ioCoroutineScope = CoroutineScope(Dispatchers.IO)
+    @OptIn(InternalCoroutinesApi::class)
+    private val synchronizedObject = SynchronizedObject()
 
     init {
        Log.d { "MarkersRepo: init, instance=$this" }
@@ -26,14 +29,19 @@ open class MarkersRepo(
     }
 
     // Completely replaces the current MarkersResult with a new value
+    @OptIn(InternalCoroutinesApi::class)
     private fun updateLoadMarkersResult(newLoadMarkersResult: LoadMarkersResult) {
         //Log.i("MarkersRepo: updateMarkersResult: newMarkersResult.size=${newMarkersResult.markerIdToMarker.size}")
-        inMemoryLoadMarkersResult = newLoadMarkersResult
+        synchronized(synchronizedObject) {
+            inMemoryLoadMarkersResult = newLoadMarkersResult
+        }
+
 
         // debounce the update to improve performance
         ioCoroutineScope.launch {
             delay(150) // debounce // 50 is too fast, 150 is good
 
+            Log.d("🗄️ MarkersRepo: updateLoadMarkersResult: newLoadMarkersResult.size=${newLoadMarkersResult.markerIdToMarkerMap.size}")
             appSettings.loadMarkersResult = newLoadMarkersResult // save to persistent storage
             updateLoadMarkersResultFlow.emit(newLoadMarkersResult)
         }
@@ -49,8 +57,8 @@ open class MarkersRepo(
 
         updateLoadMarkersResult(
             inMemoryLoadMarkersResult.copy(
-                markerIdToMarker =
-                    inMemoryLoadMarkersResult.markerIdToMarker + (marker.id to marker)
+                markerIdToMarkerMap =
+                    inMemoryLoadMarkersResult.markerIdToMarkerMap + (marker.id to marker)
             )
         )
 
@@ -65,8 +73,8 @@ open class MarkersRepo(
 
         updateLoadMarkersResult(
             inMemoryLoadMarkersResult.copy(
-                markerIdToMarker =
-                    inMemoryLoadMarkersResult.markerIdToMarker - id
+                markerIdToMarkerMap =
+                    inMemoryLoadMarkersResult.markerIdToMarkerMap - id
                 )
         )
 
@@ -74,17 +82,17 @@ open class MarkersRepo(
     }
 
     fun marker(id: MarkerIdStr): Marker? {
-        return inMemoryLoadMarkersResult.markerIdToMarker[id] // todo use inMemoryMarkersResult for all other methods
+        return inMemoryLoadMarkersResult.markerIdToMarkerMap[id] // todo use inMemoryMarkersResult for all other methods
     }
 
     fun markers(): List<Marker> {
-        return inMemoryLoadMarkersResult.markerIdToMarker.values.toList()
+        return inMemoryLoadMarkersResult.markerIdToMarkerMap.values.toList()
     }
 
     fun clearAllMarkers(): LoadMarkersResult {
         // Clearing markers is immediate.  No need to debounce.
         inMemoryLoadMarkersResult = inMemoryLoadMarkersResult.copy(
-            markerIdToMarker = emptyMap(),
+            markerIdToMarkerMap = emptyMap(),
 
             // todo needed??
 //            isParseMarkersPageFinished = false,
@@ -103,8 +111,8 @@ open class MarkersRepo(
         // Log.i("MarkerRepo: updateAllDataForMarker: replacementMarker.id=${replacementMarker.id}")
         updateLoadMarkersResult(
             inMemoryLoadMarkersResult.copy(
-                markerIdToMarker =
-                    inMemoryLoadMarkersResult.markerIdToMarker +
+                markerIdToMarkerMap =
+                    inMemoryLoadMarkersResult.markerIdToMarkerMap +
                         (replacementMarker.id to replacementMarker)
             )
         )
@@ -126,8 +134,8 @@ open class MarkersRepo(
 
         updateLoadMarkersResult(
             inMemoryLoadMarkersResult.copy(
-                markerIdToMarker =
-                    inMemoryLoadMarkersResult.markerIdToMarker +
+                markerIdToMarkerMap =
+                    inMemoryLoadMarkersResult.markerIdToMarkerMap +
                         (originalMarker.id to originalMarker.copy(
                             isSeen = isSeen
                         ))
@@ -161,8 +169,8 @@ open class MarkersRepo(
 
         updateLoadMarkersResult(
             inMemoryLoadMarkersResult.copy(
-                markerIdToMarker =
-                inMemoryLoadMarkersResult.markerIdToMarker +
+                markerIdToMarkerMap =
+                inMemoryLoadMarkersResult.markerIdToMarkerMap +
                         (originalMarker.id to originalMarker.copy(
                                 isSpoken = isSpoken
                             )
@@ -182,8 +190,8 @@ open class MarkersRepo(
 
         updateLoadMarkersResult(
             inMemoryLoadMarkersResult.copy(
-                markerIdToMarker =
-                    inMemoryLoadMarkersResult.markerIdToMarker +
+                markerIdToMarkerMap =
+                    inMemoryLoadMarkersResult.markerIdToMarkerMap +
                         (originalMarker.id to originalMarker.copy(
                             isDetailsLoaded = true, // force to indicate details have been loaded
                             markerDetailsPageUrl = markerWithUpdatedDetails.markerDetailsPageUrl,
@@ -237,8 +245,8 @@ open class MarkersRepo(
         // Log.d("🚹🚹🚹 ⎣ 🛜 MarkerRepo: updateMarkerBasicInfo: UPDATED markerWithUpdatedBasicInfo.id=${markerWithUpdatedBasicInfo.id}")
         updateLoadMarkersResult(
             inMemoryLoadMarkersResult.copy(
-                markerIdToMarker =
-                inMemoryLoadMarkersResult.markerIdToMarker +
+                markerIdToMarkerMap =
+                inMemoryLoadMarkersResult.markerIdToMarkerMap +
                     (originalMarker.id to originalMarker.copy(
                         position = markerWithUpdatedBasicInfo.position,
                         title = markerWithUpdatedBasicInfo.title,

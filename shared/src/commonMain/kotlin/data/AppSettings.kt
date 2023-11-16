@@ -206,7 +206,7 @@ class AppSettings(val settingsInstance: Settings) {
         val coroutineScope = CoroutineScope(Dispatchers.IO)
 
         coroutineScope.launch {
-            println("markersResult.size= ${loadMarkersResult.markerIdToMarker.size}")
+            Log.d("markersResult.size= ${loadMarkersResult.markerIdToMarkerMap.size}")
 
             // Show all keys
             Log.d { "All keys from settings: ${settingsInstance.keys.joinToString("") { "$it\n ⎣_" }}" }
@@ -215,7 +215,7 @@ class AppSettings(val settingsInstance: Settings) {
             // Show current settings
             settingsMap.forEach { entry ->
                 if (entry.key == kMarkersResult) { // Don't want to display all the markers
-                    Log.d { "Settings: ${entry.key} = ${(entry.value as LoadMarkersResult).markerIdToMarker.size} markers" }
+                    Log.d { "Settings: ${entry.key} = ${(entry.value as LoadMarkersResult).markerIdToMarkerMap.size} markers" }
                     return@forEach
                 }
                 if (entry.key == kRecentlySeenMarkersSet) { // Don't want to display all the markers

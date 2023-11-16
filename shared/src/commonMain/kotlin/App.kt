@@ -54,7 +54,6 @@ import data.AppSettings.Companion.kUiRecentlySeenMarkersList
 import data.MarkersRepo
 import data.appSettings
 import data.loadMarkerDetails.loadMarkerDetails
-import data.loadMarkers.LoadMarkersResult
 import data.loadMarkers.distanceBetweenInMiles
 import data.loadMarkers.loadMarkers
 import data.loadMarkers.sampleData.kUseRealNetwork
@@ -173,88 +172,43 @@ fun App(
             mutableStateOf(appSettings.uiRecentlySeenMarkersList.list.toMutableStateList())
         }
 
-        // Holds the set of saved markers, this prevents flicker when loading new markers while processing the marker page(s)
-        val previousMarkers = remember {
-            mutableStateListOf<Marker>().also { snapShot ->
-                snapShot.addAll(markersRepo.markers()) // init from repo
-            }
-        }
-
         // Load markers
-        var loadingStateIcon: ImageVector by remember {
-            mutableStateOf(Icons.Default.CloudDownload)
+        var networkLoadingState: LoadingState<String> by remember {
+            mutableStateOf(LoadingState.Finished)
         }
-        val loadMarkersResult: LoadMarkersResult =
+        var loadingStateIcon: ImageVector by remember(networkLoadingState) {
+            mutableStateOf(
+                calcLoadingStateIcon(networkLoadingState)
+            )
+        }
             loadMarkers(
                 appSettings,
-                markersRepo = markersRepo,
-                userLocation = userLocation, // when user location changes, triggers potential load markers from server
+                markersRepo,
+                userLocation, // when user location changes, triggers potential load markers from server
                 maxReloadDistanceMiles = kMaxReloadDistanceMiles.toInt(),
                 onUpdateMarkersLastUpdatedLocation = { updatedLocation ->
                     markersLastUpdatedLocation = updatedLocation
                 },
                 onUpdateLoadingState = { loadingState ->
-                    // Update the UI (icon) with the latest loading state
-                    loadingStateIcon = calcLoadingStateIcon(loadingState)
+                    networkLoadingState = loadingState
                 },
                 showLoadingState = false,
                 //    kSunnyvaleFakeDataset,
                 //    kTepoztlanFakeDataset,
                 //    kSingleItemPageFakeDataset,
                 useFakeDataSetId = kUseRealNetwork,
-                coroutineScope = coroutineScope
             )
+            //val loadMarkersResult: LoadMarkersResult = LoadMarkersResult( // LEAVE for testing
+            //    loadingState = LoadingState.Finished,
+            //    isParseMarkersPageFinished = true,
+            //    markerIdToMarker = mutableMapOf()
+            //)
 
         var shouldCalculateMapMarkers by remember {
             mutableStateOf(true)
         }
         var shouldShowInfoMarker by remember {
             mutableStateOf<Marker?>(null)
-        }
-
-        // On every location update or markers update, check if the markers need to be updated.
-        // - Update "basic info" for markers AFTER index page has finished parsing.
-        // - Parse results held in `loadMarkersResult`, saved to `markersRepo`, and then used to update the UI.
-        val loadMarkers = remember(
-            loadMarkersResult.isParseMarkersPageFinished,
-            userLocation
-        ) {
-            // Finished parsing the markers basic info page?
-            if (!loadMarkersResult.isParseMarkersPageFinished) {
-                Log.d("🎯 SKIP loadMarkersResult.isParseMarkersPageFinished=false")
-                return@remember previousMarkers // use the cached markers (prevents flickering)
-            }
-
-            // Log.d("🎯 loadMarkers START update")
-            coroutineScope.launch(Dispatchers.IO) {
-                val startTime = Clock.System.now()
-//                    delay(100) // debounce // todo remove soon - seems to not be necessary
-
-                loadMarkersResult.markerIdToMarker.values.forEach { marker ->
-                    //markersRepo.upsertMarkerBasicInfo(marker) // only basic info needs to be updated
-                    markersRepo.marker(marker.id) ?: run {
-                        markersRepo.addMarker(marker)
-                    }
-                }
-                markersRepo.updateIsParseMarkersPageFinished(true) // ensures the markers are updated
-
-                Log.d("🎯 loadMarkers END UPDATE1, " +
-                        "markers().size=${markersRepo.markers().size},"+
-                        "processing time = ${(Clock.System.now() - startTime)}\n")
-            }
-
-            // Update the markers with the latest data
-            mutableStateListOf<Marker>(
-                *(markersRepo.markers().toList()).toTypedArray()
-            )
-//                .also { markersSnapShot ->
-//                val startTime = Clock.System.now()
-//                markersSnapShot.clear()
-//                markersSnapShot.addAll(markersRepo.markers())
-//                Log.d("🎯 loadMarkers END UPDATE2, " +
-//                        "markersRepo.size=${markersRepo.markers().size}, " +
-//                        "processing time = ${(Clock.System.now() - startTime)}")
-//            }
         }
         if (false) {
             // LEAVE FOR REFERENCE
@@ -275,26 +229,14 @@ fun App(
         // Set finalMarkers after any update to the MarkersRepo
         LaunchedEffect(markersRepo.updateLoadMarkersResultFlow) {
             markersRepo.updateLoadMarkersResultFlow.collectLatest { loadMarkersResult ->
-
+                delay(250) // debounce - allow the loadMarkers to finish processing // todo needed?
                 coroutineScope.launch(Dispatchers.IO) {
-                    delay(250) // debounce - allow the loadMarkers to finish processing // todo needed?
-                    println("🍉 PRE coroutineScope: ${this.coroutineContext}")
-
                     // Update the final markers list with the updated marker data
                     val startTime = Clock.System.now()
-                    //Log.d("🍉 START markersRepo.updateMarkersResultFlow.collectLatest: \n" +
-                    //    "    ⎣ finalMarkers.size = ${finalMarkers.size},\n" +
-                    //    "    ⎣ loadMarkersResult.size = ${loadMarkersResult.markerIdToMarker.size},\n"
-                    //)
 
                     // Update the final markers list with the updated marker data
-//                    finalMarkers = loadMarkersResult.markerIdToMarker.values.toMutableStateList()
                     finalMarkers.clear()
-                    finalMarkers.addAll(loadMarkersResult.markerIdToMarker.values)
-                    loadMarkers.clear()
-                    loadMarkers.addAll(loadMarkersResult.markerIdToMarker.values)
-                    previousMarkers.clear()
-                    previousMarkers.addAll(loadMarkersResult.markerIdToMarker.values)
+                    finalMarkers.addAll(loadMarkersResult.markerIdToMarkerMap.values)
                     yield() // todo needed? remove soon?
 
                     Log.d(
@@ -319,10 +261,7 @@ fun App(
         var isProcessingRecentlySeenList by remember {
             mutableStateOf(false)
         }
-        LaunchedEffect(Unit, seenRadiusMiles, shouldCalculateMapMarkers, loadMarkersResult) {
-            // Guard against un-parsed markers
-            if(!markersRepo.markersResult().isParseMarkersPageFinished) return@LaunchedEffect
-
+        LaunchedEffect(Unit, seenRadiusMiles) { //, shouldCalculateMapMarkers) {
             // Set the last known location to the current location in settings
             gpsLocationService.onUpdatedGPSLocation(
                 errorCallback = { errorMessage ->
@@ -353,12 +292,14 @@ fun App(
                     yield() // allows UI to update the location
 
                     //Log.d("👁️ 0.CHECK - isProcessingRecentlySeenList=$isProcessingRecentlySeenList")
-                    if(!isProcessingRecentlySeenList) { // guard against re-enter while processing the list
+                    if(!isProcessingRecentlySeenList
+//                        && networkLoadingState is LoadingState.Finished // pause checking isSeen while data is loaded to avoid database contention
+                    ) { // guard against re-enter while processing the list
                         isProcessingRecentlySeenList = true
 
                         Log.d("👁️ 2.START - Collecting recently seen markers after location update..., finalMarkers.size=${finalMarkers.size}")
                         coroutineScope.launch(Dispatchers.IO) {
-                            delay(800) // allow clusters to animate before processing the list
+                            delay(500) // allow clusters time to animate before processing the list
                             addSeenMarkersToRecentlySeenList(
                                 markersRepo.markers(), // SSoT is the Repo
                                 userLocation,
@@ -369,11 +310,10 @@ fun App(
                                                           updatedRecentlySeenMarkers,
                                                           updatedUiRecentlySeenMarkers ->
                                     // Update the UI with the updated markers
-                                    coroutineScope.launch {
+                                    coroutineScope.launch(Dispatchers.IO) {
                                         val startTime = Clock.System.now()
                                         //Log.d("👁️ 2.1-START, onUpdatedIsSeenMarkers")
 
-                                        recentlySeenMarkersSet.clear()
                                         recentlySeenMarkersSet.addAll(updatedRecentlySeenMarkers)
                                         uiRecentlySeenMarkersList.clear()
                                         uiRecentlySeenMarkersList.addAll(updatedUiRecentlySeenMarkers)
@@ -421,10 +361,8 @@ fun App(
                                         }
 
                                         // Update the UI with the updated markers
-                                        //finalMarkers = markersRepo.markers() // pull from SSoT after update
                                         shouldCalculateMapMarkers = true
                                         isProcessingRecentlySeenList = false
-
                                         Log.d("👁️ 2.1-END, processing time = ${(Clock.System.now() - startTime)}")
                                     }
                                 },
@@ -437,15 +375,13 @@ fun App(
                     }
                 }
 
-            if (false) {
-                // LEAVE FOR REFERENCE
-                //    // Get heading updates
-                //    locationService.currentHeading { heading ->
-                //        heading?.let {
-                //            Log.d { "heading = ${it.trueHeading}, ${it.magneticHeading}" }
-                //        }
-                //    }
-            }
+            // LEAVE FOR REFERENCE
+            //    // Get heading updates
+            //    locationService.currentHeading { heading ->
+            //        heading?.let {
+            //            Log.d { "heading = ${it.trueHeading}, ${it.magneticHeading}" }
+            //        }
+            //    }
         }
 
         fun startTracking() {
@@ -539,17 +475,16 @@ fun App(
                                 coroutineScope.launch {
                                     resetMarkerCacheSettings(
                                         appSettings,
-                                        loadMarkers,
-                                        previousMarkers,
+                                        finalMarkers,
                                         recentlySeenMarkersSet,
                                         uiRecentlySeenMarkersList,
                                         markersRepo
                                     )
 
-//                                    finalMarkers = markersRepo.markers()
-                                    finalMarkers.clear()
-                                    finalMarkers.addAll(markersRepo.markers())
                                     shouldCalculateMapMarkers = true
+                                    delay(1000) // allow time for markers to update
+
+                                    shouldCalculateMapMarkers = true // todo needed? remove?
                                     userLocation = jiggleLocationToForceUiUpdate(userLocation)
                                 }
                             },
@@ -706,7 +641,8 @@ fun App(
                                 }) {
                                     // Loading status icon // todo - should use a sealed/enum class instead of using the icon
                                     AnimatedVisibility(
-                                        loadingStateIcon != Icons.Default.Cloud,
+//                                        loadingStateIcon != Icons.Default.Cloud,
+                                        networkLoadingState !is LoadingState.Finished,
                                         enter = fadeIn(tween(1500)),
                                         exit = fadeOut(tween(1500))
                                     ) {
@@ -717,7 +653,8 @@ fun App(
                                     }
                                     // History icon
                                     AnimatedVisibility(
-                                        loadingStateIcon == Icons.Default.Cloud,
+//                                        loadingStateIcon == Icons.Default.Cloud,
+                                        networkLoadingState is LoadingState.Finished,
                                         enter = fadeIn(tween(500)),
                                         exit = fadeOut(tween(500))
                                     ) {
@@ -732,13 +669,14 @@ fun App(
 
                         // Show loading error
                         AnimatedVisibility(
-                            visible = loadMarkersResult.loadingState is LoadingState.Error,
+//                            visible = loadMarkersResult.loadingState is LoadingState.Error,
+                            visible = networkLoadingState is LoadingState.Error,
                         ) {
-                            if (loadMarkersResult.loadingState is LoadingState.Error) {
+                            if (networkLoadingState is LoadingState.Error) {
                                 Text(
                                     modifier = Modifier.fillMaxWidth()
                                         .background(MaterialTheme.colors.error),
-                                    text = "Error: ${(loadMarkersResult.loadingState).errorMessage}",
+                                    text = "Error: ${(networkLoadingState as LoadingState.Error).errorMessage}",
                                     fontStyle = FontStyle.Normal,
                                     fontWeight = FontWeight.Medium,
                                     color = MaterialTheme.colors.onError
@@ -784,10 +722,9 @@ fun App(
                         MapContent(
                             modifier = Modifier
                                 .fillMaxHeight(1.0f - transitionRecentMarkersPanelState),
-                            isParseMarkersPageFinished = loadMarkersResult.isParseMarkersPageFinished,
                             initialUserLocation = appSettings.lastKnownUserLocation,
                             userLocation = userLocation,
-                            markers = markersRepo.markers(),  // finalMarkers
+                            markers = finalMarkers,
                             mapBounds = null,  // leave for future use
                             shouldCalculateMarkers = shouldCalculateMapMarkers, // calculate the markers clusters/heatmaps
                             onDidCalculateMarkers = { // map & markers have been redrawn
@@ -843,6 +780,8 @@ fun App(
                         Log.d("✏️✏️🛑  END map rendering, time to render = ${(Clock.System.now() - startTime)}\n" )
                     }
 
+                    val startTime = Clock.System.now()
+                    Log.d("✏️✏️⬇️  START recently seen markers rendering, uiRecentlySeenMarkersList.size = ${uiRecentlySeenMarkersList.size}\n" )
                     RecentlySeenMarkers(
                         uiRecentlySeenMarkersList,
                         onClickRecentlySeenMarkerItem = { markerId ->
@@ -872,8 +811,7 @@ fun App(
                                         },
                                         markersRepo = markersRepo,
                                         onUpdateLoadingState = { loadingState -> // todo make function
-                                            loadingStateIcon =
-                                                calcLoadingStateIcon(loadingState)
+                                            networkLoadingState = loadingState
                                         }
                                     )
                             }
@@ -883,6 +821,7 @@ fun App(
                         },
                         markersRepo = markersRepo,
                     )
+                    Log.d("✏️✏️🛑  END recently seen markers rendering, time to render = ${(Clock.System.now() - startTime)}\n" )
                 }
             }
 
@@ -907,13 +846,13 @@ fun App(
     }
 }
 
-private fun calcLoadingStateIcon(it: LoadingState<String>) =
-    when (it) {
+private fun calcLoadingStateIcon(loadingState: LoadingState<String>) =
+    when (loadingState) {
         is LoadingState.Loading -> {
             Icons.Default.CloudDownload
         }
         is LoadingState.Loaded -> {
-            Icons.Default.CloudDownload
+            Icons.Default.Cloud // CloudDone uses a checkmark
         }
         is LoadingState.Finished -> {
             Icons.Default.Cloud
@@ -934,15 +873,13 @@ private fun jiggleLocationToForceUiUpdate(userLocation: Location) = Location(
 
 private fun resetMarkerCacheSettings(
     settings: AppSettings,
-    markers: SnapshotStateList<Marker>,
-    previousMarkers: SnapshotStateList<Marker>,
+    finalMarkers: SnapshotStateList<Marker>,
     recentlySeenMarkersSet: MutableSet<RecentlySeenMarker>,
     uiRecentlySeenMarkersList: SnapshotStateList<RecentlySeenMarker>,
     markersRepo: MarkersRepo,
 ) {
     // Reset the `seen markers` list, UI elements
-    markers.clear()
-    previousMarkers.clear()
+    finalMarkers.clear()
     recentlySeenMarkersSet.clear()
     uiRecentlySeenMarkersList.clear()
 

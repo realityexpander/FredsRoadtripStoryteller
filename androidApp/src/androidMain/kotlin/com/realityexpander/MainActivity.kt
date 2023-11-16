@@ -151,9 +151,17 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         FirebaseApp.initializeApp(this)
 
         // If permissions are not granted yet, show the splash screen for permissions.
-        setContent {
-            AppTheme {
-                SplashScreenForPermissions(appSettings.isPermissionsGranted)
+        if(!appSettings.isPermissionsGranted) {
+            setContent {
+                AppTheme {
+                    SplashScreenForPermissions(appSettings.isPermissionsGranted)
+                }
+            }
+        } else {
+            // Coming back from a suspended state
+            setContent {
+                println("🧽🧽🧽MainActivity: onCreate: setContent: appSettings.isPermissionsGranted=${appSettings.isPermissionsGranted}")
+                MainView()
             }
         }
     }

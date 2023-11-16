@@ -245,8 +245,9 @@ actual fun GoogleMaps(
             return clusterItem.zIndex
         }
     }
-    var cachedMarkerIdToSeeableClusterItemMap =
+    val cachedMarkerIdToSeeableClusterItemMap =
         remember { mutableStateMapOf<MarkerIdStr, SeeableClusterItem>() }
+    var cachedClusterItemList by remember { mutableStateOf<List<SeeableClusterItem>>(listOf()) }
     var didUpdateClusterItems by remember { mutableStateOf(false) }
     var isCalculatingClusterItems by remember { mutableStateOf(false) }
     LaunchedEffect(shouldCalculateClusterItemList) {
@@ -257,7 +258,8 @@ actual fun GoogleMaps(
 
         // Check if the markers are different than the cached markers
         if (markers?.size == cachedMarkerIdToSeeableClusterItemMap.size
-            && markers.all { marker -> // check all markers isSeen has changed
+            // check if any markers `isSeen` has changed
+            && markers.all { marker ->
                 marker.isSeen == cachedMarkerIdToSeeableClusterItemMap[marker.id]?.isSeen
             }
         ) {
@@ -276,8 +278,10 @@ actual fun GoogleMaps(
         Log.d("💿 ⚝⚝⚝ 🔧 LaunchedEffect(shouldCalculateClusterItemList): START calculating new cluster items")
         isCalculatingClusterItems = true
         yield() // allow isCalculatingClusterItems to be set to true before continuing (prevents re-entrancy)
+
         val startTime = Clock.System.now()
-        val updatedClusterItemList = markers?.map { marker ->
+        cachedClusterItemList = markers?.map { marker ->
+            yield() // don't hog the thread
             SeeableClusterItem(
                 id = marker.id,
                 clusterItem = object : ClusterItem {
@@ -292,19 +296,14 @@ actual fun GoogleMaps(
         } ?: listOf<SeeableClusterItem>()
         // Log.d("♢ ⚝⚝⚝ 🔧 Clustering, END updatedClusterItemList.size = ${updatedClusterItemList.size}")
         cachedMarkerIdToSeeableClusterItemMap.clear() // if new markers are null, just clear the previous list.
-        updatedClusterItemList.forEach { clusterItem ->
+        cachedClusterItemList.forEach { clusterItem ->
             cachedMarkerIdToSeeableClusterItemMap[clusterItem.id] = clusterItem
         }
-//        cachedMarkerIdToSeeableClusterItemMap = mutableStateMapOf(
-//            *updatedClusterItemList.map { clusterItem ->
-//                clusterItem.id to clusterItem
-//            }.toTypedArray()
-//        )
         Log.d("💿 ⚝⚝⚝ 🟨 🔧 LaunchedEffect(shouldCalculateClusterItemList): Recalculated updatedClusterItemList: \n" +
-                "  ⎣ updatedClusterItemList.size= ${updatedClusterItemList.size}\n" +
+                "  ⎣ updatedClusterItemList.size= ${cachedClusterItemList.size}\n" +
                 "  ⎣ time= ${Clock.System.now() - startTime}")
-        isCalculatingClusterItems = false
         didUpdateClusterItems = true
+        isCalculatingClusterItems = false
         onDidCalculateClusterItemList()
     }
 
@@ -342,7 +341,9 @@ actual fun GoogleMaps(
             },
         ) {
             // Heat Map Overlay
-            if (markers != null) {
+            if (markers != null && isHeatMapEnabled) {
+                val startTime = Clock.System.now()
+
                 TileOverlay(
                     tileProvider = remember(shouldCalculateClusterItemList, markers) {
                         if (!shouldCalculateClusterItemList) {
@@ -387,6 +388,8 @@ actual fun GoogleMaps(
                     fadeIn = true,
                     transparency = 0.0f
                 )
+
+                Log.d("💿 🔥Heatmap TileOverlay(), END Heatmap, markers.size = ${markers.size}, time= ${Clock.System.now() - startTime}")
             }
 
             // Render the user's location "seen" circle radius
@@ -478,63 +481,17 @@ actual fun GoogleMaps(
             }
 
             Clustering(
-//                items = remember(shouldCalculateClusterItemList, markers, isMarkersEnabled) {
-                items = remember(didUpdateClusterItems, isMarkersEnabled) {
-                    if (!isMarkersEnabled) {
-                        return@remember listOf<ClusterItem>()
-                    }
-                    if(!didUpdateClusterItems) {
-                        return@remember cachedMarkerIdToSeeableClusterItemMap.values.toList()
-                    }
-
-//                    if (!shouldRedrawMapMarkers) {
-//                        Log.d("💿 shouldRedrawMapMarkers=false, No redraw necessary, Using previousClusterItems items, previousClusterItems.size = ${previousMarkerIdStrToClusterItems.size}")
-//                        return@remember previousMarkerIdStrToClusterItems.values.toList()
+//                items = remember(didUpdateClusterItems, isMarkersEnabled) {
+//                    if (true) {
+////                    if (!isMarkersEnabled) {
+//                        return@remember listOf<ClusterItem>()
 //                    }
 //
-//                    // check if the markers are different than the cached markers
-//                    if (markers?.size == previousMarkerIdStrToClusterItems.size
-//                        && markers.all { marker -> // check all markers isSeen has changed
-//                            marker.isSeen == previousMarkerIdStrToClusterItems[marker.id]?.isSeen
-//                        }
-//                    ) {
-//                        Log.d("💿 Using previousClusterItems because no isSeen in the list of markers has changed, previousClusterItems.size = ${previousMarkerIdStrToClusterItems.size}")
-//                        onDidRedrawMapMarkers()
-//                    }
-//
-//                    // Calculate the cluster items - must update to change the isSeen property
-//                     Log.d("💿 ⚝⚝⚝ 🔧 Clustering, START calculating new cluster items")
-//                    val startTime = Clock.System.now()
-//                    val updatedClusterItemList = markers?.map { marker ->
-//                        ClusterItemWithIsSeen(
-//                            id = marker.id,
-//                            clusterItem = object : ClusterItem {
-//                                override fun getTitle(): String = marker.title
-//                                override fun getSnippet(): String = marker.id
-//                                override fun getPosition(): LatLng =
-//                                    LatLng(marker.position.latitude, marker.position.longitude)
-//                                override fun getZIndex(): Float = 1.0f
-//                            },
-//                            isSeen = marker.isSeen
-//                        )
-//                    } ?: listOf<ClusterItemWithIsSeen>()
-//                    // Log.d("♢ ⚝⚝⚝ 🔧 Clustering, END updatedClusterItemList.size = ${updatedClusterItemList.size}")
-//                    previousMarkerIdStrToClusterItems.clear() // if new markers are null, just clear the previous list.
-//                    updatedClusterItemList.forEach { clusterItem ->
-//                        previousMarkerIdStrToClusterItems[clusterItem.id] = clusterItem
-//                    }
-//                    Log.d("💿 ⚝⚝⚝ 🟨 🔧 Recalculated updatedClusterItemList: \n" +
-//                            "  ⎣ updatedClusterItemList.size= ${updatedClusterItemList.size}\n" +
-//                            "  ⎣ time= ${Clock.System.now() - startTime}")
-//                    onDidRedrawMapMarkers()
-//
-//                    return@remember updatedClusterItemList
-
-                    println("💿 ⚝⚝⚝ Clustering, redrawing items")
-                    didUpdateClusterItems = false
-                    println("💿 ⚝⚝⚝ Clustering, redrawing items, cachedMarkerIdToSeeableClusterItemMap.size = ${cachedMarkerIdToSeeableClusterItemMap.size}")
-                    return@remember cachedMarkerIdToSeeableClusterItemMap.values.toList()
-                },
+//                    Log.d("💿 In Map Clustering(), cachedClusterItemList.size = ${cachedClusterItemList.size}")
+//                    didUpdateClusterItems = false
+//                    return@remember cachedClusterItemList
+//                },
+                items = if(isMarkersEnabled) cachedClusterItemList else listOf(),
                 onClusterItemInfoWindowClick = { clusterItem ->
                     coroutineScope.launch {
                         val selectedMarker = Marker(
@@ -627,7 +584,7 @@ actual fun GoogleMaps(
                         //        tint = Color.White
                         //    )
                     }
-                }
+                },
             )
 
             // Information marker

@@ -13,8 +13,8 @@ class ParseMarkersPageHtmlTest {
 
         val result = parseMarkersPageHtml(markersPageHtml)
 
-        assert(result.markerIdToMarker.isNotEmpty())
-        assert(result.markerIdToMarker.contains("M207019"))
+        assert(result.markerIdToMarkerMap.isNotEmpty())
+        assert(result.markerIdToMarkerMap.contains("M207019"))
     }
 
     @Test
@@ -26,8 +26,8 @@ class ParseMarkersPageHtmlTest {
 
         val result = parseMarkersPageHtml(markersPageHtml)
         assertFalse(
-            result.markerIdToMarker["M207019"]?.subtitle?.contains("—") ?: false,
-            "Subtitle should have no em-dashes, but it does: ${result.markerIdToMarker["M207019"]?.subtitle}"
+            result.markerIdToMarkerMap["M207019"]?.subtitle?.contains("—") ?: false,
+            "Subtitle should have no em-dashes, but it does: ${result.markerIdToMarkerMap["M207019"]?.subtitle}"
         )
     }
 }

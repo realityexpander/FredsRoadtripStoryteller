@@ -15,8 +15,7 @@ import co.touchlab.kermit.Logger as Log
 @Composable
 fun MapContent(
     modifier: Modifier = Modifier,
-    isParseMarkersPageFinished: Boolean = false,  // only sets the initial position, not tracked. Use `userLocation` for tracking.
-    initialUserLocation: Location,
+    initialUserLocation: Location, // only sets the initial position, not tracked. Use `userLocation` for tracking.
     userLocation: Location,
     markers: List<Marker>,
     mapBounds: List<LatLong>? = null,
@@ -47,7 +46,7 @@ fun MapContent(
     ) {
 
         // Log.d("💿 MapContent: isFinishedLoadingMarkerData=$isFinishedLoadingMarkerData, isFirstUpdate=$isFirstUpdate, shouldRedrawMapMarkers=$shouldRedrawMarkers")
-        if (isParseMarkersPageFinished || !isFirstUpdate || shouldCalculateMarkers) {
+        if (!isFirstUpdate || shouldCalculateMarkers) {
             GoogleMaps(
                 modifier = modifier,
                 isMapOptionSwitchesVisible = isMapOptionSwitchesVisible,
