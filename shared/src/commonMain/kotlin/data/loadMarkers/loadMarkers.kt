@@ -274,9 +274,11 @@ fun loadMarkers(
                                             }"
                                 )
                                 rawHtml
-                            } catch (e: CancellationException) {
-                                throw e
-                            } catch (e: Exception) {
+                            }
+                            //catch (e: CancellationException) { // todo remove?
+                            //    throw e
+                            //}
+                             catch (e: Exception) {
                                 Log.w("📍⬆️ Step 3a - Failed to load page: $processingHtmlPageNum, assetUrl: $assetUrl, error: ${e.cause?.message}")
 
                                 return@async ""  // return blank data
@@ -427,4 +429,3 @@ fun loadMarkers(
 
     return processingLoadMarkersResultState
 }
-

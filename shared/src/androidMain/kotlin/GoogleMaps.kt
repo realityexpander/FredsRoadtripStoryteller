@@ -23,7 +23,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NoLiveLiterals
@@ -38,7 +37,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
@@ -67,10 +65,7 @@ import com.google.maps.android.heatmaps.HeatmapTileProvider
 import com.google.maps.android.heatmaps.WeightedLatLng
 import com.realityexpander.common.R
 import data.loadMarkers.milesToMeters
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
 import org.jetbrains.compose.resources.ExperimentalResourceApi
@@ -95,8 +90,8 @@ actual fun GoogleMaps(
     isTrackingEnabled: Boolean,
     userLocation: LatLong?,
     markers: List<Marker>?,
-    shouldRedrawMapMarkers: Boolean,
-    onDidRedrawMapMarkers: () -> Unit, // Best for setting initial camera position bc zoom level is forced
+    shouldCalculateClusterItemList: Boolean,
+    onDidCalculateClusterItemList: () -> Unit, // Best for setting initial camera position bc zoom level is forced
     shouldSetInitialCameraPosition: CameraPosition?, // Best for tracking user location
     shouldCenterCameraOnLatLong: LatLong?, // Best for showing a bunch of markers
     onDidCenterCameraOnLatLong: () -> Unit,
@@ -231,30 +226,91 @@ actual fun GoogleMaps(
     val lightGrayMarkerPainterResource = painterResource("marker_lightgray.png")
     val redMarkerPainterResource = painterResource("marker_red.png")
 
-    Box(modifier.fillMaxSize()) {
-
-        class ClusterItemWithIsSeen(
-            val id: MarkerIdStr,
-            val clusterItem: ClusterItem,
-            var isSeen: Boolean = false
-        ) : ClusterItem {
-            override fun getPosition(): LatLng {
-                return clusterItem.position
-            }
-            override fun getTitle(): String? {
-                return clusterItem.title
-            }
-            override fun getSnippet(): String? {
-                return clusterItem.snippet
-            }
-            override fun getZIndex(): Float? {
-                return clusterItem.zIndex
-            }
+    // Calculate Cluster items
+    class SeeableClusterItem(
+        val id: MarkerIdStr,
+        val clusterItem: ClusterItem,
+        var isSeen: Boolean = false
+    ) : ClusterItem {
+        override fun getPosition(): LatLng {
+            return clusterItem.position
+        }
+        override fun getTitle(): String? {
+            return clusterItem.title
+        }
+        override fun getSnippet(): String? {
+            return clusterItem.snippet
+        }
+        override fun getZIndex(): Float? {
+            return clusterItem.zIndex
+        }
+    }
+    var cachedMarkerIdToSeeableClusterItemMap =
+        remember { mutableStateMapOf<MarkerIdStr, SeeableClusterItem>() }
+    var didUpdateClusterItems by remember { mutableStateOf(false) }
+    var isCalculatingClusterItems by remember { mutableStateOf(false) }
+    LaunchedEffect(shouldCalculateClusterItemList) {
+        if (!shouldCalculateClusterItemList) {
+            Log.d("💿 LaunchedEffect(shouldCalculateClusterItemList): shouldCalculateClusterItemList=false, No redraw necessary, Using cachedMarkerIdToSeeableClusterItemMap items, cachedMarkerIdToSeeableClusterItemMap.size = ${cachedMarkerIdToSeeableClusterItemMap.size}")
+            return@LaunchedEffect
         }
 
+        // Check if the markers are different than the cached markers
+        if (markers?.size == cachedMarkerIdToSeeableClusterItemMap.size
+            && markers.all { marker -> // check all markers isSeen has changed
+                marker.isSeen == cachedMarkerIdToSeeableClusterItemMap[marker.id]?.isSeen
+            }
+        ) {
+            Log.d("💿 LaunchedEffect(shouldCalculateClusterItemList): Using cachedMarkerIdToSeeableClusterItemMap because no isSeen in the list of markers has changed, cachedMarkerIdToSeeableClusterItemMap.size = ${cachedMarkerIdToSeeableClusterItemMap.size}")
+            onDidCalculateClusterItemList()
+            return@LaunchedEffect
+        }
+
+        // Guard against multiple coroutines calculating the cluster items at the same time
+        if(isCalculatingClusterItems) {
+            Log.d("💿 LaunchedEffect(shouldCalculateClusterItemList): isCalculatingClusterItems=true, Using cachedMarkerIdToSeeableClusterItemMap items, cachedMarkerIdToSeeableClusterItemMap.size = ${cachedMarkerIdToSeeableClusterItemMap.size}")
+            return@LaunchedEffect
+        }
+
+        // Calculate the cluster items - must update to change the isSeen property
+        Log.d("💿 ⚝⚝⚝ 🔧 LaunchedEffect(shouldCalculateClusterItemList): START calculating new cluster items")
+        isCalculatingClusterItems = true
+        yield() // allow isCalculatingClusterItems to be set to true before continuing (prevents re-entrancy)
+        val startTime = Clock.System.now()
+        val updatedClusterItemList = markers?.map { marker ->
+            SeeableClusterItem(
+                id = marker.id,
+                clusterItem = object : ClusterItem {
+                    override fun getTitle(): String = marker.title
+                    override fun getSnippet(): String = marker.id
+                    override fun getPosition(): LatLng =
+                        LatLng(marker.position.latitude, marker.position.longitude)
+                    override fun getZIndex(): Float = 1.0f
+                },
+                isSeen = marker.isSeen
+            )
+        } ?: listOf<SeeableClusterItem>()
+        // Log.d("♢ ⚝⚝⚝ 🔧 Clustering, END updatedClusterItemList.size = ${updatedClusterItemList.size}")
+        cachedMarkerIdToSeeableClusterItemMap.clear() // if new markers are null, just clear the previous list.
+        updatedClusterItemList.forEach { clusterItem ->
+            cachedMarkerIdToSeeableClusterItemMap[clusterItem.id] = clusterItem
+        }
+//        cachedMarkerIdToSeeableClusterItemMap = mutableStateMapOf(
+//            *updatedClusterItemList.map { clusterItem ->
+//                clusterItem.id to clusterItem
+//            }.toTypedArray()
+//        )
+        Log.d("💿 ⚝⚝⚝ 🟨 🔧 LaunchedEffect(shouldCalculateClusterItemList): Recalculated updatedClusterItemList: \n" +
+                "  ⎣ updatedClusterItemList.size= ${updatedClusterItemList.size}\n" +
+                "  ⎣ time= ${Clock.System.now() - startTime}")
+        isCalculatingClusterItems = false
+        didUpdateClusterItems = true
+        onDidCalculateClusterItemList()
+    }
+
+    Box(modifier.fillMaxSize()) {
+
         val coroutineScope = rememberCoroutineScope()
-        val previousMarkerIdStrToClusterItems =
-            remember { mutableStateMapOf<MarkerIdStr, ClusterItemWithIsSeen>() }
         var heatmapTileProvider by remember {
             mutableStateOf(
                 HeatmapTileProvider.Builder()
@@ -288,13 +344,13 @@ actual fun GoogleMaps(
             // Heat Map Overlay
             if (markers != null) {
                 TileOverlay(
-                    tileProvider = remember(shouldRedrawMapMarkers, markers) {
-                        if (!shouldRedrawMapMarkers) {
+                    tileProvider = remember(shouldCalculateClusterItemList, markers) {
+                        if (!shouldCalculateClusterItemList) {
                             // Log.d { "💿 Using cached heatmap items, cachedHeatmap = $cachedTileProvider" }
                             return@remember heatmapTileProvider
                         } else {
                             // check if the markers are different than the cached markers
-                            if (markers.size == previousMarkerIdStrToClusterItems.size) {
+                            if (markers.size == cachedMarkerIdToSeeableClusterItemMap.size) {
                                 // Log.d("💿 Using cached heatmap items because list of markers has not changed, cachedHeatmap = $cachedTileProvider")
                                 return@remember heatmapTileProvider
                             }
@@ -422,53 +478,62 @@ actual fun GoogleMaps(
             }
 
             Clustering(
-                items = remember(shouldRedrawMapMarkers, markers, isMarkersEnabled) {
+//                items = remember(shouldCalculateClusterItemList, markers, isMarkersEnabled) {
+                items = remember(didUpdateClusterItems, isMarkersEnabled) {
                     if (!isMarkersEnabled) {
                         return@remember listOf<ClusterItem>()
                     }
-
-                    if (!shouldRedrawMapMarkers) {
-                        Log.d("💿 shouldRedrawMapMarkers=false, No redraw necessary, Using previousClusterItems items, previousClusterItems.size = ${previousMarkerIdStrToClusterItems.size}")
-                        return@remember previousMarkerIdStrToClusterItems.values.toList()
+                    if(!didUpdateClusterItems) {
+                        return@remember cachedMarkerIdToSeeableClusterItemMap.values.toList()
                     }
 
-                    // check if the markers are different than the cached markers
-                    if (markers?.size == previousMarkerIdStrToClusterItems.size
-                        && markers.all { marker -> // check all markers isSeen has changed
-                            marker.isSeen == previousMarkerIdStrToClusterItems[marker.id]?.isSeen
-                        }
-                    ) {
-                        Log.d("💿 Using previousClusterItems because no isSeen in the list of markers has changed, previousClusterItems.size = ${previousMarkerIdStrToClusterItems.size}")
-                        onDidRedrawMapMarkers()
-                    }
+//                    if (!shouldRedrawMapMarkers) {
+//                        Log.d("💿 shouldRedrawMapMarkers=false, No redraw necessary, Using previousClusterItems items, previousClusterItems.size = ${previousMarkerIdStrToClusterItems.size}")
+//                        return@remember previousMarkerIdStrToClusterItems.values.toList()
+//                    }
+//
+//                    // check if the markers are different than the cached markers
+//                    if (markers?.size == previousMarkerIdStrToClusterItems.size
+//                        && markers.all { marker -> // check all markers isSeen has changed
+//                            marker.isSeen == previousMarkerIdStrToClusterItems[marker.id]?.isSeen
+//                        }
+//                    ) {
+//                        Log.d("💿 Using previousClusterItems because no isSeen in the list of markers has changed, previousClusterItems.size = ${previousMarkerIdStrToClusterItems.size}")
+//                        onDidRedrawMapMarkers()
+//                    }
+//
+//                    // Calculate the cluster items - must update to change the isSeen property
+//                     Log.d("💿 ⚝⚝⚝ 🔧 Clustering, START calculating new cluster items")
+//                    val startTime = Clock.System.now()
+//                    val updatedClusterItemList = markers?.map { marker ->
+//                        ClusterItemWithIsSeen(
+//                            id = marker.id,
+//                            clusterItem = object : ClusterItem {
+//                                override fun getTitle(): String = marker.title
+//                                override fun getSnippet(): String = marker.id
+//                                override fun getPosition(): LatLng =
+//                                    LatLng(marker.position.latitude, marker.position.longitude)
+//                                override fun getZIndex(): Float = 1.0f
+//                            },
+//                            isSeen = marker.isSeen
+//                        )
+//                    } ?: listOf<ClusterItemWithIsSeen>()
+//                    // Log.d("♢ ⚝⚝⚝ 🔧 Clustering, END updatedClusterItemList.size = ${updatedClusterItemList.size}")
+//                    previousMarkerIdStrToClusterItems.clear() // if new markers are null, just clear the previous list.
+//                    updatedClusterItemList.forEach { clusterItem ->
+//                        previousMarkerIdStrToClusterItems[clusterItem.id] = clusterItem
+//                    }
+//                    Log.d("💿 ⚝⚝⚝ 🟨 🔧 Recalculated updatedClusterItemList: \n" +
+//                            "  ⎣ updatedClusterItemList.size= ${updatedClusterItemList.size}\n" +
+//                            "  ⎣ time= ${Clock.System.now() - startTime}")
+//                    onDidRedrawMapMarkers()
+//
+//                    return@remember updatedClusterItemList
 
-                    // Calculate the cluster items - must update to change the isSeen property
-                    // Log.d("💿 ⚝⚝⚝ 🔧 Clustering, START calculating new cluster items")
-                    val startTime = Clock.System.now()
-                    val updatedClusterItemList = markers?.map { marker ->
-                        ClusterItemWithIsSeen(
-                            id = marker.id,
-                            clusterItem = object : ClusterItem {
-                                override fun getTitle(): String = marker.title
-                                override fun getSnippet(): String = marker.id
-                                override fun getPosition(): LatLng =
-                                    LatLng(marker.position.latitude, marker.position.longitude)
-                                override fun getZIndex(): Float = 1.0f
-                            },
-                            isSeen = marker.isSeen
-                        )
-                    } ?: listOf<ClusterItemWithIsSeen>()
-                    // Log.d("♢ ⚝⚝⚝ 🔧 Clustering, END updatedClusterItemList.size = ${updatedClusterItemList.size}")
-                    previousMarkerIdStrToClusterItems.clear() // if new markers are null, just clear the previous list.
-                    updatedClusterItemList.forEach { clusterItem ->
-                        previousMarkerIdStrToClusterItems[clusterItem.id] = clusterItem
-                    }
-                    //Log.d("💿 ⚝⚝⚝ 🟨 🔧 Recalculated updatedClusterItemList: \n" +
-                    //        "  ⎣ updatedClusterItemList.size= ${updatedClusterItemList.size}\n" +
-                    //        "  ⎣ time= ${Clock.System.now() - startTime}"
-                    onDidRedrawMapMarkers()
-
-                    return@remember updatedClusterItemList
+                    println("💿 ⚝⚝⚝ Clustering, redrawing items")
+                    didUpdateClusterItems = false
+                    println("💿 ⚝⚝⚝ Clustering, redrawing items, cachedMarkerIdToSeeableClusterItemMap.size = ${cachedMarkerIdToSeeableClusterItemMap.size}")
+                    return@remember cachedMarkerIdToSeeableClusterItemMap.values.toList()
                 },
                 onClusterItemInfoWindowClick = { clusterItem ->
                     coroutineScope.launch {
@@ -501,7 +566,7 @@ actual fun GoogleMaps(
                 },
                 clusterContent = { cluster ->
                     val isAllSeen = cluster.items.all { clusterItem ->
-                        previousMarkerIdStrToClusterItems[clusterItem.snippet]?.isSeen == true
+                        cachedMarkerIdToSeeableClusterItemMap[clusterItem.snippet]?.isSeen == true
                     }
                     Box(
                         modifier = Modifier
@@ -517,8 +582,8 @@ actual fun GoogleMaps(
                                     CircleShape.copy(all = CornerSize(50))
                                 )
                                 .border(
-                                    width = if(isAllSeen) 1.dp else 2.dp,
-                                    color = if(isAllSeen) Color.LightGray else Color.Red,
+                                    width = if (isAllSeen) 1.dp else 2.dp,
+                                    color = if (isAllSeen) Color.LightGray else Color.Red,
                                     shape = CircleShape.copy(all = CornerSize(50))
                                 )
                                 .padding(8.dp)

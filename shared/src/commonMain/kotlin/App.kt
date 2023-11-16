@@ -205,7 +205,7 @@ fun App(
                 coroutineScope = coroutineScope
             )
 
-        var shouldRedrawMapMarkers by remember {
+        var shouldCalculateMapMarkers by remember {
             mutableStateOf(true)
         }
         var shouldShowInfoMarker by remember {
@@ -238,18 +238,23 @@ fun App(
                 }
                 markersRepo.updateIsParseMarkersPageFinished(true) // ensures the markers are updated
 
-                Log.d("🎯 loadMarkers END UPDATE1, processing time = ${(Clock.System.now() - startTime)}\n")
+                Log.d("🎯 loadMarkers END UPDATE1, " +
+                        "markers().size=${markersRepo.markers().size},"+
+                        "processing time = ${(Clock.System.now() - startTime)}\n")
             }
 
             // Update the markers with the latest data
-            mutableStateListOf<Marker>().also { markersSnapShot ->
-                val startTime = Clock.System.now()
-                markersSnapShot.clear()
-                markersSnapShot.addAll(markersRepo.markers())
-                Log.d("🎯 loadMarkers END UPDATE2, " +
-                        "markersRepo.size=${markersRepo.markers().size}, " +
-                        "processing time = ${(Clock.System.now() - startTime)}")
-            }
+            mutableStateListOf<Marker>(
+                *(markersRepo.markers().toList()).toTypedArray()
+            )
+//                .also { markersSnapShot ->
+//                val startTime = Clock.System.now()
+//                markersSnapShot.clear()
+//                markersSnapShot.addAll(markersRepo.markers())
+//                Log.d("🎯 loadMarkers END UPDATE2, " +
+//                        "markersRepo.size=${markersRepo.markers().size}, " +
+//                        "processing time = ${(Clock.System.now() - startTime)}")
+//            }
         }
         if (false) {
             // LEAVE FOR REFERENCE
@@ -299,8 +304,7 @@ fun App(
                     )
 
                     userLocation = jiggleLocationToForceUiUpdate(userLocation)
-                    shouldRedrawMapMarkers = true
-                    yield() // todo needed? remove soon?
+                    shouldCalculateMapMarkers = true
                 }
             }
         }
@@ -315,7 +319,10 @@ fun App(
         var isProcessingRecentlySeenList by remember {
             mutableStateOf(false)
         }
-        LaunchedEffect(Unit, loadMarkersResult.loadingState, seenRadiusMiles, finalMarkers) {
+        LaunchedEffect(Unit, seenRadiusMiles, shouldCalculateMapMarkers, loadMarkersResult) {
+            // Guard against un-parsed markers
+            if(!markersRepo.markersResult().isParseMarkersPageFinished) return@LaunchedEffect
+
             // Set the last known location to the current location in settings
             gpsLocationService.onUpdatedGPSLocation(
                 errorCallback = { errorMessage ->
@@ -351,6 +358,7 @@ fun App(
 
                         Log.d("👁️ 2.START - Collecting recently seen markers after location update..., finalMarkers.size=${finalMarkers.size}")
                         coroutineScope.launch(Dispatchers.IO) {
+                            delay(800) // allow clusters to animate before processing the list
                             addSeenMarkersToRecentlySeenList(
                                 markersRepo.markers(), // SSoT is the Repo
                                 userLocation,
@@ -414,7 +422,7 @@ fun App(
 
                                         // Update the UI with the updated markers
                                         //finalMarkers = markersRepo.markers() // pull from SSoT after update
-                                        shouldRedrawMapMarkers = true
+                                        shouldCalculateMapMarkers = true
                                         isProcessingRecentlySeenList = false
 
                                         Log.d("👁️ 2.1-END, processing time = ${(Clock.System.now() - startTime)}")
@@ -541,7 +549,7 @@ fun App(
 //                                    finalMarkers = markersRepo.markers()
                                     finalMarkers.clear()
                                     finalMarkers.addAll(markersRepo.markers())
-                                    shouldRedrawMapMarkers = true
+                                    shouldCalculateMapMarkers = true
                                     userLocation = jiggleLocationToForceUiUpdate(userLocation)
                                 }
                             },
@@ -666,7 +674,7 @@ fun App(
                             },
                             title = {
                                 Text(
-                                    text = "Fred's History Hunt",
+                                    text = kAppNameStr,
                                     fontStyle = FontStyle.Normal,
                                     fontWeight = FontWeight.Medium
                                 )
@@ -769,8 +777,8 @@ fun App(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        //val startTime = Clock.System.now()
-                        //Log.d("✏️✏️⬇️  START map rendering, finalMarkers.size = ${finalMarkers.size}, shouldRedrawMapMarkers=$shouldRedrawMapMarkers\n" )
+                        val startTime = Clock.System.now()
+                        Log.d("✏️✏️⬇️  START map rendering, finalMarkers.size = ${finalMarkers.size}, shouldRedrawMapMarkers=$shouldCalculateMapMarkers\n" )
 
                         // Show Map
                         MapContent(
@@ -781,9 +789,9 @@ fun App(
                             userLocation = userLocation,
                             markers = markersRepo.markers(),  // finalMarkers
                             mapBounds = null,  // leave for future use
-                            shouldRedrawMarkers = shouldRedrawMapMarkers, // redraw the map & markers
-                            onDidRedrawMarkers = { // map & markers have been redrawn
-                                shouldRedrawMapMarkers = false
+                            shouldCalculateMarkers = shouldCalculateMapMarkers, // calculate the markers clusters/heatmaps
+                            onDidCalculateMarkers = { // map & markers have been redrawn
+                                shouldCalculateMapMarkers = false
                             },
                             isTrackingEnabled = isTrackingEnabled,
                             shouldCenterCameraOnLocation = shouldCenterCameraOnLocation,
@@ -832,7 +840,7 @@ fun App(
                             }
                         )
 
-                        //Log.d("✏️✏️🛑  END map rendering, time to render = ${(Clock.System.now() - startTime)}\n" )
+                        Log.d("✏️✏️🛑  END map rendering, time to render = ${(Clock.System.now() - startTime)}\n" )
                     }
 
                     RecentlySeenMarkers(

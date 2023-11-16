@@ -20,8 +20,8 @@ fun MapContent(
     userLocation: Location,
     markers: List<Marker>,
     mapBounds: List<LatLong>? = null,
-    shouldRedrawMarkers: Boolean,
-    onDidRedrawMarkers: () -> Unit = {},
+    shouldCalculateMarkers: Boolean,
+    onDidCalculateMarkers: () -> Unit = {},
     isTrackingEnabled: Boolean = false,
     shouldCenterCameraOnLocation: Location? = null,
     onDidCenterCameraOnLocation: () -> Unit = {},
@@ -47,7 +47,7 @@ fun MapContent(
     ) {
 
         // Log.d("💿 MapContent: isFinishedLoadingMarkerData=$isFinishedLoadingMarkerData, isFirstUpdate=$isFirstUpdate, shouldRedrawMapMarkers=$shouldRedrawMarkers")
-        if (isParseMarkersPageFinished || !isFirstUpdate || shouldRedrawMarkers) { // todo use shouldRedrawMapMarkers instead of didMapMarkersRedraw
+        if (isParseMarkersPageFinished || !isFirstUpdate || shouldCalculateMarkers) {
             GoogleMaps(
                 modifier = modifier,
                 isMapOptionSwitchesVisible = isMapOptionSwitchesVisible,
@@ -57,8 +57,8 @@ fun MapContent(
                     userLocation.longitude
                 ),
                 markers = markers.ifEmpty { null },
-                shouldRedrawMapMarkers = shouldRedrawMarkers,
-                onDidRedrawMapMarkers = onDidRedrawMarkers,
+                shouldCalculateClusterItemList = shouldCalculateMarkers,
+                onDidCalculateClusterItemList = onDidCalculateMarkers,
                 shouldSetInitialCameraPosition =
                     if (!isFirstUpdate && !didSetInitialCameraPosition) {  // set initial camera position after first update
                         //Log.d("💿 MapContent.shouldSetInitialCameraPosition: isFirstUpdate=true,\n" +
