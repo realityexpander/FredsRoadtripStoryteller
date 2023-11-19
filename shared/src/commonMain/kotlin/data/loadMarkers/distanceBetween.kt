@@ -36,7 +36,7 @@ private fun rad2deg(rad: Double): Double {
     return rad * 180.0 / PI
 }
 
-// Todo - test these work
+// todo - test these work / needed
 public fun Double.milesToDegrees(): Double {
     val miles = this
     val earthRadius = 3960.0 // in miles

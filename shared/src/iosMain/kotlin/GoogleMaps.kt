@@ -59,7 +59,7 @@ actual fun GoogleMaps(
     isTrackingEnabled: Boolean,
     userLocation: LatLong?,
     markers: List<Marker>?,
-    shouldCalculateClusterItemList: Boolean,
+    shouldCalcClusterItems: Boolean,
     onDidCalculateClusterItemList: () -> Unit,  // best for tracking user location
     shouldSetInitialCameraPosition: CameraPosition?,  // best for showing a bunch of markers
     shouldCenterCameraOnLatLong: LatLong?, // usually only used for initial camera position bc zoom level is forced

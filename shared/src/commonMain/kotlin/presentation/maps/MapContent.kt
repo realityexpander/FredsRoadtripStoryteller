@@ -56,7 +56,7 @@ fun MapContent(
                     userLocation.longitude
                 ),
                 markers = markers.ifEmpty { null },
-                shouldCalculateClusterItemList = shouldCalculateMarkers,
+                shouldCalcClusterItems = shouldCalculateMarkers,
                 onDidCalculateClusterItemList = onDidCalculateMarkers,
                 shouldSetInitialCameraPosition =
                     if (!isFirstUpdate && !didSetInitialCameraPosition) {  // set initial camera position after first update

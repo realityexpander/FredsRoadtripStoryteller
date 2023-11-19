@@ -904,7 +904,7 @@ private fun calcLoadingStateIcon(loadingState: LoadingState<String>) =
         }
     }
 
-// force a change in location to trigger a reload of the markers
+// Force a change in location to trigger a reload of the markers
 // todo refactor? maybe use callback and set `shouldRedrawMapMarkers = true`
 private fun jiggleLocationToForceUiUpdate(userLocation: Location) = Location(
     userLocation.latitude +

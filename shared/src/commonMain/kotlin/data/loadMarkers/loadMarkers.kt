@@ -125,7 +125,7 @@ fun loadMarkers(
                             "&MilesType=1&HistMark=Y&WarMem=Y&FilterNOT=&FilterTown=&FilterCounty=&FilterState=&FilterCountry=&FilterCategory=0" +
                             "&Page=$processingHtmlPageNum"
 
-                    yield() // allow the UI to update before loading the network data
+                    yield() // allow the UI to update
                     try {
                         // 3. Load markers from network (or fake data)
                         val rawHtml =
@@ -179,7 +179,7 @@ fun loadMarkers(
                     }
                 } while (!isProcessingPagesFinished)
                 updateLoadingState(LoadingState.Finished)
-                yield()
+                yield() // allow the UI to update
 
                 // 6. Update "last updated at" location
                 coroutineScope.launch {

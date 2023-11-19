@@ -13,7 +13,7 @@ expect fun GoogleMaps(
     isTrackingEnabled: Boolean = false,
     userLocation: LatLong? = null,
     markers: List<Marker>? = null,
-    shouldCalculateClusterItemList: Boolean = false,
+    shouldCalcClusterItems: Boolean = false,
     onDidCalculateClusterItemList: () -> Unit = {},
     shouldSetInitialCameraPosition: CameraPosition? = null,
     shouldCenterCameraOnLatLong: LatLong? = null,

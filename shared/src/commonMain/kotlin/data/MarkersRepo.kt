@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import presentation.maps.Marker
 import presentation.maps.MarkerIdStr
+import kotlin.time.Duration.Companion.milliseconds
 import co.touchlab.kermit.Logger as Log
 
 open class MarkersRepo(
@@ -24,7 +25,6 @@ open class MarkersRepo(
 ) {
     private var inMemoryLoadMarkersResult = appSettings.loadMarkersResult
     private val ioCoroutineScope = CoroutineScope(Dispatchers.IO)
-    @OptIn(InternalCoroutinesApi::class)
     private val synchronizedObject = SynchronizedObject()
     private val atomicInMemoryLoadMarkersResult = atomic(appSettings.loadMarkersResult)
 
@@ -34,10 +34,8 @@ open class MarkersRepo(
     }
 
     // Completely replaces the current MarkersResult with a new value
-    @OptIn(InternalCoroutinesApi::class)
     private fun updateLoadMarkersResult(newLoadMarkersResult: LoadMarkersResult) {
         //Log.i("MarkersRepo: updateMarkersResult: newMarkersResult.size=${newMarkersResult.markerIdToMarker.size}")
-//        synchronized(synchronizedObject) {
         synchronized(synchronizedObject) {
             inMemoryLoadMarkersResult = newLoadMarkersResult
         }
@@ -45,35 +43,11 @@ open class MarkersRepo(
 
         ioCoroutineScope.launch {
             // debounce the update to improve performance
-            delay(150) // debounce // 50 is too fast, 150 is good
-
-//            atomicInMemoryLoadMarkersResult.update {
-//                Log.d("🗄️ MarkersRepo: newLoadMarkersResult: " +
-//                        "newLoadMarkersResult.size=${newLoadMarkersResult.markerIdToMarkerMap.size}")
-//                appSettings.loadMarkersResult = newLoadMarkersResult // save to persistent storage
-//                updateLoadMarkersResultFlow.emit(newLoadMarkersResult)
-//
-//                newLoadMarkersResult
-//            }
+            delay(150.milliseconds) // debounce // 50ms is too fast, 150ms seems good
 
             appSettings.loadMarkersResult = newLoadMarkersResult // save to persistent storage
             updateLoadMarkersResultFlow.emit(newLoadMarkersResult)
         }
-
-
-//        // debounce the update to improve performance
-//        ioCoroutineScope.launch {
-////        CoroutineScope(NonCancellable).launch {
-//            delay(150) // debounce // 50 is too fast, 150 is good
-//
-////            Log.d("🗄️ MarkersRepo: updateLoadMarkersResult: newLoadMarkersResult.size=${newLoadMarkersResult.markerIdToMarkerMap.size}")
-////            appSettings.loadMarkersResult = newLoadMarkersResult // save to persistent storage
-////            updateLoadMarkersResultFlow.emit(newLoadMarkersResult)
-//            Log.d("🗄️ MarkersRepo: updateLoadMarkersResult: " +
-//                    "atomicInMemoryLoadMarkersResult.size=${atomicInMemoryLoadMarkersResult.value.markerIdToMarkerMap.size}")
-//            appSettings.loadMarkersResult = atomicInMemoryLoadMarkersResult.value // save to persistent storage
-//            updateLoadMarkersResultFlow.emit(atomicInMemoryLoadMarkersResult.value)
-//        }
     }
 
     fun markersResult() = inMemoryLoadMarkersResult // Uses the in-memory lookup
@@ -123,7 +97,7 @@ open class MarkersRepo(
         inMemoryLoadMarkersResult = inMemoryLoadMarkersResult.copy(
             markerIdToMarkerMap = emptyMap(),
 
-            // todo needed??
+            // todo needed?? test
 //            isParseMarkersPageFinished = false,
 //            loadingState = LoadingState.Loading
         )
@@ -295,7 +269,7 @@ open class MarkersRepo(
         } ?: run {
             //val startTime = Clock.System.now()
             addMarker(marker)
-            Log.d("🚹🚹🚹 MarkerRepo: upsertMarkerBasicInfo: ADDED marker.id=${marker.id}")
+            //Log.d("🚹🚹🚹 MarkerRepo: upsertMarkerBasicInfo: ADDED marker.id=${marker.id}")
             //Log.d("🚹🚹🚹 ⎣ 🏁 MarkerRepo: upsertMarkerBasicInfo: added marker.id=${marker.id}, took ${Clock.System.now() - startTime}")
         }
 
