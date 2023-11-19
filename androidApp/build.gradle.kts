@@ -10,6 +10,9 @@ plugins {
     id("com.google.gms.google-services")
     // Crashlytics
     id("com.google.firebase.crashlytics")
+
+//    // For AtomicFu
+//    id("kotlinx-atomicfu")
 }
 
 kotlin {

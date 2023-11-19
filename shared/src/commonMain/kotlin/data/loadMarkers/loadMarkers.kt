@@ -238,13 +238,13 @@ private fun isLocationOutsideReloadRadius(
     if (appSettings.hasKey(kMarkersLastUpdatedLocation)) {
         val markersLastUpdatedLocation = appSettings.markersLastUpdatedLocation
         val userDistanceFromLastUpdatedLocationMiles =
-            distanceBetween(
+            distanceBetweenInMiles(
                 location.latitude,
                 location.longitude,
                 markersLastUpdatedLocation.latitude,
                 markersLastUpdatedLocation.longitude
-            ) * 1.35 // fudge factor to account for the fact that the user location may have
-        // moved since the last update.
+            ) * .90 // fudge factor to account for the fact that the user location may have
+                    // moved since the last update.
 
         if (userDistanceFromLastUpdatedLocationMiles > maxReloadDistanceMiles) {
             return true

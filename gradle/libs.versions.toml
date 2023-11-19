@@ -19,6 +19,7 @@ kotlin = "1.9.10"
 kotlinx-CoroutinesCore = "1.7.3"
 kotlinx-Datetime = "0.4.1"
 kotlinx-SerializationJson = "1.6.0"
+kotlinx-atomicfu = "0.23.0"
 ksoupVersion = "0.2.1"
 ktor-ClientCore = "2.3.5"
 ktor-ClientAndroid = "2.2.4"
@@ -62,6 +63,7 @@ kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotl
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-CoroutinesCore" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-Datetime" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-SerializationJson" }
+kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "kotlinx-atomicfu" }
 ksoup-entites = { module = "com.mohamedrejeb.ksoup:ksoup-entites", version.ref = "ksoupVersion" }
 ksoup-html = { module = "com.mohamedrejeb.ksoup:ksoup-html", version.ref = "ksoupVersion" }
 ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktor-ClientAndroid" }

@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import data.AppSettings
+import data.MarkersRepo
 import data.appSettings
 import getPlatformName
 import kotlinx.coroutines.CoroutineScope
@@ -46,11 +47,13 @@ import triggerDeveloperFeedback
 @Composable
 fun SettingsScreen(
     settings: AppSettings? = null,
+    markersRepo: MarkersRepo? = null,
     bottomSheetScaffoldState: BottomSheetScaffoldState,
     seenRadiusMiles: Double,
     onSeenRadiusChange: (Double) -> Unit = {},
     onIsCachedMarkersLastUpdatedLocationVisibleChange: ((Boolean) -> Unit) = {},
-    onResetMarkerSettings: (() -> Unit) = {}
+    onResetMarkerSettings: (() -> Unit) = {},
+    onClose: () -> Unit = {},
 ) {
     val scrollState = rememberScrollState()
     var isResetMarkerSettingsAlertDialogVisible by remember { mutableStateOf(false) }
@@ -96,6 +99,7 @@ fun SettingsScreen(
                 onClick = {
                     coroutineScope.launch {
                         bottomSheetScaffoldState.bottomSheetState.collapse()
+                        onClose()
                     }
                 }) {
                 Icon(
@@ -195,7 +199,7 @@ fun SettingsScreen(
                 Text("Reset Marker Info Cache")
             }
             Text(
-                "Cache size: ${settings?.loadMarkersResult?.markerIdToMarkerMap?.size} markers",
+                "Cache size: ${markersRepo?.markers()?.size} markers",
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally),
             )

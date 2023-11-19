@@ -5,6 +5,8 @@ plugins {
 
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.plugin.serialization")
+
+//    id("kotlinx-atomicfu")
 }
 
 kotlin {
@@ -83,6 +85,9 @@ kotlin {
 
                 // Date-time
                 implementation(libs.kotlinx.datetime)
+
+                // AtomicFu
+                api(libs.kotlinx.atomicfu)
             }
         }
         // Android-only dependencies that are used in the shared module (expect/actual)
@@ -151,3 +156,18 @@ android {
         kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
     }
 }
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        // kotlinx.atomicfu should be on classpath
+        //  it's an implementation detail of kotlinx.atomicfu gradle plugin
+//        classpath(kotlinLibs.gradle.plugin)
+        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.23.0")
+    }
+}
+
+apply(plugin = "kotlinx-atomicfu")

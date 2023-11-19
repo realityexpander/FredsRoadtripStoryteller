@@ -6,11 +6,13 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomSheetScaffold
 import androidx.compose.material.BottomSheetScaffoldState
+import androidx.compose.material.BottomSheetValue
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -26,6 +28,7 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.rememberBottomSheetScaffoldState
+import androidx.compose.material.rememberBottomSheetState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -104,12 +107,15 @@ var debugLog = mutableListOf("Debug log: start time:" + Clock.System.now())
 
 sealed class BottomSheetScreen {
     data object SettingsScreen : BottomSheetScreen()
-
     data class MarkerDetailsScreen(
         val marker: Marker? = null,  // Can pass in a MapMarker...
         val id: String? = marker?.id // ...or just an id string
     ) : BottomSheetScreen()
 }
+
+// Improve performance by restricting updates
+var frameCount = 0
+var didFullRender = false
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -181,30 +187,31 @@ fun App(
                 calcLoadingStateIcon(networkLoadingState)
             )
         }
-            loadMarkers(
-                appSettings,
-                markersRepo,
-                userLocation, // when user location changes, triggers potential load markers from server
-                maxReloadDistanceMiles = kMaxReloadDistanceMiles.toInt(),
-                onUpdateMarkersLastUpdatedLocation = { updatedLocation ->
-                    markersLastUpdatedLocation = updatedLocation
-                },
-                onUpdateLoadingState = { loadingState ->
-                    networkLoadingState = loadingState
-                },
-                showLoadingState = false,
-                //    kSunnyvaleFakeDataset,
-                //    kTepoztlanFakeDataset,
-                //    kSingleItemPageFakeDataset,
-                useFakeDataSetId = kUseRealNetwork,
-            )
+
+        loadMarkers(
+            appSettings,
+            markersRepo,
+            userLocation, // when user location changes, triggers potential load markers from server
+            maxReloadDistanceMiles = kMaxReloadDistanceMiles.toInt(),
+            onUpdateMarkersLastUpdatedLocation = { updatedLocation ->
+                markersLastUpdatedLocation = updatedLocation
+            },
+            onUpdateLoadingState = { loadingState ->
+                networkLoadingState = loadingState
+            },
+            showLoadingState = false,
+            //    kSunnyvaleFakeDataset,
+            //    kTepoztlanFakeDataset,
+            //    kSingleItemPageFakeDataset,
+            useFakeDataSetId = kUseRealNetwork,
+        )
             //val loadMarkersResult: LoadMarkersResult = LoadMarkersResult( // LEAVE for testing
             //    loadingState = LoadingState.Finished,
             //    isParseMarkersPageFinished = true,
             //    markerIdToMarker = mutableMapOf()
             //)
 
-        var shouldCalculateMapMarkers by remember {
+        var shouldCalculateMarkers by remember {
             mutableStateOf(true)
         }
         var shouldShowInfoMarker by remember {
@@ -229,8 +236,10 @@ fun App(
         // Set finalMarkers after any update to the MarkersRepo
         LaunchedEffect(markersRepo.updateLoadMarkersResultFlow) {
             markersRepo.updateLoadMarkersResultFlow.collectLatest { loadMarkersResult ->
-                delay(250) // debounce - allow the loadMarkers to finish processing // todo needed?
+                //delay(250) // debounce - allow the loadMarkers to finish processing // todo needed?
                 coroutineScope.launch(Dispatchers.IO) {
+                    //delay(250) // todo moved inside from above, needed?
+
                     // Update the final markers list with the updated marker data
                     val startTime = Clock.System.now()
 
@@ -246,7 +255,7 @@ fun App(
                     )
 
                     userLocation = jiggleLocationToForceUiUpdate(userLocation)
-                    shouldCalculateMapMarkers = true
+                    shouldCalculateMarkers = true
                 }
             }
         }
@@ -361,7 +370,7 @@ fun App(
                                         }
 
                                         // Update the UI with the updated markers
-                                        shouldCalculateMapMarkers = true
+                                        shouldCalculateMarkers = true
                                         isProcessingRecentlySeenList = false
                                         Log.d("👁️ 2.1-END, processing time = ${(Clock.System.now() - startTime)}")
                                     }
@@ -450,6 +459,13 @@ fun App(
             }
         }
 
+
+//        var startTime by remember {
+//            mutableStateOf(Clock.System.now())
+//        }
+        val startTime = Clock.System.now()
+        didFullRender = false
+
         BottomSheetScaffold(
             scaffoldState = bottomSheetScaffoldState,
             sheetElevation = 16.dp,
@@ -459,108 +475,125 @@ fun App(
             sheetBackgroundColor = MaterialTheme.colors.background,
             sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
             sheetContent = {
-                when (bottomSheetActiveScreen) {
-                    is BottomSheetScreen.SettingsScreen -> {
-                        SettingsScreen(
-                            settings = appSettings,
-                            bottomSheetScaffoldState,
-                            seenRadiusMiles,
-                            onSeenRadiusChange = { updatedRadiusMiles ->
-                                seenRadiusMiles = updatedRadiusMiles
-                            },
-                            onIsCachedMarkersLastUpdatedLocationVisibleChange = {
-                                isMarkersLastUpdatedLocationVisible = it
-                            },
-                            onResetMarkerSettings = {
-                                coroutineScope.launch {
-                                    resetMarkerCacheSettings(
-                                        appSettings,
-                                        finalMarkers,
-                                        recentlySeenMarkersSet,
-                                        uiRecentlySeenMarkersList,
-                                        markersRepo
-                                    )
+                    println("bottomSheetActiveScreen=$bottomSheetActiveScreen")
+                    when (bottomSheetActiveScreen) {
+                        is BottomSheetScreen.SettingsScreen -> {
+                            SettingsScreen(
+                                settings = appSettings,
+                                markersRepo,
+                                bottomSheetScaffoldState,
+                                seenRadiusMiles,
+                                onSeenRadiusChange = { updatedRadiusMiles ->
+                                    seenRadiusMiles = updatedRadiusMiles
+                                },
+                                onIsCachedMarkersLastUpdatedLocationVisibleChange = {
+                                    isMarkersLastUpdatedLocationVisible = it
+                                },
+                                onResetMarkerSettings = {
+                                    coroutineScope.launch {
+                                        resetMarkerCacheSettings(
+                                            appSettings,
+                                            finalMarkers,
+                                            recentlySeenMarkersSet,
+                                            uiRecentlySeenMarkersList,
+                                            markersRepo
+                                        )
 
-                                    shouldCalculateMapMarkers = true
-                                    delay(1000) // allow time for markers to update
+                                        shouldCalculateMarkers = true
+                                        delay(1000) // allow time for markers to update
 
-                                    shouldCalculateMapMarkers = true // todo needed? remove?
-                                    userLocation = jiggleLocationToForceUiUpdate(userLocation)
+                                        shouldCalculateMarkers = true // todo needed? remove?
+                                        userLocation = jiggleLocationToForceUiUpdate(userLocation)
+                                    }
+                                },
+                                onClose = {
+                                    coroutineScope.launch {
+                                        bottomSheetScaffoldState.bottomSheetState.collapse()
+                                    }
                                 }
-                            },
-                        )
-                    }
-                    is BottomSheetScreen.MarkerDetailsScreen -> {
-                        // Use id string (coming from map marker in google maps)
-                        // or marker id (coming from item in marker details screen)
-                        val bottomSheetParams =
-                            bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen
-                        val localMarker = bottomSheetParams.marker
-                        val markerIdStrFromParamId = bottomSheetParams.id
-                        val markerIdStrFromMarker = localMarker?.id
-                        // Guard
-                        if (markerIdStrFromParamId.isNullOrBlank() && markerIdStrFromMarker.isNullOrBlank()) {
-                            throw IllegalStateException(
-                                "Error: Both markerIdFromId and " +
-                                        "markerIdFromMarker are null, need to have at least one non-null value."
                             )
                         }
-
-                        // Get marker from current mapMarkers list
-                        val marker = remember(markerIdStrFromMarker, markerIdStrFromParamId) {
-                            val markerId: MarkerIdStr =
-                                markerIdStrFromParamId
-                                    ?: markerIdStrFromMarker
-                                    ?: run {
-                                        errorMessageStr =
-                                            "Error: Unable to find marker id=$markerIdStrFromMarker"
-                                        return@remember localMarker ?: Marker()
-                                    }
-
-                            markersRepo.marker(markerId) ?: run {
-                                errorMessageStr = "Error: Unable to find marker with id=$markerId"
-                                return@remember localMarker ?: Marker()
-                            }
-                        }
-
-                        markerDetailsResult = loadMarkerDetails(marker) // reactive composable
-
-                        // Update the `marker` with Marker details (as they are loaded)
-                        LaunchedEffect(markerDetailsResult) {
-                            val updatedDetailsMarker =
-                                (markerDetailsResult as? LoadingState.Loaded<Marker>)?.data
-
-                            // Did fresh details get loaded?
-                            if (updatedDetailsMarker != null
-                                && markerDetailsResult is LoadingState.Loaded
-                                && !marker.isDetailsLoaded
-                                && updatedDetailsMarker.isDetailsLoaded
-                            ) {
-                                markersRepo.updateMarkerDetails(updatedDetailsMarker)
-                            }
-                        }
-
-                        MarkerDetailsScreen(
-                            bottomSheetScaffoldState,
-                            markerDetailsResult,
-                            isTextToSpeechCurrentlySpeaking = isTextToSpeechCurrentlySpeaking,
-                            onClickStartSpeakingMarker = { speakMarker ->
-                                markersRepo.updateMarkerIsSpoken(speakMarker, isSpoken = true)  // todo - should be a function and calls speakRecentlySeenMarker()
-                                appSettings.lastSpokenRecentlySeenMarker = RecentlySeenMarker(
-                                    speakMarker.id,
-                                    speakMarker.title
+                        is BottomSheetScreen.MarkerDetailsScreen -> {
+                            // Use id string (coming from map marker in google maps)
+                            // or marker id (coming from item in marker details screen)
+                            val bottomSheetParams =
+                                bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen
+                            val localMarker = bottomSheetParams.marker
+                            val markerIdStrFromParamId = bottomSheetParams.id
+                            val markerIdStrFromMarker = localMarker?.id
+                            // Guard
+                            if (markerIdStrFromParamId.isNullOrBlank() && markerIdStrFromMarker.isNullOrBlank()) {
+                                throw IllegalStateException(
+                                    "Error: Both markerIdFromId and " +
+                                            "markerIdFromMarker are null, need to have at least one non-null value."
                                 )
-                                currentSpeakingMarker = speakMarker(speakMarker, true)
-                            },
-                            onLocateMarkerOnMap = { locateMarker ->
-                                coroutineScope.launch {
-                                    shouldCenterCameraOnLocation = locateMarker.position.toLocation()
-                                    shouldShowInfoMarker = locateMarker
+                            }
+
+                            // Get marker from current mapMarkers list
+                            val marker = remember(markerIdStrFromMarker, markerIdStrFromParamId) {
+                                val markerId: MarkerIdStr =
+                                    markerIdStrFromParamId
+                                        ?: markerIdStrFromMarker
+                                        ?: run {
+                                            errorMessageStr =
+                                                "Error: Unable to find marker id=$markerIdStrFromMarker"
+                                            return@remember localMarker ?: Marker()
+                                        }
+
+                                markersRepo.marker(markerId) ?: run {
+                                    errorMessageStr =
+                                        "Error: Unable to find marker with id=$markerId"
+                                    return@remember localMarker ?: Marker()
                                 }
-                            },
-                        )
+                            }
+
+                            markerDetailsResult = loadMarkerDetails(marker) // reactive composable
+
+                            // Update the `marker` with Marker details (as they are loaded)
+                            LaunchedEffect(markerDetailsResult) {
+                                val updatedDetailsMarker =
+                                    (markerDetailsResult as? LoadingState.Loaded<Marker>)?.data
+
+                                // Did fresh details get loaded?
+                                if (updatedDetailsMarker != null
+                                    && markerDetailsResult is LoadingState.Loaded
+                                    && !marker.isDetailsLoaded
+                                    && updatedDetailsMarker.isDetailsLoaded
+                                ) {
+                                    markersRepo.updateMarkerDetails(updatedDetailsMarker)
+                                }
+                            }
+
+                            MarkerDetailsScreen(
+                                bottomSheetScaffoldState,
+                                markerDetailsResult,
+                                isTextToSpeechCurrentlySpeaking = isTextToSpeechCurrentlySpeaking,
+                                onClickStartSpeakingMarker = { speakMarker ->
+                                    markersRepo.updateMarkerIsSpoken(
+                                        speakMarker,
+                                        isSpoken = true
+                                    )  // todo - should be a function and calls speakRecentlySeenMarker()
+                                    appSettings.lastSpokenRecentlySeenMarker = RecentlySeenMarker(
+                                        speakMarker.id,
+                                        speakMarker.title
+                                    )
+                                    currentSpeakingMarker = speakMarker(speakMarker, true)
+                                },
+                                onLocateMarkerOnMap = { locateMarker ->
+                                    coroutineScope.launch {
+                                        shouldCenterCameraOnLocation =
+                                            locateMarker.position.toLocation()
+                                        shouldShowInfoMarker = locateMarker
+                                    }
+                                },
+                                onClose = {
+                                    coroutineScope.launch {
+                                        bottomSheetScaffoldState.bottomSheetState.collapse()
+                                    }
+                                }
+                            )
+                        }
                     }
-                }
             },
             drawerElevation = 16.dp,
             drawerScrimColor = Color.Black.copy(alpha = 0.5f),
@@ -617,10 +650,16 @@ fun App(
                             actions = {
                                 // Settings
                                 IconButton(onClick = {
-                                    coroutineScope.launch {
-                                        bottomSheetActiveScreen = BottomSheetScreen.SettingsScreen
-                                        bottomSheetScaffoldState.bottomSheetState.apply {
-                                            if (isCollapsed) expand() else collapse()
+                                    println("bottomSheetActiveScreen=$bottomSheetActiveScreen")
+                                    if (bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
+                                        coroutineScope.launch {
+                                            bottomSheetActiveScreen =
+                                                BottomSheetScreen.SettingsScreen
+                                            bottomSheetScaffoldState.bottomSheetState.expand()
+                                        }
+                                    } else {
+                                        coroutineScope.launch {
+                                            bottomSheetScaffoldState.bottomSheetState.collapse()
                                         }
                                     }
                                 }) { // show settings page
@@ -641,7 +680,6 @@ fun App(
                                 }) {
                                     // Loading status icon // todo - should use a sealed/enum class instead of using the icon
                                     AnimatedVisibility(
-//                                        loadingStateIcon != Icons.Default.Cloud,
                                         networkLoadingState !is LoadingState.Finished,
                                         enter = fadeIn(tween(1500)),
                                         exit = fadeOut(tween(1500))
@@ -653,7 +691,6 @@ fun App(
                                     }
                                     // History icon
                                     AnimatedVisibility(
-//                                        loadingStateIcon == Icons.Default.Cloud,
                                         networkLoadingState is LoadingState.Finished,
                                         enter = fadeIn(tween(500)),
                                         exit = fadeOut(tween(500))
@@ -669,7 +706,6 @@ fun App(
 
                         // Show loading error
                         AnimatedVisibility(
-//                            visible = loadMarkersResult.loadingState is LoadingState.Error,
                             visible = networkLoadingState is LoadingState.Error,
                         ) {
                             if (networkLoadingState is LoadingState.Error) {
@@ -690,12 +726,14 @@ fun App(
                     if (isRecentlySeenMarkersPanelVisible) 0.5f else 0f,
                     animationSpec = tween(500)
                 )
+                println("🦉 Frame count = $frameCount, time = ${(Clock.System.now() - startTime)}" )
 
                 Column(
                     modifier = Modifier.fillMaxHeight(),
                     verticalArrangement = Arrangement.SpaceBetween,
                     horizontalAlignment = Alignment.Start
                 ) {
+                    if(frameCount<=2) return@Column // prevents FoUC // 1=too-zoomed-out, 2=zoomed-in-properly
 
                     // Show Error
                     AnimatedVisibility(errorMessageStr != null) {
@@ -715,20 +753,20 @@ fun App(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        val startTime = Clock.System.now()
-                        Log.d("✏️✏️⬇️  START map rendering, finalMarkers.size = ${finalMarkers.size}, shouldRedrawMapMarkers=$shouldCalculateMapMarkers\n" )
+                        Log.d("✏️✏️⬇️  START map rendering, finalMarkers.size = ${finalMarkers.size}, shouldRedrawMapMarkers=$shouldCalculateMarkers\n")
 
                         // Show Map
                         MapContent(
                             modifier = Modifier
                                 .fillMaxHeight(1.0f - transitionRecentMarkersPanelState),
-                            initialUserLocation = appSettings.lastKnownUserLocation,
+                            initialUserLocation =
+                                appSettings.lastKnownUserLocation,
                             userLocation = userLocation,
                             markers = finalMarkers,
                             mapBounds = null,  // leave for future use
-                            shouldCalculateMarkers = shouldCalculateMapMarkers, // calculate the markers clusters/heatmaps
+                            shouldCalculateMarkers = shouldCalculateMarkers, // calculate the markers clusters/heatmaps
                             onDidCalculateMarkers = { // map & markers have been redrawn
-                                shouldCalculateMapMarkers = false
+                                shouldCalculateMarkers = false
                             },
                             isTrackingEnabled = isTrackingEnabled,
                             shouldCenterCameraOnLocation = shouldCenterCameraOnLocation,
@@ -737,15 +775,15 @@ fun App(
                             },
                             seenRadiusMiles = seenRadiusMiles,
                             cachedMarkersLastUpdatedLocation =
-                                remember(
-                                    appSettings.isMarkersLastUpdatedLocationVisible,
+                            remember(
+                                appSettings.isMarkersLastUpdatedLocationVisible,
+                                markersLastUpdatedLocation
+                            ) {
+                                if (appSettings.isMarkersLastUpdatedLocationVisible)
                                     markersLastUpdatedLocation
-                                ) {
-                                    if (appSettings.isMarkersLastUpdatedLocationVisible)
-                                        markersLastUpdatedLocation
-                                    else
-                                        null
-                                },
+                                else
+                                    null
+                            },
                             onToggleIsTrackingEnabled = {
                                 isTrackingEnabled = !isTrackingEnabled
                                 coroutineScope.launch {
@@ -777,11 +815,11 @@ fun App(
                             }
                         )
 
-                        Log.d("✏️✏️🛑  END map rendering, time to render = ${(Clock.System.now() - startTime)}\n" )
+                        Log.d("✏️✏️🛑  END map rendering, time to render = ${(Clock.System.now() - startTime)}\n")
                     }
 
-                    val startTime = Clock.System.now()
-                    Log.d("✏️✏️⬇️  START recently seen markers rendering, uiRecentlySeenMarkersList.size = ${uiRecentlySeenMarkersList.size}\n" )
+
+                    //Log.d("✏️✏️⬇️  START recently seen markers rendering")
                     RecentlySeenMarkers(
                         uiRecentlySeenMarkersList,
                         onClickRecentlySeenMarkerItem = { markerId ->
@@ -821,9 +859,10 @@ fun App(
                         },
                         markersRepo = markersRepo,
                     )
-                    Log.d("✏️✏️🛑  END recently seen markers rendering, time to render = ${(Clock.System.now() - startTime)}\n" )
+                    Log.d("✏️✏️🛑  END recently seen markers rendering, time to render = ${(Clock.System.now() - startTime)}")
                 }
             }
+            frameCount++
 
             // Show Onboarding
             if (isOnboardingDialogVisible) {
@@ -842,7 +881,10 @@ fun App(
                     }
                 )
             }
+
         }
+        Log.d("🎃 END Frame time to render = ${(Clock.System.now() - startTime)}\n" )
+        didFullRender = true
     }
 }
 

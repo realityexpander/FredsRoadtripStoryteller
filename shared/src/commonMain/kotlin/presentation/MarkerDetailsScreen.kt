@@ -86,6 +86,7 @@ fun MarkerDetailsScreen(
     onClickStartSpeakingMarker: (Marker) -> Unit = {},
     isTextToSpeechCurrentlySpeaking: Boolean = false,
     onLocateMarkerOnMap: (Marker) -> Unit = {},
+    onClose: () -> Unit = {},
 ) {
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
@@ -104,6 +105,7 @@ fun MarkerDetailsScreen(
         ) {
             Spacer(modifier = Modifier.padding(8.dp))
 
+            // Error message
             Text(
                 markerLoadingState.errorMessage,
                 modifier = Modifier
@@ -119,6 +121,7 @@ fun MarkerDetailsScreen(
             )
             Spacer(modifier = Modifier.padding(16.dp))
 
+            // OK Button
             Button(
                 onClick = {
                     coroutineScope.launch {
@@ -171,6 +174,7 @@ fun MarkerDetailsScreen(
                 onClick = {
                     coroutineScope.launch {
                         bottomSheetScaffoldState.bottomSheetState.collapse()
+                        onClose()
                     }
                 },
             ) {
