@@ -141,6 +141,7 @@ actual fun GoogleMaps(
                 zoomControlsEnabled = false,  // the +/- buttons (obscures the FAB)
                 zoomGesturesEnabled = true,
                 scrollGesturesEnabled = true,
+                rotationGesturesEnabled = false,
             )
         )
     }
