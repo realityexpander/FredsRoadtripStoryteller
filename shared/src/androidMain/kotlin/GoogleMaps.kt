@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NoLiveLiterals
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableFloatStateOf
@@ -286,7 +287,6 @@ actual fun GoogleMaps(
         )
     ) }
     var previousCameraZoomLevel by remember { mutableFloatStateOf(cameraPositionState.position.zoom) }
-    var isFrameRenderCompleted by remember { mutableStateOf(false) }
     val ioCoroutineScope = rememberCoroutineScope { Dispatchers.IO }
     LaunchedEffect(
         shouldCalcClusterItems,
@@ -439,28 +439,21 @@ actual fun GoogleMaps(
         }
     }
 
-    // Attempt Increase the `restricted cluster` radius until all ClusterItems for the view are loaded
-    LaunchedEffect(isRestrictedClusterRadiusActive, isFrameRenderCompleted) {
-        if(isFrameRenderCompleted) {
-            isFrameRenderCompleted = false
-
-            if (isRestrictedClusterRadiusActive) {
-                if (restrictedClusterRadiusPhase < kMaxRestrictedClusterRadiusPhase) {
-                    Log.d("💠 🔧 LaunchedEffect(isRestrictedClusterRadiusActive): Increasing restrictedClusterRadiusPhase, restrictedClusterRadiusPhase = $restrictedClusterRadiusPhase")
-                    restrictedClusterRadiusPhase++
-                    shouldCalcRestrictedClusterItems = true
-                }
-
-                if (restrictedClusterRadiusPhase == kMaxRestrictedClusterRadiusPhase) {
-                    Log.d("💠 🔧 LaunchedEffect(isRestrictedClusterRadiusActive): Disabling isRestrictedClusterRadiusActive, restrictedClusterRadiusPhase = $restrictedClusterRadiusPhase")
-                    isRestrictedClusterRadiusActive = false
-                    shouldCalcRestrictedClusterItems = true
-                }
+    // Attempt Increase the `restricted cluster` radius until all ClusterItems for the view are in view
+    SideEffect {
+        if (isRestrictedClusterRadiusActive) {
+            if (restrictedClusterRadiusPhase < kMaxRestrictedClusterRadiusPhase) {
+                // Log.d("💠 🔧 LaunchedEffect(isRestrictedClusterRadiusActive): Increasing restrictedClusterRadiusPhase, restrictedClusterRadiusPhase = $restrictedClusterRadiusPhase")
+                restrictedClusterRadiusPhase++
+                shouldCalcRestrictedClusterItems = true
+            }
+            if (restrictedClusterRadiusPhase == kMaxRestrictedClusterRadiusPhase) {
+                // Log.d("💠 🔧 LaunchedEffect(isRestrictedClusterRadiusActive): Disabling isRestrictedClusterRadiusActive, restrictedClusterRadiusPhase = $restrictedClusterRadiusPhase")
+                isRestrictedClusterRadiusActive = false
+                shouldCalcRestrictedClusterItems = true
             }
         }
     }
-
-    // SideEffect {} // Look for changes in camera position (for after fling) // todo: implement
 
     Box(modifier.fillMaxSize()) {
         val frameStartTime = Clock.System.now()
@@ -581,7 +574,10 @@ actual fun GoogleMaps(
             // Show cluster marker constraint radius (scanner-radar echo indicator)
             if(frameIsRestrictedClusterRadiusActive) {
                 Circle(
-                    center = LatLng(cameraPositionState.position.target.latitude, cameraPositionState.position.target.longitude),
+                    center = LatLng(
+                        cameraPositionState.position.target.latitude,
+                        cameraPositionState.position.target.longitude
+                    ),
                     radius = calcRestrictedClusterRadiusMetersForCameraZoomLevel(
                         cameraPositionState.position.zoom,
                         isRestrictedClusterRadiusActive,
@@ -590,11 +586,13 @@ actual fun GoogleMaps(
                     ),
                     fillColor = Color.Green.copy(alpha = 0.03f),
                     strokeColor = Color.White.copy(alpha = 0.2f),
-                    strokePattern = listOf(
-                        Gap(20f),
-                        Dot(),
-                        Gap(20f),
-                    ),
+                    strokePattern =
+                        listOf(
+                            Gap(20f),
+                            Dot(),
+                            Gap(20f),
+                        )
+                     ,
                     strokeWidth = 40.0f
                 )
                 // LEAVE FOR REFERENCE
@@ -1014,7 +1012,6 @@ actual fun GoogleMaps(
         }
         frameRenderEndTime = Clock.System.now()
         frameIsRestrictedClusterRadiusActive = isRestrictedClusterRadiusActive
-        if(isRestrictedClusterRadiusActive) isFrameRenderCompleted = true
     }
 }
 
