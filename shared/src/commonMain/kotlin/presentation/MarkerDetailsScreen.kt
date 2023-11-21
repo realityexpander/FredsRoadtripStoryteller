@@ -91,7 +91,7 @@ fun MarkerDetailsScreen(
     isTextToSpeechCurrentlySpeaking: Boolean = false,
     onClickStartSpeakingMarker: (Marker) -> Unit = {},
     onLocateMarkerOnMap: (Marker) -> Unit = {},
-    onClose: () -> Unit = {},
+    onDismiss: () -> Unit = {},
 ) {
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()

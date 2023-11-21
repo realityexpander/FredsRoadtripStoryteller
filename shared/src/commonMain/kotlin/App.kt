@@ -205,7 +205,7 @@ fun App(
             //    kSingleItemPageFakeDataset,
             useFakeDataSetId = kUseRealNetwork,
         )
-            //val loadMarkersResult: LoadMarkersResult = LoadMarkersResult( // LEAVE for testing
+            //val loadMarkersResult: LoadMarkersResult = LoadMarkersResult( // empty set markers // LEAVE for testing
             //    loadingState = LoadingState.Finished,
             //    isParseMarkersPageFinished = true,
             //    markerIdToMarker = mutableMapOf()
@@ -228,6 +228,7 @@ fun App(
             //}
         }
 
+        // Markers used to render on the Map
         val finalMarkers = remember {
             mutableStateListOf<Marker>().apply {
                 addAll(markersRepo.markers())
@@ -236,11 +237,7 @@ fun App(
         // Set finalMarkers after any update to the MarkersRepo
         LaunchedEffect(markersRepo.updateLoadMarkersResultFlow) {
             markersRepo.updateLoadMarkersResultFlow.collectLatest { loadMarkersResult ->
-                //delay(250) // debounce - allow the loadMarkers to finish processing // todo needed?
                 coroutineScope.launch(Dispatchers.IO) {
-                    //delay(250) // todo moved inside from above, needed?
-
-                    // Update the final markers list with the updated marker data
                     val startTime = Clock.System.now()
 
                     // Update the final markers list with the updated marker data
@@ -301,9 +298,7 @@ fun App(
                     yield() // allows UI to update the location
 
                     //Log.d("👁️ 0.CHECK - isProcessingRecentlySeenList=$isProcessingRecentlySeenList")
-                    if(!isProcessingRecentlySeenList
-//                        && networkLoadingState is LoadingState.Finished // pause checking isSeen while data is loaded to avoid database contention
-                    ) { // guard against re-enter while processing the list
+                    if(!isProcessingRecentlySeenList) { // guard against re-enter while processing the list
                         isProcessingRecentlySeenList = true
 
                         Log.d("👁️ 2.START - Collecting recently seen markers after location update..., finalMarkers.size=${finalMarkers.size}")
@@ -459,7 +454,6 @@ fun App(
             }
         }
 
-
         val startTime = Clock.System.now()
         didFullFrameRender = false
 
@@ -585,12 +579,13 @@ fun App(
                                         shouldZoomToLatLongZoom =
                                             LatLongZoom(locateMarker.position, 14f)
                                     }
+                                },
+                                onDismiss = {
+                                    coroutineScope.launch {
+                                        bottomSheetScaffoldState.bottomSheetState.collapse()
+                                    }
                                 }
-                            ) {
-                                coroutineScope.launch {
-                                    bottomSheetScaffoldState.bottomSheetState.collapse()
-                                }
-                            }
+                            )
                         }
                     }
             },
@@ -752,7 +747,7 @@ fun App(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Log.d("✏️✏️⬇️  START map rendering, finalMarkers.size = ${finalMarkers.size}, shouldRedrawMapMarkers=$shouldCalculateMarkers\n")
+                        // Log.d("✏️✏️⬇️  START map rendering, finalMarkers.size = ${finalMarkers.size}, shouldRedrawMapMarkers=$shouldCalculateMarkers\n")
 
                         // Show Map
                         MapContent(
@@ -862,7 +857,7 @@ fun App(
                         },
                         markersRepo = markersRepo,
                     )
-                    Log.d("✏️✏️🛑  END recently seen markers rendering, time to render = ${(Clock.System.now() - startTime)}")
+                    Log.d("✏️✏️🛑  END recently seen markers rendering, finalMarkers.size = ${finalMarkers.size}, time to render = ${(Clock.System.now() - startTime)}")
                 }
             }
             frameCount++
