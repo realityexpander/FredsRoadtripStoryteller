@@ -1,6 +1,9 @@
 package presentation
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.TweenSpec
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -70,6 +73,7 @@ import io.kamel.core.Resource
 import io.kamel.image.KamelImage
 import io.kamel.image.KamelImageBox
 import io.kamel.image.asyncPainterResource
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import openNavigationAction
 import presentation.maps.Marker
@@ -82,6 +86,7 @@ const val kMaxWeightOfBottomDrawer = 0.9f
 @Composable
 fun MarkerDetailsScreen(
     bottomSheetScaffoldState: BottomSheetScaffoldState,
+    baseMarker: Marker,
     markerLoadingState: LoadingState<Marker>,
     onClickStartSpeakingMarker: (Marker) -> Unit = {},
     isTextToSpeechCurrentlySpeaking: Boolean = false,
@@ -153,52 +158,69 @@ fun MarkerDetailsScreen(
     }
 
     // Show Loading
-    if (markerLoadingState is LoadingState.Loading) {
+    if(
+        markerLoadingState is LoadingState.Loading
+//        enter = fadeIn(TweenSpec(800)),
+//        exit = fadeOut(TweenSpec(500))
+    ) {
 
-        // Close Button
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 0.dp, top = 4.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Top
-        ) {
-            Spacer(
-                modifier = Modifier
-                    .weight(3f),
-            )
-            IconButton(
-                modifier = Modifier
-                    .offset(8.dp, (-8).dp)
-                    .padding(8.dp),
-                onClick = {
-                    coroutineScope.launch {
-                        bottomSheetScaffoldState.bottomSheetState.collapse()
-                        onClose()
-                    }
-                },
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "Close",
-                    modifier = Modifier.alpha(0.5f)
-                )
-            }
-        }
+//        // Close Button
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(bottom = 0.dp, top = 4.dp),
+//            horizontalArrangement = Arrangement.SpaceBetween,
+//            verticalAlignment = Alignment.Top
+//        ) {
+//            Spacer(
+//                modifier = Modifier
+//                    .weight(3f),
+//            )
+//            IconButton(
+//                modifier = Modifier
+//                    .offset(8.dp, (-8).dp)
+//                    .padding(8.dp),
+//                onClick = {
+//                    coroutineScope.launch {
+//                        bottomSheetScaffoldState.bottomSheetState.collapse()
+//                        onClose()
+//                    }
+//                },
+//            ) {
+//                Icon(
+//                    imageVector = Icons.Default.Close,
+//                    contentDescription = "Close",
+//                    modifier = Modifier.alpha(0.5f)
+//                )
+//            }
+//        }
 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(kMaxWeightOfBottomDrawer),
+                .fillMaxHeight(kMaxWeightOfBottomDrawer)
+                .padding(start = 16.dp, end = 16.dp, bottom = 0.dp, top = 0.dp)
+            ,
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.Top,
         ) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(64.dp),
-                color = MaterialTheme.colors.onSurface,
-                strokeWidth = 4.dp,
+
+            // Title & Close Button
+            // Subtitle & Speak Button
+            TitleCloseSubtitleSpeakSection(baseMarker, coroutineScope, bottomSheetScaffoldState)
+
+            // ID, Navigate to Marker, Locate on Map, Speak
+            MarkerIdWithNavigateLocateSpeakActionButtonSection(
+                baseMarker,
+                coroutineScope,
+                bottomSheetScaffoldState,
+                onLocateMarkerOnMap,
+                isTextToSpeechCurrentlySpeaking,
+                onClickStartSpeakingMarker
             )
             Spacer(modifier = Modifier.padding(16.dp))
+
+
             Text(
                 "Loading Details...",
                 modifier = Modifier.fillMaxWidth(),
@@ -207,13 +229,26 @@ fun MarkerDetailsScreen(
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colors.onSurface,
             )
+            Spacer(modifier = Modifier.padding(32.dp))
+
+            CircularProgressIndicator(
+                modifier = Modifier.size(64.dp),
+                color = MaterialTheme.colors.onSurface,
+                strokeWidth = 4.dp,
+            )
         }
 
         return
     }
 
-    // Show Loaded Marker Info
-    if (markerLoadingState is LoadingState.Loaded<Marker>) {
+    // Show Loaded Marker Details
+    AnimatedVisibility(
+        markerLoadingState is LoadingState.Loaded<Marker>,
+        enter = fadeIn(TweenSpec(800)),
+        exit = fadeOut(TweenSpec(500))
+    ) {
+        markerLoadingState as LoadingState.Loaded<Marker>
+
         val painterResource: Resource<Painter> =
             asyncPainterResource(
                 data = markerLoadingState.data.mainPhotoUrl,
@@ -231,70 +266,7 @@ fun MarkerDetailsScreen(
         ) {
             // Title & Close Button
             // Subtitle & Speak Button
-            Row(
-                modifier = Modifier
-                    .padding(bottom = 0.dp, top = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-            ) {
-                // Title & Subtitle
-                Column(
-                    modifier = Modifier
-                        .weight(8f)
-                        .padding(bottom = 0.dp, top = 4.dp),
-                    horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.Top,
-                ) {
-                    // Title
-                    Text(
-                        markerLoadingState.data.title,
-                        modifier = Modifier
-                            .padding(bottom = 0.dp, top = 4.dp),
-                        fontSize = MaterialTheme.typography.h5.fontSize,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    // Subtitle
-                    Text(
-                        markerLoadingState.data.subtitle,
-                        modifier = Modifier
-                            .padding(top = 0.dp, bottom = 4.dp),
-                        fontSize = MaterialTheme.typography.h6.fontSize,
-                        fontWeight = FontWeight.Normal,
-                        maxLines =  3,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    Spacer(modifier = Modifier.padding(4.dp))
-                }
-
-                // Close Button
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                    ,
-                    horizontalAlignment = Alignment.End,
-                    verticalArrangement = Arrangement.Top,
-                ) {
-                    // Close Button
-                    IconButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .offset(12.dp, (-8).dp),
-                        onClick = {
-                            coroutineScope.launch {
-                                bottomSheetScaffoldState.bottomSheetState.collapse()
-                            }
-                        },
-                    ) {
-                        Icon(
-                            modifier = Modifier
-                                .padding(4.dp),
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Close",
-                        )
-                    }
-                }
-            }
+            TitleCloseSubtitleSpeakSection(markerLoadingState.data, coroutineScope, bottomSheetScaffoldState)
 
             // Marker Info Content
             Column(
@@ -447,91 +419,14 @@ fun MarkerDetailsScreen(
                 }
 
                 // ID, Navigate to Marker, Locate on Map, Speak
-                Row(
-                    modifier = Modifier.heightIn(0.dp, 36.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-
-                ) {
-                    // Marker Id
-                    Text(
-                        "ID: ${markerLoadingState.data.id}",
-                        modifier = Modifier.weight(2f)
-                        ,
-                        fontSize = MaterialTheme.typography.body1.fontSize,
-                        fontWeight = FontWeight.Bold,
-                    )
-
-                    // Navigate to Marker Button
-                    IconButton(
-                        modifier = Modifier.weight(.5f),
-                        onClick = {
-                            // close the bottom sheet
-                            coroutineScope.launch {
-                                bottomSheetScaffoldState.bottomSheetState.collapse()
-                                onLocateMarkerOnMap(markerLoadingState.data)
-                                openNavigationAction(
-                                    markerLoadingState.data.position.latitude,
-                                    markerLoadingState.data.position.longitude,
-                                    markerLoadingState.data.title
-                                )
-                            }
-                        },
-                        enabled = true,
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Navigation,
-                            contentDescription = "Navigate to Marker",
-                            tint = MaterialTheme.colors.onBackground,
-                        )
-                    }
-
-                    // Locate on Map Button
-                    IconButton(
-                        modifier = Modifier.weight(.5f),
-                        onClick = {
-                            // close the bottom sheet
-                            coroutineScope.launch {
-                                bottomSheetScaffoldState.bottomSheetState.collapse()
-                                onLocateMarkerOnMap(markerLoadingState.data)
-                            }
-                        },
-                        enabled = true,
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.MyLocation,
-                            contentDescription = "Find Marker on Map",
-                            tint = MaterialTheme.colors.onBackground,
-                        )
-                    }
-
-                    // Speak Button
-                    IconButton(
-                        modifier = Modifier.weight(.5f),
-                        onClick = {
-                            if (isTextToSpeechCurrentlySpeaking)
-                                stopTextToSpeech()
-                            else {
-                                onClickStartSpeakingMarker(markerLoadingState.data)
-                            }
-                        },
-                        enabled = true,
-                    ) {
-                        if (isTextToSpeechCurrentlySpeaking) {
-                            Icon(
-                                imageVector = Icons.Filled.Stop,
-                                contentDescription = "Stop Speaking Marker",
-                                tint = MaterialTheme.colors.onBackground,
-                            )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Filled.VolumeUp,
-                                contentDescription = "Speak Marker",
-                                tint = MaterialTheme.colors.onBackground,
-                            )
-                        }
-                    }
-                }
+                MarkerIdWithNavigateLocateSpeakActionButtonSection(
+                    markerLoadingState.data,
+                    coroutineScope,
+                    bottomSheetScaffoldState,
+                    onLocateMarkerOnMap,
+                    isTextToSpeechCurrentlySpeaking,
+                    onClickStartSpeakingMarker
+                )
 
                 // Inscription
                 if (markerLoadingState.data.englishInscription.isNotBlank()) { // todo add spanish translation
@@ -640,6 +535,176 @@ fun MarkerDetailsScreen(
                 onClose = { isPanZoomImageDialogVisible = false },
                 imageUrl = panZoomDialogImageUrl
             )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+private fun TitleCloseSubtitleSpeakSection(
+    marker: Marker,
+    coroutineScope: CoroutineScope,
+    bottomSheetScaffoldState: BottomSheetScaffoldState
+) {
+    Row(
+        modifier = Modifier
+            .padding(bottom = 0.dp, top = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Top
+    ) {
+        // Title & Subtitle
+        Column(
+            modifier = Modifier
+                .weight(8f)
+                .padding(bottom = 0.dp, top = 4.dp),
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.Top,
+        ) {
+            // Title
+            Text(
+                marker.title,
+                modifier = Modifier
+                    .padding(bottom = 0.dp, top = 4.dp),
+                fontSize = MaterialTheme.typography.h5.fontSize,
+                fontWeight = FontWeight.Bold,
+            )
+            // Subtitle
+            Text(
+                marker.subtitle,
+                modifier = Modifier
+                    .padding(top = 0.dp, bottom = 4.dp),
+                fontSize = MaterialTheme.typography.h6.fontSize,
+                fontWeight = FontWeight.Normal,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Spacer(modifier = Modifier.padding(4.dp))
+        }
+
+        // Close Button
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.Top,
+        ) {
+            // Close Button
+            IconButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .offset(12.dp, (-8).dp),
+                onClick = {
+                    coroutineScope.launch {
+                        bottomSheetScaffoldState.bottomSheetState.collapse()
+                    }
+                },
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .padding(4.dp),
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Close",
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+// ID, Navigate to Marker, Locate on Map, Speak
+@Composable
+private fun MarkerIdWithNavigateLocateSpeakActionButtonSection(
+//    markerLoadingState: LoadingState.Loaded<Marker>,
+    marker: Marker,
+    coroutineScope: CoroutineScope,
+    bottomSheetScaffoldState: BottomSheetScaffoldState,
+    onLocateMarkerOnMap: (Marker) -> Unit,
+    isTextToSpeechCurrentlySpeaking: Boolean,
+    onClickStartSpeakingMarker: (Marker) -> Unit
+) {
+    Row(
+        modifier = Modifier.heightIn(0.dp, 36.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+
+        ) {
+        // Marker Id
+        Text(
+            "ID: ${marker.id}",
+            modifier = Modifier.weight(2f),
+            fontSize = MaterialTheme.typography.body1.fontSize,
+            fontWeight = FontWeight.Bold,
+        )
+
+        // Navigate to Marker Button
+        IconButton(
+            modifier = Modifier.weight(.5f),
+            onClick = {
+                // close the bottom sheet
+                coroutineScope.launch {
+                    bottomSheetScaffoldState.bottomSheetState.collapse()
+                    onLocateMarkerOnMap(marker)
+                    openNavigationAction(
+                        marker.position.latitude,
+                        marker.position.longitude,
+                        marker.title
+                    )
+                }
+            },
+            enabled = true,
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Navigation,
+                contentDescription = "Navigate to Marker",
+                tint = MaterialTheme.colors.onBackground,
+            )
+        }
+
+        // Locate on Map Button
+        IconButton(
+            modifier = Modifier.weight(.5f),
+            onClick = {
+                // close the bottom sheet
+                coroutineScope.launch {
+                    bottomSheetScaffoldState.bottomSheetState.collapse()
+                    onLocateMarkerOnMap(marker)
+                }
+            },
+            enabled = true,
+        ) {
+            Icon(
+                imageVector = Icons.Filled.MyLocation,
+                contentDescription = "Find Marker on Map",
+                tint = MaterialTheme.colors.onBackground,
+            )
+        }
+
+        // Speak Button
+        IconButton(
+            modifier = Modifier.weight(.5f),
+            onClick = {
+                if (isTextToSpeechCurrentlySpeaking)
+                    stopTextToSpeech()
+                else {
+                    onClickStartSpeakingMarker(marker)
+                }
+            },
+            enabled = true,
+        ) {
+            if (isTextToSpeechCurrentlySpeaking) {
+                Icon(
+                    imageVector = Icons.Filled.Stop,
+                    contentDescription = "Stop Speaking Marker",
+                    tint = MaterialTheme.colors.onBackground,
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Filled.VolumeUp,
+                    contentDescription = "Speak Marker",
+                    tint = MaterialTheme.colors.onBackground,
+                )
+            }
         }
     }
 }

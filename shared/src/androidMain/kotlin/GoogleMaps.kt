@@ -461,7 +461,7 @@ actual fun GoogleMaps(
 
             // Check for changes
             if(finalRenderClusterItems.size == localCachedClusterItemList.size) {
-                Log.d("💿 ⚝⚝⚝ 🌟 🔧  LaunchedEffect(shouldCalculateClusterItemList): No change in cluster items size, cachedClusterItemList.size = ${localCachedClusterItemList.size}")
+                //Log.d("💿 ⚝⚝⚝ 🌟 🔧  LaunchedEffect(shouldCalculateClusterItemList): No change in cluster items size, cachedClusterItemList.size = ${localCachedClusterItemList.size}")
                 isCalculatingClusterItems = false
                 didUpdateClusterItems = false
                 onDidCalculateClusterItemList()
@@ -469,12 +469,12 @@ actual fun GoogleMaps(
             }
 
             finalRenderClusterItems = localCachedClusterItemList
-            Log.d(
-                "💿 ⚝⚝⚝ 🟨 🔧 LaunchedEffect(shouldCalculateClusterItemList): Recalculated updatedClusterItemList: \n" +
-                        "  ⎣ cachedClusterItemList.size= ${cachedClusterItems.size}\n" +
-                        "  ⎣ radius= $clusterRadiusMiles\n" +
-                        "  ⎣ time= ${Clock.System.now() - startTime}"
-            )
+            //Log.d(
+            //    "💿 ⚝⚝⚝ 🟨 🔧 LaunchedEffect(shouldCalculateClusterItemList): Recalculated updatedClusterItemList: \n" +
+            //            "  ⎣ cachedClusterItemList.size= ${cachedClusterItems.size}\n" +
+            //            "  ⎣ radius= $clusterRadiusMiles\n" +
+            //            "  ⎣ time= ${Clock.System.now() - startTime}"
+            //)
             isCalculatingClusterItems = false
             didUpdateClusterItems = true
             onDidCalculateClusterItemList()
@@ -729,10 +729,10 @@ actual fun GoogleMaps(
                             return@remember finalRenderClusterItems
                     }
 
-                    println("💿 ⚝⚝⚝ 🟨 🔧 Clustering(), RENDERING Clustering(items), " +
-                            "isMarkersEnabled = $isMarkersEnabled, " +
-                            "didUpdateClusterItems = $didUpdateClusterItems"
-                    )
+                    //Log.d("💿 ⚝⚝⚝ 🟨 🔧 Clustering(), RENDERING Clustering(items), " +
+                    //        "isMarkersEnabled = $isMarkersEnabled, " +
+                    //        "didUpdateClusterItems = $didUpdateClusterItems"
+                    //)
                     didUpdateClusterItems = false // reset
                     finalRenderClusterItems
                 },
@@ -863,7 +863,7 @@ actual fun GoogleMaps(
             localShouldShowInfoMarker?.let { marker ->
                 // Clear the previous InfoMarker
                 infoMarker = null
-                localShouldShowInfoMarker = null
+                localShouldShowInfoMarker = null // reset
 
                 // Show the new info marker
                 coroutineScope.launch {
@@ -874,7 +874,7 @@ actual fun GoogleMaps(
                 }
             }
             infoMarker?.let { marker ->
-                println("🔷🔷 infoMarker: ${infoMarker?.title}, infoMarkerInfoWindowOpenPhase = $infoMarkerInfoWindowOpenPhase")
+                //println("🔷🔷 infoMarker: ${infoMarker?.title}, infoMarkerInfoWindowOpenPhase = $infoMarkerInfoWindowOpenPhase")
                 // Render the info marker (yes, it requires it to be rendered twice, IDK WHY DAMMIT)
                 if(infoMarkerInfoWindowOpenPhase < 2) {
                     infoMarkerState = rememberMarkerState(
@@ -1036,7 +1036,7 @@ actual fun GoogleMaps(
                 centerLatLng = previousRestrictedClusterCenterLatLng,
                 previousRestrictedClusterRadiusMeters.metersToMiles()  // OUTER radius
             )) {
-                println("💿 GoogleMaps-Android 👾🐌: SLOW FRAME RATE - OUTER, frame time= $fullLoopFrameRenderTime")
+                //println("💿 GoogleMaps-Android 👾🐌: SLOW FRAME RATE - OUTER, frame time= $fullLoopFrameRenderTime")
                 startRestrictedClusterRadius()
             }
 
@@ -1048,7 +1048,7 @@ actual fun GoogleMaps(
                     previousRestrictedClusterRadiusMeters.metersToMiles() / 2.0 // INNER radius
                 )
             ) {
-                println("💿 GoogleMaps-Android 👾🐌: SLOW FRAME RATE - INNER, frame time= $fullLoopFrameRenderTime")
+                //println("💿 GoogleMaps-Android 👾🐌: SLOW FRAME RATE - INNER, frame time= $fullLoopFrameRenderTime")
                 startRestrictedClusterRadius()
             }
         }

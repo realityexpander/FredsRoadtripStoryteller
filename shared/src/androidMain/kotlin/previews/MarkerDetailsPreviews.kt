@@ -67,6 +67,17 @@ fun MarkerDetailsPreview(
                     ),
                     snackbarHostState = SnackbarHostState()
                 ),
+                baseMarker = Marker(
+                    id = "M69420",
+                    position = LatLong(
+                        latitude = 0.0,
+                        longitude = 0.0
+                    ),
+                    // title = "First City Council of Tepoztlan",
+                    title = "El Tepozteco National Park with a long title",
+                    alpha = 1f,
+                    subtitle = "Test Subtitle a very long subtitle with data n stuff and this line goes on and on and its really long and unusually long and even goes to four lines on a landscape phone mode",
+                ),
                 markerLoadingState = loadingState
             )
         }

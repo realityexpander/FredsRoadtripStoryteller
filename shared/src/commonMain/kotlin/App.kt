@@ -563,8 +563,8 @@ fun App(
 
                             MarkerDetailsScreen(
                                 bottomSheetScaffoldState,
+                                marker,
                                 markerDetailsResult,
-                                isTextToSpeechCurrentlySpeaking = isTextToSpeechCurrentlySpeaking,
                                 onClickStartSpeakingMarker = { speakMarker ->
                                     markersRepo.updateMarkerIsSpoken(
                                         speakMarker,
@@ -576,6 +576,7 @@ fun App(
                                     )
                                     currentSpeakingMarker = speakMarker(speakMarker, true)
                                 },
+                                isTextToSpeechCurrentlySpeaking = isTextToSpeechCurrentlySpeaking,
                                 onLocateMarkerOnMap = { locateMarker ->
                                     coroutineScope.launch {
                                         shouldCenterCameraOnLocation =
@@ -584,13 +585,12 @@ fun App(
                                         shouldZoomToLatLongZoom =
                                             LatLongZoom(locateMarker.position, 14f)
                                     }
-                                },
-                                onClose = {
-                                    coroutineScope.launch {
-                                        bottomSheetScaffoldState.bottomSheetState.collapse()
-                                    }
                                 }
-                            )
+                            ) {
+                                coroutineScope.launch {
+                                    bottomSheetScaffoldState.bottomSheetState.collapse()
+                                }
+                            }
                         }
                     }
             },
