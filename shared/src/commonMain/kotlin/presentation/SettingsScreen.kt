@@ -208,7 +208,7 @@ fun SettingsScreen(
         // Show Reset Settings Alert Dialog
         if (isResetMarkerSettingsAlertDialogVisible)
             ShowResetMarkerSettingsAlert(
-                onClose = {
+                onDismiss = {
                     coroutineScope.launch {
                         isResetMarkerSettingsAlertDialogVisible = false
                     }
@@ -253,7 +253,7 @@ private fun PollForNotificationActionSettingsChanges(
 
 @Composable
 private fun ShowResetMarkerSettingsAlert(
-    onClose: () -> Unit = {},
+    onDismiss: () -> Unit = {},
     onSuccess: () -> Unit = {},
 ) =
     AlertDialog(
@@ -285,7 +285,7 @@ private fun ShowResetMarkerSettingsAlert(
             Button(
                 onClick = {
                     // dismiss dialog
-                    onClose()
+                    onDismiss()
                 },
             ) {
                 Text("Cancel")
@@ -293,7 +293,7 @@ private fun ShowResetMarkerSettingsAlert(
         },
         onDismissRequest = {
             // dismiss dialog
-            onClose()
+            onDismiss()
         },
         properties = DialogProperties(
             dismissOnBackPress = true,

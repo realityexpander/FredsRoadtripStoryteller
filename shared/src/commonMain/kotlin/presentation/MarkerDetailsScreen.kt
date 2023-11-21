@@ -160,40 +160,7 @@ fun MarkerDetailsScreen(
     // Show Loading
     if(
         markerLoadingState is LoadingState.Loading
-//        enter = fadeIn(TweenSpec(800)),
-//        exit = fadeOut(TweenSpec(500))
     ) {
-
-//        // Close Button
-//        Row(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(bottom = 0.dp, top = 4.dp),
-//            horizontalArrangement = Arrangement.SpaceBetween,
-//            verticalAlignment = Alignment.Top
-//        ) {
-//            Spacer(
-//                modifier = Modifier
-//                    .weight(3f),
-//            )
-//            IconButton(
-//                modifier = Modifier
-//                    .offset(8.dp, (-8).dp)
-//                    .padding(8.dp),
-//                onClick = {
-//                    coroutineScope.launch {
-//                        bottomSheetScaffoldState.bottomSheetState.collapse()
-//                        onClose()
-//                    }
-//                },
-//            ) {
-//                Icon(
-//                    imageVector = Icons.Default.Close,
-//                    contentDescription = "Close",
-//                    modifier = Modifier.alpha(0.5f)
-//                )
-//            }
-//        }
 
         Column(
             modifier = Modifier
@@ -533,7 +500,7 @@ fun MarkerDetailsScreen(
         // Show Pan/Zoom Image Dialog
         if(isPanZoomImageDialogVisible) {
             PanZoomImageDialog(
-                onClose = { isPanZoomImageDialogVisible = false },
+                onDismiss = { isPanZoomImageDialogVisible = false },
                 imageUrl = panZoomDialogImageUrl
             )
         }
@@ -737,7 +704,7 @@ private fun panZoomImageButton(
 @OptIn(ExperimentalKamelApi::class)
 @Composable
 fun PanZoomImageDialog(
-    onClose: () -> Unit = {},
+    onDismiss: () -> Unit = {},
     imageUrl: String = "",
 ) {
     val kMaxZoomInFactor = 5f
@@ -768,7 +735,7 @@ fun PanZoomImageDialog(
             usePlatformDefaultWidth = false,
         ),
         onDismissRequest = {
-            onClose()
+            onDismiss()
         },
     ) {
 
@@ -866,7 +833,7 @@ fun PanZoomImageDialog(
             // Close Button
             IconButton(
                 onClick = {
-                    onClose()
+                    onDismiss()
                 },
                 modifier = Modifier
                     .padding(8.dp)
@@ -875,7 +842,7 @@ fun PanZoomImageDialog(
                         MaterialTheme.colors.surface.copy(alpha = 0.5f),
                         shape = MaterialTheme.shapes.medium
                     )
-                    .clickable { onClose() }
+                    .clickable { onDismiss() }
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
