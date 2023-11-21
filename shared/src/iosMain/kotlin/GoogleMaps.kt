@@ -75,7 +75,9 @@ actual fun GoogleMaps(
     onFindMeButtonClick: (() -> Unit)?,
     isMarkersLastUpdatedLocationVisible: Boolean,
     shouldShowInfoMarker: Marker?,
-    onDidShowInfoMarker: () -> Unit
+    onDidShowInfoMarker: () -> Unit,
+    shouldZoomToLatLongZoom: LatLongZoom?,
+    onDidZoomToLatLongZoom: () -> Unit,
 ) {
 
     var isMapSetupCompleted by remember { mutableStateOf(false) }

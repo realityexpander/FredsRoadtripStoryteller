@@ -6,13 +6,11 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomSheetScaffold
 import androidx.compose.material.BottomSheetScaffoldState
-import androidx.compose.material.BottomSheetValue
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -28,7 +26,6 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.rememberBottomSheetScaffoldState
-import androidx.compose.material.rememberBottomSheetState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -115,7 +112,7 @@ sealed class BottomSheetScreen {
 
 // Improve performance by restricting updates
 var frameCount = 0
-var didFullRender = false
+var didFullFrameRender = false
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -155,6 +152,9 @@ fun App(
         }
         var shouldCenterCameraOnLocation by remember {
             mutableStateOf<Location?>(null) // used to center map on user location
+        }
+        var shouldZoomToLatLongZoom by remember {
+            mutableStateOf<LatLongZoom?>(null) // used to zoom to a specific location
         }
         var userLocation: Location by remember {
             mutableStateOf(appSettings.lastKnownUserLocation)
@@ -460,11 +460,8 @@ fun App(
         }
 
 
-//        var startTime by remember {
-//            mutableStateOf(Clock.System.now())
-//        }
         val startTime = Clock.System.now()
-        didFullRender = false
+        didFullFrameRender = false
 
         BottomSheetScaffold(
             scaffoldState = bottomSheetScaffoldState,
@@ -584,6 +581,8 @@ fun App(
                                         shouldCenterCameraOnLocation =
                                             locateMarker.position.toLocation()
                                         shouldShowInfoMarker = locateMarker
+                                        shouldZoomToLatLongZoom =
+                                            LatLongZoom(locateMarker.position, 14f)
                                     }
                                 },
                                 onClose = {
@@ -812,7 +811,11 @@ fun App(
                             shouldShowInfoMarker = shouldShowInfoMarker,
                             onDidShowInfoMarker = {
                                 shouldShowInfoMarker = null
-                            }
+                            },
+                            shouldZoomToLatLongZoom = shouldZoomToLatLongZoom,
+                            onDidZoomToLatLongZoom = {
+                                shouldZoomToLatLongZoom = null  // reset
+                            },
                         )
 
                         Log.d("✏️✏️🛑  END map rendering, time to render = ${(Clock.System.now() - startTime)}\n")
@@ -884,7 +887,7 @@ fun App(
 
         }
         Log.d("🎃 END Frame time to render = ${(Clock.System.now() - startTime)}\n" )
-        didFullRender = true
+        didFullFrameRender = true
     }
 }
 

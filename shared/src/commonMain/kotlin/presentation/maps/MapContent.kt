@@ -1,6 +1,7 @@
 package presentation.maps
 
 import GoogleMaps
+import LatLongZoom
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
@@ -32,7 +33,9 @@ fun MapContent(
     isMapOptionSwitchesVisible: Boolean = true,
     onMarkerInfoClick: ((Marker) -> Unit)? = null,
     shouldShowInfoMarker: Marker? = null,
-    onDidShowInfoMarker: () -> Unit = {}
+    onDidShowInfoMarker: () -> Unit = {},
+    shouldZoomToLatLongZoom: LatLongZoom?,
+    onDidZoomToLatLongZoom: () -> Unit,
 ) {
     var isFirstUpdate by remember { mutableStateOf(true) } // force map to update at least once
     var didSetInitialCameraPosition by remember { mutableStateOf(false) } // Move to initial location on first update
@@ -109,7 +112,9 @@ fun MapContent(
                 onFindMeButtonClick = onFindMeButtonClicked,
                 isMarkersLastUpdatedLocationVisible = isMarkersLastUpdatedLocationVisible,
                 shouldShowInfoMarker = shouldShowInfoMarker,
-                onDidShowInfoMarker = onDidShowInfoMarker
+                onDidShowInfoMarker = onDidShowInfoMarker,
+                shouldZoomToLatLongZoom = shouldZoomToLatLongZoom,
+                onDidZoomToLatLongZoom = onDidZoomToLatLongZoom,
             )
 
             // Indicate first update has occurred

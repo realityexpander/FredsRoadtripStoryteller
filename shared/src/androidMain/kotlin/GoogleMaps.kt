@@ -44,7 +44,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -80,7 +79,7 @@ import data.loadMarkers.milesToMeters
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
@@ -97,11 +96,17 @@ import kotlin.math.pow
 import kotlin.time.Duration.Companion.milliseconds
 import co.touchlab.kermit.Logger as Log
 
-private var frameRenderEndTime = Clock.System.now()
+private var loopFrameRenderEndTime = Clock.System.now()
 private var frameRenderCount = 0
 private var restrictedClusterRadiusPhase = 0
 private var frameIsRestrictedClusterRadiusActive = false
 private const val kMaxRestrictedClusterRadiusPhase = 3
+
+val blankMarkerBitmap =
+    bitmapDescriptorFromVector(
+        context = appContext,
+        vectorResId = R.drawable.invisible_map_icon_24 // invisible icon, 48x48, spacer for the infoWindow
+    )
 
 // Android Google Maps implementation
 @NoLiveLiterals
@@ -130,6 +135,8 @@ actual fun GoogleMaps(
     isMarkersLastUpdatedLocationVisible: Boolean,
     shouldShowInfoMarker: Marker?,
     onDidShowInfoMarker: () -> Unit,
+    shouldZoomToLatLongZoom: LatLongZoom?,
+    onDidZoomToLatLongZoom: () -> Unit,
 ) {
     val cameraPositionState = rememberCameraPositionState()
     val uiSettings by remember {
@@ -162,6 +169,8 @@ actual fun GoogleMaps(
     var isMarkersEnabled by remember { mutableStateOf(true) }
     var isHeatMapEnabled by remember { mutableStateOf(false) }
     var showSomething by remember { mutableStateOf(false) } // LEAVE FOR TESTING PURPOSES
+    var localShouldShowInfoMarker by remember(shouldShowInfoMarker) { mutableStateOf<Marker?>(shouldShowInfoMarker) }
+    val rememberBlankMarkerBitmap = remember { blankMarkerBitmap }
 
     // Usually used to setup the initial camera position (doesn't support tracking due to forcing zoom level)
     LaunchedEffect(shouldSetInitialCameraPosition) {
@@ -231,6 +240,29 @@ actual fun GoogleMaps(
         }
     }
 
+    // Zoom to `shouldZoomToLatLng` position
+    var previousCameraLocationLatLongZoom by remember { mutableStateOf<LatLongZoom?>(null) }
+    LaunchedEffect(shouldZoomToLatLongZoom) {
+        if (previousCameraLocationLatLongZoom == shouldZoomToLatLongZoom) {
+            return@LaunchedEffect
+        }
+
+        previousCameraLocationLatLongZoom = shouldZoomToLatLongZoom
+        shouldZoomToLatLongZoom?.let { cameraLocationLatLongZoom ->
+            println("💿 GoogleMaps-Android 👾: LaunchedEffect(shouldZoomToLatLongZoom), shouldZoomToLatLongZoom = $shouldZoomToLatLongZoom")
+            cameraPositionState.animate(
+                CameraUpdateFactory.newLatLngZoom(
+                    LatLng(
+                        cameraLocationLatLongZoom.latLong.latitude,
+                        cameraLocationLatLongZoom.latLong.longitude
+                    ),
+                    cameraLocationLatLongZoom.zoom
+                )
+            )
+            onDidZoomToLatLongZoom()
+        }
+    }
+
     // Set Camera to User Location (ie: Tracking) (Allows user to control zoom level)
     LaunchedEffect(userLocation) {
         userLocation?.let { myLocation ->
@@ -247,9 +279,16 @@ actual fun GoogleMaps(
         }
     }
 
+    // Marker Bitmaps
     val lightGrayMarkerPainterResource = painterResource("marker_lightgray.png")
     val redMarkerPainterResource = painterResource("marker_red.png")
 
+    // Information marker - visible after user clicks "find marker" button in details panel
+    var infoMarker by remember { mutableStateOf<Marker?>(null) }
+    var infoMarkerState = rememberMarkerState()
+    var infoMarkerInfoWindowOpenPhase by remember { mutableIntStateOf(0) }
+
+    // ClusterItem with `isSeen` property added
     class SeeableClusterItem(
         val id: MarkerIdStr,
         val clusterItem: ClusterItem,
@@ -300,22 +339,24 @@ actual fun GoogleMaps(
         delay(250) // debounce the cluster item calculation
         frameRenderCount = 0 // reset frame count
 
-        var isCalculationNeeded = false
+        var isClusterCalcNeeded = false
         if(shouldCalcRestrictedClusterItems) {
             shouldCalcRestrictedClusterItems = false  // reset
-            isCalculationNeeded = true
+            isClusterCalcNeeded = true
         }
         if(previousCameraZoomLevel != cameraPositionState.position.zoom) {
             println("📛 Zoom Level Change: previousCameraZoomLevel = $previousCameraZoomLevel, cameraPositionState.position.zoom = ${cameraPositionState.position.zoom}")
             isRestrictedClusterRadiusActive = true
             previousCameraZoomLevel = cameraPositionState.position.zoom
             restrictedClusterRadiusPhase = 0 // reset
-            isCalculationNeeded = true
+            isClusterCalcNeeded = true
         }
 
-        if(!isCalculationNeeded) {
+        if(!isClusterCalcNeeded) {
             if (!shouldCalcClusterItems) {
-                Log.d("💿 LaunchedEffect(shouldCalculateClusterItemList): " +
+                infoMarkerState.showInfoWindow()
+                infoMarkerInfoWindowOpenPhase = 0
+                Log.d("💿 ♦️LaunchedEffect(shouldCalculateClusterItemList): " +
                     "shouldCalculateClusterItemList=false, No redraw necessary, Using cachedMarkerIdToSeeableClusterItemMap items, cachedMarkerIdToSeeableClusterItemMap.size = ${cachedMarkerIdToSeeableClusterItemMap.size}")
                 return@LaunchedEffect
             }
@@ -327,7 +368,7 @@ actual fun GoogleMaps(
                     marker.isSeen == cachedMarkerIdToSeeableClusterItemMap[marker.id]?.isSeen
                 }
             ) {
-                Log.d("💿 LaunchedEffect(shouldCalculateClusterItemList): Using cachedMarkerIdToSeeableClusterItemMap because no isSeen in the list of markers has changed, cachedMarkerIdToSeeableClusterItemMap.size = ${cachedMarkerIdToSeeableClusterItemMap.size}")
+                Log.d("💿 ♥️ LaunchedEffect(shouldCalculateClusterItemList): Using cachedMarkerIdToSeeableClusterItemMap because no isSeen in the list of markers has changed, cachedMarkerIdToSeeableClusterItemMap.size = ${cachedMarkerIdToSeeableClusterItemMap.size}")
                 onDidCalculateClusterItemList()
                 return@LaunchedEffect
             }
@@ -335,7 +376,7 @@ actual fun GoogleMaps(
 
         // Guard against multiple coroutines calculating the cluster items at the same time
         if(isCalculatingClusterItems) {
-            Log.d("💿 LaunchedEffect(shouldCalculateClusterItemList): isCalculatingClusterItems=true, Using cachedMarkerIdToSeeableClusterItemMap items, cachedMarkerIdToSeeableClusterItemMap.size = ${cachedMarkerIdToSeeableClusterItemMap.size}")
+            Log.d("💿 🕗 LaunchedEffect(shouldCalculateClusterItemList): isCalculatingClusterItems=true, Using cachedMarkerIdToSeeableClusterItemMap items, cachedMarkerIdToSeeableClusterItemMap.size = ${cachedMarkerIdToSeeableClusterItemMap.size}")
             return@LaunchedEffect
         }
 
@@ -440,18 +481,25 @@ actual fun GoogleMaps(
         }
     }
 
-    // Attempt Increase the `restricted cluster` radius until all ClusterItems for the view are in view
+
     SideEffect {
-        if (isRestrictedClusterRadiusActive) {
-            if (restrictedClusterRadiusPhase < kMaxRestrictedClusterRadiusPhase) {
-                // Log.d("💠 🔧 LaunchedEffect(isRestrictedClusterRadiusActive): Increasing restrictedClusterRadiusPhase, restrictedClusterRadiusPhase = $restrictedClusterRadiusPhase")
-                restrictedClusterRadiusPhase++
-                shouldCalcRestrictedClusterItems = true
-            }
-            if (restrictedClusterRadiusPhase == kMaxRestrictedClusterRadiusPhase) {
-                // Log.d("💠 🔧 LaunchedEffect(isRestrictedClusterRadiusActive): Disabling isRestrictedClusterRadiusActive, restrictedClusterRadiusPhase = $restrictedClusterRadiusPhase")
-                isRestrictedClusterRadiusActive = false
-                shouldCalcRestrictedClusterItems = true
+        // Attempt Increase the `restricted cluster` radius until all ClusterItems for the view are in view (maxRestrictedClusterRadiusPhase)
+        if (isRestrictedClusterRadiusActive
+            && frameRenderCount > 0  // allow at least 1 frame to render before increasing the radius
+        ) {
+            ioCoroutineScope.launch {
+                delay(150) // allow animated "radar echo" to finish
+
+                if (restrictedClusterRadiusPhase < kMaxRestrictedClusterRadiusPhase) {
+                    // Log.d("💠 🔧 LaunchedEffect(isRestrictedClusterRadiusActive): Increasing restrictedClusterRadiusPhase, restrictedClusterRadiusPhase = $restrictedClusterRadiusPhase")
+                    restrictedClusterRadiusPhase++
+                    shouldCalcRestrictedClusterItems = true
+                }
+                if (restrictedClusterRadiusPhase == kMaxRestrictedClusterRadiusPhase) {
+                    // Log.d("💠 🔧 LaunchedEffect(isRestrictedClusterRadiusActive): Disabling isRestrictedClusterRadiusActive, restrictedClusterRadiusPhase = $restrictedClusterRadiusPhase")
+                    isRestrictedClusterRadiusActive = false
+                    shouldCalcRestrictedClusterItems = true
+                }
             }
         }
     }
@@ -474,18 +522,13 @@ actual fun GoogleMaps(
             )
         }
 
-        // Information marker - visible after user clicks "find marker" button in details panel
-        var infoMarker by remember { mutableStateOf<Marker?>(null) }
-        var infoMarkerMarkerState = rememberMarkerState()
-        var infoMarkerInfoWindowOpenPhase by remember { mutableIntStateOf(0) }
-
         GoogleMap(
             cameraPositionState = cameraPositionState,
             modifier = Modifier.background(MaterialTheme.colors.background, RectangleShape),
             uiSettings = uiSettings,
             properties = properties,
             onMapClick = {
-                infoMarkerMarkerState.hideInfoWindow()
+                infoMarkerState.hideInfoWindow()
                 infoMarker = null
             },
             googleMapOptionsFactory = {
@@ -557,7 +600,7 @@ actual fun GoogleMaps(
                     strokeWidth = 4.0f
                 )
 
-                //    // If tracking, move the camera to the user's location
+                //    // If tracking, move the camera to the user's location // LEAVE FOR REFERENCE
                 //    coroutineScope.launch {
                 //        if (isTrackingEnabled) {
                 //            cameraPositionState.animate(
@@ -572,7 +615,7 @@ actual fun GoogleMaps(
                 //    }
             }
 
-            // Show cluster marker constraint radius (scanner-radar echo indicator)
+            // Show cluster marker constraint radius (scanner-radar echo cluster-radius indicator)
             if(frameIsRestrictedClusterRadiusActive) {
                 Circle(
                     center = LatLng(
@@ -638,33 +681,6 @@ actual fun GoogleMaps(
                         strokeColor = Color.White.copy(alpha = 0.3f),
                         strokeWidth = 2.0f
                     )
-
-                    //    // Show using a rectangle
-                    //    val lastLoc = cachedMarkersLastUpdatedLocation
-                    //    val searchDistanceLngDegrees = distanceBetween(
-                    //        lastLoc.latitude, lastLoc.longitude,
-                    //        lastLoc.latitude + kMaxReloadDistanceMiles.milesToDegrees()/100.0, lastLoc.longitude,
-                    //        true
-                    //    )
-                    //    val searchDistanceLatDegrees = //searchDistanceLatDegrees
-                    //        distanceBetween(
-                    //            lastLoc.latitude, lastLoc.longitude,
-                    //            lastLoc.latitude, lastLoc.longitude + kMaxReloadDistanceMiles.milesToDegrees()/100.0,
-                    //            true
-                    //        )
-                    //    val polyLineRectangle = PolylineOptions()
-                    //        .add(LatLng(lastLoc.latitude - searchDistanceLatDegrees, lastLoc.longitude - searchDistanceLngDegrees))
-                    //        .add(LatLng(lastLoc.latitude + searchDistanceLatDegrees, lastLoc.longitude - searchDistanceLngDegrees))
-                    //        .add(LatLng(lastLoc.latitude + searchDistanceLatDegrees, lastLoc.longitude + searchDistanceLngDegrees))
-                    //        .add(LatLng(lastLoc.latitude - searchDistanceLatDegrees, lastLoc.longitude + searchDistanceLngDegrees))
-                    //        .add(LatLng(lastLoc.latitude - searchDistanceLatDegrees, lastLoc.longitude - searchDistanceLngDegrees))
-                    //    Polyline(
-                    //        points = polyLineRectangle.points,
-                    //        color = Color.Yellow.copy(alpha = 0.3f),
-                    //        width = 16f,
-                    //        startCap = SquareCap(),
-                    //        endCap = SquareCap()
-                    //    )
                 }
 
                 // Show the "slop" radius for ClusterItem calculation initiation
@@ -744,10 +760,36 @@ actual fun GoogleMaps(
                     }
                 },
                 onClusterItemClick = {
-                    // Hide the current marker infoWindow (if any)
-                    infoMarker = null
-                    infoMarkerMarkerState.hideInfoWindow()
-                    false // did not completely handle the click
+                    // Hide the current infoMarker infoWindow (if any)
+                    infoMarkerState.hideInfoWindow()
+
+                    // Set the new info marker
+                    localShouldShowInfoMarker = Marker(
+                        id = it.snippet.toString(),
+                        position = LatLong(
+                            it.position.latitude,
+                            it.position.longitude
+                        ),
+                        title = it.title ?: "",
+                        alpha = 1.0f,
+                    )
+
+                    // Center the camera on the marker
+                    coroutineScope.launch {
+                        yield() // wait for the infoMarker to be cleared
+
+                        // move camera to marker
+                        cameraPositionState.animate(
+                            CameraUpdateFactory.newLatLng(
+                                LatLng(
+                                    it.position.latitude,
+                                    it.position.longitude
+                                )
+                            )
+                        )
+                    }
+
+                    true // true = DID completely handle the click
                 },
                 clusterContent = { cluster ->
                     val isAllSeen = cluster.items.all { clusterItem ->
@@ -818,47 +860,55 @@ actual fun GoogleMaps(
             // - Note: Known bug when opening second info marker there is a noticeable flicker
             //   (1/60th frame) when the info window "jumps up" above the marker icon.
             //   No fix known, afaik.
-            shouldShowInfoMarker?.let { marker ->
-                // Clear the previous info marker (if any)
-                infoMarker = null // allows the current infoMarker to be cleared
-                infoMarkerInfoWindowOpenPhase = 0
-                onDidShowInfoMarker()
+            localShouldShowInfoMarker?.let { marker ->
+                // Clear the previous InfoMarker
+                infoMarker = null
+                localShouldShowInfoMarker = null
 
                 // Show the new info marker
                 coroutineScope.launch {
+                    yield() // wait for the infoMarker to be cleared
                     infoMarker = marker
+                    infoMarkerInfoWindowOpenPhase = 0
+                    shouldShowInfoMarker?.run{ onDidShowInfoMarker() } // reset
                 }
             }
             infoMarker?.let { marker ->
+                println("🔷🔷 infoMarker: ${infoMarker?.title}, infoMarkerInfoWindowOpenPhase = $infoMarkerInfoWindowOpenPhase")
                 // Render the info marker (yes, it requires it to be rendered twice, IDK WHY DAMMIT)
                 if(infoMarkerInfoWindowOpenPhase < 2) {
-                    infoMarkerMarkerState = rememberMarkerState(
+                    infoMarkerState = rememberMarkerState(
                         key = marker.id,
                         position = LatLng(
                             marker.position.latitude,
                             marker.position.longitude
                         )
-                    ).also {
-                        if (infoMarkerInfoWindowOpenPhase < 2) {
-                            it.showInfoWindow()
-                            infoMarkerInfoWindowOpenPhase++
+                    )
+                    .also { infoMarkerState ->
+                        if(infoMarkerInfoWindowOpenPhase >= 2) {
+                            infoMarkerState.showInfoWindow()  // necessary to show the infoWindow (ugh)
                         }
+                        infoMarkerInfoWindowOpenPhase++
                     }
                 }
 
                 Marker(
-                    state = infoMarkerMarkerState,
-                    alpha = marker.alpha,
-                    title = marker.title,
-                    snippet = marker.id,
-                    icon = bitmapDescriptorFromVector(
-                        context = LocalContext.current,
-                        vectorResId = R.drawable.invisible_map_icon_24 // invisible icon, 48x48, spacer for the infoWindow
-                    ),
-                    visible = true,
+                    state = infoMarkerState
+                        .also {
+                           it.showInfoWindow() // necessary to show the infoWindow
+                        },
+                    alpha = infoMarker?.alpha ?: 0f,
+                    title = infoMarker?.title ?: "",
+                    tag = infoMarker?.id ?: "",
+                    snippet = infoMarker?.id ?: "",
+                    icon = rememberBlankMarkerBitmap,
+                    // infoWindowAnchor = Offset(0.5f, -.20f), // LEAVE FOR REFERENCE
+                    visible = true, //infoMarker != null,
                     onInfoWindowClick = {
-                        onMarkerInfoClick?.run { onMarkerInfoClick(marker) }
-                    }
+                        onMarkerInfoClick?.run {
+                            onMarkerInfoClick(infoMarker ?: return@run)
+                        }
+                    },
                 )
             }
         }
@@ -954,8 +1004,12 @@ actual fun GoogleMaps(
             }
         }
 
-        val fullLoopFrameRenderTime = Clock.System.now() - frameRenderEndTime
+        //////////////////////////////////////////////////////////////
+        // Tune Cluster Radius for improved Render time Performance //
+        //////////////////////////////////////////////////////////////
+
         frameRenderCount++
+        val fullLoopFrameRenderTime = Clock.System.now() - loopFrameRenderEndTime
         if(fullLoopFrameRenderTime > 20.milliseconds) {
             Log.d(
                 "💿 GoogleMaps-Android 👾: END GoogleMap(), " +
@@ -965,41 +1019,44 @@ actual fun GoogleMaps(
             )
         }
 
+        fun startRestrictedClusterRadius() {
+            isRestrictedClusterRadiusActive = true // start restricting
+            restrictedClusterRadiusPhase = 0 // reset to start
+
+            infoMarkerInfoWindowOpenPhase = 0 // reset infoMarker to re-open infoWindow
+        }
+
         // Need to improve performance? (by restricting the radius of the cluster items)
         if(!isRestrictedClusterRadiusActive
-            && frameRenderCount > 1 // skip the first frame
+            && frameRenderCount > 1 // skip the first frame after the cluster items are calculated
         ) {
-
-            // If camera location is outside OUTER `restricted cluster` radius, then start restricting.
+            // If camera location is outside OUTER `restricted cluster` slop radius, then start restricting & recalculate cluster items.
             if(isLatLngOutsideRadiusMiles(
                 cameraPositionState.position.target,
                 centerLatLng = previousRestrictedClusterCenterLatLng,
-                previousRestrictedClusterRadiusMeters.metersToMiles()  // outer radius
+                previousRestrictedClusterRadiusMeters.metersToMiles()  // OUTER radius
             )) {
                 println("💿 GoogleMaps-Android 👾🐌: SLOW FRAME RATE - OUTER, frame time= $fullLoopFrameRenderTime")
-                isRestrictedClusterRadiusActive = true // start restricting
-                restrictedClusterRadiusPhase = 0 // reset to start
+                startRestrictedClusterRadius()
             }
 
-            // If frameTime over 200ms, and outside INNER `restricted cluster` radius, then start restricting.
+            // If frameTime over 200ms, and outside INNER `restricted cluster` radius, then start restricting & recalculate cluster items.
             if(fullLoopFrameRenderTime > 150.milliseconds  // todo tune
                 && isLatLngOutsideRadiusMiles(
                     cameraPositionState.position.target,
                     centerLatLng = previousRestrictedClusterCenterLatLng,
-                    previousRestrictedClusterRadiusMeters.metersToMiles() / 2.0 // inner radius
+                    previousRestrictedClusterRadiusMeters.metersToMiles() / 2.0 // INNER radius
                 )
             ) {
                 println("💿 GoogleMaps-Android 👾🐌: SLOW FRAME RATE - INNER, frame time= $fullLoopFrameRenderTime")
-                isRestrictedClusterRadiusActive = true // start restricting
-                restrictedClusterRadiusPhase = 0 // reset to start
-                shouldCalcRestrictedClusterItems = true
+                startRestrictedClusterRadius()
             }
         }
-        // reset to start if camera is moved (after first phase updates)
+        // Reset phase to start if camera is moved (only after first phase)
         if(isRestrictedClusterRadiusActive
             && restrictedClusterRadiusPhase >= 1
         ) {
-            // Did the camera move outside `last restriction` radius? then reset the restriction phase
+            // Did the camera move outside `restricted cluster` radius? Then reset the restriction phase.
             if(
                 isLatLngOutsideRadiusMiles(
                     cameraPositionState.position.target,
@@ -1007,11 +1064,10 @@ actual fun GoogleMaps(
                     previousRestrictedClusterRadiusMeters.metersToMiles()
                 )
             ) {
-                restrictedClusterRadiusPhase = 0 // reset to start (smallest radius)
-                shouldCalcRestrictedClusterItems = true
+                startRestrictedClusterRadius()
             }
         }
-        frameRenderEndTime = Clock.System.now()
+        loopFrameRenderEndTime = Clock.System.now()
         frameIsRestrictedClusterRadiusActive = isRestrictedClusterRadiusActive
     }
 }
@@ -1040,7 +1096,7 @@ private fun calcRestrictedClusterRadiusMetersForCameraZoomLevel(
     cameraZoomLevel: Float,
     isRestrictedClusterRadiusActive: Boolean = false,
     restrictedClusterRadiusPhase: Int = 0,
-    seenRadiusMiles: Double = 0.0
+    minimumRadiusMiles: Double = 0.0 // minimum radius
 ) =
     max(
         (2.0).pow(13 - cameraZoomLevel.toDouble()) *
@@ -1052,7 +1108,7 @@ private fun calcRestrictedClusterRadiusMetersForCameraZoomLevel(
                     )
             else
                 kClusterItemIncludeRadiusMeters,
-        seenRadiusMiles.milesToMeters() // never smaller than the `seen radius`
+        1000.0 //minimumRadiusMiles.milesToMeters() // never smaller than the `seen radius`
     )
 
 @NoLiveLiterals

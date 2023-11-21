@@ -6,6 +6,12 @@ import presentation.maps.LatLong
 import presentation.maps.Location
 import presentation.maps.Marker
 
+
+data class LatLongZoom(
+    val latLong: LatLong,
+    val zoom: Float
+)
+
 @Composable
 expect fun GoogleMaps(
     modifier: Modifier,
@@ -30,8 +36,9 @@ expect fun GoogleMaps(
     isMarkersLastUpdatedLocationVisible: Boolean = false,
     shouldShowInfoMarker: Marker? = null,
     onDidShowInfoMarker: () -> Unit = {},
+    shouldZoomToLatLongZoom: LatLongZoom?,
+    onDidZoomToLatLongZoom: () -> Unit,
 )
-
 
 // LEAVE FOR REFERENCE
 //onMarkerClick: (maps.MapMarker) -> Unit = {},

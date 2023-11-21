@@ -309,9 +309,7 @@ fun MarkerDetailsScreen(
             ) {
 
                 // Main Photo
-                if (LocalInspectionMode.current) {
-                    PreviewPlaceholder("Another Image")
-                } else {
+                if(!LocalInspectionMode.current) {
                     if (markerLoadingState.data.mainPhotoUrl.isNotEmpty()) {
                         Surface(
                             modifier = Modifier.background(
@@ -411,6 +409,8 @@ fun MarkerDetailsScreen(
                             placeholderKind = ""
                         )
                     }
+                } else {
+                    PreviewPlaceholder("Another Image")
                 }
 
                 // Attributions for photo
@@ -606,7 +606,7 @@ fun MarkerDetailsScreen(
                 }
 
                 // Erected
-                if (markerLoadingState.data.erected.isNotBlank()) {
+                if(markerLoadingState.data.erected.isNotBlank()) {
                     Text(
                         "Erected " + markerLoadingState.data.erected,
                         fontSize = MaterialTheme.typography.body1.fontSize,
