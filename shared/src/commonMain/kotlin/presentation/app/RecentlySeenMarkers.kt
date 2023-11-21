@@ -265,13 +265,13 @@ fun RecentlySeenMarkers(
                         )
                     }
 
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(.5f)
-                    ) {
-                        NavigationButton(markersRepo = markersRepo, recentMarker = recentMarker)
-                    }
+                    //Column(
+                    //    modifier = Modifier
+                    //        .fillMaxWidth()
+                    //        .weight(.5f)
+                    //) {
+                    //    NavigationButton(markersRepo = markersRepo, recentMarker = recentMarker)
+                    //}
 
                     Column(
                         modifier = Modifier
