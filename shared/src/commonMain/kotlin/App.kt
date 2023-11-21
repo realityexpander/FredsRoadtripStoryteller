@@ -565,6 +565,7 @@ fun App(
                                 bottomSheetScaffoldState,
                                 marker,
                                 markerDetailsResult,
+                                isTextToSpeechCurrentlySpeaking = isTextToSpeechCurrentlySpeaking,
                                 onClickStartSpeakingMarker = { speakMarker ->
                                     markersRepo.updateMarkerIsSpoken(
                                         speakMarker,
@@ -576,7 +577,6 @@ fun App(
                                     )
                                     currentSpeakingMarker = speakMarker(speakMarker, true)
                                 },
-                                isTextToSpeechCurrentlySpeaking = isTextToSpeechCurrentlySpeaking,
                                 onLocateMarkerOnMap = { locateMarker ->
                                     coroutineScope.launch {
                                         shouldCenterCameraOnLocation =

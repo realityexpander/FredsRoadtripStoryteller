@@ -859,7 +859,7 @@ actual fun GoogleMaps(
             // Information marker
             // - Note: Known bug when opening second info marker there is a noticeable flicker
             //   (1/60th frame) when the info window "jumps up" above the marker icon.
-            //   No fix known, afaik.
+            //   No fix known, afaik. We await the next version of Google Maps to see if it's fixed.
             localShouldShowInfoMarker?.let { marker ->
                 // Clear the previous InfoMarker
                 infoMarker = null

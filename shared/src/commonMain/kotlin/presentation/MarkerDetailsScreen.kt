@@ -88,8 +88,8 @@ fun MarkerDetailsScreen(
     bottomSheetScaffoldState: BottomSheetScaffoldState,
     baseMarker: Marker,
     markerLoadingState: LoadingState<Marker>,
-    onClickStartSpeakingMarker: (Marker) -> Unit = {},
     isTextToSpeechCurrentlySpeaking: Boolean = false,
+    onClickStartSpeakingMarker: (Marker) -> Unit = {},
     onLocateMarkerOnMap: (Marker) -> Unit = {},
     onClose: () -> Unit = {},
 ) {
