@@ -50,34 +50,35 @@ fun SettingsScreen(
     markersRepo: MarkersRepo? = null,
     bottomSheetScaffoldState: BottomSheetScaffoldState,
     seenRadiusMiles: Double,
+    appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState: Boolean = false,
     onSeenRadiusChange: (Double) -> Unit = {},
-    onIsCachedMarkersLastUpdatedLocationVisibleChange: ((Boolean) -> Unit) = {},
-    onResetMarkerSettings: (() -> Unit) = {},
+    onIsCachedMarkersLastUpdatedLocationVisibleChange: (Boolean) -> Unit = {},
+    onResetMarkerSettings: () -> Unit = {},
     onDismiss: () -> Unit = {},
 ) {
     val scrollState = rememberScrollState()
     var isResetMarkerSettingsAlertDialogVisible by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
-    var shouldStartBackgroundTrackingWhenAppLaunches by remember {
+    var isStartBackgroundTrackingWhenAppLaunchesEnabled by remember {
         mutableStateOf(settings?.isStartBackgroundTrackingWhenAppLaunchesEnabled ?: false)
     }
-    var shouldShowMarkerDataLastSearchedLocation by remember {
+    var isShowMarkerDataLastSearchedLocationEnabled by remember {
         mutableStateOf(settings?.isMarkersLastUpdatedLocationVisible ?: false)
     }
-    var shouldSpeakWhenUnseenMarkerFound by remember {
+    var isSpeakWhenUnseenMarkerFoundEnabled by remember(appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState) {
         mutableStateOf(settings?.isSpeakWhenUnseenMarkerFoundEnabled ?: false)
     }
-    var shouldSpeakDetailsWhenUnseenMarkerFound by remember {
+    var isSpeakDetailsWhenUnseenMarkerFoundEnabled by remember {
         mutableStateOf(settings?.isSpeakDetailsWhenUnseenMarkerFoundEnabled ?: false)
     }
 
     // Poll for changes from the App Foreground Notification cancelling the Speak Marker feature
-    shouldSpeakWhenUnseenMarkerFound =
+    isSpeakWhenUnseenMarkerFoundEnabled =
         PollForNotificationActionSettingsChanges(
             bottomSheetScaffoldState,
             coroutineScope,
-            shouldSpeakWhenUnseenMarkerFound
+            isSpeakWhenUnseenMarkerFoundEnabled
         )
 
     Column(
@@ -116,29 +117,29 @@ fun SettingsScreen(
 
             SettingsSwitch(
                 title = "Speak marker when new marker is found",
-                isChecked = shouldSpeakWhenUnseenMarkerFound,
+                isChecked = isSpeakWhenUnseenMarkerFoundEnabled,
                 onUpdateChecked = {
                     settings?.isSpeakWhenUnseenMarkerFoundEnabled = it
-                    shouldSpeakWhenUnseenMarkerFound = it
+                    isSpeakWhenUnseenMarkerFoundEnabled = it
                 }
             )
 
             SettingsSwitch(
                 title = "Speak full marker details when new marker is found",
-                isChecked = shouldSpeakDetailsWhenUnseenMarkerFound,
-                enabled = shouldSpeakWhenUnseenMarkerFound, // linked to above setting
+                isChecked = isSpeakDetailsWhenUnseenMarkerFoundEnabled,
+                enabled = isSpeakWhenUnseenMarkerFoundEnabled, // linked to above setting
                 onUpdateChecked = {
                     settings?.isSpeakDetailsWhenUnseenMarkerFoundEnabled = it
-                    shouldSpeakDetailsWhenUnseenMarkerFound = it
+                    isSpeakDetailsWhenUnseenMarkerFoundEnabled = it
                 }
             )
 
             SettingsSwitch(
                 title = "Start background tracking when app launches",
-                isChecked = shouldStartBackgroundTrackingWhenAppLaunches,
+                isChecked = isStartBackgroundTrackingWhenAppLaunchesEnabled,
                 onUpdateChecked = {
                     settings?.isStartBackgroundTrackingWhenAppLaunchesEnabled = it
-                    shouldStartBackgroundTrackingWhenAppLaunches = it
+                    isStartBackgroundTrackingWhenAppLaunchesEnabled = it
                 }
             )
 
@@ -153,10 +154,10 @@ fun SettingsScreen(
 
             SettingsSwitch(
                 title = "Show marker data last searched location",
-                isChecked = shouldShowMarkerDataLastSearchedLocation,
+                isChecked = isShowMarkerDataLastSearchedLocationEnabled,
                 onUpdateChecked = {
                     settings?.isMarkersLastUpdatedLocationVisible = it
-                    shouldShowMarkerDataLastSearchedLocation = it
+                    isShowMarkerDataLastSearchedLocationEnabled = it
                     onIsCachedMarkersLastUpdatedLocationVisibleChange(it)
                 }
             )

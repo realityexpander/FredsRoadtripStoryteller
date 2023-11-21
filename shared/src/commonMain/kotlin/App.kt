@@ -129,6 +129,9 @@ fun App(
         }
         var isOnboardingDialogVisible by remember { mutableStateOf(false)}
         var isAboutBoxDialogVisible by remember { mutableStateOf(false)}
+        var appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState by remember {
+            mutableStateOf(appSettings.isSpeakWhenUnseenMarkerFoundEnabled)
+        }
 
         // Error Message state & value
         var errorMessageStr by remember {
@@ -474,6 +477,7 @@ fun App(
                                 markersRepo,
                                 bottomSheetScaffoldState,
                                 seenRadiusMiles,
+                                appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState,
                                 onSeenRadiusChange = { updatedRadiusMiles ->
                                     seenRadiusMiles = updatedRadiusMiles
                                 },
@@ -496,13 +500,12 @@ fun App(
                                         shouldCalculateMarkers = true // todo needed? remove?
                                         userLocation = jiggleLocationToForceUiUpdate(userLocation)
                                     }
-                                },
-                                onDismiss = {
-                                    coroutineScope.launch {
-                                        bottomSheetScaffoldState.bottomSheetState.collapse()
-                                    }
                                 }
-                            )
+                            ) {
+                                coroutineScope.launch {
+                                    bottomSheetScaffoldState.bottomSheetState.collapse()
+                                }
+                            }
                         }
                         is BottomSheetScreen.MarkerDetailsScreen -> {
                             // Use id string (coming from map marker in google maps)
@@ -856,6 +859,16 @@ fun App(
                             stopTextToSpeech()
                         },
                         markersRepo = markersRepo,
+                        appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState,
+                        onClickStartSpeakingAllMarkers = {
+                            appSettings.isSpeakWhenUnseenMarkerFoundEnabled = true
+                            appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState = true
+                        },
+                        onClickPauseSpeakingAllMarkers = {
+                            appSettings.isSpeakWhenUnseenMarkerFoundEnabled = false
+                            appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState = false
+                            stopTextToSpeech()
+                        },
                     )
                     Log.d("✏️✏️🛑  END recently seen markers rendering, finalMarkers.size = ${finalMarkers.size}, time to render = ${(Clock.System.now() - startTime)}")
                 }

@@ -1013,9 +1013,9 @@ actual fun GoogleMaps(
         if(fullLoopFrameRenderTime > 20.milliseconds) {
             Log.d(
                 "💿 GoogleMaps-Android 👾: END GoogleMap(), " +
-                "fullLoopFrameRenderTime= $fullLoopFrameRenderTime, " +
-                "compose render Time = ${Clock.System.now() - frameStartTime}, " +
-                "frameRenderCount = $frameRenderCount"
+                "frameRenderCount = $frameRenderCount, " +
+                "compose-only render Time = ${Clock.System.now() - frameStartTime}, " +
+                "fullLoopFrameRenderTime= $fullLoopFrameRenderTime"
             )
         }
 

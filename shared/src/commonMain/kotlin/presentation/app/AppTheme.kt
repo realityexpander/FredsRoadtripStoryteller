@@ -21,7 +21,7 @@ fun AppTheme(
     content: @Composable () -> Unit
 ) {
     val colors = if (darkTheme) {
-//        darkColorScheme(
+//        darkColorScheme(  // material3
         darkColors(
             primary = Color(0xFF111162),
             onPrimary = Color(0xFFBBBBBB),
@@ -33,7 +33,7 @@ fun AppTheme(
             onBackground = Color(0xFFDDDDDD),
         )
     } else {
-//        lightColorScheme(
+//        lightColorScheme( // material3
         lightColors(
             primary = Color(0xFF111162),
             secondary = Color(0xFF03DAC5),
@@ -46,7 +46,7 @@ fun AppTheme(
         )
     }
     val typography = Typography(
-//        bodyMedium = TextStyle(
+//        bodyMedium = TextStyle( // material3
         body2 = TextStyle(
             fontFamily = FontFamily.Default,
             fontWeight = FontWeight.Normal,
@@ -65,7 +65,7 @@ fun AppTheme(
     )
 
     MaterialTheme(
-//        colorScheme = colors,
+//        colorScheme = colors, // material3
         colors = colors,
         typography = typography,
         shapes = shapes,
