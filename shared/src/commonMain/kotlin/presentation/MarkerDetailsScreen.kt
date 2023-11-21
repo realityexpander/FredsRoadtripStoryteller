@@ -248,14 +248,15 @@ fun MarkerDetailsScreen(
         exit = fadeOut(TweenSpec(500))
     ) {
         markerLoadingState as LoadingState.Loaded<Marker>
+        val marker = markerLoadingState.data
 
         val painterResource: Resource<Painter> =
             asyncPainterResource(
-                data = markerLoadingState.data.mainPhotoUrl,
+                data = marker.mainPhotoUrl,
                 filterQuality = FilterQuality.Medium,
             )
         var panZoomDialogImageUrl by remember {
-            mutableStateOf(markerLoadingState.data.mainPhotoUrl)
+            mutableStateOf(marker.mainPhotoUrl)
         }
 
         Column(
@@ -266,7 +267,7 @@ fun MarkerDetailsScreen(
         ) {
             // Title & Close Button
             // Subtitle & Speak Button
-            TitleCloseSubtitleSpeakSection(markerLoadingState.data, coroutineScope, bottomSheetScaffoldState)
+            TitleCloseSubtitleSpeakSection(marker, coroutineScope, bottomSheetScaffoldState)
 
             // Marker Info Content
             Column(
@@ -282,7 +283,7 @@ fun MarkerDetailsScreen(
 
                 // Main Photo
                 if(!LocalInspectionMode.current) {
-                    if (markerLoadingState.data.mainPhotoUrl.isNotEmpty()) {
+                    if (marker.mainPhotoUrl.isNotEmpty()) {
                         Surface(
                             modifier = Modifier.background(
                                 MaterialTheme.colors.background,
@@ -354,7 +355,7 @@ fun MarkerDetailsScreen(
                                         ) {
                                             Image(
                                                 painter,
-                                                markerLoadingState.data.title,
+                                                marker.title,
                                                 contentScale = ContentScale.Crop,
                                                 alignment = Alignment.Center,
                                                 modifier = Modifier.fillMaxSize()
@@ -370,7 +371,7 @@ fun MarkerDetailsScreen(
                                         .padding(8.dp),
                                     onClick = {
                                         isPanZoomImageDialogVisible = true
-                                        panZoomDialogImageUrl = markerLoadingState.data.mainPhotoUrl
+                                        panZoomDialogImageUrl = marker.mainPhotoUrl
                                     }
                                 )
                             }
@@ -386,10 +387,10 @@ fun MarkerDetailsScreen(
                 }
 
                 // Attributions for photo
-                if(markerLoadingState.data.photoAttributions.isNotEmpty()) {
-                    if (markerLoadingState.data.photoAttributions[0].isNotBlank()) {
+                if(marker.photoAttributions.isNotEmpty()) {
+                    if (marker.photoAttributions[0].isNotBlank()) {
                         Text(
-                            "Photo Credit: " + markerLoadingState.data.photoAttributions[0],
+                            "Photo Credit: " + marker.photoAttributions[0],
                             fontSize = MaterialTheme.typography.overline.fontSize,
                             textAlign = TextAlign.End,
                         )
@@ -420,7 +421,7 @@ fun MarkerDetailsScreen(
 
                 // ID, Navigate to Marker, Locate on Map, Speak
                 MarkerIdWithNavigateLocateSpeakActionButtonSection(
-                    markerLoadingState.data,
+                    marker,
                     coroutineScope,
                     bottomSheetScaffoldState,
                     onLocateMarkerOnMap,
@@ -429,14 +430,14 @@ fun MarkerDetailsScreen(
                 )
 
                 // Inscription
-                if (markerLoadingState.data.englishInscription.isNotBlank()) { // todo add spanish translation
+                if (marker.englishInscription.isNotBlank()) { // todo add spanish translation
                     Text(
-                        markerLoadingState.data.englishInscription,
+                        marker.englishInscription,
                         fontSize = MaterialTheme.typography.body2.fontSize,
                     )
                 } else {
                     Text(
-                        markerLoadingState.data.inscription,
+                        marker.inscription,
                         fontSize = MaterialTheme.typography.body2.fontSize,
                     )
                 }
@@ -445,7 +446,7 @@ fun MarkerDetailsScreen(
                 Spacer(modifier = Modifier.padding(8.dp))
 
                 // More Photos
-                markerLoadingState.data.markerPhotos.forEachIndexed { index, photoUrl ->
+                marker.markerPhotos.forEachIndexed { index, photoUrl ->
                     if (index > 0) {
                         Box(
                             modifier = Modifier
@@ -479,18 +480,18 @@ fun MarkerDetailsScreen(
                             )
                         }
                         // Caption for photo
-                        if (markerLoadingState.data.photoCaptions[index].isNotBlank()) {
+                        if (marker.photoCaptions[index].isNotBlank()) {
                             Text(
-                                markerLoadingState.data.photoCaptions[index],
+                                marker.photoCaptions[index],
                                 fontSize = MaterialTheme.typography.caption.fontSize,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.fillMaxWidth()
                             )
                         }
                         // Attributions for photo
-                        if (markerLoadingState.data.photoAttributions[index].isNotBlank()) {
+                        if (marker.photoAttributions[index].isNotBlank()) {
                             Text(
-                                "Photo Credit: " + markerLoadingState.data.photoAttributions[index],
+                                "Photo Credit: " + marker.photoAttributions[index],
                                 fontSize = MaterialTheme.typography.overline.fontSize,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.fillMaxWidth()
@@ -501,27 +502,27 @@ fun MarkerDetailsScreen(
                 }
 
                 // Erected
-                if(markerLoadingState.data.erected.isNotBlank()) {
+                if(marker.erected.isNotBlank()) {
                     Text(
-                        "Erected " + markerLoadingState.data.erected,
+                        "Erected " + marker.erected,
                         fontSize = MaterialTheme.typography.body1.fontSize,
                     )
                 }
 
                 // Location details
-                if(markerLoadingState.data.location.isNotBlank()) {
+                if(marker.location.isNotBlank()) {
                     Text(
-                        markerLoadingState.data.location,
+                        marker.location,
                         fontSize = MaterialTheme.typography.body1.fontSize,
                     )
                 } else {
                     Text(
-                        "Marker Latitude: ${markerLoadingState.data.position.latitude}",
+                        "Marker Latitude: ${marker.position.latitude}",
                         fontSize = MaterialTheme.typography.body1.fontSize,
                         fontWeight = FontWeight.Normal,
                     )
                     Text(
-                        "Marker Longitude: ${markerLoadingState.data.position.longitude}",
+                        "Marker Longitude: ${marker.position.longitude}",
                         fontSize = MaterialTheme.typography.body1.fontSize,
                         fontWeight = FontWeight.Normal,
                     )
