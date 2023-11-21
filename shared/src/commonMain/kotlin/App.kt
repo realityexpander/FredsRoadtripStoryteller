@@ -497,7 +497,7 @@ fun App(
                                         userLocation = jiggleLocationToForceUiUpdate(userLocation)
                                     }
                                 },
-                                onClose = {
+                                onDismiss = {
                                     coroutineScope.launch {
                                         bottomSheetScaffoldState.bottomSheetState.collapse()
                                     }

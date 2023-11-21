@@ -53,7 +53,7 @@ fun SettingsScreen(
     onSeenRadiusChange: (Double) -> Unit = {},
     onIsCachedMarkersLastUpdatedLocationVisibleChange: ((Boolean) -> Unit) = {},
     onResetMarkerSettings: (() -> Unit) = {},
-    onClose: () -> Unit = {},
+    onDismiss: () -> Unit = {},
 ) {
     val scrollState = rememberScrollState()
     var isResetMarkerSettingsAlertDialogVisible by remember { mutableStateOf(false) }
@@ -99,7 +99,7 @@ fun SettingsScreen(
                 onClick = {
                     coroutineScope.launch {
                         bottomSheetScaffoldState.bottomSheetState.collapse()
-                        onClose()
+                        onDismiss()
                     }
                 }) {
                 Icon(
