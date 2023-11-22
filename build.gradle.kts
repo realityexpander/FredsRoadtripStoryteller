@@ -7,6 +7,4 @@ plugins {
 
     id("org.jetbrains.compose").apply(false)
     id("org.jetbrains.kotlin.plugin.serialization").apply(false)
-
-//    id("kotlinx-atomicfu").apply(false)
 }

@@ -5,8 +5,6 @@ plugins {
 
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.plugin.serialization")
-
-//    id("kotlinx-atomicfu")
 }
 
 kotlin {
@@ -163,10 +161,9 @@ buildscript {
     }
 
     dependencies {
-        // kotlinx.atomicfu should be on classpath
+        // kotlinx.atomicfu has to be on the classpath
         //  it's an implementation detail of kotlinx.atomicfu gradle plugin
-//        classpath(kotlinLibs.gradle.plugin)
-        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.23.0")
+        classpath(libs.atomicfu.gradle.plugin)
     }
 }
 
