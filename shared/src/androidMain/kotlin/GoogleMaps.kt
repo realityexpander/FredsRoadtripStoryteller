@@ -877,7 +877,7 @@ actual fun GoogleMaps(
             }
             infoMarker?.let { marker ->
                 //println("🔷🔷 infoMarker: ${infoMarker?.title}, infoMarkerInfoWindowOpenPhase = $infoMarkerInfoWindowOpenPhase")
-                // Render the info marker (yes, it requires it to be rendered twice, IDK WHY DAMMIT)
+                // Render the info marker (yes, it requires it to be remembered twice, IDK WHY DAMMIT)
                 if(infoMarkerInfoWindowOpenPhase < 2) {
                     infoMarkerState = rememberMarkerState(
                         key = marker.id,
