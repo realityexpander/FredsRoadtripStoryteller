@@ -311,12 +311,11 @@ actual fun GoogleMaps(
     // Calculate Cluster items & Restricted Cluster items (to improve frame rate)
     val cachedMarkerIdToSeeableClusterItemMap =
         remember { mutableStateMapOf<MarkerIdStr, SeeableClusterItem>() }
-    val cachedClusterItems = remember { mutableStateListOf<SeeableClusterItem>() }
     var finalRenderClusterItems by remember { mutableStateOf<List<SeeableClusterItem>>(listOf()) }
     var isCalculatingClusterItems by remember { mutableStateOf(false) }
     var didUpdateClusterItems by remember { mutableStateOf(false) }
     var isRestrictedClusterRadiusActive by remember { mutableStateOf(false) } // to improve frame rate
-    var shouldCalcRestrictedClusterItems by remember(shouldCalcClusterItems) { mutableStateOf(false) }
+    var shouldCalcRestrictedClusterItems by remember(shouldCalcClusterItems) { mutableStateOf(shouldCalcClusterItems) }
     var previousRestrictedClusterCenterLatLng by remember { mutableStateOf(LatLng(0.0, 0.0)) }
     var previousRestrictedClusterRadiusMeters by remember { mutableDoubleStateOf(
         calcRestrictedClusterRadiusMetersForCameraZoomLevel(
@@ -461,8 +460,9 @@ actual fun GoogleMaps(
 
             // Check for changes
             if(finalRenderClusterItems.size == localCachedClusterItemList.size) {
-                //Log.d("💿 ⚝⚝⚝ 🌟 🔧  LaunchedEffect(shouldCalculateClusterItemList): No change in cluster items size, cachedClusterItemList.size = ${localCachedClusterItemList.size}")
-                isCalculatingClusterItems = false
+                Log.d("💿 ⚝⚝⚝ 🌟 🔧  LaunchedEffect(shouldCalculateClusterItemList): No change in cluster items size, cachedClusterItemList.size = ${localCachedClusterItemList.size}")
+                isCalculatingClusterItems = false // reset
+
                 didUpdateClusterItems = false
                 onDidCalculateClusterItemList()
                 return@launch
@@ -471,11 +471,12 @@ actual fun GoogleMaps(
             finalRenderClusterItems = localCachedClusterItemList
             //Log.d(
             //    "💿 ⚝⚝⚝ 🟨 🔧 LaunchedEffect(shouldCalculateClusterItemList): Recalculated updatedClusterItemList: \n" +
-            //            "  ⎣ cachedClusterItemList.size= ${cachedClusterItems.size}\n" +
+            //            "  ⎣ finalRenderClusterItems.size= ${finalRenderClusterItems.size}\n" +
             //            "  ⎣ radius= $clusterRadiusMiles\n" +
             //            "  ⎣ time= ${Clock.System.now() - startTime}"
             //)
-            isCalculatingClusterItems = false
+            isCalculatingClusterItems = false //reset
+
             didUpdateClusterItems = true
             onDidCalculateClusterItemList()
         }
@@ -729,9 +730,10 @@ actual fun GoogleMaps(
                             return@remember finalRenderClusterItems
                     }
 
-                    //Log.d("💿 ⚝⚝⚝ 🟨 🔧 Clustering(), RENDERING Clustering(items), " +
+                    //Log.d("💿 💰  Clustering(), RENDERING Clustering(items), " +
                     //        "isMarkersEnabled = $isMarkersEnabled, " +
-                    //        "didUpdateClusterItems = $didUpdateClusterItems"
+                    //        "didUpdateClusterItems = $didUpdateClusterItems, " +
+                    //        "finalRenderClusterItems.size = ${finalRenderClusterItems.size}"
                     //)
                     didUpdateClusterItems = false // reset
                     finalRenderClusterItems
@@ -1040,7 +1042,7 @@ actual fun GoogleMaps(
                 startRestrictedClusterRadius()
             }
 
-            // If frameTime over 200ms, and outside INNER `restricted cluster` radius, then start restricting & recalculate cluster items.
+            // If frameTime over 150ms, and outside INNER `restricted cluster` radius, then start restricting & recalculate cluster items.
             if(fullLoopFrameRenderTime > 150.milliseconds  // todo tune
                 && isLatLngOutsideRadiusMiles(
                     cameraPositionState.position.target,
@@ -1052,7 +1054,7 @@ actual fun GoogleMaps(
                 startRestrictedClusterRadius()
             }
         }
-        // Reset phase to start if camera is moved (only after first phase)
+        // If camera is moved, Reset phase to start (only after the first animated "restrict" frame)
         if(isRestrictedClusterRadiusActive
             && restrictedClusterRadiusPhase >= 1
         ) {
