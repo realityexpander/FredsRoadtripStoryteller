@@ -28,7 +28,6 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
@@ -53,7 +52,6 @@ import data.MarkersRepo
 import data.appSettings
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import openNavigationAction
 import presentation.maps.MarkerIdStr
 import presentation.maps.RecentlySeenMarker
 import presentation.uiComponents.lightenBy
@@ -124,11 +122,15 @@ fun RecentlySeenMarkers(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+
+                // Active Speaking Marker Title & ID, Speak Marker Button, Pause Speaking All Markers Button
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .wrapContentSize()
                 ) {
+
+                    // Marker Title & ID
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -216,14 +218,13 @@ fun RecentlySeenMarkers(
                         }
                     }
 
-
-//                    NavigationButton(
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .weight(.5f),
-//                        markersRepo,
-//                        speakingMarker
-//                    )
+                    //NavigationButton( // LEAVE FOR FUTURE USE
+                    //    modifier = Modifier
+                    //        .fillMaxWidth()
+                    //        .weight(.5f),
+                    //    markersRepo,
+                    //    speakingMarker
+                    //)
 
                     // Pause Speaking All Markers Button
                     Column(
@@ -451,29 +452,30 @@ fun RecentlySeenMarkers(
     }
 }
 
-@Composable
-private fun NavigationButton(
-    modifier: Modifier = Modifier,
-    markersRepo: MarkersRepo,
-    recentMarker: RecentlySeenMarker
-) {
-    IconButton(
-        modifier = modifier,
-        onClick = {
-            // Lookup the marker in the repo and open navigation to it
-            markersRepo.marker(recentMarker.id)?.let { marker ->
-                openNavigationAction(
-                    lat = marker.position.latitude,
-                    lng = marker.position.longitude,
-                    markerTitle = marker.title
-                )
-            }
-        }
-    ) {
-        Icon(
-            imageVector = Icons.Default.Navigation,
-            contentDescription = "Navigate to Marker",
-            tint = MaterialTheme.colors.onBackground
-        )
-    }
-}
+// LEAVE FOR POSSIBLE FUTURE USE
+//@Composable
+//private fun NavigationButton(
+//    modifier: Modifier = Modifier,
+//    markersRepo: MarkersRepo,
+//    recentMarker: RecentlySeenMarker
+//) {
+//    IconButton(
+//        modifier = modifier,
+//        onClick = {
+//            // Lookup the marker in the repo and open navigation to it
+//            markersRepo.marker(recentMarker.id)?.let { marker ->
+//                openNavigationAction(
+//                    lat = marker.position.latitude,
+//                    lng = marker.position.longitude,
+//                    markerTitle = marker.title
+//                )
+//            }
+//        }
+//    ) {
+//        Icon(
+//            imageVector = Icons.Default.Navigation,
+//            contentDescription = "Navigate to Marker",
+//            tint = MaterialTheme.colors.onBackground
+//        )
+//    }
+//}

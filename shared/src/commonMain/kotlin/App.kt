@@ -138,7 +138,7 @@ fun App(
         var isMarkerCurrentlySpeaking by remember { // reactive to text-to-speech state
             mutableStateOf(false)
         }
-        var activeSpeakMarker: RecentlySeenMarker? by remember {
+        var activeSpeakingMarker: RecentlySeenMarker? by remember {
             mutableStateOf(null)
         }
         var seenRadiusMiles by remember {
@@ -152,7 +152,7 @@ fun App(
         var shouldCenterCameraOnLocation by remember {
             mutableStateOf<Location?>(null) // used to center map on user location
         }
-        var shouldZoomToLatLongZoom by remember {
+        var shouldZoomCameraToLatLongZoom by remember {
             mutableStateOf<LatLongZoom?>(null) // used to zoom to a specific location
         }
         var userLocation: Location by remember {
@@ -343,7 +343,7 @@ fun App(
                                             ) {
                                                 val nextUnspokenMarker =
                                                     appSettings.uiRecentlySeenMarkersList.list.first()
-                                                activeSpeakMarker =
+                                                activeSpeakingMarker =
                                                     speakRecentlySeenMarker(
                                                         nextUnspokenMarker,
                                                         appSettings.isSpeakDetailsWhenUnseenMarkerFoundEnabled,
@@ -461,7 +461,7 @@ fun App(
                                 isMarkerCurrentlySpeaking = true
                                 yield() // allow UI to update
 
-                                activeSpeakMarker = speakRecentlySeenMarker(
+                                activeSpeakingMarker = speakRecentlySeenMarker(
                                     speakMarker,
                                     appSettings.isSpeakDetailsWhenUnseenMarkerFoundEnabled,
                                     markersRepo = markersRepo,
@@ -587,7 +587,7 @@ fun App(
                                 markerDetailsResult,
                                 isTextToSpeechCurrentlySpeaking = isMarkerCurrentlySpeaking,
                                 onClickStartSpeakingMarker = { speakMarker ->
-                                    activeSpeakMarker = speakRecentlySeenMarker(
+                                    activeSpeakingMarker = speakRecentlySeenMarker(
                                         RecentlySeenMarker(speakMarker.id, speakMarker.title),
                                         true,
                                         markersRepo = markersRepo,
@@ -609,7 +609,7 @@ fun App(
                                         shouldCenterCameraOnLocation =
                                             locateMarker.position.toLocation()
                                         shouldShowInfoMarker = locateMarker
-                                        shouldZoomToLatLongZoom =
+                                        shouldZoomCameraToLatLongZoom =
                                             LatLongZoom(locateMarker.position, 14f)
                                     }
                                 },
@@ -628,7 +628,7 @@ fun App(
             drawerContent = {
                 if(bottomSheetScaffoldState.drawerState.isOpen) {
                     AppDrawerContent(
-                        markersRepo.markers(), // SSoT is the Repo
+                        finalMarkers, // SSoT is the finalMarkers
                         onSetBottomSheetActiveScreen = { screen ->
                             bottomSheetActiveScreen = screen
                         },
@@ -643,7 +643,39 @@ fun App(
                             coroutineScope.launch {
                                 bottomSheetScaffoldState.bottomSheetState.expand()
                             }
-                        }
+                        },
+                        activeSpeakingMarker = activeSpeakingMarker,
+                        isMarkerCurrentlySpeaking = isMarkerCurrentlySpeaking,
+                        onClickStartSpeakingMarker = { marker, isSpeakDetailsEnabled: Boolean ->
+                            if(isTextToSpeechSpeaking()) stopTextToSpeech()
+                            coroutineScope.launch {
+                                delay(150)
+                                activeSpeakingMarker =
+                                    speakRecentlySeenMarker(
+                                        RecentlySeenMarker(marker.id, marker.title),
+                                        isSpeakDetailsEnabled = isSpeakDetailsEnabled,
+                                        markersRepo = markersRepo,
+                                        coroutineScope,
+                                        onUpdateLoadingState = { loadingState ->
+                                            networkLoadingState = loadingState
+                                        }
+                                    ) { errorMessage ->
+                                        Log.w(errorMessage)
+                                        errorMessageStr = errorMessage
+                                    }
+                            }
+                        },
+                        onClickStopSpeakingMarker = {
+                            stopTextToSpeech()
+                        },
+                        onLocateMarker = { marker ->
+                            coroutineScope.launch {
+                                //shouldCenterCameraOnLocation = marker.position.toLocation() // no zooming
+                                bottomSheetScaffoldState.drawerState.close()
+                                shouldShowInfoMarker = marker
+                                shouldZoomCameraToLatLongZoom = LatLongZoom(marker.position, 14f)
+                            }
+                        },
                     )
                 }
             }
@@ -849,9 +881,9 @@ fun App(
                             onDidShowInfoMarker = {
                                 shouldShowInfoMarker = null
                             },
-                            shouldZoomToLatLongZoom = shouldZoomToLatLongZoom,
+                            shouldZoomToLatLongZoom = shouldZoomCameraToLatLongZoom,
                             onDidZoomToLatLongZoom = {
-                                shouldZoomToLatLongZoom = null  // reset
+                                shouldZoomCameraToLatLongZoom = null  // reset
                             },
                         )
 
@@ -862,7 +894,7 @@ fun App(
                     //Log.d("✏️✏️⬇️  START recently seen markers rendering")
                     RecentlySeenMarkers(
                         uiRecentlySeenMarkersList,
-                        activeSpeakingMarker = activeSpeakMarker,
+                        activeSpeakingMarker = activeSpeakingMarker,
                         isTextToSpeechCurrentlySpeaking = isMarkerCurrentlySpeaking,
                         appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState, // reactive to settings
                         markersRepo = markersRepo,
@@ -880,7 +912,7 @@ fun App(
                             if(isTextToSpeechSpeaking()) stopTextToSpeech()
                             coroutineScope.launch {
                                 delay(150)
-                                activeSpeakMarker =
+                                activeSpeakingMarker =
                                     speakRecentlySeenMarker(
                                         recentlySeenMarker,
                                         isSpeakDetailsEnabled = isSpeakDetailsEnabled,
