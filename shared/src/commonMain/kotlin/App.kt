@@ -77,7 +77,6 @@ import presentation.maps.RecentlySeenMarker
 import presentation.maps.RecentlySeenMarkersList
 import presentation.maps.toLocation
 import presentation.onboarding.AboutBoxDialog
-import presentation.speech.speakMarker
 import presentation.speech.speakRecentlySeenMarker
 import kotlin.random.Random
 import co.touchlab.kermit.Logger as Log
@@ -109,6 +108,7 @@ sealed class BottomSheetScreen {
 // Improve performance by restricting updates
 var frameCount = 0
 var didFullFrameRender = false
+var unspokenText: String? = null
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -135,7 +135,7 @@ fun App(
         }
 
         // Seen Marker & Speaking UI
-        var isTextToSpeechCurrentlySpeaking by remember {
+        var isMarkerCurrentlySpeaking by remember { // reactive to text-to-speech state
             mutableStateOf(false)
         }
         var currentSpeakingMarker: RecentlySeenMarker? by remember {
@@ -358,6 +358,9 @@ fun App(
                                                                 calcLoadingStateIcon(
                                                                     loadingState
                                                                 )
+                                                        },
+                                                        onSetUnspokenText = { nextTextChunk ->
+                                                            unspokenText = nextTextChunk
                                                         }
                                                     )
                                             }
@@ -402,12 +405,27 @@ fun App(
             }
         }
 
-        // Update isCurrentlySpeaking UI flag
+        // Update `isMarkerCurrentlySpeaking` UI flag for reactive UI
         LaunchedEffect(Unit) {
             withContext(Dispatchers.IO) {
                 while (true) {
-                    delay(250)
-                    isTextToSpeechCurrentlySpeaking = isTextToSpeechSpeaking()
+                    delay(150)
+                    isMarkerCurrentlySpeaking = isTextToSpeechSpeaking()
+
+                    // Speak the next chunk of unspoken text (in any)
+                    if(!isMarkerCurrentlySpeaking) {
+                        unspokenText?.let { text ->
+                            val lastWordBoundaryIndex =
+                                text.substring(0, 4000).lastIndexOf(" ")
+                            val nextTextToSpeak =
+                                text.substring(0, lastWordBoundaryIndex)
+                            val restOfUnspokenText =
+                                text.substring(lastWordBoundaryIndex)
+                            unspokenText = restOfUnspokenText
+
+                            speakTextToSpeech(nextTextToSpeak)
+                        }
+                    }
                 }
             }
         }
@@ -421,7 +439,7 @@ fun App(
                     if (appSettings.isSpeakWhenUnseenMarkerFoundEnabled
                         && uiRecentlySeenMarkersList.isNotEmpty()
                     ) {
-                        if (!isTextToSpeechSpeaking() && !isTextToSpeechCurrentlySpeaking) {
+                        if (!isTextToSpeechSpeaking() && !isMarkerCurrentlySpeaking) {
 
                             // look for next unspoken marker
                             val nextUnspokenMarker =
@@ -430,7 +448,7 @@ fun App(
                                         ?: false) // default not spoken yet
                                 }
                             nextUnspokenMarker?.let { speakMarker ->
-                                isTextToSpeechCurrentlySpeaking = true
+                                isMarkerCurrentlySpeaking = true
                                 yield() // allow UI to update
 
                                 currentSpeakingMarker = speakRecentlySeenMarker(
@@ -559,17 +577,32 @@ fun App(
                                 bottomSheetScaffoldState,
                                 marker,
                                 markerDetailsResult,
-                                isTextToSpeechCurrentlySpeaking = isTextToSpeechCurrentlySpeaking,
+                                isTextToSpeechCurrentlySpeaking = isMarkerCurrentlySpeaking,
                                 onClickStartSpeakingMarker = { speakMarker ->
-                                    markersRepo.updateMarkerIsSpoken(
-                                        speakMarker,
-                                        isSpoken = true
-                                    )  // todo - should be a function and calls speakRecentlySeenMarker()
-                                    appSettings.lastSpokenRecentlySeenMarker = RecentlySeenMarker(
-                                        speakMarker.id,
-                                        speakMarker.title
+//                                    // todo - make a function and calls speakRecentlySeenMarker()
+//                                    markersRepo.updateMarkerIsSpoken(
+//                                        speakMarker,
+//                                        isSpoken = true
+//                                    )
+//                                    appSettings.lastSpokenRecentlySeenMarker = RecentlySeenMarker(
+//                                        speakMarker.id,
+//                                        speakMarker.title
+//                                    )
+//                                    currentSpeakingMarker = speakMarker(speakMarker, true)
+
+                                    currentSpeakingMarker = speakRecentlySeenMarker(
+                                        appSettings.lastSpokenRecentlySeenMarker,
+                                        true,
+                                        coroutineScope,
+                                        onError = { errorMessage ->
+                                            Log.w(errorMessage)
+                                            errorMessageStr = errorMessage
+                                        },
+                                        markersRepo = markersRepo,
+                                        onUpdateLoadingState = { loadingState ->
+                                            loadingStateIcon = calcLoadingStateIcon(loadingState)
+                                        }
                                     )
-                                    currentSpeakingMarker = speakMarker(speakMarker, true)
                                 },
                                 onLocateMarkerOnMap = { locateMarker ->
                                     coroutineScope.launch {
@@ -831,22 +864,22 @@ fun App(
                             }
                         },
                         currentlySpeakingMarker = currentSpeakingMarker,
-                        isTextToSpeechCurrentlySpeaking = isTextToSpeechCurrentlySpeaking,
-                        onClickStartSpeakingMarker = { recentlySeenMarker, shouldSpeakDetails: Boolean ->
-                            stopTextToSpeech()
+                        isTextToSpeechCurrentlySpeaking = isMarkerCurrentlySpeaking, // reactive
+                        onClickStartSpeakingMarker = { recentlySeenMarker, isSpeakDetailsEnabled: Boolean ->
+                            if(isTextToSpeechSpeaking()) stopTextToSpeech()
                             coroutineScope.launch {
-                                delay(50) // allow UI to update
+                                delay(150)
                                 currentSpeakingMarker =
                                     speakRecentlySeenMarker(
                                         recentlySeenMarker,
-                                        shouldSpeakDetails = shouldSpeakDetails,
+                                        isSpeakDetailsEnabled = isSpeakDetailsEnabled,
                                         coroutineScope,
                                         onError = { errorMessage ->
                                             Log.w(errorMessage)
                                             errorMessageStr = errorMessage
                                         },
                                         markersRepo = markersRepo,
-                                        onUpdateLoadingState = { loadingState -> // todo make function
+                                        onUpdateLoadingState = { loadingState ->
                                             networkLoadingState = loadingState
                                         }
                                     )

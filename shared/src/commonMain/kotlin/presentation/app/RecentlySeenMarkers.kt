@@ -1,9 +1,11 @@
 package presentation.app
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -49,6 +51,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import data.MarkersRepo
 import data.appSettings
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import openNavigationAction
 import presentation.maps.MarkerIdStr
@@ -62,7 +65,8 @@ fun RecentlySeenMarkers(
     onClickRecentlySeenMarkerItem: ((MarkerIdStr) -> Unit) = {},
     currentlySpeakingMarker: RecentlySeenMarker? = null,
     isTextToSpeechCurrentlySpeaking: Boolean = false,
-    onClickStartSpeakingMarker: (RecentlySeenMarker, shouldSpeakDetails: Boolean) -> Unit = { _, _ -> Unit},
+    onClickStartSpeakingMarker: (RecentlySeenMarker, shouldSpeakDetails: Boolean) -> Unit =
+        { _, _ -> Unit},
     onClickStopSpeakingMarker: () -> Unit = {},
     markersRepo: MarkersRepo,
     isSpeakWhenUnseenMarkerFoundEnabled: Boolean = appSettings.isSpeakWhenUnseenMarkerFoundEnabled,
@@ -86,6 +90,10 @@ fun RecentlySeenMarkers(
         }
     }
 
+    val speakingMarker by remember(currentlySpeakingMarker) {
+        mutableStateOf(currentlySpeakingMarker)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -95,108 +103,118 @@ fun RecentlySeenMarkers(
 
         // Current spoken marker
         AnimatedVisibility(
-            currentlySpeakingMarker != null,
+            speakingMarker != null,
             enter = expandVertically(tween(1500)),
-            exit = fadeOut()
+            exit = fadeOut(tween(500))
         ) {
-            val speakingMarker = currentlySpeakingMarker!!
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp, 4.dp, 8.dp, 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .wrapContentSize()
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-//                                .heightIn(min = 48.dp)
-                                .background(
-                                    color = MaterialTheme.colors.primary.lightenBy(.2f)
-                                        .copy(alpha = 0.75f),
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .padding(8.dp, 0.dp, 8.dp, 4.dp)
-                                .clickable {
-                                    onClickRecentlySeenMarkerItem(speakingMarker.id)
-                                }
-                                .weight(3f)
-                        ) {
-                            Text(
-                                text = speakingMarker.title,
-                                color = MaterialTheme.colors.onPrimary,
-                                fontStyle = FontStyle.Normal,
-                                fontSize = MaterialTheme.typography.h6.fontSize,
-                                fontWeight = FontWeight.Medium,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                            Text(
-                                text = speakingMarker.id + " "
-                                        + if (isTextToSpeechCurrentlySpeaking) "speaking" else "spoken last",
-                                color = MaterialTheme.colors.onPrimary.copy(alpha = 0.50f),
-                                fontStyle = FontStyle.Normal,
-                                fontSize = MaterialTheme.typography.body1.fontSize,
-                                fontWeight = FontWeight.Medium,
-                            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp, 4.dp, 8.dp, 8.dp)
+                    .animateContentSize(
+                        animationSpec = tween(500)
+                    ) { initialValue, targetValue ->
+                        if (initialValue.height == 0) {
+                            expandVertically()
+                        } else {
+                            shrinkVertically()
                         }
+                    }
+                ,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .wrapContentSize()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                color = MaterialTheme.colors.primary.lightenBy(.2f)
+                                    .copy(alpha = 0.75f),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .padding(8.dp, 0.dp, 8.dp, 4.dp)
+                            .clickable {
+                                onClickRecentlySeenMarkerItem(speakingMarker?.id ?: return@clickable)
+                            }
+                            .weight(3f)
+                    ) {
+                        Text(
+                            text = speakingMarker?.title ?: "",
+                            color = MaterialTheme.colors.onPrimary,
+                            fontStyle = FontStyle.Normal,
+                            fontSize = MaterialTheme.typography.h6.fontSize,
+                            fontWeight = FontWeight.Medium,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Text(
+                            text = (speakingMarker?.id ?: "") + " "
+                                    + if (isTextToSpeechCurrentlySpeaking) "speaking" else "spoken last",
+                            color = MaterialTheme.colors.onPrimary.copy(alpha = 0.50f),
+                            fontStyle = FontStyle.Normal,
+                            fontSize = MaterialTheme.typography.body1.fontSize,
+                            fontWeight = FontWeight.Medium,
+                        )
+                    }
 
-                        Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
 
-                        Column(
-                            modifier = Modifier
-                                .weight(.5f)
-                                .background(
-                                    color = MaterialTheme.colors.primary.lightenBy(.2f)
-                                        .copy(alpha = 0.75f),
-                                    shape = RoundedCornerShape(8.dp)
+                    // Speak Marker Button
+                    Column(
+                        modifier = Modifier
+                            .weight(.5f)
+                            .background(
+                                color = MaterialTheme.colors.primary.lightenBy(.2f)
+                                    .copy(alpha = 0.75f),
+                                shape = RoundedCornerShape(8.dp)
+                            ),
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        if (isTextToSpeechCurrentlySpeaking) {
+                            IconButton(
+                                onClick = {
+                                    onClickStopSpeakingMarker()
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 48.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Stop,
+                                    contentDescription = "Stop Speaking Marker",
                                 )
-                            ,
-                            verticalArrangement = Arrangement.Center,
-                        ) {
-                            if (isTextToSpeechCurrentlySpeaking) {
-                                IconButton(
-                                    onClick = {
-                                        onClickStopSpeakingMarker()
-                                    },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .heightIn(min = 48.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Stop,
-                                        contentDescription = "Stop Speaking Marker",
+                            }
+                        } else {
+                            IconButton(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 48.dp),
+                                onClick = {
+                                    speakingMarker ?: return@IconButton
+
+                                    markersRepo.updateMarkerIsSpoken(
+                                        id = speakingMarker?.id ?: return@IconButton,
+                                        isSpoken = true
+                                    )
+                                    onClickStartSpeakingMarker(
+                                        speakingMarker ?: return@IconButton,
+                                        appSettings.isSpeakDetailsWhenUnseenMarkerFoundEnabled
                                     )
                                 }
-                            } else {
-                                IconButton(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .heightIn(min = 48.dp),
-                                    onClick = {
-                                        markersRepo.updateMarkerIsSpoken(
-                                            id = speakingMarker.id,
-                                            isSpoken = true
-                                        )
-                                        onClickStartSpeakingMarker(
-                                            speakingMarker,
-                                            appSettings.isSpeakDetailsWhenUnseenMarkerFoundEnabled
-                                        )
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.VolumeUp,
-                                        contentDescription = "Speak Marker",
-                                        tint = MaterialTheme.colors.onBackground
-                                    )
-                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.VolumeUp,
+                                    contentDescription = "Speak Marker",
+                                    tint = MaterialTheme.colors.onBackground
+                                )
                             }
                         }
+                    }
 
 
 //                    NavigationButton(
@@ -207,70 +225,69 @@ fun RecentlySeenMarkers(
 //                        speakingMarker
 //                    )
 
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(.5f)
-                        ) {
-                            if (isSpeakWhenUnseenMarkerFoundEnabled) {
-                                IconButton(
-                                    onClick = {
-                                        onClickPauseSpeakingAllMarkers()
-                                    },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .heightIn(min = 48.dp)
-                                ) {
-                                    Column {
-                                        Icon(
-                                            imageVector = Icons.Default.Pause,
-                                            contentDescription = "Pause Speaking All Markers",
+                    // Pause Speaking All Markers Button
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(.5f)
+                    ) {
+                        if (isSpeakWhenUnseenMarkerFoundEnabled) {
+                            IconButton(
+                                onClick = {
+                                    onClickPauseSpeakingAllMarkers()
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 48.dp)
+                            ) {
+                                Column {
+                                    Icon(
+                                        imageVector = Icons.Default.Pause,
+                                        contentDescription = "Pause Speaking All Markers",
+                                    )
+                                    Text(
+                                        "ALL",
+                                        fontSize = MaterialTheme.typography.body2.fontSize.times(
+                                            .75f
                                         )
-                                        Text(
-                                            "ALL",
-                                            fontSize = MaterialTheme.typography.body2.fontSize.times(
-                                                .75f
-                                            )
-                                        )
-                                    }
+                                    )
                                 }
-                            } else {
-                                IconButton(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .heightIn(min = 48.dp),
-                                    onClick = {
-                                        onClickStartSpeakingAllMarkers()
-                                    }
+                            }
+                        } else {
+                            IconButton(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 48.dp),
+                                onClick = {
+                                    onClickStartSpeakingAllMarkers()
+                                }
+                            ) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Filled.PlayArrow,
-                                            contentDescription = "Start Speaking All Markers",
-                                            tint = MaterialTheme.colors.onBackground
-                                        )
-                                        Text(
-                                            "ALL",
-                                            fontSize = MaterialTheme.typography.body2.fontSize.times(
-                                                .75f
-                                            ),
-                                        )
-                                    }
+                                    Icon(
+                                        imageVector = Icons.Filled.PlayArrow,
+                                        contentDescription = "Start Speaking All Markers",
+                                        tint = MaterialTheme.colors.onBackground
+                                    )
+                                    Text(
+                                        "ALL",
+                                        fontSize = MaterialTheme.typography.body2.fontSize.times(
+                                            .75f
+                                        ),
+                                    )
                                 }
                             }
                         }
                     }
                 }
+            }
         }
 
         LazyColumn(
             userScrollEnabled = true,
             state = scrollState,
-            modifier = Modifier
-                .background(MaterialTheme.colors.surface)
-
+            modifier = Modifier.background(MaterialTheme.colors.surface)
         ) {
             // Header & "empty" placeholder
             if (recentlySeenMarkersForUiList.isEmpty()) {
@@ -312,9 +329,12 @@ fun RecentlySeenMarkers(
             items(
                 recentlySeenMarkersForUiList.size,
                 key = { index -> recentlySeenMarkersForUiList[index].id }
-            ) {
-                val recentMarker = recentlySeenMarkersForUiList.elementAt(it)
+            ) { idx ->
+                val recentMarker = recentlySeenMarkersForUiList.elementAt(idx)
 
+                println("🛵 REDRAWING RECENTLY SEEN MARKER ITEM: ${recentMarker.id}")
+
+                // Marker item row
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -328,6 +348,8 @@ fun RecentlySeenMarkers(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+
+                    // Marker Title & ID
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -356,7 +378,7 @@ fun RecentlySeenMarkers(
                         )
                     }
 
-                    //Column(
+                    //Column( // LEAVE FOR POSSIBLE FUTURE USE
                     //    modifier = Modifier
                     //        .fillMaxWidth()
                     //        .weight(.5f)
@@ -364,25 +386,50 @@ fun RecentlySeenMarkers(
                     //    NavigationButton(markersRepo = markersRepo, recentMarker = recentMarker)
                     //}
 
+                    // Speak Marker Button
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(.5f)
                     ) {
                         if (markersRepo.marker(recentMarker.id)?.isSpoken == true) {
-                            IconButton(
-                                onClick = {
-                                    onClickStartSpeakingMarker(recentMarker, true)
-                                },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.VolumeMute,
-                                    contentDescription = "Speak a spoken marker again",
-                                    tint = MaterialTheme.colors.onBackground.copy(alpha =.5f)
-                                )
+                            // Show the stop icon if this marker is the currently speaking marker
+                            if (speakingMarker?.id == recentMarker.id && isTextToSpeechCurrentlySpeaking) {
+                                // Stop speaking marker
+                                IconButton(
+                                    onClick = {
+                                        onClickStopSpeakingMarker()
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(min = 48.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Stop,
+                                        contentDescription = "Stop Speaking Marker",
+                                    )
+                                }
+                            } else {
+                                // Speak "Already spoken" marker again
+                                IconButton(
+                                    onClick = {
+                                        coroutineScope.launch {
+                                            delay(150)
+                                            println("🏍️ START speaking marker again: ${recentMarker.id}")
+                                            onClickStartSpeakingMarker(recentMarker, true)
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.VolumeMute,
+                                        contentDescription = "Speak Marker Again",
+                                        tint = MaterialTheme.colors.onBackground.copy(alpha =.75f)
+                                    )
+                                }
                             }
                         } else {
+                            // Speak  "Never spoken" marker
                             IconButton(
                                 onClick = {
                                     onClickStartSpeakingMarker(recentMarker, true)
@@ -392,7 +439,7 @@ fun RecentlySeenMarkers(
                                 Icon(
                                     imageVector = Icons.Filled.VolumeUp,
                                     contentDescription = "Speak Marker",
-                                    tint = MaterialTheme.colors.onBackground
+                                    tint = MaterialTheme.colors.onBackground // note: no alpha
                                 )
                             }
                         }

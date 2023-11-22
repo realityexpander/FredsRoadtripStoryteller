@@ -22,11 +22,13 @@ import co.touchlab.kermit.Logger as Log
  */
 fun speakRecentlySeenMarker(
     speakMarker: RecentlySeenMarker,
-    shouldSpeakDetails: Boolean = appSettings.isSpeakDetailsWhenUnseenMarkerFoundEnabled,
+    isSpeakDetailsEnabled: Boolean = appSettings.isSpeakDetailsWhenUnseenMarkerFoundEnabled,
     coroutineScope: CoroutineScope,
     onError: (String) -> Unit = { },
     markersRepo: MarkersRepo,
     onUpdateLoadingState: (LoadingState<String>) -> Unit = { },
+    useFakeData: Boolean = false,
+    onSetUnspokenText: (String) -> Unit = { },
 ): RecentlySeenMarker? {
     if (isTextToSpeechSpeaking()) {
         return appSettings.lastSpokenRecentlySeenMarker
@@ -39,66 +41,68 @@ fun speakRecentlySeenMarker(
     // Update the 'isSpoken' flag
     markersRepo.updateMarkerIsSpoken(marker, isSpoken = true)
 
-    if (shouldSpeakDetails) {
-            if (!marker.isDetailsLoaded) {
-                coroutineScope.launch {
-                    // Load the marker details
-                    try {
-                        // if (!useFakeData) {
-                        if (true) {
-                            val markerDetailsPageUrl = marker.id.calculateMarkerDetailsPageUrl()
-                            Log.d("loading network markerDetailsPageUrl = $markerDetailsPageUrl")
+    if (isSpeakDetailsEnabled) {
+        if (!marker.isDetailsLoaded) {
+            coroutineScope.launch {
+                // Load the marker details
+                try {
+                     if (!useFakeData) {
+                        val markerDetailsPageUrl = marker.id.calculateMarkerDetailsPageUrl()
+                        Log.d("loading network markerDetailsPageUrl = $markerDetailsPageUrl")
 
-                            onUpdateLoadingState(LoadingState.Loading)
-                            val response = httpClient.get(markerDetailsPageUrl)
-                            val markerDetailsPageHtml = response.body<String>()
+                        onUpdateLoadingState(LoadingState.Loading)
+                        val response = httpClient.get(markerDetailsPageUrl)
+                        val markerDetailsPageHtml = response.body<String>()
 
-                            // parse the marker details page html into a Marker object
-                            val (errorMessage, parsedDetailsMarker) =
-                                parseMarkerDetailsPageHtml(markerDetailsPageHtml)
-                            errorMessage?.run { throw Exception(errorMessage) }
+                        // parse the marker details page html into a Marker object
+                        val (errorMessage, parsedDetailsMarker) =
+                            parseMarkerDetailsPageHtml(markerDetailsPageHtml)
+                        errorMessage?.run { throw Exception(errorMessage) }
 
-                            // Update the marker details
-                            parsedDetailsMarker ?: throw Exception("parsedDetailsMarker is null")
-                                markersRepo.updateMarkerDetails(
-                                    parsedDetailsMarker.copy(id=marker.id)
-                                )
-                            onUpdateLoadingState(LoadingState.Finished)
-
-                            speakMarker(
-                                parsedDetailsMarker,
-                                shouldSpeakDetails
+                        // Update the marker details
+                        parsedDetailsMarker ?: throw Exception("parsedDetailsMarker is null")
+                            markersRepo.updateMarkerDetails(
+                                parsedDetailsMarker.copy(id=marker.id)
                             )
-                        } else {
-                            // loadingState = fakeLoadingStateForMarkerDetailsPageHtml(mapMarker)  // for debugging - LEAVE FOR REFERENCE
-                            val markerDetailsPageHtml = almadenVineyardsM2580MarkerDetailsHtml()
-                            val (_, parsedDetailsMarker) =
-                                parseMarkerDetailsPageHtml(markerDetailsPageHtml)
+                        onUpdateLoadingState(LoadingState.Finished)
 
-                            Pair(parsedDetailsMarker, null)
-                        }
-                    } catch(e: CancellationException) {
-                        throw e
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        onUpdateLoadingState(LoadingState.Error(e.message ?: "Loading error"))
-                        onError(
-                            "Loading details error: " + (e.message ?: e.cause?.message
-                            ?: "Loading error")
+                        speakMarker(
+                            parsedDetailsMarker,
+                            isSpeakDetailsEnabled,
+                            onSetUnspokenText = onSetUnspokenText
                         )
-                        return@launch
-                    }
-                }
+                    } else {
+                        // loadingState = fakeLoadingStateForMarkerDetailsPageHtml(mapMarker)  // for debugging - LEAVE FOR REFERENCE
+                        val markerDetailsPageHtml = almadenVineyardsM2580MarkerDetailsHtml()
+                        val (_, parsedDetailsMarker) =
+                            parseMarkerDetailsPageHtml(markerDetailsPageHtml)
 
-                return appSettings.lastSpokenRecentlySeenMarker // early return due to async loading
+                        Pair(parsedDetailsMarker, null)
+                    }
+                } catch(e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    onUpdateLoadingState(LoadingState.Error(e.message ?: "Loading error"))
+                    onError(
+                        "Loading details error: " + (e.message ?: e.cause?.message
+                        ?: "Loading error")
+                    )
+                    return@launch
+                }
             }
 
-            // Already have the details, so just speak the marker.
-            speakMarker(marker, shouldSpeakDetails)
+            return appSettings.lastSpokenRecentlySeenMarker // early return due to async loading
+        }
+
+        // Already have the details, so just speak the marker.
+        speakMarker(marker, isSpeakDetailsEnabled, onSetUnspokenText)
     } else {
         speakMarker(
-            markersRepo.marker(speakMarker.id) ?: return appSettings.lastSpokenRecentlySeenMarker,
-            shouldSpeakDetails = false
+            markersRepo.marker(speakMarker.id)
+                ?: return appSettings.lastSpokenRecentlySeenMarker, // if marker is null, default to the last spoken marker.
+            shouldSpeakDetails = false,
+            onSetUnspokenText = onSetUnspokenText
         )
     }
 

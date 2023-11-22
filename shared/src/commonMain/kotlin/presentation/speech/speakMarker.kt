@@ -6,7 +6,8 @@ import speakTextToSpeech
 
 fun speakMarker(
     marker: Marker,
-    shouldSpeakDetails: Boolean = false
+    shouldSpeakDetails: Boolean = false,
+    onSetUnspokenText: (String) -> Unit = { },
 ): RecentlySeenMarker {
     val currentlySpeakingMarker =
         RecentlySeenMarker(
@@ -38,6 +39,16 @@ fun speakMarker(
             " tiene inscripción que dice $spanishInscription"
         } else {
             " and there is no inscription available."
+        }
+
+        if(finalSpeechText.length > 4000) {
+            // Trim to the last word boundary before 4000 characters
+            val lastWordBoundaryIndex = finalSpeechText.substring(0, 4000).lastIndexOf(" ")
+            finalSpeechText = finalSpeechText.substring(0, lastWordBoundaryIndex)
+
+            // Set the unspoken text to the rest of the text
+            val restOfFinalSpeechText = finalSpeechText.substring(lastWordBoundaryIndex)
+            onSetUnspokenText(restOfFinalSpeechText)
         }
 
         speakTextToSpeech(finalSpeechText)
