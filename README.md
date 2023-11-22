@@ -5,9 +5,11 @@ Compose KMP experimental app using Google Maps for iOS and Android
 
 <!-- img width="1700" alt="image" src="https://github.com/realityexpander/GoolgeMapsUsingCocoaPodsExample/assets/5157474/7b0395d3-04e6-48df-9219-990cb10d81e1" -->
 
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/b39f33c7-98a7-40bc-a0a9-10198732a0ec">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/b39f33c7-98a7-40bc-a0a9-10198732a0ec)
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/db768efa-878e-47fe-96ac-bbdfadc5ad18">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/db768efa-878e-47fe-96ac-bbdfadc5ad18)
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/9b896fbc-9799-4f0c-a642-9875c73575a8">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/9b896fbc-9799-4f0c-a642-9875c73575a8)
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/92184386-c7fb-4ebe-8781-9d9b3e08efbd">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/92184386-c7fb-4ebe-8781-9d9b3e08efbd)
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/d4f91c80-9d33-4063-bb37-85dc0f92fa26">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/d4f91c80-9d33-4063-bb37-85dc0f92fa26)
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/784d6516-4d34-4478-a46a-35f368f1ebf0">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/784d6516-4d34-4478-a46a-35f368f1ebf0)
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/7cc0f8be-b5eb-4430-ac5e-c74c1c71ecdd">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/7cc0f8be-b5eb-4430-ac5e-c74c1c71ecdd)
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/c1894ee1-6ae3-4ed0-b5c2-b225a7f571ef">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/c1894ee1-6ae3-4ed0-b5c2-b225a7f571ef)
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/265ae655-f57c-48a7-a60e-9a515d49efd3">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/265ae655-f57c-48a7-a60e-9a515d49efd3)
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/ded7dd66-399b-41c7-9f74-00d8a27531dc">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/ded7dd66-399b-41c7-9f74-00d8a27531dc)
