@@ -1,4 +1,4 @@
-package presentation
+package presentation.app
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.TweenSpec

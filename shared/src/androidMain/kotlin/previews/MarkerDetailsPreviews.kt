@@ -12,11 +12,11 @@ import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
-import presentation.app.AppTheme
+import presentation.uiComponents.AppTheme
 import data.util.LoadingState
 import presentation.maps.LatLong
 import presentation.maps.Marker
-import presentation.MarkerDetailsScreen
+import presentation.app.MarkerDetailsScreen
 
 
 @OptIn(ExperimentalMaterialApi::class)

@@ -31,7 +31,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import presentation.SplashScreenForPermissions
-import presentation.app.AppTheme
+import presentation.uiComponents.AppTheme
 import textToSpeech
 import java.util.Locale
 import co.touchlab.kermit.Logger as Log

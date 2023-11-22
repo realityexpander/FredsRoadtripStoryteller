@@ -46,11 +46,6 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import data.AppSettings
-import data.AppSettings.Companion.kMarkersLastUpdatedLocation
-import data.AppSettings.Companion.kMarkersResult
-import data.AppSettings.Companion.kRecentlySeenMarkersSet
-import data.AppSettings.Companion.kUiRecentlySeenMarkersList
 import data.MarkersRepo
 import data.appSettings
 import data.loadMarkerDetails.loadMarkerDetails
@@ -68,11 +63,12 @@ import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
-import presentation.MarkerDetailsScreen
-import presentation.SettingsScreen
+import presentation.app.MarkerDetailsScreen
+import presentation.app.settingsScreen.SettingsScreen
 import presentation.app.AppDrawerContent
-import presentation.app.AppTheme
+import presentation.uiComponents.AppTheme
 import presentation.app.RecentlySeenMarkers
+import presentation.app.settingsScreen.resetMarkerCacheSettings
 import presentation.maps.Location
 import presentation.maps.MapContent
 import presentation.maps.Marker
@@ -500,12 +496,13 @@ fun App(
                                         shouldCalculateMarkers = true // todo needed? remove?
                                         userLocation = jiggleLocationToForceUiUpdate(userLocation)
                                     }
+                                },
+                                onDismiss = {
+                                    coroutineScope.launch {
+                                        bottomSheetScaffoldState.bottomSheetState.collapse()
+                                    }
                                 }
-                            ) {
-                                coroutineScope.launch {
-                                    bottomSheetScaffoldState.bottomSheetState.collapse()
-                                }
-                            }
+                            )
                         }
                         is BottomSheetScreen.MarkerDetailsScreen -> {
                             // Use id string (coming from map marker in google maps)
@@ -924,25 +921,6 @@ private fun jiggleLocationToForceUiUpdate(userLocation: Location) = Location(
             Random.nextDouble(-0.00001, 0.00001)
 )
 
-private fun resetMarkerCacheSettings(
-    settings: AppSettings,
-    finalMarkers: SnapshotStateList<Marker>,
-    recentlySeenMarkersSet: MutableSet<RecentlySeenMarker>,
-    uiRecentlySeenMarkersList: SnapshotStateList<RecentlySeenMarker>,
-    markersRepo: MarkersRepo,
-) {
-    // Reset the `seen markers` list, UI elements
-    finalMarkers.clear()
-    recentlySeenMarkersSet.clear()
-    uiRecentlySeenMarkersList.clear()
-
-    // Reset the settings cache of markers
-    settings.clear(kMarkersResult)
-    settings.clear(kMarkersLastUpdatedLocation)
-    settings.clear(kRecentlySeenMarkersSet)
-    settings.clear(kUiRecentlySeenMarkersList)
-    markersRepo.clearAllMarkers()
-}
 
 // Check for new markers inside talk radius & add to recentlySeen list
 private fun addSeenMarkersToRecentlySeenList(

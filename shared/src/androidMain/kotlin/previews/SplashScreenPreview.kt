@@ -5,7 +5,7 @@ import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import presentation.SplashScreenForPermissions
-import presentation.app.AppTheme
+import presentation.uiComponents.AppTheme
 
 @Preview(
     name = "Splash Screen",

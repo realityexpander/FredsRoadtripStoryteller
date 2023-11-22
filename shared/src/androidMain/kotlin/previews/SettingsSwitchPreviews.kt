@@ -14,8 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.Wallpapers
-import presentation.SettingsScreen
-import presentation.app.AppTheme
+import presentation.app.settingsScreen.SettingsScreen
+import presentation.uiComponents.AppTheme
 import presentation.uiComponents.SettingsSlider
 import presentation.uiComponents.SettingsSwitch
 
