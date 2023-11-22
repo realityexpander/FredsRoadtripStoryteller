@@ -1,3 +1,5 @@
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 rootProject.name = "TalkingHistoricalMarkers"
 include(":androidApp")
 include(":shared")
@@ -57,17 +59,3 @@ dependencyResolutionManagement {
 //        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     }
 }
-
-//buildscript {
-//    repositories {
-//        mavenCentral()
-//    }
-//
-//    dependencies {
-//        // kotlinx.atomicfu should be on classpath
-//        //  it's an implementation detail of kotlinx.atomicfu gradle plugin
-////        classpath(kotlinLibs.gradle.plugin)
-////        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.23.0")
-//    }
-//}
-
