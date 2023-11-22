@@ -39,9 +39,3 @@ expect fun GoogleMaps(
     shouldZoomToLatLongZoom: LatLongZoom?,
     onDidZoomToLatLongZoom: () -> Unit,
 )
-
-// LEAVE FOR REFERENCE
-//onMarkerClick: (maps.MapMarker) -> Unit = {},
-//onMapClick: (presentation.maps.LatLong) -> Unit = {},
-//onMapLongClick: (presentation.maps.LatLong) -> Unit = {},
-
