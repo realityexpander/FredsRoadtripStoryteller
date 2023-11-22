@@ -3,8 +3,10 @@ package presentation.app
 import BottomSheetScreen
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -14,26 +16,41 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.BottomSheetScaffoldState
 import androidx.compose.material.Button
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -44,24 +61,32 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import presentation.maps.Marker
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class,
+    ExperimentalComposeUiApi::class
+)
 @Composable
 fun AppDrawerContent(
-    bottomSheetScaffoldState: BottomSheetScaffoldState,
     finalMarkers: List<Marker>,
     onSetBottomSheetActiveScreen: (BottomSheetScreen) -> Unit = {},
     onShowOnboarding: () -> Unit = {},
     onShowAboutBox: () -> Unit = {},
+    onExpandBottomSheet: () -> Unit = {},
+    onCloseDrawer: () -> Unit = {},
 ) {
     val coroutineScope = rememberCoroutineScope()
 
     val entries: SnapshotStateList<Marker> = remember { mutableStateListOf() }
+    val searchEntries = remember { mutableStateListOf<Marker>() }
     LaunchedEffect(finalMarkers) {
         // Log.d("📌📌📌AppDrawerContent: LaunchedEffect(finalMarkers) calculating entries...")
         entries.clear()
         entries.addAll(finalMarkers.reversed())
+
+        searchEntries.clear()
+        searchEntries.addAll(finalMarkers.reversed())
     }
 
+    // App title & close button
     Row(
         Modifier
             .fillMaxWidth()
@@ -81,7 +106,7 @@ fun AppDrawerContent(
                 .offset(16.dp, (-16).dp),
             onClick = {
                 coroutineScope.launch {
-                    bottomSheetScaffoldState.drawerState.close()
+                    onCloseDrawer()
                 }
             }) {
             Icon(
@@ -99,7 +124,7 @@ fun AppDrawerContent(
             coroutineScope.launch {
                 onShowOnboarding()
                 yield()
-                bottomSheetScaffoldState.drawerState.close()
+                onCloseDrawer()
             }
         },
         modifier = Modifier
@@ -125,7 +150,7 @@ fun AppDrawerContent(
             coroutineScope.launch {
                 onShowAboutBox()
                 yield()
-                bottomSheetScaffoldState.drawerState.close()
+                onCloseDrawer()
             }
         },
         modifier = Modifier
@@ -143,6 +168,77 @@ fun AppDrawerContent(
         )
     }
     Spacer(modifier = Modifier.height(16.dp))
+
+    // Search box - rounded text field
+    var searchQuery by remember { mutableStateOf("") }
+    val keyboardController = LocalSoftwareKeyboardController.current
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colors.onBackground.copy(alpha = 0.1f))
+
+    ) {
+        TextField(
+            modifier = Modifier
+                .fillMaxWidth(),
+            value = searchQuery,
+            onValueChange = {
+                searchQuery = it
+
+                if(searchQuery.isEmpty()) {
+                    searchEntries.clear()
+                    searchEntries.addAll(finalMarkers.reversed())
+                } else {
+                    searchEntries.clear()
+                    searchEntries.addAll(
+                        finalMarkers.filter { marker ->
+                            marker.title.contains(searchQuery, ignoreCase = true)
+                        }.sortedBy { marker ->
+                            marker.title
+                        }
+                    )
+                }
+            },
+            colors = TextFieldDefaults.textFieldColors(
+                backgroundColor = MaterialTheme.colors.background,
+                placeholderColor = MaterialTheme.colors.onBackground.copy(alpha = 0.5f),
+                leadingIconColor = MaterialTheme.colors.onBackground,
+                textColor = MaterialTheme.colors.onBackground,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                cursorColor = MaterialTheme.colors.onBackground,
+            ),
+            leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = "") },
+            trailingIcon = {
+                if (searchQuery.isNotEmpty()) {
+                    IconButton(
+                        onClick = {
+                            searchQuery = ""
+                            searchEntries.clear()
+                            searchEntries.addAll(finalMarkers.reversed())
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Clear search"
+                        )
+                    }
+                }
+            },
+            placeholder = { Text(text = "Search Title...") },
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = androidx.compose.ui.text.input.ImeAction.Search
+            ),
+            singleLine = true,
+            maxLines = 1,
+            keyboardActions = KeyboardActions {
+                keyboardController?.hide()
+            }
+        )
+    }
+    Spacer(modifier = Modifier.height(8.dp))
 
     // Header for list of loaded markers
     Row(
@@ -204,8 +300,10 @@ fun AppDrawerContent(
     ) {
         // Header
 
-        items(entries.size) { markerIdx ->
-            val marker = entries[markerIdx]
+//        items(entries.size) { markerIdx ->
+        items(searchEntries.size) { markerIdx ->
+//            val marker = entries[markerIdx]
+            val marker = searchEntries[markerIdx]
 
             Row(
                 modifier = Modifier
@@ -215,11 +313,11 @@ fun AppDrawerContent(
                     .clickable {
                         coroutineScope.launch {
                             println("Clicked on marker: ${marker.id}")
-                            bottomSheetScaffoldState.bottomSheetState.expand()
+                            onExpandBottomSheet()
                             onSetBottomSheetActiveScreen(
                                 BottomSheetScreen.MarkerDetailsScreen(id=marker.id)
                             )
-                            bottomSheetScaffoldState.drawerState.close()
+                            onCloseDrawer()
                         }
                     },
                 verticalAlignment = Alignment.CenterVertically,

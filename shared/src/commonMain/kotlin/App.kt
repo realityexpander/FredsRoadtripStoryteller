@@ -628,13 +628,22 @@ fun App(
             drawerContent = {
                 if(bottomSheetScaffoldState.drawerState.isOpen) {
                     AppDrawerContent(
-                        bottomSheetScaffoldState,
-                        markersRepo.markers(), // not reactive?
+                        markersRepo.markers(), // SSoT is the Repo
                         onSetBottomSheetActiveScreen = { screen ->
                             bottomSheetActiveScreen = screen
                         },
                         onShowAboutBox = { isAboutBoxDialogVisible = true },
                         onShowOnboarding = { isOnboardingDialogVisible = true },
+                        onCloseDrawer = {
+                            coroutineScope.launch {
+                                bottomSheetScaffoldState.drawerState.close()
+                            }
+                        },
+                        onExpandBottomSheet = {
+                            coroutineScope.launch {
+                                bottomSheetScaffoldState.bottomSheetState.expand()
+                            }
+                        }
                     )
                 }
             }
