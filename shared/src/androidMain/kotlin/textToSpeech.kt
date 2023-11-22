@@ -12,4 +12,5 @@ actual fun isTextToSpeechSpeaking(): Boolean {
 
 actual fun stopTextToSpeech() {
     textToSpeech?.stop()
+    unspokenText = ""
 }

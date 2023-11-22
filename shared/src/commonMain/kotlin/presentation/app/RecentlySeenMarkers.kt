@@ -62,16 +62,16 @@ import presentation.uiComponents.lightenBy
 @Composable
 fun RecentlySeenMarkers(
     recentlySeenMarkersForUiList: SnapshotStateList<RecentlySeenMarker>,
-    onClickRecentlySeenMarkerItem: ((MarkerIdStr) -> Unit) = {},
-    currentlySpeakingMarker: RecentlySeenMarker? = null,
+    activeSpeakingMarker: RecentlySeenMarker? = null,
     isTextToSpeechCurrentlySpeaking: Boolean = false,
-    onClickStartSpeakingMarker: (RecentlySeenMarker, shouldSpeakDetails: Boolean) -> Unit =
-        { _, _ -> Unit},
-    onClickStopSpeakingMarker: () -> Unit = {},
-    markersRepo: MarkersRepo,
     isSpeakWhenUnseenMarkerFoundEnabled: Boolean = appSettings.isSpeakWhenUnseenMarkerFoundEnabled,
+    markersRepo: MarkersRepo,
+    onClickRecentlySeenMarkerItem: (MarkerIdStr) -> Unit = {},
+    onClickStartSpeakingMarker: (RecentlySeenMarker, shouldSpeakDetails: Boolean) -> Unit =
+        { _, _ -> Unit },
+    onClickStopSpeakingMarker: () -> Unit = {},
     onClickPauseSpeakingAllMarkers: () -> Unit = {},
-    onClickStartSpeakingAllMarkers: () -> Unit = {},
+    onClickResumeSpeakingAllMarkers: () -> Unit = {},
 ) {
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberLazyListState()
@@ -90,8 +90,8 @@ fun RecentlySeenMarkers(
         }
     }
 
-    val speakingMarker by remember(currentlySpeakingMarker) {
-        mutableStateOf(currentlySpeakingMarker)
+    val speakingMarker by remember(activeSpeakingMarker) {
+        mutableStateOf(activeSpeakingMarker)
     }
 
     Column(
@@ -101,7 +101,7 @@ fun RecentlySeenMarkers(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        // Current spoken marker
+        // Active Speaking marker
         AnimatedVisibility(
             speakingMarker != null,
             enter = expandVertically(tween(1500)),
@@ -232,6 +232,7 @@ fun RecentlySeenMarkers(
                             .weight(.5f)
                     ) {
                         if (isSpeakWhenUnseenMarkerFoundEnabled) {
+                            // Pause Speaking All Markers Button
                             IconButton(
                                 onClick = {
                                     onClickPauseSpeakingAllMarkers()
@@ -249,17 +250,19 @@ fun RecentlySeenMarkers(
                                         "ALL",
                                         fontSize = MaterialTheme.typography.body2.fontSize.times(
                                             .75f
-                                        )
+                                        ),
+                                        color = MaterialTheme.colors.onBackground.copy(alpha =.75f)
                                     )
                                 }
                             }
                         } else {
+                            // Resume Speaking All Markers Button
                             IconButton(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .heightIn(min = 48.dp),
                                 onClick = {
-                                    onClickStartSpeakingAllMarkers()
+                                    onClickResumeSpeakingAllMarkers()
                                 }
                             ) {
                                 Column(
@@ -275,6 +278,7 @@ fun RecentlySeenMarkers(
                                         fontSize = MaterialTheme.typography.body2.fontSize.times(
                                             .75f
                                         ),
+                                        color = MaterialTheme.colors.onBackground.copy(alpha =.75f)
                                     )
                                 }
                             }

@@ -23,12 +23,12 @@ import co.touchlab.kermit.Logger as Log
 fun speakRecentlySeenMarker(
     speakMarker: RecentlySeenMarker,
     isSpeakDetailsEnabled: Boolean = appSettings.isSpeakDetailsWhenUnseenMarkerFoundEnabled,
-    coroutineScope: CoroutineScope,
-    onError: (String) -> Unit = { },
     markersRepo: MarkersRepo,
-    onUpdateLoadingState: (LoadingState<String>) -> Unit = { },
+    coroutineScope: CoroutineScope,
     useFakeData: Boolean = false,
+    onUpdateLoadingState: (LoadingState<String>) -> Unit = { },
     onSetUnspokenText: (String) -> Unit = { },
+    onError: (String) -> Unit = { },
 ): RecentlySeenMarker? {
     if (isTextToSpeechSpeaking()) {
         return appSettings.lastSpokenRecentlySeenMarker

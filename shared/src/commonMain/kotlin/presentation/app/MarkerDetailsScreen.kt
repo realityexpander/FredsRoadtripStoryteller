@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.BottomSheetScaffoldState
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
@@ -85,7 +84,6 @@ const val kMaxWeightOfBottomDrawer = 0.9f
 @OptIn(ExperimentalMaterialApi::class, ExperimentalKamelApi::class)
 @Composable
 fun MarkerDetailsScreen(
-    bottomSheetScaffoldState: BottomSheetScaffoldState,
     baseMarker: Marker,
     markerLoadingState: LoadingState<Marker>,
     isTextToSpeechCurrentlySpeaking: Boolean = false,
@@ -129,9 +127,7 @@ fun MarkerDetailsScreen(
             // OK Button
             Button(
                 onClick = {
-                    coroutineScope.launch {
-                        bottomSheetScaffoldState.bottomSheetState.collapse()
-                    }
+                    onDismiss()
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -174,16 +170,16 @@ fun MarkerDetailsScreen(
 
             // Title & Close Button
             // Subtitle & Speak Button
-            TitleCloseSubtitleSpeakSection(baseMarker, coroutineScope, bottomSheetScaffoldState)
+            TitleCloseSubtitleSpeakSection(baseMarker, onDismiss)
 
             // ID, Navigate to Marker, Locate on Map, Speak
             MarkerIdWithNavigateLocateSpeakActionButtonSection(
                 baseMarker,
-                coroutineScope,
-                bottomSheetScaffoldState,
-                onLocateMarkerOnMap,
                 isTextToSpeechCurrentlySpeaking,
-                onClickStartSpeakingMarker
+                coroutineScope,
+                onLocateMarkerOnMap,
+                onClickStartSpeakingMarker,
+                onDismiss
             )
             Spacer(modifier = Modifier.padding(16.dp))
 
@@ -234,7 +230,7 @@ fun MarkerDetailsScreen(
         ) {
             // Title & Close Button
             // Subtitle & Speak Button
-            TitleCloseSubtitleSpeakSection(marker, coroutineScope, bottomSheetScaffoldState)
+            TitleCloseSubtitleSpeakSection(marker, onDismiss)
 
             // Marker Info Content
             Column(
@@ -389,11 +385,11 @@ fun MarkerDetailsScreen(
                 // ID, Navigate to Marker, Locate on Map, Speak
                 MarkerIdWithNavigateLocateSpeakActionButtonSection(
                     marker,
-                    coroutineScope,
-                    bottomSheetScaffoldState,
-                    onLocateMarkerOnMap,
                     isTextToSpeechCurrentlySpeaking,
-                    onClickStartSpeakingMarker
+                    coroutineScope,
+                    onLocateMarkerOnMap,
+                    onClickStartSpeakingMarker,
+                    onDismiss
                 )
 
                 // Inscription
@@ -511,8 +507,7 @@ fun MarkerDetailsScreen(
 @Composable
 private fun TitleCloseSubtitleSpeakSection(
     marker: Marker,
-    coroutineScope: CoroutineScope,
-    bottomSheetScaffoldState: BottomSheetScaffoldState
+    onDismiss: () -> Unit = {},
 ) {
     Row(
         modifier = Modifier
@@ -563,9 +558,7 @@ private fun TitleCloseSubtitleSpeakSection(
                     .fillMaxWidth()
                     .offset(12.dp, (-8).dp),
                 onClick = {
-                    coroutineScope.launch {
-                        bottomSheetScaffoldState.bottomSheetState.collapse()
-                    }
+                    onDismiss()
                 },
             ) {
                 Icon(
@@ -583,13 +576,12 @@ private fun TitleCloseSubtitleSpeakSection(
 // ID, Navigate to Marker, Locate on Map, Speak
 @Composable
 private fun MarkerIdWithNavigateLocateSpeakActionButtonSection(
-//    markerLoadingState: LoadingState.Loaded<Marker>,
     marker: Marker,
-    coroutineScope: CoroutineScope,
-    bottomSheetScaffoldState: BottomSheetScaffoldState,
-    onLocateMarkerOnMap: (Marker) -> Unit,
     isTextToSpeechCurrentlySpeaking: Boolean,
-    onClickStartSpeakingMarker: (Marker) -> Unit
+    coroutineScope: CoroutineScope,
+    onLocateMarkerOnMap: (Marker) -> Unit,
+    onClickStartSpeakingMarker: (Marker) -> Unit,
+    onDismiss: () -> Unit = {},
 ) {
     Row(
         modifier = Modifier.heightIn(0.dp, 36.dp),
@@ -611,7 +603,7 @@ private fun MarkerIdWithNavigateLocateSpeakActionButtonSection(
             onClick = {
                 // close the bottom sheet
                 coroutineScope.launch {
-                    bottomSheetScaffoldState.bottomSheetState.collapse()
+                    onDismiss()
                     onLocateMarkerOnMap(marker)
                     openNavigationAction(
                         marker.position.latitude,
@@ -635,7 +627,7 @@ private fun MarkerIdWithNavigateLocateSpeakActionButtonSection(
             onClick = {
                 // close the bottom sheet
                 coroutineScope.launch {
-                    bottomSheetScaffoldState.bottomSheetState.collapse()
+                    onDismiss()
                     onLocateMarkerOnMap(marker)
                 }
             },

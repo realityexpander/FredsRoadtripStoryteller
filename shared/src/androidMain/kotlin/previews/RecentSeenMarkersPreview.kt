@@ -43,23 +43,22 @@ fun RecentlySeenMarkersPreview() {
                         it.add(marker)
                     }
                 },
-                onClickRecentlySeenMarkerItem= {},
-                currentlySpeakingMarker = RecentlySeenMarker(
+                activeSpeakingMarker = RecentlySeenMarker(
                     id = "M69420",
                     // title = "Plans to fight the Ordinance of Nullification",
                     title = "Plans to fight the Ordinance",
                     insertedAtEpochMilliseconds = 0,
                 ),
                 isTextToSpeechCurrentlySpeaking = false,
-                onClickStartSpeakingMarker = { _, _ -> Unit },
-                onClickStopSpeakingMarker = {},
+                isSpeakWhenUnseenMarkerFoundEnabled = true,
                 markersRepo = MarkersRepo(
                     appSettings = AppSettings.use(settings = FakeSettings()),
                 ),
-                isSpeakWhenUnseenMarkerFoundEnabled = true,
+                onClickRecentlySeenMarkerItem = {},
+                onClickStartSpeakingMarker = { _, _ -> Unit },
+                onClickStopSpeakingMarker = {},
                 onClickPauseSpeakingAllMarkers = {},
-                onClickStartSpeakingAllMarkers = {},
-            )
+            ) {}
         }
     }
 }
