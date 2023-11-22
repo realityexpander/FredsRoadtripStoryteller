@@ -332,8 +332,6 @@ fun RecentlySeenMarkers(
             ) { idx ->
                 val recentMarker = recentlySeenMarkersForUiList.elementAt(idx)
 
-                println("🛵 REDRAWING RECENTLY SEEN MARKER ITEM: ${recentMarker.id}")
-
                 // Marker item row
                 Row(
                     modifier = Modifier
@@ -415,7 +413,6 @@ fun RecentlySeenMarkers(
                                     onClick = {
                                         coroutineScope.launch {
                                             delay(150)
-                                            println("🏍️ START speaking marker again: ${recentMarker.id}")
                                             onClickStartSpeakingMarker(recentMarker, true)
                                         }
                                     },
