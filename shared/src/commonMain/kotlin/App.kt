@@ -704,6 +704,7 @@ fun App(
                             backgroundColor = MaterialTheme.colors.secondary,
                             shape = RoundedCornerShape(8.dp),
                             actionOnNewLine = true,
+                            elevation = 8.dp,
                             action = {
                                 TextButton(
                                     onClick = {

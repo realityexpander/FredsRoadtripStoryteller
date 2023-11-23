@@ -863,7 +863,7 @@ actual fun GoogleMaps(
                             )
                         }
 
-                        return@Clustering
+                        return@Clustering // early return
                     }
 
                     if(clusterItem.isSeen) {
@@ -1106,7 +1106,7 @@ actual fun GoogleMaps(
                     isUseEmojiMarkersEnabled = true
                 }
             }
-            // reset if frameTime is under 40ms (good frame rate)
+            // Reduce phase if frameTime is under 40ms (good frame rate)
             if(!isUseEmojiMarkersEnabled && fullLoopFrameRenderTime < 40.milliseconds) {
                 if(useEmojiMarkersPhase > 0)
                     useEmojiMarkersPhase--
