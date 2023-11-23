@@ -58,6 +58,7 @@ import data.loadMarkers.distanceBetweenInMiles
 import data.loadMarkers.loadMarkers
 import data.loadMarkers.sampleData.kUseRealNetwork
 import data.util.LoadingState
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.delay
@@ -108,6 +109,7 @@ sealed class BottomSheetScreen {
         val marker: Marker? = null,  // Can pass in a MapMarker...
         val id: String? = marker?.id // ...or just an id string
     ) : BottomSheetScreen()
+    data object None : BottomSheetScreen()
 }
 
 // Improve performance by restricting updates
@@ -127,7 +129,8 @@ fun App(
         val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
         val scaffoldState = rememberScaffoldState()
         var bottomSheetActiveScreen by remember {
-            mutableStateOf<BottomSheetScreen>(BottomSheetScreen.SettingsScreen)
+//            mutableStateOf<BottomSheetScreen>(BottomSheetScreen.SettingsScreen)
+            mutableStateOf<BottomSheetScreen>(BottomSheetScreen.None)
         }
         var isOnboardingDialogVisible by remember { mutableStateOf(false)}
         var isAboutBoxDialogVisible by remember { mutableStateOf(false)}
@@ -511,6 +514,7 @@ fun App(
                     println("bottomSheetActiveScreen=$bottomSheetActiveScreen")
                     when (bottomSheetActiveScreen) {
                         is BottomSheetScreen.SettingsScreen -> {
+                            openBottomSheet(bottomSheetScaffoldState, coroutineScope)
                             SettingsScreen(
                                 settings = appSettings,
                                 markersRepo,
@@ -535,19 +539,23 @@ fun App(
 
                                         shouldCalculateMarkers = true
                                         delay(1000) // allow time for markers to update
+                                        shouldCalculateMarkers = true // needed to force redraw
 
-                                        shouldCalculateMarkers = true // todo needed? remove?
                                         userLocation = jiggleLocationToForceUiUpdate(userLocation)
+
                                     }
                                 },
                                 onDismiss = {
                                     coroutineScope.launch {
                                         bottomSheetScaffoldState.bottomSheetState.collapse()
+                                        bottomSheetActiveScreen = BottomSheetScreen.None
                                     }
                                 }
                             )
                         }
                         is BottomSheetScreen.MarkerDetailsScreen -> {
+                            openBottomSheet(bottomSheetScaffoldState, coroutineScope)
+
                             // Use id string (coming from map marker in google maps)
                             // or marker id (coming from item in marker details screen)
                             val bottomSheetParams =
@@ -632,9 +640,17 @@ fun App(
                                 onDismiss = {
                                     coroutineScope.launch {
                                         bottomSheetScaffoldState.bottomSheetState.collapse()
+                                        bottomSheetActiveScreen = BottomSheetScreen.None
                                     }
                                 }
                             )
+                        }
+                        else -> {
+                            if(bottomSheetScaffoldState.bottomSheetState.isExpanded) {
+                                coroutineScope.launch {
+                                    bottomSheetScaffoldState.bottomSheetState.collapse()
+                                }
+                            }
                         }
                     }
             },
@@ -771,18 +787,13 @@ fun App(
                             actions = {
                                 // Settings
                                 IconButton(onClick = {
-                                    println("bottomSheetActiveScreen=$bottomSheetActiveScreen")
-                                    if (bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
-                                        coroutineScope.launch {
-                                            bottomSheetActiveScreen =
-                                                BottomSheetScreen.SettingsScreen
-                                            bottomSheetScaffoldState.bottomSheetState.expand()
+                                    // Toggle the settings panel
+                                    bottomSheetActiveScreen =
+                                        if(bottomSheetActiveScreen != BottomSheetScreen.SettingsScreen) {
+                                            BottomSheetScreen.SettingsScreen
+                                        } else {
+                                            BottomSheetScreen.None
                                         }
-                                    } else {
-                                        coroutineScope.launch {
-                                            bottomSheetScaffoldState.bottomSheetState.collapse()
-                                        }
-                                    }
                                 }) { // show settings page
                                     Icon(
                                         imageVector = Icons.Default.Settings,
@@ -1025,6 +1036,18 @@ fun App(
             Log.d("🎃 END Frame time to render = ${(Clock.System.now() - startTime)}\n" )
         }
         didFullFrameRender = true
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+private fun openBottomSheet(
+    bottomSheetScaffoldState: BottomSheetScaffoldState,
+    coroutineScope: CoroutineScope
+) {
+    if (bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
+        coroutineScope.launch {
+            bottomSheetScaffoldState.bottomSheetState.expand()
+        }
     }
 }
 
