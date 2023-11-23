@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomSheetScaffold
 import androidx.compose.material.BottomSheetScaffoldState
@@ -16,7 +17,11 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
+import androidx.compose.material.Snackbar
+import androidx.compose.material.SnackbarDuration
+import androidx.compose.material.SnackbarHost
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cloud
@@ -63,11 +68,10 @@ import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
-import presentation.app.MarkerDetailsScreen
-import presentation.app.settingsScreen.SettingsScreen
 import presentation.app.AppDrawerContent
-import presentation.uiComponents.AppTheme
+import presentation.app.MarkerDetailsScreen
 import presentation.app.RecentlySeenMarkers
+import presentation.app.settingsScreen.SettingsScreen
 import presentation.app.settingsScreen.resetMarkerCacheSettings
 import presentation.maps.Location
 import presentation.maps.MapContent
@@ -78,6 +82,7 @@ import presentation.maps.RecentlySeenMarkersList
 import presentation.maps.toLocation
 import presentation.onboarding.AboutBoxDialog
 import presentation.speech.speakRecentlySeenMarker
+import presentation.uiComponents.AppTheme
 import kotlin.random.Random
 import co.touchlab.kermit.Logger as Log
 
@@ -336,6 +341,16 @@ fun App(
                                             )
                                         }
 
+                                        // If more than 5 markers "seen", then show the "Dense Marker Area" warning
+                                        if(uiRecentlySeenMarkersList.size >= 5) {
+                                            scaffoldState.snackbarHostState
+                                                .showSnackbar(
+                                                    "Warning: Marker-dense Area\n\n" +
+                                                            "Some recently seen markers are not listed.",
+                                                    duration = SnackbarDuration.Long
+                                                )
+                                        }
+
                                         // Speak the next unspoken marker
                                         if (!isTextToSpeechSpeaking()) { // Don't interrupt current speech
                                             if (appSettings.isSpeakWhenUnseenMarkerFoundEnabled
@@ -480,6 +495,7 @@ fun App(
             }
         }
 
+        // For render performance tuning.
         val startTime = Clock.System.now()
         didFullFrameRender = false
 
@@ -678,7 +694,42 @@ fun App(
                         },
                     )
                 }
-            }
+            },
+            snackbarHost = {
+                SnackbarHost(
+                    hostState = scaffoldState.snackbarHostState,
+                    snackbar = {
+                        Snackbar(
+                            modifier = Modifier.padding(8.dp),
+                            backgroundColor = MaterialTheme.colors.secondary,
+                            shape = RoundedCornerShape(8.dp),
+                            actionOnNewLine = true,
+                            action = {
+                                TextButton(
+                                    onClick = {
+                                        scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                                    }
+                                ) {
+                                    Text(
+                                        text = "DISMISS",
+                                        color = MaterialTheme.colors.onSecondary
+                                    )
+                                }
+                            }
+                        ) {
+                            Text(
+                                text = scaffoldState.snackbarHostState.currentSnackbarData?.message
+                                    ?: "",
+                                fontStyle = FontStyle.Italic,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = MaterialTheme.typography.h6.fontSize,
+                                color = MaterialTheme.colors.onSecondary,
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        }
+                    }
+                )
+            },
         ) {
             var isRecentlySeenMarkersPanelVisible by remember {
                 mutableStateOf(appSettings.isRecentlySeenMarkersPanelVisible)
@@ -794,7 +845,7 @@ fun App(
                     if (isRecentlySeenMarkersPanelVisible) 0.5f else 0f,
                     animationSpec = tween(500)
                 )
-                println("🦉 Frame count = $frameCount, time = ${(Clock.System.now() - startTime)}" )
+                Log.d("🦉 Frame count = $frameCount, time = ${(Clock.System.now() - startTime)}" )
 
                 Column(
                     modifier = Modifier.fillMaxHeight(),
@@ -889,7 +940,6 @@ fun App(
 
                         Log.d("✏️✏️🛑  END map rendering, time to render = ${(Clock.System.now() - startTime)}\n")
                     }
-
 
                     //Log.d("✏️✏️⬇️  START recently seen markers rendering")
                     RecentlySeenMarkers(
@@ -1009,7 +1059,6 @@ private fun addSeenMarkersToRecentlySeenList(
         ) -> Unit = { _, _, _ -> },
     onFinishedProcessRecentlySeenList: (Instant) -> Unit = {},
 ) {
-
     val updatedIsSeenMarkers: SnapshotStateList<Marker> =
         listOf<Marker>().toMutableStateList() // start with empty list
     var didUpdateMarkers = false
