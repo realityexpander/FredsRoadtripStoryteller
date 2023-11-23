@@ -558,7 +558,6 @@ actual fun GoogleMaps(
                 }
             }
         ) {
-
             // Heat Map Overlay
             if (markers != null && isHeatMapEnabled) {
                 val startTime = Clock.System.now()
@@ -1096,14 +1095,14 @@ actual fun GoogleMaps(
                 startRestrictedClusterRadius()
             }
 
-            ////////////////////////////////////////////////////////
-            // Emoji Markers for improved Render time Performance //
-            ////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////
+            // Use Emoji Markers for improved Render time Performance //
+            ////////////////////////////////////////////////////////////
 
             // If frameTime over 40ms, switch to emoji markers.
-            if(!isUseEmojiMarkersEnabled && fullLoopFrameRenderTime > 40.milliseconds) {
+            if(!isUseEmojiMarkersEnabled && fullLoopFrameRenderTime > 60.milliseconds) {
                 useEmojiMarkersPhase++
-                if(useEmojiMarkersPhase > 2) {
+                if(useEmojiMarkersPhase > 4) {
                     isUseEmojiMarkersEnabled = true
                 }
             }
