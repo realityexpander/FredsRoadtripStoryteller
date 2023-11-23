@@ -10,10 +10,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.FloatingActionButton
@@ -32,7 +34,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,13 +41,15 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMapOptions
@@ -89,7 +92,6 @@ import presentation.maps.LatLong
 import presentation.maps.Location
 import presentation.maps.Marker
 import presentation.maps.MarkerIdStr
-import presentation.uiComponents.PreviewPlaceholder
 import presentation.uiComponents.SwitchWithLabel
 import kotlin.math.max
 import kotlin.math.pow
@@ -102,10 +104,25 @@ private var restrictedClusterRadiusPhase = 0
 private var frameIsRestrictedClusterRadiusActive = false
 private const val kMaxRestrictedClusterRadiusPhase = 3
 
+// Improve rendering performance by swapping out the cluster item icons with emoji
+private var isUseEmojiMarkersEnabled = false
+private var useEmojiMarkersPhase = 0
+
+
 val blankMarkerBitmap =
     bitmapDescriptorFromVector(
         context = appContext,
         vectorResId = R.drawable.invisible_map_icon_24 // invisible icon, 48x48, spacer for the infoWindow
+    )
+val grayMarkerBitmap =
+    bitmapDescriptorFromVector(
+        context = appContext,
+        vectorResId = R.drawable.grey_marker
+    )
+val redMarkerBitmap =
+    bitmapDescriptorFromVector(
+        context = appContext,
+        vectorResId = R.drawable.red_marker
     )
 
 // Android Google Maps implementation
@@ -170,7 +187,11 @@ actual fun GoogleMaps(
     var isHeatMapEnabled by remember { mutableStateOf(false) }
     var showSomething by remember { mutableStateOf(false) } // LEAVE FOR TESTING PURPOSES
     var localShouldShowInfoMarker by remember(shouldShowInfoMarker) { mutableStateOf<Marker?>(shouldShowInfoMarker) }
+
+    // Marker images
     val rememberBlankMarkerBitmap = remember { blankMarkerBitmap }
+    val ememberGrayMarkerBitmap = remember { grayMarkerBitmap }
+    val rememberRedMarkerBitmap = remember { redMarkerBitmap }
 
     // Usually used to setup the initial camera position (doesn't support tracking due to forcing zoom level)
     LaunchedEffect(shouldSetInitialCameraPosition) {
@@ -280,8 +301,8 @@ actual fun GoogleMaps(
     }
 
     // Marker Bitmaps
-    val lightGrayMarkerPainterResource = painterResource("marker_lightgray.png")
-    val redMarkerPainterResource = painterResource("marker_red.png")
+    val lightGrayMarkerPainterResource = painterResource("marker_lightgray_64x64.png")
+    val redMarkerPainterResource = painterResource("marker_red_64x64.png")
 
     // Information marker - visible after user clicks "find marker" button in details panel
     var infoMarker by remember { mutableStateOf<Marker?>(null) }
@@ -481,7 +502,6 @@ actual fun GoogleMaps(
             onDidCalculateClusterItemList()
         }
     }
-
 
     SideEffect {
         // Attempt Increase the `restricted cluster` radius until all ClusterItems for the view are in view (maxRestrictedClusterRadiusPhase)
@@ -823,39 +843,57 @@ actual fun GoogleMaps(
                         )
                     }
                 },
-                clusterItemContent = { clusterItem ->
-                    Box(
-                        modifier = Modifier
-                            .requiredHeight(50.dp)
-                            .requiredWidth(50.dp)
-                    ) {
-                        val marker = markers?.find { it.id == clusterItem.snippet }
-                        val painterRes = if(marker?.isSeen == true) {
-                            lightGrayMarkerPainterResource
-                        } else {
-                            redMarkerPainterResource
-                        }
-
-                        if(!LocalInspectionMode.current) {
-                            Image(
-                                painter = painterRes,
-                                contentDescription = "historical marker",
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Fit,
-                                // colorFilter = ColorFilter.tint(Color.Green, BlendMode.SrcAtop) // changes color and blows away alpha
+                clusterItemContent = { clusterItem -> // remove this to improve performance
+                    if(LocalInspectionMode.current || isUseEmojiMarkersEnabled) {
+                        if(clusterItem.isSeen) {
+                            Text("🏳️",
+                                fontSize = TextUnit(40.dp.value, TextUnitType.Sp),
+                                color = Color.LightGray,
+                                modifier = Modifier
+                                    .offset(x=6.dp)
+                                    .padding(end=4.dp)
                             )
                         } else {
-                            PreviewPlaceholder("Location marker, isSeen=${marker?.isSeen}")
+                            Text("🚩",
+                                fontSize = TextUnit(40.dp.value, TextUnitType.Sp),
+                                color = Color.Red,
+                                modifier = Modifier
+                                    .offset(x=13.dp)
+                                    .wrapContentSize()
+                                    .padding(end=6.dp)
+                            )
                         }
 
-                        // LEAVE FOR REFERENCE for iOS
-                        //    Icon(
-                        //        imageVector = Icons.Filled.LocationCity,
-                        //        contentDescription = "Play",
-                        //        tint = Color.White
-                        //    )
+                        return@Clustering
                     }
-                },
+
+                    if(clusterItem.isSeen) {
+                        Image(
+                            painter = lightGrayMarkerPainterResource,
+                            contentDescription = "historical marker",
+                            modifier = Modifier
+                                .requiredHeight(40.dp)
+                                .requiredWidth(40.dp),
+                            // tint = Color.LightGray, // if using Icon
+                        )
+                    } else {
+                        Image(
+                            painter = redMarkerPainterResource,
+                            contentDescription = "historical marker",
+                            modifier = Modifier
+                                .requiredHeight(40.dp)
+                                .requiredWidth(40.dp),
+                            // tint = Color.Red, // if using Icon
+                        )
+                    }
+
+                    // LEAVE FOR REFERENCE for iOS
+                    //    Icon(
+                    //        imageVector = Icons.Filled.LocationCity,
+                    //        contentDescription = "Play",
+                    //        tint = Color.White
+                    //    )
+                }
             )
 
             // Information marker
@@ -904,8 +942,8 @@ actual fun GoogleMaps(
                     tag = infoMarker?.id ?: "",
                     snippet = infoMarker?.id ?: "",
                     icon = rememberBlankMarkerBitmap,
-                    // infoWindowAnchor = Offset(0.5f, -.20f), // LEAVE FOR REFERENCE
-                    visible = true, //infoMarker != null,
+                    infoWindowAnchor = Offset(0.5f, .22f), // LEAVE FOR REFERENCE
+                    visible = true,
                     onInfoWindowClick = {
                         onMarkerInfoClick?.run {
                             onMarkerInfoClick(infoMarker ?: return@run)
@@ -1032,6 +1070,10 @@ actual fun GoogleMaps(
         if(!isRestrictedClusterRadiusActive
             && frameRenderCount > 1 // skip the first frame after the cluster items are calculated
         ) {
+            ////////////////////////////////////////////////
+            // Restrict Cluster Items for improved Render //
+            ////////////////////////////////////////////////
+
             // If camera location is outside OUTER `restricted cluster` slop radius, then start restricting & recalculate cluster items.
             if(isLatLngOutsideRadiusMiles(
                 cameraPositionState.position.target,
@@ -1052,6 +1094,37 @@ actual fun GoogleMaps(
             ) {
                 //println("💿 GoogleMaps-Android 👾🐌: SLOW FRAME RATE - INNER, frame time= $fullLoopFrameRenderTime")
                 startRestrictedClusterRadius()
+            }
+
+            ////////////////////////////////////////////////////////
+            // Emoji Markers for improved Render time Performance //
+            ////////////////////////////////////////////////////////
+
+            // If frameTime over 40ms, switch to emoji markers.
+            if(!isUseEmojiMarkersEnabled && fullLoopFrameRenderTime > 40.milliseconds) {
+                useEmojiMarkersPhase++
+                if(useEmojiMarkersPhase > 2) {
+                    isUseEmojiMarkersEnabled = true
+                }
+            }
+            // reset if frameTime is under 40ms (good frame rate)
+            if(!isUseEmojiMarkersEnabled && fullLoopFrameRenderTime < 40.milliseconds) {
+                if(useEmojiMarkersPhase > 0)
+                    useEmojiMarkersPhase--
+
+                if(useEmojiMarkersPhase == 0) {
+                    isUseEmojiMarkersEnabled = false
+                }
+            }
+
+            // If using emojis & frameTime under 40ms, then reduce the phase. (good frame rate)
+            if(isUseEmojiMarkersEnabled && fullLoopFrameRenderTime < 40.milliseconds) {
+                if(useEmojiMarkersPhase>0)
+                    useEmojiMarkersPhase--
+
+                if(useEmojiMarkersPhase == 0) {
+                    isUseEmojiMarkersEnabled = false
+                }
             }
         }
         // If camera is moved, Reset phase to start (only after the first animated "restrict" frame)
