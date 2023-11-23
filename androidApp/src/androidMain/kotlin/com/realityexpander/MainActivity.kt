@@ -25,6 +25,7 @@ import com.google.firebase.analytics.ktx.logEvent
 import com.realityexpander.gpsForegroundNotificationService.GPSForegroundNotificationService
 import data.appSettings
 import intentFlow
+import isTemporarilyPreventPerformanceTuningActive
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -232,8 +233,9 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     override fun onResume() {
         super.onResume()
         println("onResume: intent: $intent")
+        isTemporarilyPreventPerformanceTuningActive = true
 
-        // Relaunch the permission dialog if the user was sent to the app settings screen
+        // Relaunch the permission dialog if the user was previously sent to the Android's "App Settings" screen
         if(isSendingUserToAppSettingsScreen) {
             isSendingUserToAppSettingsScreen = false
             permissionLauncher.launch(arrayOf(

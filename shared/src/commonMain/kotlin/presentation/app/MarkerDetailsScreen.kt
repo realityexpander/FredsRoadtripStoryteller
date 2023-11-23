@@ -807,7 +807,7 @@ fun PanZoomImageDialog(
                         contentScale = ContentScale.Fit,
                         alignment = Alignment.Center,
                         modifier = Modifier.fillMaxSize()
-                            .graphicsLayer {  // todo make paid feature
+                            .graphicsLayer {
                                 scaleX = scale
                                 scaleY = scale
                                 translationX = offset.x

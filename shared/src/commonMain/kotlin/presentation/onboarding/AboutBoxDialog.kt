@@ -113,7 +113,7 @@ fun AboutBoxDialog(
                         Spacer(modifier = Modifier.padding(8.dp))
 
                         // Version number
-                        Text("$kAppNameStr version $versionStr build $buildNumberStr") // todo  + $AppVersionStr)
+                        Text("$kAppNameStr version $versionStr build $buildNumberStr")
                         if(installAtEpochMilli> 0) {
                             val it = Instant.fromEpochMilliseconds(installAtEpochMilli)
                                 .toLocalDateTime(TimeZone.currentSystemDefault())

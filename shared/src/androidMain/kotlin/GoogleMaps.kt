@@ -1068,6 +1068,7 @@ actual fun GoogleMaps(
         // Need to improve performance? (by restricting the radius of the cluster items)
         if(!isRestrictedClusterRadiusActive
             && frameRenderCount > 1 // skip the first frame after the cluster items are calculated
+            && !isTemporarilyPreventPerformanceTuningActive
         ) {
             ////////////////////////////////////////////////
             // Restrict Cluster Items for improved Render //
@@ -1100,9 +1101,9 @@ actual fun GoogleMaps(
             ////////////////////////////////////////////////////////////
 
             // If frameTime over 40ms, switch to emoji markers.
-            if(!isUseEmojiMarkersEnabled && fullLoopFrameRenderTime > 60.milliseconds) {
+            if(!isUseEmojiMarkersEnabled && fullLoopFrameRenderTime > 80.milliseconds) {
                 useEmojiMarkersPhase++
-                if(useEmojiMarkersPhase > 4) {
+                if(useEmojiMarkersPhase > 5) {
                     isUseEmojiMarkersEnabled = true
                 }
             }
@@ -1143,6 +1144,7 @@ actual fun GoogleMaps(
         }
         loopFrameRenderEndTime = Clock.System.now()
         frameIsRestrictedClusterRadiusActive = isRestrictedClusterRadiusActive
+        isTemporarilyPreventPerformanceTuningActive = false // reset
     }
 }
 

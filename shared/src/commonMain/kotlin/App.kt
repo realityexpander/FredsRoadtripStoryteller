@@ -114,6 +114,7 @@ sealed class BottomSheetScreen {
 var frameCount = 0
 var didFullFrameRender = false
 var unspokenText: String? = null
+var isTemporarilyPreventPerformanceTuningActive = false // prevents premature optimization after returning from background
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -496,7 +497,6 @@ fun App(
         }
 
         // For render performance tuning.
-        val startTime = Clock.System.now()
         didFullFrameRender = false
 
         BottomSheetScaffold(
@@ -738,6 +738,7 @@ fun App(
 
             FixIssue_ScreenRotationLeavesDrawerPartiallyOpen(bottomSheetScaffoldState)
 
+            val startTime = Clock.System.now()
             Scaffold(
                 scaffoldState = scaffoldState,
                 topBar = {
@@ -798,7 +799,7 @@ fun App(
                                             isRecentlySeenMarkersPanelVisible
                                     }
                                 }) {
-                                    // Loading status icon // todo - should use a sealed/enum class instead of using the icon
+                                    // Loading status icon
                                     AnimatedVisibility(
                                         networkLoadingState !is LoadingState.Finished,
                                         enter = fadeIn(tween(1500)),
@@ -962,7 +963,9 @@ fun App(
                         onClickStartSpeakingMarker = { recentlySeenMarker, isSpeakDetailsEnabled: Boolean ->
                             if(isTextToSpeechSpeaking()) stopTextToSpeech()
                             coroutineScope.launch {
+                                isTemporarilyPreventPerformanceTuningActive=true // prevents using emojis
                                 delay(150)
+
                                 activeSpeakingMarker =
                                     speakRecentlySeenMarker(
                                         recentlySeenMarker,
@@ -979,19 +982,24 @@ fun App(
                             }
                         },
                         onClickStopSpeakingMarker = {
+                            isTemporarilyPreventPerformanceTuningActive=true // prevents using emojis
                             stopTextToSpeech()
                         },
                         onClickPauseSpeakingAllMarkers = {
                             appSettings.isSpeakWhenUnseenMarkerFoundEnabled = false
                             appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState = false
+                            isTemporarilyPreventPerformanceTuningActive=true // prevents using emojis
                             stopTextToSpeech()
                         },
                         onClickResumeSpeakingAllMarkers = {
                             appSettings.isSpeakWhenUnseenMarkerFoundEnabled = true
                             appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState = true
+                            isTemporarilyPreventPerformanceTuningActive=true // prevents using emojis
                         },
                     )
-                    Log.d("✏️✏️🛑  END recently seen markers rendering, finalMarkers.size = ${finalMarkers.size}, time to render = ${(Clock.System.now() - startTime)}")
+                    Log.d("✏️✏️🛑  END recently seen markers rendering, " +
+                            "finalMarkers.size = ${finalMarkers.size}, " +
+                            "time to render = ${(Clock.System.now() - startTime)}")
                 }
             }
             frameCount++
@@ -1014,8 +1022,8 @@ fun App(
                 )
             }
 
+            Log.d("🎃 END Frame time to render = ${(Clock.System.now() - startTime)}\n" )
         }
-        Log.d("🎃 END Frame time to render = ${(Clock.System.now() - startTime)}\n" )
         didFullFrameRender = true
     }
 }
@@ -1142,7 +1150,7 @@ private fun addSeenMarkersToRecentlySeenList(
         // & save the updated markers list to settings.
         if (didUpdateMarkers) {
             // Update the UI list of recently seen markers (& reverse sort by insert-time)
-            val oldList = localUiRecentlySeenMarkersList.toList() // todo refactor this for clarity
+            val oldList = localUiRecentlySeenMarkersList.toList()
             localUiRecentlySeenMarkersList.clear()
             localUiRecentlySeenMarkersList.addAll(
                 oldList.sortedByDescending { recentMarker ->

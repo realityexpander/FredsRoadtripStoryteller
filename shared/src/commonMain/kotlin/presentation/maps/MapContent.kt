@@ -26,7 +26,7 @@ fun MapContent(
     shouldCenterCameraOnLocation: Location? = null,
     onDidCenterCameraOnLocation: () -> Unit = {},
     seenRadiusMiles: Double = .5,
-    cachedMarkersLastUpdatedLocation: Location? = null,  // todo change to "settings"?
+    cachedMarkersLastUpdatedLocation: Location? = null,
     onToggleIsTrackingEnabled: (() -> Unit)? = null,
     onFindMeButtonClicked: (() -> Unit)? = null,
     isMarkersLastUpdatedLocationVisible: Boolean = false,

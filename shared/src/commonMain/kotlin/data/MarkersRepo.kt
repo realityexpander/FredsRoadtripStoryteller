@@ -85,7 +85,7 @@ open class MarkersRepo(
     }
 
     fun marker(id: MarkerIdStr): Marker? {
-        return inMemoryLoadMarkersResult.markerIdToMarkerMap[id] // todo use inMemoryMarkersResult for all other methods
+        return inMemoryLoadMarkersResult.markerIdToMarkerMap[id]
     }
 
     fun markers(): List<Marker> {
@@ -96,10 +96,6 @@ open class MarkersRepo(
         // Clearing markers is immediate.  No need to debounce.
         inMemoryLoadMarkersResult = inMemoryLoadMarkersResult.copy(
             markerIdToMarkerMap = emptyMap(),
-
-            // todo needed?? test
-//            isParseMarkersPageFinished = false,
-//            loadingState = LoadingState.Loading
         )
         ioCoroutineScope.launch {
             appSettings.loadMarkersResult = inMemoryLoadMarkersResult
