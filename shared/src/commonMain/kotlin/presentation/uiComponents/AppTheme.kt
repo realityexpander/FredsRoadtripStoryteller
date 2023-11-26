@@ -36,10 +36,11 @@ fun AppTheme(
 //        lightColorScheme( // material3
         lightColors(
             primary = Color(0xFF111162),
+            onPrimary = Color(0xFFBBBBBB),
             secondary = Color(0xFF03DAC5),
 //            tertiary = Color(0xFF3700B3)
 //            onSurface = Color(0xFF111111),
-            surface = Color(0xFFEEEEEE),
+            surface = Color(0xFFCCCCCC),
             onSurface = Color(0xFF000000),
             background = Color(0xFF444444),
             onBackground = Color(0xFFDDDDDD),

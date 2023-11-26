@@ -1,5 +1,6 @@
 package presentation.app.settingsScreen
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -83,16 +84,20 @@ fun SettingsScreen(
 
     Column(
         Modifier.fillMaxWidth()
-            .padding(16.dp),
+            .background(MaterialTheme.colors.surface)
+            .padding(16.dp)
+        ,
         horizontalAlignment = Alignment.Start,
     ) {
+        // Title & Close
         Row {
             Text(
                 "Settings",
                 fontSize = MaterialTheme.typography.h5.fontSize,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier
-                    .weight(3f)
+                    .weight(3f),
+                color = MaterialTheme.colors.onSurface
             )
             IconButton(
                 modifier = Modifier
@@ -105,11 +110,13 @@ fun SettingsScreen(
                 }) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Close"
+                    contentDescription = "Close",
+                    tint = MaterialTheme.colors.onSurface
                 )
             }
         }
 
+        // Settings
         Column(
             modifier = Modifier
                 .verticalScroll(scrollState),

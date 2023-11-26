@@ -30,6 +30,7 @@ fun SettingsSlider(
             modifier = Modifier
                 .weight(1f)
                 .align(Alignment.CenterVertically),
+            color = MaterialTheme.colors.onSurface
         )
         Slider(
             modifier = Modifier
@@ -55,6 +56,7 @@ fun SettingsSlider(
             modifier = Modifier
                 .weight(.5f)
                 .align(Alignment.CenterVertically),
+            color = MaterialTheme.colors.onSurface
         )
     }
 }

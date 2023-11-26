@@ -489,7 +489,7 @@ fun SearchMarkerDialog(
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Close",
-                        tint = MaterialTheme.colors.onBackground.copy(alpha = 0.5f)
+                        tint = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
                     )
                 }
 
