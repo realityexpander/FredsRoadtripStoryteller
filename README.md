@@ -14,9 +14,48 @@ Compose KMP experimental app using Google Maps for iOS and Android
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/265ae655-f57c-48a7-a60e-9a515d49efd3">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/265ae655-f57c-48a7-a60e-9a515d49efd3)
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/ded7dd66-399b-41c7-9f74-00d8a27531dc">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/ded7dd66-399b-41c7-9f74-00d8a27531dc)
 
-
-
 Wiki: [Freds Talking Historical Markers Wiki](https://github.com/realityexpander/FredsHistoryMarkers/wiki)
+
+Potential app names:
+// https://www.mightynetworks.com/app-name-generator
+
+speaks historical markers as you drive by them:
+History Companion
+Drive & Discover
+Roadside Storyteller
+Time Travel Guide
+Historical Marker Navigator
+Explore the Past
+Marker Moments
+History Driven
+Drive Through Time
+Roadside Heritage
+
+automatically read historical markers as you drive by:
+Marker Mate
+Drive By History
+Historic Marker Reader
+Time Traveler
+Driving History
+Spot the Signs
+Roadside Remembrance
+Mobile Marker Mapper
+Drive and Discover
+Historical Insights
+
+read historical markers as drive by to annoy kids:
+Historic Tour Guide
+Historical RoadTrip
+Time Travel Tracker
+Historic Marker Explorer
+Roadside Reminders
+Travel Tales
+EduVenture
+Historical Roadside Companion
+History Quest
+Memory Lane Discoverer
+
+icons: https://www.google.com/search?q=flat+icons+navigation&sca_esv=585465592&tbm=isch&sxsrf=AM9HkKkbHZOj7DIYI42VD56hpTfPgmYrYQ:1701032930698&source=lnms&sa=X&ved=2ahUKEwj_kte8yeKCAxVQIEQIHeeIDDsQ_AUoAXoECAIQAw&biw=1622&bih=1050&dpr=2#imgrc=Tx7XOXuIaxmJtM
 
 ## Developer notes
 
