@@ -38,4 +38,6 @@ expect fun GoogleMaps(
     onDidShowInfoMarker: () -> Unit = {},
     shouldZoomToLatLongZoom: LatLongZoom?,
     onDidZoomToLatLongZoom: () -> Unit,
+    shouldAllowCacheReset: Boolean,
+    onDidAllowCacheReset: () -> Unit,
 )

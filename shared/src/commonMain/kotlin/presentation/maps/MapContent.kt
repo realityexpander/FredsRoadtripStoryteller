@@ -20,8 +20,8 @@ fun MapContent(
     userLocation: Location,
     markers: List<Marker>,
     mapBounds: List<LatLong>? = null,
-    shouldCalculateMarkers: Boolean,
-    onDidCalculateMarkers: () -> Unit = {},
+    shouldCalcClusterItems: Boolean,
+    onDidCalcClusterItems: () -> Unit = {},
     isTrackingEnabled: Boolean = false,
     shouldCenterCameraOnLocation: Location? = null,
     onDidCenterCameraOnLocation: () -> Unit = {},
@@ -36,6 +36,8 @@ fun MapContent(
     onDidShowInfoMarker: () -> Unit = {},
     shouldZoomToLatLongZoom: LatLongZoom?,
     onDidZoomToLatLongZoom: () -> Unit,
+    shouldAllowCacheReset: Boolean = false,
+    onDidAllowCacheReset: () -> Unit = {},
 ) {
     var isFirstUpdate by remember { mutableStateOf(true) } // force map to update at least once
     var didSetInitialCameraPosition by remember { mutableStateOf(false) } // Move to initial location on first update
@@ -49,7 +51,7 @@ fun MapContent(
     ) {
 
         // Log.d("💿 MapContent: isFinishedLoadingMarkerData=$isFinishedLoadingMarkerData, isFirstUpdate=$isFirstUpdate, shouldRedrawMapMarkers=$shouldRedrawMarkers")
-        if (!isFirstUpdate || shouldCalculateMarkers) {
+        if (!isFirstUpdate || shouldCalcClusterItems) {
             GoogleMaps(
                 modifier = modifier,
                 isMapOptionSwitchesVisible = isMapOptionSwitchesVisible,
@@ -59,8 +61,8 @@ fun MapContent(
                     userLocation.longitude
                 ),
                 markers = markers.ifEmpty { null },
-                shouldCalcClusterItems = shouldCalculateMarkers,
-                onDidCalculateClusterItemList = onDidCalculateMarkers,
+                shouldCalcClusterItems = shouldCalcClusterItems,
+                onDidCalculateClusterItemList = onDidCalcClusterItems,
                 shouldSetInitialCameraPosition =
                     if (!isFirstUpdate && !didSetInitialCameraPosition) {  // set initial camera position after first update
                         //Log.d("💿 MapContent.shouldSetInitialCameraPosition: isFirstUpdate=true,\n" +
@@ -115,6 +117,8 @@ fun MapContent(
                 onDidShowInfoMarker = onDidShowInfoMarker,
                 shouldZoomToLatLongZoom = shouldZoomToLatLongZoom,
                 onDidZoomToLatLongZoom = onDidZoomToLatLongZoom,
+                shouldAllowCacheReset = shouldAllowCacheReset,
+                onDidAllowCacheReset = onDidAllowCacheReset,
             )
 
             // Indicate first update has occurred

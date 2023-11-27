@@ -31,11 +31,8 @@ import buildNumberStr
 import debugLog
 import installAtEpochMilli
 import json
-import kAppNameStr
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.coroutineScope
+import appNameStr
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -45,7 +42,6 @@ import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import sendEmailAction
 import versionStr
-import co.touchlab.kermit.Logger as Log
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
@@ -96,7 +92,7 @@ fun AboutBoxDialog(
                                 onDismiss()
                             },
                         ) {
-                            Text("$kAppNameStr website")
+                            Text("$appNameStr website")
                         }
                         Spacer(modifier = Modifier.padding(8.dp))
 
@@ -113,7 +109,7 @@ fun AboutBoxDialog(
                         Spacer(modifier = Modifier.padding(8.dp))
 
                         // Version number
-                        Text("$kAppNameStr version $versionStr build $buildNumberStr")
+                        Text("$appNameStr version $versionStr build $buildNumberStr")
                         if(installAtEpochMilli> 0) {
                             val it = Instant.fromEpochMilliseconds(installAtEpochMilli)
                                 .toLocalDateTime(TimeZone.currentSystemDefault())
@@ -124,7 +120,7 @@ fun AboutBoxDialog(
                             onClick = {
                                 onDismiss()
                                 coroutineScope.launch {
-                                    debugLog.add("AboutBoxDialog: Send debug log, debugLog.size=${debugLog.size}, $kAppNameStr version $versionStr build $buildNumberStr")
+                                    debugLog.add("AboutBoxDialog: Send debug log, debugLog.size=${debugLog.size}, $appNameStr version $versionStr build $buildNumberStr")
                                     sendEmailAction(body = json.encodeToString(debugLog))
                                 }
                             },

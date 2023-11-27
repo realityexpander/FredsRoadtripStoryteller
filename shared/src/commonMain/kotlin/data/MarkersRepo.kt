@@ -38,16 +38,17 @@ open class MarkersRepo(
         //Log.i("MarkersRepo: updateMarkersResult: newMarkersResult.size=${newMarkersResult.markerIdToMarker.size}")
         synchronized(synchronizedObject) {
             inMemoryLoadMarkersResult = newLoadMarkersResult
-        }
-        inMemoryLoadMarkersResult = newLoadMarkersResult
 
-        ioCoroutineScope.launch {
-            // debounce the update to improve performance
-            delay(150.milliseconds) // debounce // 50ms is too fast, 150ms seems good
+            ioCoroutineScope.launch {
+                // debounce the update to improve performance
+                delay(250.milliseconds) // debounce // 50ms is too fast, 150ms seems good
 
-            appSettings.loadMarkersResult = newLoadMarkersResult // save to persistent storage
-            updateLoadMarkersResultFlow.emit(newLoadMarkersResult)
+                appSettings.loadMarkersResult = newLoadMarkersResult // save to persistent storage
+                updateLoadMarkersResultFlow.emit(newLoadMarkersResult)
+            }
         }
+        //inMemoryLoadMarkersResult = newLoadMarkersResult
+
     }
 
     fun markersResult() = inMemoryLoadMarkersResult // Uses the in-memory lookup
@@ -127,9 +128,6 @@ open class MarkersRepo(
                     Log.w("MarkerRepo: updateMarkerIsSeen: marker not found, id: ${markerToUpdate.id}")
                     return inMemoryLoadMarkersResult
                 }
-        if(originalMarker.isSeen == isSeen) { // no change
-            return inMemoryLoadMarkersResult
-        }
 
         updateLoadMarkersResult(
             inMemoryLoadMarkersResult.copy(
@@ -265,7 +263,7 @@ open class MarkersRepo(
         } ?: run {
             //val startTime = Clock.System.now()
             addMarker(marker)
-            //Log.d("🚹🚹🚹 MarkerRepo: upsertMarkerBasicInfo: ADDED marker.id=${marker.id}")
+            Log.d("🚹🚹🚹 MarkerRepo: upsertMarkerBasicInfo: ADDED marker.id=${marker.id}")
             //Log.d("🚹🚹🚹 ⎣ 🏁 MarkerRepo: upsertMarkerBasicInfo: added marker.id=${marker.id}, took ${Clock.System.now() - startTime}")
         }
 

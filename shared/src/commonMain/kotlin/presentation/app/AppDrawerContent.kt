@@ -64,8 +64,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import isTextToSpeechSpeaking
-import kAppNameStr
+import appNameStr
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
@@ -110,7 +109,7 @@ fun AppDrawerContent(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            kAppNameStr,
+            appNameStr,
             fontSize = MaterialTheme.typography.h5.fontSize,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
@@ -147,7 +146,7 @@ fun AppDrawerContent(
             .padding(start = 8.dp, end = 8.dp),
     ) {
         Text(
-            "Show Onboarding",
+            "How to Use this App",
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 8.dp, end = 8.dp),
@@ -452,7 +451,6 @@ fun SearchMarkerDialog(
         },
     ) {
         val searchEntries = remember { mutableStateListOf<Marker>().also {
-//                it.addAll(finalMarkers.reversed())
                 calcSearchEntries(searchQuery, it, finalMarkers)
             } }
         val keyboardController = LocalSoftwareKeyboardController.current

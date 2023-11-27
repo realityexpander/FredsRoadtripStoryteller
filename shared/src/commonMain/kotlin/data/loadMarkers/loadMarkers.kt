@@ -26,7 +26,7 @@ import data.util.LoadingState
 import data.util.toInstant
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import kAppNameStr
+import appNameStr
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -74,7 +74,7 @@ fun loadMarkers(
 
     // Map Marker loading parameters
     userLocation: Location = Location(37.422160, -122.084270),
-    maxReloadDistanceMiles: Int = 10,
+    maxReloadRadiusMiles: Int = 2,
     onUpdateMarkersLastUpdatedLocation: (Location) -> Unit = {},
     onUpdateLoadingState: (LoadingState<String>) -> Unit = {},
 
@@ -98,12 +98,10 @@ fun loadMarkers(
         if(isLoadMarkersCurrentlyProcessing) return@LaunchedEffect
 
         // 1. Check for cached markers
-        if(markersRepo.markers().isEmpty()
+        if(  !appSettings.hasKey(kMarkersLastUpdatedLocation)
             ||
             // 2. Check for cached markers within max reload radius
-            (markersRepo.markers().isNotEmpty()
-                && isLocationOutsideReloadRadius(appSettings, userLocation, maxReloadDistanceMiles)
-            )
+            isLocationOutsideLoadMarkersRadiusIncludingIsSeenRadius(appSettings, userLocation, maxReloadRadiusMiles)
         ) {
             isLoadMarkersCurrentlyProcessing = true
 
@@ -121,7 +119,7 @@ fun loadMarkers(
                             // "&Miles=10" +
                             "&Latitude=" + userLocation.latitude +
                             "&Longitude=" + userLocation.longitude +
-                            "&Miles=" + maxReloadDistanceMiles +
+                            "&Miles=" + maxReloadRadiusMiles +  // double the radius to get diameter
                             "&MilesType=1&HistMark=Y&WarMem=Y&FilterNOT=&FilterTown=&FilterCounty=&FilterState=&FilterCountry=&FilterCategory=0" +
                             "&Page=$processingHtmlPageNum"
 
@@ -140,7 +138,7 @@ fun loadMarkers(
                                 // Log.d("📍⬆️ Step 3a - Using fake data, page: $processingHtmlPageNum, useFakeDataSetId: $useFakeDataSetId")
                                 generateTestPageHtml(processingHtmlPageNum, useFakeDataSetId)
                             }
-                        println("📍⬆️ Loaded page successfully, data length: ${rawHtml.length}")
+                        Log.d("📍⬆️ Loaded page successfully, data length: ${rawHtml.length}")
                         updateLoadingState(LoadingState.Loaded(rawHtml))
 
                         // 4. Parse markers
@@ -205,7 +203,7 @@ fun loadMarkers(
         ) {
             when (val state = debugLoadingState) {
                 is LoadingState.Loading -> {
-                    Text("$kAppNameStr Loading...")
+                    Text("$appNameStr Loading...")
                 }
 
                 is LoadingState.Loaded<String> -> {
@@ -229,10 +227,11 @@ fun loadMarkers(
     }
 }
 
-private fun isLocationOutsideReloadRadius(
+private fun isLocationOutsideLoadMarkersRadiusIncludingIsSeenRadius(
     appSettings: AppSettings,
     location: Location,
-    maxReloadDistanceMiles: Int
+    maxReloadDistanceMiles: Int,
+    isSeenRadiusMiles: Int = 2
 ): Boolean {
     // Step 1.1 - Check if the user is outside the markers last update radius
     if (appSettings.hasKey(kMarkersLastUpdatedLocation)) {
@@ -243,10 +242,10 @@ private fun isLocationOutsideReloadRadius(
                 location.longitude,
                 markersLastUpdatedLocation.latitude,
                 markersLastUpdatedLocation.longitude
-            ) * .90 // fudge factor to account for the fact that the user location may have
-                    // moved since the last update.
+            ) * 1.15 // fudge factor to account for the fact that the user location may have
+                     // moved since the last update.
 
-        if (userDistanceFromLastUpdatedLocationMiles > maxReloadDistanceMiles) {
+        if (userDistanceFromLastUpdatedLocationMiles > maxReloadDistanceMiles - (isSeenRadiusMiles/2.0)) {
             return true
         }
     }
