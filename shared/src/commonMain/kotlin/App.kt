@@ -517,7 +517,6 @@ fun App(
 
         // Force update UI when app first opens
         LaunchedEffect(Unit) {
-            delay(1000)
             userLocation = jiggleLocationToForceUiUpdate(userLocation)
         }
 
