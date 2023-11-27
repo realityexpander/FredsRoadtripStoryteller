@@ -98,10 +98,9 @@ fun loadMarkers(
         if(isLoadMarkersCurrentlyProcessing) return@LaunchedEffect
 
         // 1. Check for cached markers
-        if(  !appSettings.hasKey(kMarkersLastUpdatedLocation)
-            ||
+        if( !appSettings.hasKey(kMarkersLastUpdatedLocation)
             // 2. Check for cached markers within max reload radius
-            isLocationOutsideLoadMarkersRadiusIncludingIsSeenRadius(appSettings, userLocation, maxReloadRadiusMiles)
+            || isLocationOutsideLoadMarkersRadiusIncludingIsSeenRadius(appSettings, userLocation, maxReloadRadiusMiles)
         ) {
             isLoadMarkersCurrentlyProcessing = true
 

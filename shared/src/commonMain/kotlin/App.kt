@@ -150,14 +150,14 @@ fun App(
         }
 
         // Seen Marker & Speaking UI
+        var seenRadiusMiles by remember {
+            mutableStateOf(appSettings.seenRadiusMiles)
+        }
         var isMarkerCurrentlySpeaking by remember { // reactive to text-to-speech state
             mutableStateOf(false)
         }
         var activeSpeakingMarker: RecentlySeenMarker? by remember {
             mutableStateOf(null)
-        }
-        var seenRadiusMiles by remember {
-            mutableStateOf(appSettings.seenRadiusMiles)
         }
 
         // Google Maps UI elements
@@ -513,6 +513,12 @@ fun App(
                     }
                 }
             }
+        }
+
+        // Force update UI when app first opens
+        LaunchedEffect(Unit) {
+            delay(1000)
+            userLocation = jiggleLocationToForceUiUpdate(userLocation)
         }
 
         // For render performance tuning.
