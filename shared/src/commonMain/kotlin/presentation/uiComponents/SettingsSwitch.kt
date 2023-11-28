@@ -54,25 +54,24 @@ fun SettingsSwitch(
 }
 
 // 0.25f -> Lighten by adding 25% of original color (125%)
-fun Color.lightenBy(factor: Float): Color {
+fun Color.lightenBy(offset: Float): Color {
     val color = this
-//    val localFactor = 1f + factor
     return Color(
-        red = (color.red + factor).coerceIn(0f, 1f),
-        green = (color.green + factor).coerceIn(0f, 1f),
-        blue = (color.blue + factor).coerceIn(0f, 1f),
+        red = (color.red + offset).coerceIn(0f, 1f),
+        green = (color.green + offset).coerceIn(0f, 1f),
+        blue = (color.blue + offset).coerceIn(0f, 1f),
         alpha = color.alpha
     )
 }
 
 // 0.25f -> Darken by subtracting 25% of original color (75%)
-fun Color.darkenBy(factor: Float): Color {
+fun Color.darkenBy(offset: Float): Color {
     val color = this
-    val localFactor = 1f - factor
+    val localOffset = 1f - offset
     return Color(
-        red = color.red * localFactor,
-        green = color.green * localFactor,
-        blue = color.blue * localFactor,
+        red = color.red * localOffset,
+        green = color.green * localOffset,
+        blue = color.blue * localOffset,
         alpha = color.alpha
     )
 }
