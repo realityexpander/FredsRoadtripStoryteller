@@ -195,7 +195,7 @@ fun App(
             mutableStateOf(appSettings.uiRecentlySeenMarkersList.list.toMutableStateList())
         }
 
-        // Load markers
+        // Load markers based on user location, reactively.
         var networkLoadingState: LoadingState<String> by remember {
             mutableStateOf(LoadingState.Finished)
         }
@@ -204,7 +204,6 @@ fun App(
                 calcLoadingStateIcon(networkLoadingState)
             )
         }
-
         loadMarkers(
             appSettings,
             markersRepo,

@@ -3,7 +3,6 @@ import android.util.Log
 
 actual fun speakTextToSpeech(text: String) {
     textToSpeech ?: Log.w("ttsSpeak", "tts is null")
-
     textToSpeech?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "freds_markers")
 }
 actual fun isTextToSpeechSpeaking(): Boolean {
