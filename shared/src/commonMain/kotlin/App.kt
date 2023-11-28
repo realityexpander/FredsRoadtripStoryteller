@@ -279,6 +279,10 @@ fun App(
             mutableStateOf<LoadingState<Marker>>(LoadingState.Loading)
         }
 
+        // Optimize energy usage by pausing seen tracking when user is not moving.
+        var isSeenTrackingPaused by remember { mutableStateOf(false) }
+        var isSeenTrackingPausedPhase by remember { mutableStateOf(0) }
+
         // 1) Update user GPS location
         // 2) Check for Recently Seen Markers
         var isProcessingRecentlySeenList by remember {
@@ -313,6 +317,7 @@ fun App(
                     // 1. Save the last known location to settings
                     appSettings.lastKnownUserLocation = location
                     yield() // allows UI to update the location
+                    isSeenTrackingPaused = false
                 }
 
             // LEAVE FOR REFERENCE
@@ -324,8 +329,11 @@ fun App(
             //    }
         }
 
-        LaunchedEffect(Unit) {
-            while(true) {
+        // Track and update isSeen for any markers within the seenRadiusMiles
+        var previousUserLocation by remember { mutableStateOf(userLocation) }
+        LaunchedEffect(Unit, isSeenTrackingPaused) {
+
+            while(!isSeenTrackingPaused) {
                 delay(1000)
 
                 //Log.d("👁️ 0.CHECK - isProcessingRecentlySeenList=$isProcessingRecentlySeenList")
@@ -424,6 +432,18 @@ fun App(
                         }
                     )
                 }
+
+                if(!isSeenTrackingPaused) {
+                    if(userLocation == previousUserLocation) {
+                        isSeenTrackingPausedPhase++
+
+                        if (isSeenTrackingPausedPhase >= 3) {
+                            isSeenTrackingPaused = true
+                        }
+                    }
+                }
+
+                previousUserLocation = userLocation
             }
         }
 
