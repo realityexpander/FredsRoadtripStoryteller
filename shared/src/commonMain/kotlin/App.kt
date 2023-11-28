@@ -66,6 +66,7 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
@@ -97,7 +98,7 @@ val json = Json {
     ignoreUnknownKeys = true
 }
 
-const val appNameStr = "Fred's History Hunt" // todo use resource?
+var appNameStr = "App Name Here"
 const val kForceClearAllSettingsAtLaunch = false
 const val kMaxReloadRadiusMiles = 2.0
 const val kMaxMarkerDetailsAgeSeconds = 60 * 60 * 24 * 30  // 30 days
@@ -517,6 +518,7 @@ fun App(
 
         // Force update UI when app first opens
         LaunchedEffect(Unit) {
+            appNameStr = configProperty("app.name") ?: "Fred's History Hunt"
             userLocation = jiggleLocationToForceUiUpdate(userLocation)
         }
 
@@ -1236,6 +1238,33 @@ private fun FixIssue_ScreenRotationLeavesDrawerPartiallyOpen(bottomSheetScaffold
             }
         }
     }
+}
+
+@OptIn(ExperimentalResourceApi::class)
+fun configProperty(
+    propertyKey: String,
+    propertyFile: String = "appConfig.properties",
+): String? {
+    runBlocking {
+        try {
+            resource(propertyFile)
+                .readBytes().toString()
+                .split("\n")
+                .forEach { line ->
+                    val key = line.split("=")[0]
+                    val value = line.split("=")[1]
+                    if (key == propertyKey) {
+                        return@runBlocking value
+                    }
+                }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        return@runBlocking null
+    }
+
+    return null
 }
 
 expect fun getPlatformName(): String
