@@ -869,28 +869,28 @@ actual fun GoogleMaps(
                 clusterItemContent = { clusterItem -> // remove this to improve performance
 
                     // FASTEST WAY - leave for reference
-//                    if(LocalInspectionMode.current || isUseEmojiMarkersEnabled) {
-//                        if(clusterItem.isSeen) {
-//                            Text("🏳️",
-//                                fontSize = TextUnit(40.dp.value, TextUnitType.Sp),
-//                                color = Color.LightGray,
-//                                modifier = Modifier
-//                                    .offset(x=6.dp)
-//                                    .padding(end=4.dp)
-//                            )
-//                        } else {
-//                            Text("🚩",
-//                                fontSize = TextUnit(40.dp.value, TextUnitType.Sp),
-//                                color = Color.Red,
-//                                modifier = Modifier
-//                                    .offset(x=13.dp)
-//                                    .wrapContentSize()
-//                                    .padding(end=6.dp)
-//                            )
-//                        }
-//
-//                        return@Clustering // early return
-//                    }
+                    //    if(LocalInspectionMode.current || isUseEmojiMarkersEnabled) {
+                    //        if(clusterItem.isSeen) {
+                    //            Text("🏳️",
+                    //                fontSize = TextUnit(40.dp.value, TextUnitType.Sp),
+                    //                color = Color.LightGray,
+                    //                modifier = Modifier
+                    //                    .offset(x=6.dp)
+                    //                    .padding(end=4.dp)
+                    //            )
+                    //        } else {
+                    //            Text("🚩",
+                    //                fontSize = TextUnit(40.dp.value, TextUnitType.Sp),
+                    //                color = Color.Red,
+                    //                modifier = Modifier
+                    //                    .offset(x=13.dp)
+                    //                    .wrapContentSize()
+                    //                    .padding(end=6.dp)
+                    //            )
+                    //        }
+                    //
+                    //        return@Clustering // early return
+                    //    }
 
                     if(clusterItem.isSeen) {
                         Image(
@@ -968,7 +968,6 @@ actual fun GoogleMaps(
                     snippet = infoMarker?.id ?: "",
                     icon = rememberBlankMarkerBitmap,
                     infoWindowAnchor = Offset(0.5f, .22f), // LEAVE FOR REFERENCE
-                    visible = true,
                     onInfoWindowClick = {
                         onMarkerInfoClick?.run {
                             onMarkerInfoClick(infoMarker ?: return@run)
