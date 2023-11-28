@@ -4,19 +4,30 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.resource
 
+private const val kAppConfigDefault = "appConfig.properties"
+
 /**
  * Returns the value of the property key from the property file.
  *
  * Property file format:
+ *
+ * `key1=value1`
+ *
  * ```
- * key1=value1
- * key2=value2
+ * configPropertyString() : Returns the value as a string.
+ * configPropertyFloat() : Returns the value as a float.
+ * configPropertyInt() : Returns the value as an int.
+ * configPropertyBoolean() : Returns the value as a boolean.
+ * configPropertyNullable() : Returns the value as a string, or null if the property key is not found.
  * ```
+ *
+ * @param propertyKey The key of the property to return.
+ * @param defaultValue The default value to return if the property key is not found.
+ * @param propertyFile The name of the property file to read from.
+ * @return The value of the property key, or the default value if the property key is not found.
+ *
  * Note: Property file must be in the shared/src/commonMain/resources directory.
  */
-
-private const val kAppConfigDefault = "appConfig.properties"
-
 @OptIn(ExperimentalResourceApi::class)
 fun configPropertyNullable(
     propertyKey: String,
