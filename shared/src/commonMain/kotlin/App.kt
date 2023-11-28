@@ -53,8 +53,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import data.MarkersRepo
 import data.appSettings
-import data.configProperty
-import data.configPropertyNullable
+import data.configPropertyString
+import data.configPropertyFloat
+import data.configPropertyInt
 import data.loadMarkerDetails.loadMarkerDetails
 import data.loadMarkers.distanceBetweenInMiles
 import data.loadMarkers.loadMarkers
@@ -98,11 +99,12 @@ val json = Json {
     ignoreUnknownKeys = true
 }
 
-var appNameStr = configProperty("app.name", "app.name string not found")
 const val kForceClearAllSettingsAtLaunch = false
-const val kMaxReloadRadiusMiles = 2.0
+var appNameStr = configPropertyString("app.name", "app.name string not found")
+val kMaxReloadRadiusMiles = configPropertyFloat("app.maxReloadRadiusMiles", 2.0f).toDouble()
 const val kMaxMarkerDetailsAgeSeconds = 60 * 60 * 24 * 30  // 30 days
 
+// Debug Log info
 var versionStr = "0.0.0" // todo get for iOS
 var buildNumberStr = "0" // todo get for iOS
 var installAtEpochMilli = 0L // todo get for iOS?
@@ -117,7 +119,7 @@ sealed class BottomSheetScreen {
     data object None : BottomSheetScreen()
 }
 
-// Improve performance by restricting updates
+// Improve performance by restricting cluster size & updates
 var frameCount = 0
 var didFullFrameRender = false
 var unspokenText: String? = null

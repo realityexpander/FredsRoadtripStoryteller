@@ -15,11 +15,13 @@ import org.jetbrains.compose.resources.resource
  * Note: Property file must be in the shared/src/commonMain/resources directory.
  */
 
+private const val kAppConfigDefault = "appConfig.properties"
+
 @OptIn(ExperimentalResourceApi::class)
 fun configPropertyNullable(
     propertyKey: String,
     defaultValue: String? = null,
-    propertyFile: String = "appConfig.properties",
+    propertyFile: String = kAppConfigDefault
 ): String? {
     var finalValue = defaultValue
 
@@ -48,10 +50,10 @@ fun configPropertyNullable(
 }
 
 
-fun configProperty(
+fun configPropertyString(
     propertyKey: String,
     defaultValue: String,
-    propertyFile: String = "appConfig.properties",
+    propertyFile: String = kAppConfigDefault
 ): String {
     return configPropertyNullable(
             propertyKey,
@@ -59,3 +61,40 @@ fun configProperty(
             propertyFile
         ) ?: defaultValue
 }
+
+fun configPropertyFloat(
+    propertyKey: String,
+    defaultValue: Float,
+    propertyFile: String = kAppConfigDefault
+): Float {
+    return configPropertyNullable(
+        propertyKey,
+        defaultValue.toString(),
+        propertyFile
+    )?.toFloat() ?: defaultValue
+}
+
+fun configPropertyInt(
+    propertyKey: String,
+    defaultValue: Int,
+    propertyFile: String = kAppConfigDefault
+): Int {
+    return configPropertyNullable(
+        propertyKey,
+        defaultValue.toString(),
+        propertyFile
+    )?.toInt() ?: defaultValue
+}
+
+fun configPropertyBoolean(
+    propertyKey: String,
+    defaultValue: Boolean,
+    propertyFile: String = kAppConfigDefault
+): Boolean {
+    return configPropertyNullable(
+        propertyKey,
+        defaultValue.toString(),
+        propertyFile
+    )?.toBoolean() ?: defaultValue
+}
+

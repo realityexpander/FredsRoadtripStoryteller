@@ -9,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.tooling.preview.Preview
 import appNameStr
-import data.configProperty
 import presentation.app.AppDrawerContent
 import presentation.maps.LatLong
 import presentation.maps.Marker

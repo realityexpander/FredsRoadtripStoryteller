@@ -566,7 +566,7 @@ fun SearchMarkerDialog(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxHeight()
-                    .padding(top = 112.dp),
+                    .padding(top = 118.dp),
                 state = rememberLazyListState(),
                 userScrollEnabled = true,
             ) {
@@ -763,74 +763,3 @@ private fun NavigationActionButton(
     }
 }
 
-
-// LEAVE FOR REFERENCE
-//                    Row(
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .padding(8.dp)
-//                            .animateItemPlacement(animationSpec = tween(250))
-//                            .clickable {
-//                                coroutineScope.launch {
-//                                    println("Clicked on marker: ${marker.id}")
-//                                }
-//                            },
-//                        verticalAlignment = Alignment.CenterVertically,
-//                    ) {
-//                        Text(
-//                            text = marker.title,
-//                            modifier = Modifier.weight(2.5f),
-//                            softWrap = false,
-//                            maxLines = 1,
-//                            overflow = TextOverflow.Ellipsis,
-//                            fontStyle = FontStyle.Normal,
-//                            fontSize = MaterialTheme.typography.body1.fontSize,
-//                        )
-//
-//                        // isSeen
-//                        if (marker.isSeen) {
-//                            Icon(
-//                                imageVector = Icons.Default.Check,
-//                                contentDescription = "Seen",
-//                                modifier = Modifier
-//                                    .weight(.3f)
-//                                    .height(16.dp)
-//                            )
-//                        } else {
-//                            // "leave blank"
-//                            Spacer(
-//                                modifier = Modifier
-//                                    .padding(end = 2.dp)
-//                                    .weight(.3f)
-//                                    .height(16.dp)
-//                            )
-//                        }
-//
-//                        // isSpoken
-//                        if (marker.isSpoken) {
-//                            Icon(
-//                                imageVector = Icons.Default.Check,
-//                                contentDescription = "Spoken",
-//                                modifier = Modifier
-//                                    .weight(.3f)
-//                                    .height(16.dp)
-//                            )
-//                        } else {
-//                            // "leave blank"
-//                            Spacer(
-//                                modifier = Modifier
-//                                    .padding(end = 2.dp)
-//                                    .weight(.3f)
-//                                    .height(16.dp)
-//                            )
-//                        }
-//
-//                        Text(
-//                            text = marker.id,
-//                            modifier = Modifier
-//                                .padding(end = 8.dp)
-//                                .weight(1.2f),
-//                            fontStyle = FontStyle.Normal,
-//                            fontSize = MaterialTheme.typography.body1.fontSize,
-//                        )
-//                    }
