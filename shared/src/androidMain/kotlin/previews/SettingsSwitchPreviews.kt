@@ -14,6 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.Wallpapers
+import data.AppSettings
+import data.FakeSettings
 import presentation.app.settingsScreen.SettingsScreen
 import presentation.uiComponents.AppTheme
 import presentation.uiComponents.SettingsSlider
@@ -38,8 +40,14 @@ fun SettingsSwitchPreviews() {
                     isChecked = true,
                     onUpdateChecked = {}
                 )
+                SettingsSwitch(
+                    title = "This is a disabled option",
+                    isChecked = true,
+                    enabled = false,
+                    onUpdateChecked = {}
+                )
                 SettingsSlider(
-                    title = "Talk Radius",
+                    title = "Seen Radius",
                     currentValue = 0.5,
                     onUpdateValue = {}
                 )
@@ -67,10 +75,14 @@ fun SettingsSwitchPreviewsDark() {
 )
 @Composable
 fun SettingsPreview() {
+    val settings = AppSettings.use(FakeSettings())
+    settings.isStartBackgroundTrackingWhenAppLaunchesEnabled = true
+    settings.isSpeakWhenUnseenMarkerFoundEnabled = false
+
     AppTheme {
         Surface {
             SettingsScreen(
-                settings = null,
+                settings = settings,
                 bottomSheetScaffoldState = BottomSheetScaffoldState(
                     bottomSheetState = BottomSheetState(
                         initialValue = BottomSheetValue.Collapsed,
@@ -87,7 +99,7 @@ fun SettingsPreview() {
                     ),
                     snackbarHostState = SnackbarHostState()
                 ),
-                seenRadiusMiles = .5,
+                seenRadiusMiles = .5
             )
         }
     }

@@ -2,6 +2,7 @@ package presentation.uiComponents
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.material.Colors
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Slider
 import androidx.compose.material.SliderDefaults
@@ -10,12 +11,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 
 @Composable
 fun SettingsSlider(
     title: String,
     currentValue: Double,
-    onUpdateValue: (Double) -> Unit
+    onUpdateValue: (Double) -> Unit,
+    unitsPostfix: String = ""
 ) {
     val currentValueAsString = remember(currentValue) {
         currentValue.toString()
@@ -43,16 +46,16 @@ fun SettingsSlider(
                 onUpdateValue(it.toDouble())
             },
             colors = SliderDefaults.colors(
-                thumbColor = MaterialTheme.colors.onSurface,
-                activeTrackColor = MaterialTheme.colors.onSurface,
-                inactiveTrackColor = MaterialTheme.colors.onSurface.copy(alpha = 0.5f),
+                thumbColor = Color.White, //MaterialTheme.colors.primary,
+                activeTrackColor = MaterialTheme.colors.primary,
+                inactiveTrackColor = MaterialTheme.colors.onSurface.copy(alpha = 0.40f),
                 activeTickColor = MaterialTheme.colors.primary,
                 inactiveTickColor = MaterialTheme.colors.primary.copy(alpha = 0.5f),
             )
         )
         Spacer(modifier = Modifier.weight(.1f))
         Text(
-            text = "$currentValueAsString mi",
+            text = "$currentValueAsString$unitsPostfix",
             modifier = Modifier
                 .weight(.5f)
                 .align(Alignment.CenterVertically),

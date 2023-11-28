@@ -37,12 +37,16 @@ fun SettingsSwitch(
             enabled = enabled,
             onCheckedChange = onUpdateChecked,
             colors = SwitchDefaults.colors(
-                checkedThumbColor = MaterialTheme.colors.onSurface,
-                checkedTrackColor = MaterialTheme.colors.onSurface.copy(alpha = 0.5f),
+                checkedThumbColor = Color.White,
+                checkedTrackColor = //Color.Blue,
+                if(MaterialTheme.colors.isLight)
+                        Color.Blue
+                    else
+                        MaterialTheme.colors.primary.lightenBy(0.25f),
                 uncheckedThumbColor = if(MaterialTheme.colors.isLight)
-                    MaterialTheme.colors.onSurface.lightenBy(0.35f)
-                else
-                    MaterialTheme.colors.onSurface.darkenBy(0.25f),
+                        Color.White
+                    else
+                        Color.White,
                 uncheckedTrackColor = MaterialTheme.colors.onSurface.copy(alpha = 0.5f),
             )
         )

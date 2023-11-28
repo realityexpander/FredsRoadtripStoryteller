@@ -2,7 +2,9 @@ package presentation.uiComponents
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ContentAlpha.medium
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.MaterialTheme.shapes
 import androidx.compose.material.Shapes
 import androidx.compose.material.Typography
 import androidx.compose.material.darkColors
@@ -21,34 +23,38 @@ fun AppTheme(
     content: @Composable () -> Unit
 ) {
     val colors = if (darkTheme) {
-//        darkColorScheme(  // material3
+        // darkColorScheme(  // material3
         darkColors(
-            primary = Color(0xFF111162),
-            onPrimary = Color(0xFFBBBBBB),
+            primary = Color(0xFF0059CB),
+            // onPrimary = Color(0xFFBBBBBB),
+            onPrimary = Color(0xFFDDDDDD),
             secondary = Color(0xFF03DAC5),
-//            tertiary = Color(0xFF3700B3)
-            surface = Color(0xFF222222),
+            // tertiary = Color(0xFF3700B3) // material3
+            surface = Color(0xFF000000),
             onSurface = Color(0xFFBBBBBB),
             background = Color(0xFF333344),
             onBackground = Color(0xFFDDDDDD),
+            onError = Color(0xFF222222),
+            error = Color(0xFFFF0000)
         )
     } else {
-//        lightColorScheme( // material3
+        // lightColorScheme( // material3
         lightColors(
-            primary = Color(0xFF111162),
-            onPrimary = Color(0xFFBBBBBB),
+            primary = Color(0xFF0089FB),
+            onPrimary = Color(0xFFFFFFFF),
             secondary = Color(0xFF03DAC5),
-//            tertiary = Color(0xFF3700B3)
-//            onSurface = Color(0xFF111111),
+            // tertiary = Color(0xFF3700B3)
             surface = Color(0xFFCCCCCC),
             onSurface = Color(0xFF000000),
             background = Color(0xFF444444),
             onBackground = Color(0xFFDDDDDD),
+            onError = Color(0xFF222222),
+            error = Color(0xFFFF0000)
         )
     }
     val typography = Typography(
-//        bodyMedium = TextStyle( // material3
-        body2 = TextStyle(
+            // bodyMedium = TextStyle( // material3
+            body2 = TextStyle(
             fontFamily = FontFamily.Default,
             fontWeight = FontWeight.Normal,
             fontSize = 16.sp
@@ -66,8 +72,8 @@ fun AppTheme(
     )
 
     MaterialTheme(
-//        colorScheme = colors, // material3
-        colors = colors,
+            // colorScheme = colors, // material3
+            colors = colors,
         typography = typography,
         shapes = shapes,
         content = content

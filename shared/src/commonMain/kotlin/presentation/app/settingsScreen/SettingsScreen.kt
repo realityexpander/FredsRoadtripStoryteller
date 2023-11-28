@@ -151,8 +151,9 @@ fun SettingsScreen(
             )
 
             SettingsSlider(
-                title = "Seen Radius (miles)",
+                title = "Seen Radius",
                 currentValue = seenRadiusMiles,
+                unitsPostfix = " mi",
                 onUpdateValue = {
                     settings?.seenRadiusMiles = it
                     onSeenRadiusChange(it)
@@ -188,7 +189,10 @@ fun SettingsScreen(
             }
 
             Spacer(modifier = Modifier.padding(8.dp))
-            Divider(modifier = Modifier.fillMaxWidth())
+            Divider(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colors.onSurface.copy(alpha = 0.25f)
+            )
             Spacer(modifier = Modifier.padding(8.dp))
 
             // Reset Marker Info Cache
@@ -210,6 +214,7 @@ fun SettingsScreen(
                 "Cache size: ${markersRepo?.markers()?.size} markers",
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally),
+                color = MaterialTheme.colors.onSurface
             )
         }
 

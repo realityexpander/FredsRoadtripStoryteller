@@ -54,6 +54,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import presentation.maps.MarkerIdStr
 import presentation.maps.RecentlySeenMarker
+import presentation.uiComponents.darkenBy
 import presentation.uiComponents.lightenBy
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -135,7 +136,7 @@ fun RecentlySeenMarkers(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
-                                color = MaterialTheme.colors.primary.lightenBy(.2f)
+                                color = MaterialTheme.colors.primary.darkenBy(.2f)
                                     .copy(alpha = 0.75f),
                                 shape = RoundedCornerShape(8.dp)
                             )
@@ -171,7 +172,7 @@ fun RecentlySeenMarkers(
                         modifier = Modifier
                             .weight(.5f)
                             .background(
-                                color = MaterialTheme.colors.primary.lightenBy(.2f)
+                                color = MaterialTheme.colors.primary.darkenBy(.2f)
                                     .copy(alpha = 0.75f),
                                 shape = RoundedCornerShape(8.dp)
                             ),
@@ -246,13 +247,14 @@ fun RecentlySeenMarkers(
                                     Icon(
                                         imageVector = Icons.Default.Pause,
                                         contentDescription = "Pause Speaking All Markers",
+                                        tint = MaterialTheme.colors.onSurface
                                     )
                                     Text(
                                         "ALL",
                                         fontSize = MaterialTheme.typography.body2.fontSize.times(
                                             .75f
                                         ),
-                                        color = MaterialTheme.colors.onBackground.copy(alpha =.75f)
+                                        color = MaterialTheme.colors.onSurface.copy(alpha =.75f)
                                     )
                                 }
                             }
@@ -272,14 +274,14 @@ fun RecentlySeenMarkers(
                                     Icon(
                                         imageVector = Icons.Filled.PlayArrow,
                                         contentDescription = "Start Speaking All Markers",
-                                        tint = MaterialTheme.colors.onBackground
+                                        tint = MaterialTheme.colors.onSurface
                                     )
                                     Text(
                                         "ALL",
                                         fontSize = MaterialTheme.typography.body2.fontSize.times(
                                             .75f
                                         ),
-                                        color = MaterialTheme.colors.onBackground.copy(alpha =.75f)
+                                        color = MaterialTheme.colors.onSurface.copy(alpha =.75f)
                                     )
                                 }
                             }

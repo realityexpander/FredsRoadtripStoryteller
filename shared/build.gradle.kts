@@ -109,7 +109,7 @@ kotlin {
                 implementation(libs.ktor.client.cio)
 
                 // Firebase BoM
-                api(platform(libs.google.firebase.bom.get())) // use `.get` bc its just a simple string with no version id
+                api(project.dependencies.platform(libs.google.firebase.bom.get())) // use `.get` bc its just a simple string with no version id
                 // Firebase SDK for Google Analytics
                 api(libs.google.firebase.analytics.ktx.get())
                 api(libs.google.firebase.crashlytics.get())
@@ -126,7 +126,7 @@ kotlin {
     }
 }
 
-// For the Final Application
+// For the Final Android Application
 android {
     compileSdk = (findProperty("android.compileSdk") as String).toInt()
     namespace = "com.realityexpander.common"

@@ -29,7 +29,7 @@ fun speakRecentlySeenMarker(
     onUpdateLoadingState: (LoadingState<String>) -> Unit = { },
     onSetUnspokenText: (String) -> Unit = { },
     onError: (String) -> Unit = { },
-): RecentlySeenMarker? {
+): RecentlySeenMarker {
     if (isTextToSpeechSpeaking()) {
         return appSettings.lastSpokenRecentlySeenMarker
     }

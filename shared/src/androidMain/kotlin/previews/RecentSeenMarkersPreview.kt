@@ -15,7 +15,8 @@ import presentation.maps.RecentlySeenMarker
 @Preview(
     name = "Recently Seen Markers (night)",
     group = "top element",
-    uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL
+    uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL,
+    device = "spec:width=1080px,height=1340px,dpi=440"
 )
 @Composable
 fun RecentlySeenMarkersPreview() {
@@ -64,7 +65,7 @@ fun RecentlySeenMarkersPreview() {
 }
 @Preview(
     name = "Recently Seen Markers",
-    group = "top element"
+    group = "top element", device = "spec:width=1080px,height=1340px,dpi=440"
 )
 @Composable
 fun RecentlySeenMarkersLightPreview() {
