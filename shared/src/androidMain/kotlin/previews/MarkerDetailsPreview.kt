@@ -90,7 +90,7 @@ fun MarkerDetailsPreviewError() {
 }
 
 @Preview(
-    name = "Marker Details (error)",
+    name = "Marker Details (loading)",
     group = "Marker Details",
     uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL,
     showSystemUi = false,
@@ -98,6 +98,20 @@ fun MarkerDetailsPreviewError() {
 )
 @Composable
 fun MarkerDetailsPreviewLoading() {
+    MarkerDetailsPreview(
+        loadingState = LoadingState.Loading
+    )
+}
+
+@Preview(
+    name = "Marker Details (loading landscape)",
+    group = "Marker Details - Landscape",
+    uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL,
+    showSystemUi = false,
+    showBackground = true, device = "spec:parent=pixel_5,orientation=landscape",
+)
+@Composable
+fun MarkerDetailsPreviewLoadingLandscape() {
     MarkerDetailsPreview(
         loadingState = LoadingState.Loading
     )
