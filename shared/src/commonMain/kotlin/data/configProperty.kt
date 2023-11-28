@@ -21,26 +21,30 @@ fun configPropertyNullable(
     defaultValue: String? = null,
     propertyFile: String = "appConfig.properties",
 ): String? {
+    var finalValue = defaultValue
+
     runBlocking {
         try {
             resource(propertyFile)
-                .readBytes().toString()
+                .readBytes()
+                .decodeToString()
                 .split("\n")
                 .forEach { line ->
+                    if(line.isBlank()) return@forEach
+
                     val key = line.split("=")[0]
                     val value = line.split("=")[1]
                     if (key == propertyKey) {
-                        return@runBlocking value
+                        finalValue = value
+                        return@runBlocking
                     }
                 }
         } catch (e: Exception) {
             e.printStackTrace()
         }
-
-        return@runBlocking defaultValue
     }
 
-    return defaultValue
+    return finalValue
 }
 
 
@@ -49,5 +53,9 @@ fun configProperty(
     defaultValue: String,
     propertyFile: String = "appConfig.properties",
 ): String {
-    return configPropertyNullable(propertyKey, defaultValue, propertyFile) ?: defaultValue
+    return configPropertyNullable(
+            propertyKey,
+            defaultValue,
+            propertyFile
+        ) ?: defaultValue
 }

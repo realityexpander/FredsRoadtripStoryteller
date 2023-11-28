@@ -147,7 +147,7 @@ fun AppDrawerContent(
             .padding(start = 8.dp, end = 8.dp),
     ) {
         Text(
-            "How to Use this App",
+            "How to use this App",
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 8.dp, end = 8.dp),
@@ -173,7 +173,7 @@ fun AppDrawerContent(
             .padding(start = 8.dp, end = 8.dp),
     ) {
         Text(
-            "About this app",
+            "About this App",
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 8.dp, end = 8.dp),

@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import data.MarkersRepo
 import data.appSettings
 import data.configProperty
+import data.configPropertyNullable
 import data.loadMarkerDetails.loadMarkerDetails
 import data.loadMarkers.distanceBetweenInMiles
 import data.loadMarkers.loadMarkers
@@ -97,7 +98,7 @@ val json = Json {
     ignoreUnknownKeys = true
 }
 
-var appNameStr = "App Name Not Set"
+var appNameStr = configProperty("app.name", "app.name string not found")
 const val kForceClearAllSettingsAtLaunch = false
 const val kMaxReloadRadiusMiles = 2.0
 const val kMaxMarkerDetailsAgeSeconds = 60 * 60 * 24 * 30  // 30 days
@@ -516,9 +517,6 @@ fun App(
 
         // Force update UI when app first opens
         LaunchedEffect(Unit) {
-            // Set App name
-            appNameStr = configProperty("app.name") ?: "app.name not found"
-
             // Update location
             userLocation = jiggleLocationToForceUiUpdate(userLocation)
         }

@@ -24,7 +24,7 @@ import presentation.uiComponents.AppTheme
 )
 @Composable
 fun AppDrawerPreview() {
-    appNameStr = configProperty("app.name", "App Name")
+    appNameStr = "Fred's History Hunt"
 
     AppTheme {
         Surface {
