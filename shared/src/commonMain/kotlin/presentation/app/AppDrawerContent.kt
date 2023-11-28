@@ -31,6 +31,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MyLocation
@@ -191,7 +192,7 @@ fun AppDrawerContent(
             .fillMaxWidth()
             .padding(16.dp)
             .clip(CircleShape)
-            .background(MaterialTheme.colors.onBackground.copy(alpha = 0.1f))
+            .background(MaterialTheme.colors.primary.copy(alpha = 0.5f))
     ) {
         TextField(
             modifier = Modifier
@@ -207,15 +208,20 @@ fun AppDrawerContent(
                     }
                 }
             ,
-            placeholder = { Text(text = "Search Marker Title...") },
+            placeholder = {
+                Text(
+                    text = "Search Marker Title...",
+                    fontWeight = FontWeight.Bold,
+                )
+            },
             value = searchQuery,
             onValueChange = { },
             readOnly = true,
             singleLine = true,
             maxLines = 1,
             colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = MaterialTheme.colors.background,
-                placeholderColor = MaterialTheme.colors.onBackground.copy(alpha = 0.5f),
+                backgroundColor = MaterialTheme.colors.primary,
+                placeholderColor = MaterialTheme.colors.onBackground,
                 leadingIconColor = MaterialTheme.colors.onBackground,
                 textColor = MaterialTheme.colors.onBackground,
                 focusedIndicatorColor = Color.Transparent,
@@ -233,7 +239,7 @@ fun AppDrawerContent(
                         }
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Close,
+                            imageVector = Icons.Default.Cancel,
                             contentDescription = "Clear search",
                             modifier = Modifier
                                 .height(18.dp)
@@ -500,7 +506,12 @@ fun SearchMarkerDialog(
                     TextField(
                         modifier = Modifier
                             .fillMaxWidth(),
-                        placeholder = { Text(text = "Search Marker Title...") },
+                        placeholder = {
+                            Text(
+                                text = "Search Marker Title...",
+                                fontWeight = FontWeight.Bold,
+                            )
+                        },
                         value = searchQuery,
                         onValueChange = {
                             searchQuery = it
@@ -510,7 +521,7 @@ fun SearchMarkerDialog(
                         maxLines = 1,
                         colors = TextFieldDefaults.textFieldColors(
                             backgroundColor = MaterialTheme.colors.background,
-                            placeholderColor = MaterialTheme.colors.onBackground.copy(alpha = 0.5f),
+                            placeholderColor = MaterialTheme.colors.onBackground,
                             leadingIconColor = MaterialTheme.colors.onBackground,
                             textColor = MaterialTheme.colors.onBackground,
                             focusedIndicatorColor = Color.Transparent,
@@ -533,7 +544,7 @@ fun SearchMarkerDialog(
                                     }
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.Close,
+                                        imageVector = Icons.Default.Cancel,
                                         contentDescription = "Clear search",
                                         modifier = Modifier
                                             .height(18.dp)
