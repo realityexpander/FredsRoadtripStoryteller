@@ -81,7 +81,7 @@ import stopTextToSpeech
 
 const val kMaxWeightOfBottomDrawer = 0.9f
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalKamelApi::class)
+@OptIn(ExperimentalKamelApi::class)
 @Composable
 fun MarkerDetailsScreen(
     baseMarker: Marker,
