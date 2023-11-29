@@ -1,4 +1,4 @@
-package presentation.onboarding
+package presentation.app.onboarding
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -88,7 +88,7 @@ fun AboutBoxDialog(
                         // Link to app website
                         Button(
                             onClick = {
-                                openWebUrlAction("https://github.com/realityexpander/FredsHistoryMarkers")
+                                openWebUrlAction("https://realityexpander.github.io/FredsTalkingMarkersWebsite")
                                 onDismiss()
                             },
                         ) {

@@ -87,7 +87,7 @@ import presentation.maps.MarkerIdStr
 import presentation.maps.RecentlySeenMarker
 import presentation.maps.RecentlySeenMarkersList
 import presentation.maps.toLocation
-import presentation.onboarding.AboutBoxDialog
+import presentation.app.onboarding.AboutBoxDialog
 import presentation.speech.speakRecentlySeenMarker
 import presentation.uiComponents.AppTheme
 import kotlin.random.Random
