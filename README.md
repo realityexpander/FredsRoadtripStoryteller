@@ -63,6 +63,9 @@ icons: https://www.google.com/search?q=flat+icons+navigation&sca_esv=585465592&t
 
 Play store badge generator: https://play.google.com/intl/en_us/badges/
 
+Privacy Policy: https://www.privacypolicygenerator.info/ 
+https://www.privacypolicygenerator.info/download.php?lang=en&token=dhslNflkEHizHHbsBssrE8zM1p5AXwnR
+
 ## Developer notes
 
 Firebase console: https://console.firebase.google.com/u/0/project/talkingmarkers/overview
