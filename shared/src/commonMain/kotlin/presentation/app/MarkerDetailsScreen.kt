@@ -154,9 +154,7 @@ fun MarkerDetailsScreen(
     }
 
     // Show Loading
-    if(
-        markerLoadingState is LoadingState.Loading
-    ) {
+    if(markerLoadingState is LoadingState.Loading) {
 
         Column(
             modifier = Modifier
@@ -183,20 +181,19 @@ fun MarkerDetailsScreen(
             )
             Spacer(modifier = Modifier.padding(16.dp))
 
-
             Text(
                 "Loading Details...",
                 modifier = Modifier.fillMaxWidth(),
                 fontSize = MaterialTheme.typography.h6.fontSize,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
-                color = MaterialTheme.colors.onSurface,
+                color = MaterialTheme.colors.onBackground,
             )
             Spacer(modifier = Modifier.padding(32.dp))
 
             CircularProgressIndicator(
                 modifier = Modifier.size(64.dp),
-                color = MaterialTheme.colors.onSurface,
+                color = MaterialTheme.colors.onBackground,
                 strokeWidth = 4.dp,
             )
         }

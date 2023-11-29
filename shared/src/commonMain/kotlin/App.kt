@@ -579,9 +579,10 @@ fun App(
                                         markersRepo
                                     )
                                     activeSpeakingMarker = null
-                                    delay(1000)
+                                    delay(1000) // wait for reset
                                     shouldCalcClusterItems = true
                                     shouldAllowCacheReset = true
+                                    delay(1500) // wait for loading to finish
                                     userLocation = jiggleLocationToForceUiUpdate(userLocation)
                                 }
                             },
