@@ -304,7 +304,7 @@ fun RecentlySeenMarkers(
 
                     Text(
                         text = "No recently seen markers, drive around to see some!",
-                        color = MaterialTheme.colors.onBackground,
+                        color = MaterialTheme.colors.onSurface,
                         fontStyle = FontStyle.Normal,
                         fontSize = MaterialTheme.typography.h6.fontSize,
                         fontWeight = FontWeight.Medium,
