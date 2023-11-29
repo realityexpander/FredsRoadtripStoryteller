@@ -1,7 +1,7 @@
 # Fred's Talking Historical Markers
 
-10/8/23
-Compose KMP experimental app using Google Maps for iOS and Android
+Compose KMP Proof-of-concept experimental app using Google Maps for iOS and Android
+Pure Kotlin App for Android and iOS
 
 <!-- img width="1700" alt="image" src="https://github.com/realityexpander/GoolgeMapsUsingCocoaPodsExample/assets/5157474/7b0395d3-04e6-48df-9219-990cb10d81e1" -->
 
