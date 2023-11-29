@@ -453,31 +453,3 @@ fun RecentlySeenMarkers(
         }
     }
 }
-
-// LEAVE FOR POSSIBLE FUTURE USE
-//@Composable
-//private fun NavigationButton(
-//    modifier: Modifier = Modifier,
-//    markersRepo: MarkersRepo,
-//    recentMarker: RecentlySeenMarker
-//) {
-//    IconButton(
-//        modifier = modifier,
-//        onClick = {
-//            // Lookup the marker in the repo and open navigation to it
-//            markersRepo.marker(recentMarker.id)?.let { marker ->
-//                openNavigationAction(
-//                    lat = marker.position.latitude,
-//                    lng = marker.position.longitude,
-//                    markerTitle = marker.title
-//                )
-//            }
-//        }
-//    ) {
-//        Icon(
-//            imageVector = Icons.Default.Navigation,
-//            contentDescription = "Navigate to Marker",
-//            tint = MaterialTheme.colors.onBackground
-//        )
-//    }
-//}
