@@ -14,3 +14,5 @@ AppSecrets.plist
 /.idea/
 /androidApp/build/
 /androidApp/google-services.json
+/testers.txt
+testers.txt
