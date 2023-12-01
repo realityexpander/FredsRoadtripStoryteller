@@ -18,3 +18,4 @@ AppSecrets.plist
 testers-release.txt
 
 /build/reports/configuration-cache/*
+androidApp-*.*
