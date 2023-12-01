@@ -1197,7 +1197,7 @@ private fun calcRestrictedClusterRadiusMetersForCameraZoomLevel(
     cameraZoomLevel: Float,
     isRestrictedClusterRadiusActive: Boolean = false,
     restrictedClusterRadiusPhase: Int = 0,
-    minimumRadiusMiles: Double = 0.0 // minimum radius
+    minimumRadiusMiles: Double = .1 // minimum radius
 ) =
     max(
         (2.0).pow(13 - cameraZoomLevel.toDouble()) *
@@ -1209,7 +1209,7 @@ private fun calcRestrictedClusterRadiusMetersForCameraZoomLevel(
                     )
             else
                 kClusterItemIncludeRadiusMeters,
-        1000.0 //minimumRadiusMiles.milesToMeters() // never smaller than the `seen radius`
+        minimumRadiusMiles.milesToMeters() // never smaller than the `minimum radius`
     )
 
 @NoLiveLiterals
