@@ -117,6 +117,9 @@ https://github.com/JetBrains/compose-multiplatform/tree/master/examples/cocoapod
 - Build Config
 - https://github.com/gmazzo/gradle-buildconfig-plugin
 
+- Lottie for Compose (Android only?)
+- https://github.com/airbnb/lottie/blob/master/android-compose.md
+
 ### Android
 - Adding markers
  - https://www.geeksforgeeks.org/how-to-add-multiple-markers-to-google-maps-in-android-using-jetpack-compose/
