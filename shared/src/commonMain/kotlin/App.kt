@@ -73,7 +73,6 @@ import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
-import org.jetbrains.compose.resources.ExperimentalResourceApi
 import presentation.app.AppDrawerContent
 import presentation.app.MarkerDetailsScreen
 import presentation.app.RecentlySeenMarkers
@@ -125,14 +124,12 @@ var unspokenText: String? = null
 var isTemporarilyPreventPerformanceTuningActive = false // prevents premature optimization after returning from background
 val synchronizedObject = SynchronizedObject()
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalResourceApi::class)
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun App(
     markersRepo: MarkersRepo = MarkersRepo(appSettings),
     gpsLocationService: GPSLocationService = GPSLocationService()
 ) {
-    val x = RootConfig3.APP_NAME
-
     AppTheme {
         val coroutineScope = rememberCoroutineScope()
         val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
