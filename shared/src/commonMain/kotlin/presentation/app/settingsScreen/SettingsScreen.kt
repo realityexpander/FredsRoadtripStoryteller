@@ -47,7 +47,7 @@ import triggerDeveloperFeedback
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun SettingsScreen(
-    settings: AppSettings? = null,
+    appSettings: AppSettings? = null,
     markersRepo: MarkersRepo? = null,
     bottomSheetScaffoldState: BottomSheetScaffoldState,
     seenRadiusMiles: Double,
@@ -62,16 +62,16 @@ fun SettingsScreen(
     val coroutineScope = rememberCoroutineScope()
 
     var isStartBackgroundTrackingWhenAppLaunchesEnabled by remember {
-        mutableStateOf(settings?.isStartBackgroundTrackingWhenAppLaunchesEnabled ?: false)
+        mutableStateOf(appSettings?.isStartBackgroundTrackingWhenAppLaunchesEnabled ?: false)
     }
     var isShowMarkerDataLastSearchedLocationEnabled by remember {
-        mutableStateOf(settings?.isMarkersLastUpdatedLocationVisible ?: false)
+        mutableStateOf(appSettings?.isMarkersLastUpdatedLocationVisible ?: false)
     }
     var isSpeakWhenUnseenMarkerFoundEnabled by remember(appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState) {
-        mutableStateOf(settings?.isSpeakWhenUnseenMarkerFoundEnabled ?: false)
+        mutableStateOf(appSettings?.isSpeakWhenUnseenMarkerFoundEnabled ?: false)
     }
     var isSpeakDetailsWhenUnseenMarkerFoundEnabled by remember {
-        mutableStateOf(settings?.isSpeakDetailsWhenUnseenMarkerFoundEnabled ?: false)
+        mutableStateOf(appSettings?.isSpeakDetailsWhenUnseenMarkerFoundEnabled ?: false)
     }
 
     // Poll for changes from the App Foreground Notification cancelling the Speak Marker feature
@@ -126,7 +126,7 @@ fun SettingsScreen(
                 title = "Speak marker when new marker is found",
                 isChecked = isSpeakWhenUnseenMarkerFoundEnabled,
                 onUpdateChecked = {
-                    settings?.isSpeakWhenUnseenMarkerFoundEnabled = it
+                    appSettings?.isSpeakWhenUnseenMarkerFoundEnabled = it
                     isSpeakWhenUnseenMarkerFoundEnabled = it
                 }
             )
@@ -136,7 +136,7 @@ fun SettingsScreen(
                 isChecked = isSpeakDetailsWhenUnseenMarkerFoundEnabled,
                 enabled = isSpeakWhenUnseenMarkerFoundEnabled, // linked to above setting
                 onUpdateChecked = {
-                    settings?.isSpeakDetailsWhenUnseenMarkerFoundEnabled = it
+                    appSettings?.isSpeakDetailsWhenUnseenMarkerFoundEnabled = it
                     isSpeakDetailsWhenUnseenMarkerFoundEnabled = it
                 }
             )
@@ -145,7 +145,7 @@ fun SettingsScreen(
                 title = "Start background tracking when app launches",
                 isChecked = isStartBackgroundTrackingWhenAppLaunchesEnabled,
                 onUpdateChecked = {
-                    settings?.isStartBackgroundTrackingWhenAppLaunchesEnabled = it
+                    appSettings?.isStartBackgroundTrackingWhenAppLaunchesEnabled = it
                     isStartBackgroundTrackingWhenAppLaunchesEnabled = it
                 }
             )
@@ -155,7 +155,7 @@ fun SettingsScreen(
                 currentValue = seenRadiusMiles,
                 unitsPostfix = " mi",
                 onUpdateValue = {
-                    settings?.seenRadiusMiles = it
+                    appSettings?.seenRadiusMiles = it
                     onSeenRadiusChange(it)
                 }
             )
@@ -164,7 +164,7 @@ fun SettingsScreen(
                 title = "Show marker data last searched location",
                 isChecked = isShowMarkerDataLastSearchedLocationEnabled,
                 onUpdateChecked = {
-                    settings?.isMarkersLastUpdatedLocationVisible = it
+                    appSettings?.isMarkersLastUpdatedLocationVisible = it
                     isShowMarkerDataLastSearchedLocationEnabled = it
                     onIsCachedMarkersLastUpdatedLocationVisibleChange(it)
                 }

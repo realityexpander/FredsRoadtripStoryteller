@@ -82,7 +82,7 @@ fun SettingsPreview() {
     AppTheme {
         Surface {
             SettingsScreen(
-                settings = settings,
+                appSettings = settings,
                 bottomSheetScaffoldState = BottomSheetScaffoldState(
                     bottomSheetState = BottomSheetState(
                         initialValue = BottomSheetValue.Collapsed,
