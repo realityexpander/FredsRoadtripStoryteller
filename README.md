@@ -114,6 +114,9 @@ https://github.com/JetBrains/compose-multiplatform/tree/master/examples/cocoapod
 - https://www.geeksforgeeks.org/detect-screen-orientation-in-android-using-jetpack-compose/
 - https://codingwithrashid.com/how-to-get-screen-orientation-in-android-jetpack-compose/
 
+- Build Config
+- https://github.com/gmazzo/gradle-buildconfig-plugin
+
 ### Android
 - Adding markers
  - https://www.geeksforgeeks.org/how-to-add-multiple-markers-to-google-maps-in-android-using-jetpack-compose/
