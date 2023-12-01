@@ -50,6 +50,7 @@ pluginManagement {
         // For AtomicFu
         id("kotlinx-atomicfu").version(atomicFuVersion)
 
+        // For BuildConfig in Kotlin Multiplatform
         id("com.github.gmazzo.buildconfig").version(gmazzoBuildConfigVersion)
     }
 }
