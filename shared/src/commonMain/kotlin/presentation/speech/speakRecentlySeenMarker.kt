@@ -1,18 +1,18 @@
 package presentation.speech
 
-import data.util.LoadingState
 import data.MarkersRepo
 import data.appSettings
 import data.loadMarkerDetails.calculateMarkerDetailsPageUrl
 import data.loadMarkerDetails.parseMarkerDetailsPageHtml
 import data.loadMarkerDetails.sampleData.almadenVineyardsM2580MarkerDetailsHtml
+import data.network.httpClient
+import data.util.LoadingState
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import isTextToSpeechSpeaking
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import data.network.httpClient
-import kotlinx.coroutines.CancellationException
 import presentation.maps.RecentlySeenMarker
 import co.touchlab.kermit.Logger as Log
 
@@ -35,7 +35,8 @@ fun speakRecentlySeenMarker(
     }
 
     val marker = markersRepo.marker(speakMarker.id)
-        ?: throw Exception("Marker not found for id: ${speakMarker.id}")
+//        ?: throw Exception("Marker not found for id: ${speakMarker.id}")
+        ?: return appSettings.lastSpokenRecentlySeenMarker // if marker is null, default to the last spoken marker.
     appSettings.lastSpokenRecentlySeenMarker = speakMarker
 
     // Update the 'isSpoken' flag
