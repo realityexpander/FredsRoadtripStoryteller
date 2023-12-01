@@ -53,9 +53,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import data.MarkersRepo
 import data.appSettings
-import data.configPropertyString
 import data.configPropertyFloat
-import data.configPropertyInt
+import data.configPropertyString
 import data.loadMarkerDetails.loadMarkerDetails
 import data.loadMarkers.distanceBetweenInMiles
 import data.loadMarkers.loadMarkers
@@ -78,6 +77,7 @@ import org.jetbrains.compose.resources.ExperimentalResourceApi
 import presentation.app.AppDrawerContent
 import presentation.app.MarkerDetailsScreen
 import presentation.app.RecentlySeenMarkers
+import presentation.app.onboarding.AboutBoxDialog
 import presentation.app.settingsScreen.SettingsScreen
 import presentation.app.settingsScreen.resetMarkerCacheSettings
 import presentation.maps.Location
@@ -87,7 +87,6 @@ import presentation.maps.MarkerIdStr
 import presentation.maps.RecentlySeenMarker
 import presentation.maps.RecentlySeenMarkersList
 import presentation.maps.toLocation
-import presentation.app.onboarding.AboutBoxDialog
 import presentation.speech.speakRecentlySeenMarker
 import presentation.uiComponents.AppTheme
 import kotlin.random.Random
@@ -132,12 +131,13 @@ fun App(
     markersRepo: MarkersRepo = MarkersRepo(appSettings),
     gpsLocationService: GPSLocationService = GPSLocationService()
 ) {
+    val x = RootConfig3.APP_NAME
+
     AppTheme {
         val coroutineScope = rememberCoroutineScope()
         val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
         val scaffoldState = rememberScaffoldState()
         var bottomSheetActiveScreen by remember {
-//            mutableStateOf<BottomSheetScreen>(BottomSheetScreen.SettingsScreen)
             mutableStateOf<BottomSheetScreen>(BottomSheetScreen.None)
         }
         var isOnboardingDialogVisible by remember { mutableStateOf(false)}
@@ -558,7 +558,7 @@ fun App(
                     is BottomSheetScreen.SettingsScreen -> {
                         openBottomSheet(bottomSheetScaffoldState, coroutineScope)
                         SettingsScreen(
-                            settings = appSettings,
+                            appSettings = appSettings,
                             markersRepo,
                             bottomSheetScaffoldState,
                             seenRadiusMiles,
