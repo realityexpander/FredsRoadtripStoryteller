@@ -83,4 +83,5 @@ class App: Application() {
                 "build $buildNumberStr, " +
                 "first install at ${Instant.ofEpochMilli(installAtEpochMilli)}")
     }
+
 }
