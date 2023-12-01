@@ -463,13 +463,10 @@ fun App(
                             if(text.length >= 4000) {
                                 val lastWordBoundaryIndex =
                                     text.substring(0, 4000).lastIndexOf(" ")
-                                println("lastWordBoundaryIndex=$lastWordBoundaryIndex")
                                 val nextTextToSpeak =
                                     text.substring(0, lastWordBoundaryIndex)
-                                println("nextTextToSpeak=$nextTextToSpeak")
                                 val restOfUnspokenText =
                                     text.substring(lastWordBoundaryIndex)
-                                println("restOfUnspokenText=$restOfUnspokenText")
                                 unspokenText = restOfUnspokenText
 
                                 speakTextToSpeech(nextTextToSpeak)
