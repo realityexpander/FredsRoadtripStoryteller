@@ -21,7 +21,6 @@ import appContext
 import com.google.android.gms.maps.MapsInitializer
 import com.google.firebase.FirebaseApp
 import com.google.firebase.analytics.FirebaseAnalytics
-import com.google.firebase.analytics.ktx.logEvent
 import com.realityexpander.gpsForegroundNotificationService.GPSForegroundNotificationService
 import data.appSettings
 import intentFlow
@@ -85,9 +84,12 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                         //                  adb shell setprop log.tag.FA-SVC VERBOSE
                         //                  adb logcat -v time -s FA FA-SVC
                         // disable logging: adb shell setprop debug.firebase.analytics.app .none.
-                        firebaseAnalytics.logEvent("location_granted") {
-                            param("granted", "false")
-                        }
+                        firebaseAnalytics.logEvent(
+                            "location_granted",
+                            Bundle().apply {
+                                putString("granted", "false")
+                            }
+                        )
 
                         finish()
                     }
@@ -165,6 +167,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 MainView()
             }
         }
+
     }
 
     override fun onInit(status: Int) {

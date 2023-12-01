@@ -5,6 +5,8 @@ plugins {
 
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.plugin.serialization")
+
+    id("com.github.gmazzo.buildconfig")
 }
 
 kotlin {
@@ -113,7 +115,7 @@ kotlin {
                 // Firebase SDK for Google Analytics
                 api(libs.google.firebase.analytics.ktx.get())
                 api(libs.google.firebase.crashlytics.get())
-                // Firebase feedback // todo move to beta variant for final release
+                // Firebase feedback // todo bump version to final for release
                 implementation(libs.google.firebase.appdistribution.api.ktx)
                 implementation(libs.google.firebase.appdistribution)
             }
@@ -126,7 +128,7 @@ kotlin {
     }
 }
 
-// For the Final Android Application
+// For the Shell Android Application (no core kotlin code, just android-specific)
 android {
     compileSdk = (findProperty("android.compileSdk") as String).toInt()
     namespace = "com.realityexpander.common"
@@ -158,6 +160,7 @@ android {
 buildscript {
     repositories {
         mavenCentral()
+        google()
     }
 
     dependencies {
@@ -167,4 +170,4 @@ buildscript {
     }
 }
 
-apply(plugin = "kotlinx-atomicfu")
+apply(plugin = "kotlinx-atomicfu") // Needs to be applied after the buildscript block

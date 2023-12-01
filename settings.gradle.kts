@@ -8,7 +8,7 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
         mavenCentral()
-        // maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+        // maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")  // for Compose dev builds
         google()
     }
 
@@ -20,7 +20,9 @@ pluginManagement {
         val googleMapsSecretsPluginVersion = extra["google.maps.secrets-gradle-plugin.version"] as String
         val googleServicesVersion = extra["google.services.version"] as String
         val googleFirebaseCrashlyticsVersion = extra["google.firebase.crashlytics.version"] as String
+        val googleFirebaseAppDistributionVersion = extra["google.firebase.appdistribution.version"] as String
         val atomicFuVersion = extra["kotlinx.atomicfu.version"] as String
+        val gmazzoBuildConfigVersion = extra["gmazzo.buildconfig.version"] as String
 
         kotlin("jvm").version(kotlinVersion)
         kotlin("multiplatform").version(kotlinVersion)
@@ -42,10 +44,14 @@ pluginManagement {
         // Crashlytics
         id("com.google.firebase.crashlytics").version(googleFirebaseCrashlyticsVersion)
 
+        // Firebase App Distribution Gradle plugin
+        id("com.google.firebase.appdistribution").version(googleFirebaseAppDistributionVersion)
+
         // For AtomicFu
         id("kotlinx-atomicfu").version(atomicFuVersion)
-    }
 
+        id("com.github.gmazzo.buildconfig").version(gmazzoBuildConfigVersion)
+    }
 }
 
 plugins {
@@ -56,6 +62,6 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-//        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+        // maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")  // for Compose dev builds
     }
 }

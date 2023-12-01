@@ -7,4 +7,6 @@ plugins {
 
     id("org.jetbrains.compose").apply(false)
     id("org.jetbrains.kotlin.plugin.serialization").apply(false)
+
+    id("com.google.firebase.appdistribution").apply(false)
 }
