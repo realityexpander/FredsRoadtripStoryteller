@@ -130,6 +130,7 @@ android {
     }
 
     // must set `buildConfig=true` in `buildFeatures` block above (leave for reference)
+    // https://developer.android.com/build/build-variants?utm_source=studio
     //flavorDimensions.add("version")
     //productFlavors {
     //    // PRIMARY ./gradlew assembleTrialDebug appDistributionUploadTrialDebug
