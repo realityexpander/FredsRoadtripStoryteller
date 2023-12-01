@@ -1,8 +1,6 @@
 import androidx.compose.runtime.AtomicReference
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
-import presentation.maps.Heading
-import maps.Location
 import platform.CoreLocation.CLDeviceOrientationPortrait
 import platform.CoreLocation.CLHeading
 import platform.CoreLocation.CLLocation
@@ -13,10 +11,13 @@ import platform.CoreLocation.kCLLocationAccuracyBest
 import platform.CoreLocation.kCLLocationAccuracyBestForNavigation
 import platform.Foundation.NSError
 import platform.darwin.NSObject
+import presentation.maps.Heading
+import presentation.maps.Location
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 import co.touchlab.kermit.Logger as Log
+
 // Implement the LocationService in iOS
 actual class GPSLocationService  {
 
