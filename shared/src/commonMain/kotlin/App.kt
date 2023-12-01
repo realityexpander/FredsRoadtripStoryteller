@@ -230,16 +230,6 @@ fun App(
         var shouldShowInfoMarker by remember {
             mutableStateOf<Marker?>(null)
         }
-        if (false) {
-            // LEAVE FOR REFERENCE
-            //val mapBounds by remember(mapMarkers) {
-            //    mutableStateOf(
-            //        mapMarkers.map {
-            //            it.position
-            //        }.toList()
-            //    )
-            //}
-        }
 
         // Markers used to render on the Map
         val finalMarkers = remember {
