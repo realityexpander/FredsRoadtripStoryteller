@@ -32,6 +32,7 @@ import cocoapods.GoogleMaps.GMSCameraUpdate
 import cocoapods.GoogleMaps.GMSCircle
 import cocoapods.GoogleMaps.GMSCoordinateBounds
 import cocoapods.GoogleMaps.GMSMapView
+import cocoapods.GoogleMaps.GMSMapViewDelegateProtocol
 import cocoapods.GoogleMaps.GMSMarker
 import cocoapods.GoogleMaps.GMSMarker.Companion.markerImageWithColor
 import cocoapods.GoogleMaps.GMSMutablePath
@@ -39,16 +40,17 @@ import cocoapods.GoogleMaps.GMSPolyline
 import cocoapods.GoogleMaps.animateWithCameraUpdate
 import cocoapods.GoogleMaps.kGMSTypeNormal
 import cocoapods.GoogleMaps.kGMSTypeSatellite
-import presentation.uiComponents.SwitchWithLabel
-import kotlinx.cinterop.ExperimentalForeignApi
 import data.loadMarkers.milesToMeters
+import kotlinx.cinterop.ExperimentalForeignApi
+import platform.CoreLocation.CLLocationCoordinate2DMake
+import platform.UIKit.UIColor
+import platform.darwin.NSObject
 import presentation.maps.CameraLocationBounds
 import presentation.maps.CameraPosition
 import presentation.maps.LatLong
-import presentation.maps.Marker
-import platform.CoreLocation.CLLocationCoordinate2DMake
-import platform.UIKit.UIColor
 import presentation.maps.Location
+import presentation.maps.Marker
+import presentation.uiComponents.SwitchWithLabel
 
 // iOS Google Maps implementation
 @OptIn(ExperimentalForeignApi::class)
@@ -150,30 +152,42 @@ actual fun GoogleMaps(
             interactive = true,
             factory = {
 ////                // Does not work yet... :(
-//                    googleMapView.delegate = object : NSObject(), GMSMapViewDelegateProtocol {
-////                        override fun mapView(
-////                            mapView: GMSMapView,
-////                            didTapAtCoordinate: CValue<CLLocationCoordinate2D>
-////                        ) {
-////                            showSomething = !showSomething
-////                        }
-////
-////                        override fun mapView(
-////                            mapView: GMSMapView,
-////                            didTapMarker: GMSMarker
-////                        ): Boolean {
-////                            val userData = didTapMarker.userData()
-////                            println("map marker click ${userData}")
-////                            return true
-////                        }
-//
+                    googleMapView.delegate = object : NSObject(), GMSMapViewDelegateProtocol {
+//                        override fun mapView(
+//                            mapView: GMSMapView,
+//                            didTapAtCoordinate: CValue<CLLocationCoordinate2D>
+//                        ) {
+//                            showSomething = !showSomething
+//                        }
+
+//                        override fun mapView(
+//                            mapView: GMSMapView,
+//                            didTapMarker: GMSMarker
+//                        ): Boolean {
+//                            val userData = didTapMarker.userData()
+//                            println("map marker click ${userData}")
+//                            return true
+//                        }
+
+//                        override fun mapView(
+//                            mapView: GMSMapView,
+//                            didTapInfoWindowOfMarker: GMSMarker
+//                        ) {
+//                            val userData = didTapInfoWindowOfMarker.userData()
+//                            println("map marker click ${userData}")
+//                        }
+                        
+
 //                        override fun mapView(
 //                            mapView: GMSMapView,
 //                            didLongPressAtCoordinate: CValue<CLLocationCoordinate2D>
 //                        ) {
+//                            val userData = didLongPressAtCoordinate
+//                            println("map marker click ${userData}")
 //                            super.mapView(mapView, didLongPressAtCoordinate)
 //                        }
-//                    }
+
+                    }
 
                 googleMapView
             },
