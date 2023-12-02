@@ -68,6 +68,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -128,8 +129,17 @@ var isTemporarilyPreventPerformanceTuningActive = false // prevents premature op
 val synchronizedObject = SynchronizedObject()
 
 @Suppress("ObjectPropertyName")
-var _errorFlow: MutableSharedFlow<String> = MutableSharedFlow()
-val errorFlow: SharedFlow<String> = _errorFlow  // read-only shared flow sent from Android side
+var _errorMessageFlow: MutableSharedFlow<String> = MutableSharedFlow()
+val errorMessageFlow: SharedFlow<String> = _errorMessageFlow  // read-only shared flow sent from Android side
+
+@Suppress("ObjectPropertyName")
+var _billingMessageFlow: MutableSharedFlow<String> = MutableSharedFlow()
+val billingMessageFlow: SharedFlow<String> = _billingMessageFlow  // read-only shared flow sent from Android side
+
+@Suppress("ObjectPropertyName")
+var _isProPurchasedFlow: MutableStateFlow<Boolean> = MutableStateFlow(false)
+val isProPurchasedFlow: SharedFlow<Boolean> = _isProPurchasedFlow  // read-only shared flow sent from Android side
+
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -152,6 +162,11 @@ fun App(
 
         // Error Message state & value
         var errorMessageStr by remember {
+            mutableStateOf<String?>(null)
+        }
+
+        // Billing Message state & value
+        var billingMessageStr by remember {
             mutableStateOf<String?>(null)
         }
 
@@ -535,7 +550,7 @@ fun App(
 
         // Error messages flow
         LaunchedEffect(Unit) {
-            errorFlow.collectLatest { errorMessage ->
+            errorMessageFlow.collectLatest { errorMessage ->
                 Log.w(errorMessage)
                 errorMessageStr = errorMessage
 
@@ -543,6 +558,48 @@ fun App(
                 errorMessageStr = null
             }
         }
+
+//        // Pro Purchased flow
+//        LaunchedEffect(Unit) {
+//            isProPurchasedFlow.collectLatest { isProPurchased ->
+//                billingMessageStr = if(isProPurchased) { // todo temporary
+//                    "Thank you for your purchase!"
+//                } else {
+//                    "Purchase did not complete"
+//                }
+//
+//                coroutineScope.launch {
+//                    delay(5000)
+//                    billingMessageStr = null
+//                }
+//            }
+//        }
+
+        // Billing messages flow
+//        billingMessageFlow.collectAsState(null).value.let { billingMessage ->
+//            billingMessage?.run {
+//                Log.d("billingMessage = $billingMessage")
+//                coroutineScope.launch {
+//                    scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+//                    scaffoldState.snackbarHostState
+//                        .showSnackbar(
+//                            billingMessage,
+//                            duration = SnackbarDuration.Long
+//                        )
+//                }
+//            }
+        LaunchedEffect(Unit) {
+            billingMessageFlow.collectLatest { billingMessage ->
+                billingMessageStr = billingMessage
+
+                coroutineScope.launch {
+                    delay(5000)
+                    billingMessageStr = null
+                }
+            }
+        }
+
+        val isProPurchased = isProPurchasedFlow.collectAsState(false).value
 
         // For render performance tuning.
         didFullFrameRender = false
@@ -751,6 +808,7 @@ fun App(
                                 shouldZoomCameraToLatLongZoom = LatLongZoom(marker.position, 14f)
                             }
                         },
+                        isProPurchased = isProPurchased,
                     )
                 }
             },
@@ -912,15 +970,32 @@ fun App(
 
                     // Show Error
                     AnimatedVisibility(errorMessageStr != null) {
-                        Text(
-                            modifier = Modifier.fillMaxWidth()
-                                .background(MaterialTheme.colors.error),
-                            text = "Error: ${errorMessageStr ?: ""}",
-                            textAlign = TextAlign.Center,
-                            fontStyle = FontStyle.Normal,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colors.onError
-                        )
+                        if(errorMessageStr != null) {
+                            Text(
+                                modifier = Modifier.fillMaxWidth()
+                                    .background(MaterialTheme.colors.error),
+                                text = errorMessageStr?.let{ "Error: $it" } ?: "",
+                                textAlign = TextAlign.Center,
+                                fontStyle = FontStyle.Normal,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colors.onError
+                            )
+                        }
+                    }
+
+                    // Show Billing Message
+                    AnimatedVisibility(billingMessageStr != null) {
+                        if(billingMessageStr != null) {
+                            Text(
+                                modifier = Modifier.fillMaxWidth()
+                                    .background(MaterialTheme.colors.secondary),
+                                text = billingMessageStr?.let{ "Billing: $it" } ?: "",
+                                textAlign = TextAlign.Center,
+                                fontStyle = FontStyle.Normal,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colors.onSecondary
+                            )
+                        }
                     }
 
                     // Map Content

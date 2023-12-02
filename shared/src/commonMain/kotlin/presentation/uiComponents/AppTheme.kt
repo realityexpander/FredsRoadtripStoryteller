@@ -29,6 +29,7 @@ fun AppTheme(
             // onPrimary = Color(0xFFBBBBBB),
             onPrimary = Color(0xFFDDDDDD),
             secondary = Color(0xFF4cb2a2),
+            onSecondary = Color(0xFFDDDDDD),
             // tertiary = Color(0xFF3700B3) // material3
             surface = Color(0xFF000000),
             onSurface = Color(0xFFBBBBBB),
@@ -43,6 +44,7 @@ fun AppTheme(
             primary = Color(0xFF0089FB),
             onPrimary = Color(0xFFFFFFFF),
             secondary = Color(0xFF00917d),
+            onSecondary = Color(0xFFFFFFFF),
             // tertiary = Color(0xFF3700B3)
             surface = Color(0xFFCCCCCC),
             onSurface = Color(0xFF000000),

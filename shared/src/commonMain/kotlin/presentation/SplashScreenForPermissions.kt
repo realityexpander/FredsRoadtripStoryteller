@@ -21,6 +21,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import appNameStr
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import presentation.uiComponents.PreviewPlaceholder
@@ -72,7 +73,7 @@ fun SplashScreenForPermissions(
                     )
                 }
                 Text(
-                    "Fred's Historic Markers",
+                    text = appNameStr,
                     color = Color.White,
                     textAlign = TextAlign.Center,
                     fontSize = MaterialTheme.typography.h3.fontSize,

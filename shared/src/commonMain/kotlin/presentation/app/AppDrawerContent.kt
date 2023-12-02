@@ -88,6 +88,7 @@ fun AppDrawerContent(
     onClickStartSpeakingMarker: (Marker, isSpeakDetailsEnabled: Boolean) -> Unit = { _, _ -> },
     onClickStopSpeakingMarker: () -> Unit = {},
     onLocateMarker: (Marker) -> Unit = {},
+    isProPurchased: Boolean = false,
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -159,19 +160,33 @@ fun AppDrawerContent(
     }
     Spacer(modifier = Modifier.height(16.dp))    // Show onboarding button
 
-    Button(
-        onClick = {
-            coroutineScope.launch {
-                onCloseDrawer()
-                purchaseProVersionAction()
-            }
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 8.dp, end = 8.dp),
-    ) {
+    // Purchase Pro Version
+    if(!isProPurchased) {
+        Button(
+            onClick = {
+                coroutineScope.launch {
+                    onCloseDrawer()
+                    purchaseProVersionAction()
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 8.dp, end = 8.dp),
+        ) {
+            Text(
+//            "Purchase Pro Version",
+                if (isProPurchased) "Pro Version Enabled" else "Purchase Pro Version",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, end = 8.dp),
+                fontStyle = FontStyle.Normal,
+                fontSize = MaterialTheme.typography.body1.fontSize,
+                textAlign = TextAlign.Center,
+            )
+        }
+    } else {
         Text(
-            "Purchase Pro Version",
+            "Pro Version Enabled",
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 8.dp, end = 8.dp),

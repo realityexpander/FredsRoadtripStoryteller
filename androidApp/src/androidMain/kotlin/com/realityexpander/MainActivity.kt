@@ -2,7 +2,9 @@ package com.realityexpander
 
 import GPSLocationService
 import MainView
-import _errorFlow
+import _billingMessageFlow
+import _errorMessageFlow
+import _isProPurchasedFlow
 import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -20,13 +22,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import appContext
 import com.android.billingclient.api.BillingClient
-import com.android.billingclient.api.BillingClientStateListener
-import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
-import com.android.billingclient.api.QueryProductDetailsParams
 import com.google.android.gms.maps.MapsInitializer
 import com.google.firebase.FirebaseApp
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -57,6 +56,7 @@ class MainActivity : AppCompatActivity(),
 
     private lateinit var billingClient: BillingClient
     private lateinit var productDetails: ProductDetails
+    private lateinit var purchaseHelper: PurchaseHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -163,22 +163,11 @@ class MainActivity : AppCompatActivity(),
                 }
                 if(intent.action == "PurchasePro") {
                     // Guard
-                    if(!this@MainActivity::productDetails.isInitialized) {
-                        _errorFlow.emit("PurchasePro: productDetails not initialized")
+                    purchaseHelper.productName.value ?: run {
+                        _errorMessageFlow.emit("PurchasePro: productDetails not initialized")
                         return@collect
                     }
-
-                    val billingFlowParams = BillingFlowParams.newBuilder()
-                        .setProductDetailsParamsList(
-                            listOf(
-                                BillingFlowParams.ProductDetailsParams.newBuilder()
-                                    .setProductDetails(productDetails)
-                                    .build()
-                            )
-                        )
-                        .build()
-
-                    billingClient.launchBillingFlow(this@MainActivity, billingFlowParams)
+                    purchaseHelper.makePurchase()
                 }
             }
         }
@@ -202,26 +191,8 @@ class MainActivity : AppCompatActivity(),
             }
         }
 
-        // Set up the billing client
-        billingClient = BillingClient
-            .newBuilder(this)
-            .enablePendingPurchases()
-            .setListener(this)
-            .build()
-        billingClient.startConnection(object : BillingClientStateListener {
-            override fun onBillingSetupFinished(billingResult: BillingResult) {
-                if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                    Log.i("Billing client successfully set up")
-                    queryOneTimeProducts(billingClient) {
-                        productDetails = this
-                    }
-                }
-            }
-
-            override fun onBillingServiceDisconnected() {
-                Log.i("Billing client disconnected")
-            }
-        })
+        purchaseHelper = PurchaseHelper(this, _billingMessageFlow, _isProPurchasedFlow)
+        purchaseHelper.billingSetup()
     }
 
     override fun onInit(status: Int) {
@@ -350,41 +321,3 @@ class MainActivity : AppCompatActivity(),
 fun Test() {
     Text("Hello World") // previews work here
 }
-
-private fun queryOneTimeProducts(
-    billingClient: BillingClient,
-    onUpdateProductDetails: ProductDetails.() -> Unit = {}
-) {
-    val productsToQuery =
-        listOf(
-            QueryProductDetailsParams.Product.newBuilder()
-                .setProductId("pro")
-                .setProductType(BillingClient.ProductType.INAPP)
-                .build()
-        )
-    // ‘pro’ is the product ID that was set in the Play Console.
-    // Here is where we can add more product IDs to query for based on
-    //   what was set up in the Play Console.
-
-    billingClient.queryProductDetailsAsync(
-        QueryProductDetailsParams.newBuilder()
-            .setProductList(productsToQuery)
-            .build()
-    ) { billingResult, productDetailsList ->
-        if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-            if (productDetailsList.isNotEmpty()) {
-                for (productDetails in productDetailsList) {
-                    Log.i("productDetailsList: Found product= $productDetails")
-                }
-                onUpdateProductDetails(productDetailsList[0])
-            } else {
-                Log.i("productDetailsList: No matching products found")
-            }
-        }
-
-        if(billingResult.responseCode != BillingClient.BillingResponseCode.OK) {
-            Log.i("Billing client setup failed: ${billingResult.responseCode}")
-        }
-    }
-}
-
