@@ -72,6 +72,7 @@ import kotlinx.coroutines.yield
 import openNavigationAction
 import presentation.maps.Marker
 import presentation.maps.RecentlySeenMarker
+import purchaseProVersionAction
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -148,6 +149,29 @@ fun AppDrawerContent(
     ) {
         Text(
             "How to use this App",
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 8.dp, end = 8.dp),
+            fontStyle = FontStyle.Normal,
+            fontSize = MaterialTheme.typography.body1.fontSize,
+            textAlign = TextAlign.Center,
+        )
+    }
+    Spacer(modifier = Modifier.height(16.dp))    // Show onboarding button
+
+    Button(
+        onClick = {
+            coroutineScope.launch {
+                onCloseDrawer()
+                purchaseProVersionAction()
+            }
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 8.dp, end = 8.dp),
+    ) {
+        Text(
+            "Purchase Pro Version",
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 8.dp, end = 8.dp),

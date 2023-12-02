@@ -34,6 +34,7 @@ import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -66,6 +67,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -123,6 +126,10 @@ var didFullFrameRender = false
 var unspokenText: String? = null
 var isTemporarilyPreventPerformanceTuningActive = false // prevents premature optimization after returning from background
 val synchronizedObject = SynchronizedObject()
+
+@Suppress("ObjectPropertyName")
+var _errorFlow: MutableSharedFlow<String> = MutableSharedFlow()
+val errorFlow: SharedFlow<String> = _errorFlow  // read-only shared flow sent from Android side
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -526,6 +533,17 @@ fun App(
             userLocation = jiggleLocationToForceUiUpdate(userLocation)
         }
 
+        // Error messages flow
+        LaunchedEffect(Unit) {
+            errorFlow.collectLatest { errorMessage ->
+                Log.w(errorMessage)
+                errorMessageStr = errorMessage
+
+                delay(5000)
+                errorMessageStr = null
+            }
+        }
+
         // For render performance tuning.
         didFullFrameRender = false
 
@@ -897,7 +915,7 @@ fun App(
                         Text(
                             modifier = Modifier.fillMaxWidth()
                                 .background(MaterialTheme.colors.error),
-                            text = "Error: $errorMessageStr",
+                            text = "Error: ${errorMessageStr ?: ""}",
                             textAlign = TextAlign.Center,
                             fontStyle = FontStyle.Normal,
                             fontWeight = FontWeight.Medium,

@@ -2,6 +2,7 @@ package com.realityexpander
 
 import GPSLocationService
 import MainView
+import _errorFlow
 import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -20,15 +21,12 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import appContext
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
+import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.ProductDetails
-import com.android.billingclient.api.ProductDetailsResponseListener
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
-import com.android.billingclient.api.SkuDetailsParams
-import com.android.billingclient.api.SkuDetailsResponseListener
-import com.android.billingclient.api.queryProductDetails
 import com.google.android.gms.maps.MapsInitializer
 import com.google.firebase.FirebaseApp
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -41,14 +39,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import presentation.SplashScreenForPermissions
 import presentation.uiComponents.AppTheme
 import textToSpeech
 import java.util.Locale
 import co.touchlab.kermit.Logger as Log
-
-private lateinit var billingClient: BillingClient
 
 class MainActivity : AppCompatActivity(),
     TextToSpeech.OnInitListener,
@@ -59,6 +54,9 @@ class MainActivity : AppCompatActivity(),
     private val splashState = MutableStateFlow(false)
 
     private var isSendingUserToAppSettingsScreen = false
+
+    private lateinit var billingClient: BillingClient
+    private lateinit var productDetails: ProductDetails
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -163,6 +161,25 @@ class MainActivity : AppCompatActivity(),
                     val markerTitle = intent.getStringExtra("markerTitle") ?: ""
                     startNavigation(lat, lng, markerTitle)
                 }
+                if(intent.action == "PurchasePro") {
+                    // Guard
+                    if(!this@MainActivity::productDetails.isInitialized) {
+                        _errorFlow.emit("PurchasePro: productDetails not initialized")
+                        return@collect
+                    }
+
+                    val billingFlowParams = BillingFlowParams.newBuilder()
+                        .setProductDetailsParamsList(
+                            listOf(
+                                BillingFlowParams.ProductDetailsParams.newBuilder()
+                                    .setProductDetails(productDetails)
+                                    .build()
+                            )
+                        )
+                        .build()
+
+                    billingClient.launchBillingFlow(this@MainActivity, billingFlowParams)
+                }
             }
         }
 
@@ -195,14 +212,14 @@ class MainActivity : AppCompatActivity(),
             override fun onBillingSetupFinished(billingResult: BillingResult) {
                 if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
                     Log.i("Billing client successfully set up")
-                    runBlocking {
-                        queryOneTimeProducts()
+                    queryOneTimeProducts(billingClient) {
+                        productDetails = this
                     }
                 }
             }
 
             override fun onBillingServiceDisconnected() {
-                Log.i("Billing service disconnected")
+                Log.i("Billing client disconnected")
             }
         })
     }
@@ -334,16 +351,18 @@ fun Test() {
     Text("Hello World") // previews work here
 }
 
-
-private suspend fun queryOneTimeProducts() {
+private fun queryOneTimeProducts(
+    billingClient: BillingClient,
+    onUpdateProductDetails: ProductDetails.() -> Unit = {}
+) {
     val productsToQuery =
         listOf(
             QueryProductDetailsParams.Product.newBuilder()
-                .setProductId("1pro")
+                .setProductId("pro")
                 .setProductType(BillingClient.ProductType.INAPP)
                 .build()
         )
-    // ‘1pro’ is the product ID that was set in the Play Console.
+    // ‘pro’ is the product ID that was set in the Play Console.
     // Here is where we can add more product IDs to query for based on
     //   what was set up in the Play Console.
 
@@ -355,9 +374,16 @@ private suspend fun queryOneTimeProducts() {
         if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
             if (productDetailsList.isNotEmpty()) {
                 for (productDetails in productDetailsList) {
-                    Log.i("Found product: $productDetails")
+                    Log.i("productDetailsList: Found product= $productDetails")
                 }
+                onUpdateProductDetails(productDetailsList[0])
+            } else {
+                Log.i("productDetailsList: No matching products found")
             }
+        }
+
+        if(billingResult.responseCode != BillingClient.BillingResponseCode.OK) {
+            Log.i("Billing client setup failed: ${billingResult.responseCode}")
         }
     }
 }

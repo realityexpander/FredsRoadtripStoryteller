@@ -1,6 +1,8 @@
 import android.content.Intent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 
 
@@ -17,6 +19,15 @@ actual fun openNavigationAction(lat: Double, lng: Double, markerTitle: String) {
                 it.putExtra("label", "📌���")
                 it.putExtra("markerTitle", markerTitle)
             }
+        )
+    }
+}
+
+
+actual fun purchaseProVersionAction() {
+    CoroutineScope(Dispatchers.Main).launch {
+        _intentFlow.emit(
+            Intent("PurchasePro")
         )
     }
 }
