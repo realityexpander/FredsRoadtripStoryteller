@@ -18,6 +18,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import appContext
+import com.android.billingclient.api.BillingClient
+import com.android.billingclient.api.BillingClientStateListener
+import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.ProductDetails
+import com.android.billingclient.api.ProductDetailsResponseListener
+import com.android.billingclient.api.Purchase
+import com.android.billingclient.api.PurchasesUpdatedListener
+import com.android.billingclient.api.QueryProductDetailsParams
+import com.android.billingclient.api.SkuDetailsParams
+import com.android.billingclient.api.SkuDetailsResponseListener
+import com.android.billingclient.api.queryProductDetails
 import com.google.android.gms.maps.MapsInitializer
 import com.google.firebase.FirebaseApp
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -30,13 +41,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import presentation.SplashScreenForPermissions
 import presentation.uiComponents.AppTheme
 import textToSpeech
 import java.util.Locale
 import co.touchlab.kermit.Logger as Log
 
-class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
+lateinit private var billingClient: BillingClient
+
+class MainActivity : AppCompatActivity(),
+    TextToSpeech.OnInitListener,
+    PurchasesUpdatedListener
+{
 
     private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
     private val splashState = MutableStateFlow(false)
@@ -168,6 +185,26 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             }
         }
 
+        // Set up the billing client
+        billingClient = BillingClient
+            .newBuilder(this)
+            .enablePendingPurchases()
+            .setListener(this)
+            .build()
+        billingClient.startConnection(object : BillingClientStateListener {
+            override fun onBillingSetupFinished(billingResult: BillingResult) {
+                if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                    Log.i("Billing client successfully set up")
+                    runBlocking {
+                        queryOneTimeProducts()
+                    }
+                }
+            }
+
+            override fun onBillingServiceDisconnected() {
+                Log.i("Billing service disconnected")
+            }
+        })
     }
 
     override fun onInit(status: Int) {
@@ -219,19 +256,19 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         }
     }
 
-//    // Capture result from permission request - LEAVE FOR REFERENCE
-//    override fun onRequestPermissionsResult(
-//        requestCode: Int,
-//        permissions: Array<String>,
-//        grantResults: IntArray
-//    ) {
-//        super.onRequestPermissionsResult(
-//            requestCode,
-//            permissions,
-//            grantResults
-//        )
-//        println("onRequestPermissionsResult: requestCode: $requestCode, permissions: $permissions, grantResults: $grantResults")
-//    }
+    //    // Capture result from permission request - LEAVE FOR REFERENCE
+    //    override fun onRequestPermissionsResult(
+    //        requestCode: Int,
+    //        permissions: Array<String>,
+    //        grantResults: IntArray
+    //    ) {
+    //        super.onRequestPermissionsResult(
+    //            requestCode,
+    //            permissions,
+    //            grantResults
+    //        )
+    //        println("onRequestPermissionsResult: requestCode: $requestCode, permissions: $permissions, grantResults: $grantResults")
+    //    }
 
     override fun onResume() {
         super.onResume()
@@ -275,6 +312,20 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             startActivity(intent)
         }
     }
+
+    override fun onPurchasesUpdated(
+        billingResult: BillingResult,
+        purchases: MutableList<Purchase>?
+    ) {
+        Log.i("onPurchasesUpdated ${billingResult.responseCode}")
+        if (purchases != null) {
+            for (purchase in purchases) {
+                Log.i("purchase: $purchase")
+            }
+        } else {
+            Log.i("No purchases found from query")
+        }
+    }
 }
 
 @Preview
@@ -282,3 +333,32 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 fun Test() {
     Text("Hello World") // previews work here
 }
+
+
+private suspend fun queryOneTimeProducts() {
+    val productsToQuery =
+        listOf(
+            QueryProductDetailsParams.Product.newBuilder()
+                .setProductId("1pro")
+                .setProductType(BillingClient.ProductType.INAPP)
+                .build()
+        )
+    // ‘1pro’ is the product ID that was set in the Play Console.
+    // Here is where we can add more product IDs to query for based on
+    //   what was set up in the Play Console.
+
+    billingClient.queryProductDetailsAsync(
+        QueryProductDetailsParams.newBuilder()
+            .setProductList(productsToQuery)
+            .build()
+    ) { billingResult, productDetailsList ->
+        if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+            if (productDetailsList.isNotEmpty()) {
+                for (productDetails in productDetailsList) {
+                    Log.i("Found product: $productDetails")
+                }
+            }
+        }
+    }
+}
+

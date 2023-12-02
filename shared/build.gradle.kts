@@ -90,7 +90,7 @@ kotlin {
                 api(libs.kotlinx.atomicfu)
             }
         }
-        // Android-only dependencies that are used in the shared module (expect/actual)
+        // Android dependencies that are accessed from the shared module (expect/actual implementations)
         //   & native bridges to kotlin-only libraries
         val androidMain by getting {
             dependencies {
@@ -118,6 +118,10 @@ kotlin {
                 // Firebase feedback // todo bump version to final for release
                 implementation(libs.google.firebase.appdistribution.api.ktx)
                 implementation(libs.google.firebase.appdistribution)
+
+                // Billing
+                api(libs.android.billingclient.billing)
+                api(libs.android.billingclient.billing.ktx)
             }
         }
         val commonTest by getting {

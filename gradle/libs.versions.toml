@@ -1,5 +1,6 @@
 [versions]
 agp = "8.1.2"
+android-billingclient-billing = "6.1.0"
 androidx-activityCompose = "1.8.0"
 androidx-coreSplashscreen = "1.0.1"
 androidx-appcompat = "1.6.1"
@@ -29,6 +30,8 @@ pods-google-mapsUtils = "4.2.2"
 
 
 [libraries]
+android-billingclient-billing = { module = "com.android.billingclient:billing", version.ref = "android-billingclient-billing" }
+android-billingclient-billing-ktx = { module = "com.android.billingclient:billing-ktx", version.ref = "android-billingclient-billing" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
 androidx-compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose" }
