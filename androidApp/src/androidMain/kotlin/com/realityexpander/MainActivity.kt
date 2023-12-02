@@ -48,7 +48,7 @@ import textToSpeech
 import java.util.Locale
 import co.touchlab.kermit.Logger as Log
 
-lateinit private var billingClient: BillingClient
+private lateinit var billingClient: BillingClient
 
 class MainActivity : AppCompatActivity(),
     TextToSpeech.OnInitListener,
