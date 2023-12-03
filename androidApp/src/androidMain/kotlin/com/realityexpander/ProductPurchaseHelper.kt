@@ -352,7 +352,7 @@ data class ProductPurchaseHelper(
             do {
                 logd("Polling pollReloadPurchase... ${i++}")
                 reloadPurchase()
-                delay(2000.milliseconds)
+                delay(3000.milliseconds)
             } while(_productPurchaseStateFlow.value == ProductPurchaseState.Pending)
             isPolling = false
         }
