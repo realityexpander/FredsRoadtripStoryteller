@@ -188,7 +188,12 @@ class MainActivity : AppCompatActivity(),
             }
         }
 
-        productPurchaseHelper = ProductPurchaseHelper(this, _billingMessageFlow, _productPurchaseStateFlow)
+        // Setup the in-app purchase helper
+        productPurchaseHelper = ProductPurchaseHelper(
+            this,
+            _billingMessageFlow,
+            _productPurchaseStateFlow
+        )
         productPurchaseHelper.billingSetup()
     }
 
