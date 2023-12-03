@@ -107,12 +107,12 @@ var appNameStr = configPropertyString("app.name", "app.name string not found")
 val kMaxReloadRadiusMiles = configPropertyFloat("app.maxReloadRadiusMiles", 2.0f).toDouble()
 const val kMaxMarkerDetailsAgeSeconds = 60 * 60 * 24 * 30  // 30 days
 
-// Debug Log info
+// Debug Log info - Set at launch from the Platform side
+var isDebuggable = false // todo get for iOS
 var versionStr = "0.0.0" // todo get for iOS
 var buildNumberStr = "0" // todo get for iOS
 var installAtEpochMilli = 0L // todo get for iOS?
 var debugLog = mutableListOf("Debug log: start time:" + Clock.System.now())
-var isDebuggable = false // todo get for iOS
 
 sealed class BottomSheetScreen {
     data object SettingsScreen : BottomSheetScreen()
@@ -132,15 +132,15 @@ val synchronizedObject = SynchronizedObject()
 
 @Suppress("ObjectPropertyName")
 var _errorMessageFlow: MutableSharedFlow<String> = MutableSharedFlow()
-val errorMessageFlow: SharedFlow<String> = _errorMessageFlow  // read-only shared flow sent from Android side
+val errorMessageFlow: SharedFlow<String> = _errorMessageFlow  // read-only shared flow sent from Platform side
 
 @Suppress("ObjectPropertyName")
 var _billingMessageFlow: MutableSharedFlow<String> = MutableSharedFlow()
-val billingMessageFlow: SharedFlow<String> = _billingMessageFlow  // read-only shared flow sent from Android side
+val billingMessageFlow: SharedFlow<String> = _billingMessageFlow  // read-only shared flow sent from Platform side
 
 @Suppress("ObjectPropertyName")
 var _productPurchaseStateFlow: MutableStateFlow<ProductPurchaseState> = MutableStateFlow(ProductPurchaseState.NotPurchased())
-val productPurchaseStateFlow: SharedFlow<ProductPurchaseState> = _productPurchaseStateFlow  // read-only shared flow sent from Android side
+val productPurchaseStateFlow: SharedFlow<ProductPurchaseState> = _productPurchaseStateFlow  // read-only shared flow sent from Platform side
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
