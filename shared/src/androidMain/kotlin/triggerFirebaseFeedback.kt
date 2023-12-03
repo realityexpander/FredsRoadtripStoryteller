@@ -3,8 +3,6 @@ import android.speech.tts.TextToSpeech
 import com.google.firebase.ktx.Firebase
 
 actual fun triggerDeveloperFeedback() {
-    // Only in debug builds
-//    if(BuildConfig.DEBUG) {
+    // todo remember to uncomment for debug release
 //        Firebase.appDistribution.startFeedback("We value your feedback!")
-//    }
 }

@@ -37,6 +37,7 @@ import data.AppSettings
 import data.MarkersRepo
 import data.appSettings
 import getPlatformName
+import isDebuggable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -172,7 +173,7 @@ fun SettingsScreen(
 
             // Show feedback button on Android only
             // - to turn on dev mode: adb shell setprop debug.firebase.appdistro.devmode true // false to turn off
-            if (getPlatformName().contains("Android")) {
+            if (getPlatformName().contains("Android") && isDebuggable) {
                 Spacer(modifier = Modifier.padding(8.dp))
                 Button(
                     modifier = Modifier

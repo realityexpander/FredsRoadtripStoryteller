@@ -264,8 +264,8 @@ data class ProductPurchaseHelper(
             logd("PurchasesResponseListener, Response Code: ${billingResult.responseCode}, purchases: $purchases")
             if (purchases.isNotEmpty()) {
                 isNewPurchaseGate1 = false
-                purchase = purchases.first() // check for more than one purchase?
-                println("Purchase(s) Found, purchaseState: $purchase")
+                purchase = purchases.first() // Only supports one product for now
+                logd("Purchase(s) Found, purchaseState: $purchase")
 
                 if(purchase.products.contains(kProProductId)) {
                     logd("Purchase(s) Found, purchaseState: ${purchase.purchaseState}")
@@ -322,21 +322,11 @@ data class ProductPurchaseHelper(
                             if(purchase.isAcknowledged && purchase.products.contains(kProProductId)) {
                                 coroutineScope.launch {
                                     //_billingMessageFlow.emit("Previous Purchase Found, is UNSPECIFIED_STATE, but acknowledged and is Pro.")
-                                    logd("Previous Purchase Found, is UNSPECIFIED_STATE, but acknowledged and is Pro.")
+                                    logd("Previous Purchase Found, is UNSPECIFIED_STATE, but isAcknowledged and is Pro.")
                                 }
                                 _productPurchaseStateFlow.value = ProductPurchaseState.Purchased
                                 return@PurchasesResponseListener
                             }
-
-//                            coroutineScope.launch {
-//                                //_billingMessageFlow.emit("Previous Purchase Found, but is unAcknowledged/unknown-product (UNSPECIFIED_STATE), $purchase")
-//                                logd("Previous Purchase Found, but is unAcknowledged/unknown-product (UNSPECIFIED_STATE), $purchase")
-//
-//                                delay(1000)
-//                                completePurchase(purchase) // attempt acknowledge
-//                            }
-//                            _productPurchaseStateFlow.value = ProductPurchaseState.NotPurchased("Previous Purchase Found, but is unknown (UNSPECIFIED_STATE)")
-                            return@PurchasesResponseListener
                         }
                     }
                 }
