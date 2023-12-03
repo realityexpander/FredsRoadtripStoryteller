@@ -65,12 +65,16 @@ fun AboutBoxDialog(
             modifier = Modifier
                 .background(MaterialTheme.colors.background)
         ) {
-            Box(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.TopCenter
+            ) {
                 Image(
                     painter = painterResource("about_box.png"),
                     contentDescription = null,
                     contentScale = ContentScale.Fit,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    alignment = Alignment.TopCenter
                 )
 
                 Box(
@@ -95,44 +99,52 @@ fun AboutBoxDialog(
                         ) {
                             Text("$appNameStr website")
                         }
-                        Spacer(modifier = Modifier.padding(8.dp))
+                        Spacer(modifier = Modifier.padding(16.dp))
 
-                        // Link to HMDB.org
-                        Button(
-                            onClick = {
-                                openWebUrlAction("https://hmdb.org")
-                                onDismiss()
-                            },
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colors.background.copy(alpha = 0.5f)),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text("Visit HMDB.org")
-                        }
-                        Text("Historical Marker data is from HMDB.org")
-                        Spacer(modifier = Modifier.padding(8.dp))
 
-                        // Version number
-                        Text(
-                            "$appNameStr v$versionStr build $buildNumberStr ${if(isDebuggable) "debug" else "release"}",
-                            style = MaterialTheme.typography.caption,
-                            color = MaterialTheme.colors.onBackground
-                        )
-                        if(installAtEpochMilli> 0) {
-                            val it = Instant.fromEpochMilliseconds(installAtEpochMilli)
-                                .toLocalDateTime(TimeZone.currentSystemDefault())
-                            Text("Installed at: ${it.date} ${it.time.hour}:${it.time.minute}" )
-                        }
+                            // Link to HMDB.org
+                            Button(
+                                onClick = {
+                                    openWebUrlAction("https://hmdb.org")
+                                    onDismiss()
+                                },
+                            ) {
+                                Text("Visit HMDB.org")
+                            }
+                            Text("Historical Marker data is from HMDB.org")
+                            Spacer(modifier = Modifier.padding(8.dp))
 
-                        Text("Debug log size: ${debugLog.size}")
-                        // Send debug log
-                        Button(
-                            onClick = {
-                                onDismiss()
-                                coroutineScope.launch {
-                                    debugLog.add("AboutBoxDialog: Send debug log, debugLog.size=${debugLog.size}, $appNameStr version $versionStr build $buildNumberStr")
-                                    sendEmailAction(body = json.encodeToString(debugLog))
-                                }
-                            },
-                        ) {
-                            Text("Send debug log")
+                            // Version number
+                            Text(
+                                "$appNameStr v$versionStr build $buildNumberStr ${if (isDebuggable) "debug" else "release"}",
+                                style = MaterialTheme.typography.caption,
+                                color = MaterialTheme.colors.onBackground
+                            )
+                            if (installAtEpochMilli > 0) {
+                                val it = Instant.fromEpochMilliseconds(installAtEpochMilli)
+                                    .toLocalDateTime(TimeZone.currentSystemDefault())
+                                Text("Installed at: ${it.date} ${it.time.hour}:${it.time.minute}")
+                            }
+
+                            Text("Debug log size: ${debugLog.size}")
+                            // Send debug log
+                            Button(
+                                onClick = {
+                                    onDismiss()
+                                    coroutineScope.launch {
+                                        debugLog.add("AboutBoxDialog: Send debug log, debugLog.size=${debugLog.size}, $appNameStr version $versionStr build $buildNumberStr")
+                                        sendEmailAction(body = json.encodeToString(debugLog))
+                                    }
+                                },
+                            ) {
+                                Text("Send debug log")
+                            }
                         }
                     }
                 }
