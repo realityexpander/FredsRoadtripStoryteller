@@ -68,7 +68,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import appNameStr
+import consumeProductAction
 import data.billing.ProductPurchaseState
+import isDebuggable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -76,7 +78,7 @@ import kotlinx.coroutines.yield
 import openNavigationAction
 import presentation.maps.Marker
 import presentation.maps.RecentlySeenMarker
-import purchaseProVersionAction
+import purchaseProductAction
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -446,7 +448,7 @@ private fun ProductPurchaseButton(
                 onClick = {
                     coroutineScope.launch {
                         onCloseDrawer()
-                        purchaseProVersionAction()
+                        purchaseProductAction()
                     }
                 },
                 modifier = Modifier
@@ -568,6 +570,35 @@ private fun ProductPurchaseButton(
             )
             Spacer(modifier = Modifier.height(8.dp))
         }
+    }
+
+    if(isDebuggable && productPurchaseState is ProductPurchaseState.Purchased) {
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(
+            onClick = {
+                coroutineScope.launch {
+                    consumeProductAction()
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 8.dp, end = 8.dp)
+            ,
+        ) {
+            Text(
+                "Consume Product (Pro Version)",
+                modifier = Modifier
+                    .background(MaterialTheme.colors.error)
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, end = 8.dp)
+                ,
+                fontStyle = FontStyle.Normal,
+                fontSize = MaterialTheme.typography.body1.fontSize,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colors.onError,
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 

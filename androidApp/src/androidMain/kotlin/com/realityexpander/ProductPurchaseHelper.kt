@@ -102,8 +102,11 @@ data class ProductPurchaseHelper(
                     //coroutineScope.launch {
                     //    _billingMessageFlow.emit("Billing Client Connected")
                     //}
-                        queryProduct(kProProductId)
-                        reloadPurchase()
+                        coroutineScope.launch {
+                            queryProduct(kProProductId)
+                            delay(250)
+                            reloadPurchases()
+                        }
                     }
                     else -> {
                         coroutineScope.launch {
@@ -184,6 +187,40 @@ data class ProductPurchaseHelper(
             pollReloadPurchase()
         }
         billingClient.launchBillingFlow(activity, billingFlowParams)
+    }
+
+    fun consumeProduct() {
+        // Guard
+        if(!this::purchase.isInitialized) {
+            coroutineScope.launch {
+                _billingMessageFlow.emit("No Previous Purchase Found")
+                logd("No Previous Purchase Found")
+            }
+            _productPurchaseStateFlow.value = ProductPurchaseState.NotPurchased("No Previous Purchase Found")
+            return
+        }
+        val consumeParams = ConsumeParams.newBuilder()
+            .setPurchaseToken(purchase.purchaseToken)
+            .build()
+
+        billingClient.consumeAsync(consumeParams) { billingResult, _ ->
+            when (billingResult.responseCode) {
+                BillingClient.BillingResponseCode.OK -> {
+                    coroutineScope.launch {
+                        _billingMessageFlow.emit("Product Consumed")
+                        logd("Product Consumed, ${purchase.products}")
+                    }
+                    _productPurchaseStateFlow.value = ProductPurchaseState.NotPurchased("Product Consumed")
+                }
+                else -> {
+                    coroutineScope.launch {
+                        _billingMessageFlow.emit("Purchase Consumption Failed")
+                        logd("Purchase Consumption Failed, Response Code: ${billingResult.responseCode}")
+                    }
+                    _productPurchaseStateFlow.value = ProductPurchaseState.Error("Purchase Consumption Failed, Code: ${billingResult.responseCode}")
+                }
+            }
+        }
     }
 
     private fun completePurchase(purchaseItem: Purchase) {
@@ -291,11 +328,14 @@ data class ProductPurchaseHelper(
                                 return@PurchasesResponseListener
                             }
 
-                            coroutineScope.launch {
-                                //_billingMessageFlow.emit("Previous Purchase Found, but is unknown product/unAcknowledged (UNSPECIFIED_STATE), $purchase")
-                                logd("Previous Purchase Found, but is unknown product/unAcknowledged (UNSPECIFIED_STATE), $purchase")
-                            }
-                            _productPurchaseStateFlow.value = ProductPurchaseState.NotPurchased("Previous Purchase Found, but is unknown (UNSPECIFIED_STATE)")
+//                            coroutineScope.launch {
+//                                //_billingMessageFlow.emit("Previous Purchase Found, but is unAcknowledged/unknown-product (UNSPECIFIED_STATE), $purchase")
+//                                logd("Previous Purchase Found, but is unAcknowledged/unknown-product (UNSPECIFIED_STATE), $purchase")
+//
+//                                delay(1000)
+//                                completePurchase(purchase) // attempt acknowledge
+//                            }
+//                            _productPurchaseStateFlow.value = ProductPurchaseState.NotPurchased("Previous Purchase Found, but is unknown (UNSPECIFIED_STATE)")
                             return@PurchasesResponseListener
                         }
                     }
@@ -315,7 +355,7 @@ data class ProductPurchaseHelper(
                 if(isNewPurchaseGate2) {
                     isNewPurchaseGate2 = false
                     coroutineScope.launch {
-                        //_billingMessageFlow.emit("No Previous Purchases Found")
+                        //_billingMessageFlow.emit("Card processing timed out. Please try again.")
                         logd("Card processing timed out. Please try again.")
                     }
                     _productPurchaseStateFlow.value = ProductPurchaseState.NotPurchased("Card processing timed out. Please try again.")
@@ -327,7 +367,7 @@ data class ProductPurchaseHelper(
             logd("No Previous Purchases Found")
         }
 
-    private fun reloadPurchase() {
+    private fun reloadPurchases() {
         val queryPurchasesParams = QueryPurchasesParams.newBuilder()
             .setProductType(BillingClient.ProductType.INAPP)
             .build()
@@ -351,7 +391,7 @@ data class ProductPurchaseHelper(
             var i =0
             do {
                 logd("Polling pollReloadPurchase... ${i++}")
-                reloadPurchase()
+                reloadPurchases()
                 delay(3000.milliseconds)
             } while(_productPurchaseStateFlow.value == ProductPurchaseState.Pending)
             isPolling = false

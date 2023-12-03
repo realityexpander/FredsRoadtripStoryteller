@@ -112,6 +112,7 @@ var versionStr = "0.0.0" // todo get for iOS
 var buildNumberStr = "0" // todo get for iOS
 var installAtEpochMilli = 0L // todo get for iOS?
 var debugLog = mutableListOf("Debug log: start time:" + Clock.System.now())
+var isDebuggable = false
 
 sealed class BottomSheetScreen {
     data object SettingsScreen : BottomSheetScreen()

@@ -24,10 +24,3 @@ actual fun openNavigationAction(lat: Double, lng: Double, markerTitle: String) {
 }
 
 
-actual fun purchaseProVersionAction() {
-    CoroutineScope(Dispatchers.Main).launch {
-        _intentFlow.emit(
-            Intent("PurchasePro")
-        )
-    }
-}

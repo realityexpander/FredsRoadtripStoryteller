@@ -2,12 +2,14 @@ package com.realityexpander
 
 import GPSLocationService
 import MainView
+import ProductPurchaseAction
 import _billingMessageFlow
 import _errorMessageFlow
 import _productPurchaseStateFlow
 import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.net.Uri
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
@@ -21,9 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import appContext
-import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingResult
-import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.google.android.gms.maps.MapsInitializer
@@ -32,6 +32,7 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.realityexpander.gpsForegroundNotificationService.GPSForegroundNotificationService
 import data.appSettings
 import intentFlow
+import isDebuggable
 import isTemporarilyPreventPerformanceTuningActive
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -59,6 +60,7 @@ class MainActivity : AppCompatActivity(),
         super.onCreate(savedInstanceState)
 
         val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
+        isDebuggable = 0 != applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE
          textToSpeech = TextToSpeech(this, this)
 
         // https://proandroiddev.com/implementing-core-splashscreen-api-e62f0e690f74
@@ -158,13 +160,21 @@ class MainActivity : AppCompatActivity(),
                     val markerTitle = intent.getStringExtra("markerTitle") ?: ""
                     startNavigation(lat, lng, markerTitle)
                 }
-                if(intent.action == "PurchasePro") {
+                if(intent.action == ProductPurchaseAction.PurchasePro.value) {
                     // Guard
                     productPurchaseHelper.productName.value ?: run {
                         _errorMessageFlow.emit("PurchasePro: productDetails not initialized")
                         return@collect
                     }
                     productPurchaseHelper.makePurchase()
+                }
+                if(intent.action == ProductPurchaseAction.ConsumePro.value) {
+                    // Guard
+                    productPurchaseHelper.productName.value ?: run {
+                        _errorMessageFlow.emit("ConsumePro: productDetails not initialized")
+                        return@collect
+                    }
+                    productPurchaseHelper.consumeProduct()
                 }
             }
         }
