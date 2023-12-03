@@ -48,14 +48,11 @@ class MainActivity : AppCompatActivity(),
     TextToSpeech.OnInitListener,
     PurchasesUpdatedListener
 {
-
     private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
     private val splashState = MutableStateFlow(false)
 
     private var isSendingUserToAppSettingsScreen = false
 
-    private lateinit var billingClient: BillingClient
-    private lateinit var productDetails: ProductDetails
     private lateinit var productPurchaseHelper: ProductPurchaseHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
