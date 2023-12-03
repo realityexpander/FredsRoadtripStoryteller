@@ -230,7 +230,7 @@ data class ProductPurchaseHelper(
                 purchase = purchases.first() // check for more than one purchase?
                 println("Purchase(s) Found, purchaseState: $purchase")
 
-                if(purchase.products.contains(proProductId)) {
+                if(purchase.products.contains(kProProductId)) {
                     logd("Purchase(s) Found, purchaseState: ${purchase.purchaseState}")
                     logd("Purchase(s) Found, purchase.originalJson: ${purchase.originalJson}")
                     // parse originalJson for purchaseState bc `purchase.purchaseState` doesn't support cancelled purchases. (WHY???)
