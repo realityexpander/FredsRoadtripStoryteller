@@ -166,7 +166,7 @@ fun AppDrawerContent(
     }
 
     // Purchase Pro Version
-    ProductPurchaseButton(productPurchaseState, coroutineScope, onCloseDrawer)
+    PurchaseProductButton(productPurchaseState, coroutineScope, onCloseDrawer)
 
     // Show about box
     Button(
@@ -436,7 +436,7 @@ fun AppDrawerContent(
 }
 
 @Composable
-private fun ProductPurchaseButton(
+private fun PurchaseProductButton(
     productPurchaseState: ProductPurchaseState,
     coroutineScope: CoroutineScope,
     onCloseDrawer: () -> Unit
@@ -572,7 +572,12 @@ private fun ProductPurchaseButton(
         }
     }
 
-    if(isDebuggable && productPurchaseState is ProductPurchaseState.Purchased) {
+    // Show consume product button for testing payments
+    val isTesting = false
+    if(isTesting
+        && isDebuggable
+        && productPurchaseState is ProductPurchaseState.Purchased
+    ) {
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {

@@ -27,11 +27,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import appNameStr
 import buildNumberStr
 import debugLog
 import installAtEpochMilli
+import isDebuggable
 import json
-import appNameStr
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
@@ -68,7 +69,7 @@ fun AboutBoxDialog(
                 Image(
                     painter = painterResource("about_box.png"),
                     contentDescription = null,
-                    contentScale = ContentScale.FillWidth,
+                    contentScale = ContentScale.Fit,
                     modifier = Modifier.fillMaxSize()
                 )
 
@@ -109,12 +110,18 @@ fun AboutBoxDialog(
                         Spacer(modifier = Modifier.padding(8.dp))
 
                         // Version number
-                        Text("$appNameStr version $versionStr build $buildNumberStr")
+                        Text(
+                            "$appNameStr v$versionStr build $buildNumberStr ${if(isDebuggable) "debug" else "release"}",
+                            style = MaterialTheme.typography.caption,
+                            color = MaterialTheme.colors.onBackground
+                        )
                         if(installAtEpochMilli> 0) {
                             val it = Instant.fromEpochMilliseconds(installAtEpochMilli)
                                 .toLocalDateTime(TimeZone.currentSystemDefault())
                             Text("Installed at: ${it.date} ${it.time.hour}:${it.time.minute}" )
                         }
+
+                        Text("Debug log size: ${debugLog.size}")
                         // Send debug log
                         Button(
                             onClick = {

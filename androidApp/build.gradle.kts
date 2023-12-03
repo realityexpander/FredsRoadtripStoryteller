@@ -26,6 +26,10 @@ kotlin {
         val androidMain by getting {
             dependencies {
                 implementation(project(":shared"))
+
+                // Firebase feedback // todo bump version to final for release
+                implementation(libs.google.firebase.appdistribution)
+                implementation(libs.google.firebase.appdistribution.api.ktx)
             }
         }
         androidMain.kotlin // to remove useless warning: "Variable 'androidMain' is never used"
@@ -75,7 +79,7 @@ android {
 
     buildFeatures {
         compose = true
-        buildConfig = true
+        // buildConfig = true // creates a java-only class for Android
     }
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
@@ -96,6 +100,7 @@ android {
                 releaseNotesFile = "release-notes.txt"
                 testersFile = "testers-debug.txt"
             }
+            //buildConfigField("String", "yahoo", "\"true\"") // android only
         }
 
         // for APK: ./gradlew assembleRelease appDistributionUploadRelease
