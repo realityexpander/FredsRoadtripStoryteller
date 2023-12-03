@@ -1,3 +1,5 @@
+@file:Suppress("PropertyName")
+
 package com.realityexpander
 
 import android.app.Activity
@@ -15,6 +17,19 @@ import co.touchlab.kermit.Logger as Log
 
 private const val SLOW_PENDING_TRANSACTION = 4  // Billing hidden type for slow pending transactions
 
+/**
+ * PurchaseHelper
+ *
+ * This class handles the purchase flow for the Android app.
+ *
+ * It uses the Google BillingClient to handle the purchase flow.
+ * Emits messages to the UI via a MutableSharedFlow<String>.
+ * Emits the current purchase state to the UI via a MutableStateFlow<ProductPurchaseState>.
+ *
+ * @param activity: Activity - the Android activity that is using this class
+ * @param _billingMessageFlow: MutableSharedFlow<String> - a flow that emits messages to the UI
+ * @param _productPurchaseStateFlow: MutableStateFlow<ProductPurchaseState> - a flow that emits the current purchase state to the UI
+ */
 data class PurchaseHelper(
     val activity: Activity,
     val _billingMessageFlow: MutableSharedFlow<String> = MutableStateFlow(""),
