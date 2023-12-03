@@ -573,8 +573,8 @@ private fun PurchaseProductButton(
     }
 
     // Show consume product button for testing payments
-    val isTesting = false
-    if(isTesting
+    val isTestingPayments_enableConsumeProduct = true
+    if(isTestingPayments_enableConsumeProduct
         && isDebuggable
         && productPurchaseState is ProductPurchaseState.Purchased
     ) {

@@ -116,9 +116,10 @@ kotlin {
                 api(libs.google.firebase.analytics.ktx.get())
                 api(libs.google.firebase.crashlytics.get())
 
-//                // Firebase feedback // todo bump version to final for release
-//                implementation(libs.google.firebase.appdistribution)
-//                implementation(libs.google.firebase.appdistribution.api.ktx)
+                // Firebase feedback // todo bump version to final for release
+                // todo Add for debug builds only - edit: androidMain/triggerDeveloperFeedback.kt // KEEP THIS REMINDER
+                implementation(libs.google.firebase.appdistribution)
+                implementation(libs.google.firebase.appdistribution.api.ktx)
 
                 // Billing
                 api(libs.android.billingclient.billing)

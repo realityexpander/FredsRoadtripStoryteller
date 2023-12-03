@@ -27,6 +27,15 @@ private const val kProProductId = "pro" // only supports one product for now
  * Emits messages to the UI via a MutableSharedFlow<String>.
  * Emits the current purchase state to the UI via a MutableStateFlow<ProductPurchaseState>.
  *
+ * A purchase is considered complete when it is acknowledged.
+ *
+ * Purchase States:
+ *  NotPurchased: No purchase has been made. (may have a message, such as an error from a previous purchase attempt)
+ *  Pending: A purchase has been made, but is still pending.
+ *  Purchased: A purchase has been made and is acknowledged.
+ *  Disabled: BillingClient is disabled.
+ *  Error: An error has occurred. (message to user is required)
+ *
  * @param activity: Activity - the Android activity that is using this class
  * @param _billingMessageFlow: MutableSharedFlow<String> - a flow that emits messages to the UI
  * @param _productPurchaseStateFlow: MutableStateFlow<ProductPurchaseState> - a flow that emits the current purchase state to the UI
@@ -59,7 +68,7 @@ data class ProductPurchaseHelper(
                 BillingClient.BillingResponseCode.OK -> {
                     if (purchases != null) {
                         for (purchase in purchases) {
-                            completePurchase(purchase)
+                            acknowledgeAndCompletePurchase(purchase)
                         }
                     }
                 }
@@ -223,7 +232,7 @@ data class ProductPurchaseHelper(
         }
     }
 
-    private fun completePurchase(purchaseItem: Purchase) {
+    private fun acknowledgeAndCompletePurchase(purchaseItem: Purchase) {
         if (purchaseItem.purchaseState == Purchase.PurchaseState.PURCHASED
             && purchaseItem.products.contains(kProProductId)
         ) {
@@ -315,17 +324,28 @@ data class ProductPurchaseHelper(
                                 logd("Previous Purchase Found, but not acknowledged. Acknowledging... $purchase")
                             }
                             _productPurchaseStateFlow.value = ProductPurchaseState.Pending
-                            completePurchase(purchase) // attempt acknowledge
+                            acknowledgeAndCompletePurchase(purchase) // attempt acknowledge
                             return@PurchasesResponseListener
                         }
                         Purchase.PurchaseState.UNSPECIFIED_STATE -> { // cancelled(?) / Finished(?)
-                            if(purchase.isAcknowledged && purchase.products.contains(kProProductId)) {
-                                coroutineScope.launch {
-                                    //_billingMessageFlow.emit("Previous Purchase Found, is UNSPECIFIED_STATE, but acknowledged and is Pro.")
-                                    logd("Previous Purchase Found, is UNSPECIFIED_STATE, but isAcknowledged and is Pro.")
+                            if(purchase.products.contains(kProProductId)) {
+                                if(purchase.isAcknowledged) {
+                                    coroutineScope.launch {
+                                        //_billingMessageFlow.emit("Previous Purchase Found, in UNSPECIFIED_STATE, but acknowledged and is Pro.")
+                                        logd("Previous Purchase Found, in UNSPECIFIED_STATE, and isAcknowledged and is Pro.")
+                                    }
+                                    _productPurchaseStateFlow.value = ProductPurchaseState.Purchased
+                                    return@PurchasesResponseListener
                                 }
-                                _productPurchaseStateFlow.value = ProductPurchaseState.Purchased
-                                return@PurchasesResponseListener
+                                if(purchase.isAcknowledged.not()) {
+                                    coroutineScope.launch {
+                                        //_billingMessageFlow.emit("Previous Purchase Found, in UNSPECIFIED_STATE, but not acknowledged. Acknowledging...")
+                                        logd("Previous Purchase Found, in UNSPECIFIED_STATE, but not acknowledged. Acknowledging... $purchase")
+                                    }
+                                    _productPurchaseStateFlow.value = ProductPurchaseState.Pending
+                                    acknowledgeAndCompletePurchase(purchase) // attempt acknowledge
+                                    return@PurchasesResponseListener
+                                }
                             }
                         }
                     }

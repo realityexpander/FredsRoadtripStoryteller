@@ -1,5 +1,5 @@
 
-Alpha Release 13
+Alpha Build 13
 - map rendering improvements
 - Added billing system for pro users
 - Added more debug info to UI
