@@ -188,7 +188,7 @@ data class ProductPurchaseHelper(
 
     private fun completePurchase(purchaseItem: Purchase) {
         if (purchaseItem.purchaseState == Purchase.PurchaseState.PURCHASED
-            && purchaseItem.products.contains(proProductId)
+            && purchaseItem.products.contains(kProProductId)
         ) {
             coroutineScope.launch {
                 _billingMessageFlow.emit("Purchase Submitted...")
