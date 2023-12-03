@@ -102,7 +102,7 @@ data class ProductPurchaseHelper(
                     //coroutineScope.launch {
                     //    _billingMessageFlow.emit("Billing Client Connected")
                     //}
-                        queryProduct(proProductId)
+                        queryProduct(kProProductId)
                         reloadPurchase()
                     }
                     else -> {
@@ -282,7 +282,7 @@ data class ProductPurchaseHelper(
                             return@PurchasesResponseListener
                         }
                         Purchase.PurchaseState.UNSPECIFIED_STATE -> { // cancelled(?) / Finished(?)
-                            if(purchase.isAcknowledged && purchase.products.contains(proProductId)) {
+                            if(purchase.isAcknowledged && purchase.products.contains(kProProductId)) {
                                 coroutineScope.launch {
                                     //_billingMessageFlow.emit("Previous Purchase Found, is UNSPECIFIED_STATE, but acknowledged and is Pro.")
                                     logd("Previous Purchase Found, is UNSPECIFIED_STATE, but acknowledged and is Pro.")
