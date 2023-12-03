@@ -115,9 +115,10 @@ kotlin {
                 // Firebase SDK for Google Analytics
                 api(libs.google.firebase.analytics.ktx.get())
                 api(libs.google.firebase.crashlytics.get())
-                // Firebase feedback // todo bump version to final for release
-                implementation(libs.google.firebase.appdistribution.api.ktx)
-                implementation(libs.google.firebase.appdistribution)
+
+//                // Firebase feedback // todo bump version to final for release
+//                implementation(libs.google.firebase.appdistribution.api.ktx)
+//                implementation(libs.google.firebase.appdistribution)
 
                 // Billing
                 api(libs.android.billingclient.billing)

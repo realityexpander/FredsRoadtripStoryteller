@@ -4,7 +4,7 @@ import GPSLocationService
 import MainView
 import _billingMessageFlow
 import _errorMessageFlow
-import _isProPurchasedFlow
+import _productPurchaseStateFlow
 import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -191,7 +191,7 @@ class MainActivity : AppCompatActivity(),
             }
         }
 
-        purchaseHelper = PurchaseHelper(this, _billingMessageFlow, _isProPurchasedFlow)
+        purchaseHelper = PurchaseHelper(this, _billingMessageFlow, _productPurchaseStateFlow)
         purchaseHelper.billingSetup()
     }
 

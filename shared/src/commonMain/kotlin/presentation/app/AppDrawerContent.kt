@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -23,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -66,6 +68,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import appNameStr
+import data.billing.ProductPurchaseState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
@@ -88,7 +91,7 @@ fun AppDrawerContent(
     onClickStartSpeakingMarker: (Marker, isSpeakDetailsEnabled: Boolean) -> Unit = { _, _ -> },
     onClickStopSpeakingMarker: () -> Unit = {},
     onLocateMarker: (Marker) -> Unit = {},
-    isProPurchased: Boolean = false,
+    productPurchaseState: ProductPurchaseState = ProductPurchaseState.Disabled,
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -161,21 +164,82 @@ fun AppDrawerContent(
     Spacer(modifier = Modifier.height(16.dp))    // Show onboarding button
 
     // Purchase Pro Version
-    if(!isProPurchased) {
-        Button(
-            onClick = {
-                coroutineScope.launch {
-                    onCloseDrawer()
-                    purchaseProVersionAction()
+    println("📌📌📌AppDrawerContent: proPurchaseState: $productPurchaseState")
+    when(productPurchaseState) {
+        is ProductPurchaseState.NotPurchased -> {
+            Button(
+                onClick = {
+                    coroutineScope.launch {
+                        onCloseDrawer()
+                        purchaseProVersionAction()
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, end = 8.dp),
+            ) {
+                Text(
+                    "Purchase Pro Version",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp, end = 8.dp),
+                    fontStyle = FontStyle.Normal,
+                    fontSize = MaterialTheme.typography.body1.fontSize,
+                    textAlign = TextAlign.Center,
+                )
+            }
+            productPurchaseState.lastBillingMessage?.let {
+                Text(
+                    productPurchaseState.lastBillingMessage,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp, end = 8.dp)
+                        .background(MaterialTheme.colors.error),
+                    fontStyle = FontStyle.Normal,
+                    fontSize = MaterialTheme.typography.body1.fontSize,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colors.onError,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+        }
+        is ProductPurchaseState.Pending -> {
+            Button(
+                onClick = { },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, end = 8.dp),
+                enabled = false
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp, end = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        "Processing purchase...",
+                        modifier = Modifier
+                            .padding(start = 8.dp, end = 8.dp),
+                        fontStyle = FontStyle.Normal,
+                        fontSize = MaterialTheme.typography.body1.fontSize,
+                        textAlign = TextAlign.Center,
+                    )
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .height(18.dp)
+                            .width(18.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colors.onPrimary,
+                        backgroundColor = MaterialTheme.colors.primary
+                    )
                 }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 8.dp, end = 8.dp),
-        ) {
+            }
+        }
+        is ProductPurchaseState.Purchased -> {
             Text(
-//            "Purchase Pro Version",
-                if (isProPurchased) "Pro Version Enabled" else "Purchase Pro Version",
+                "Pro Version Enabled",
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 8.dp, end = 8.dp),
@@ -184,16 +248,38 @@ fun AppDrawerContent(
                 textAlign = TextAlign.Center,
             )
         }
-    } else {
-        Text(
-            "Pro Version Enabled",
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 8.dp, end = 8.dp),
-            fontStyle = FontStyle.Normal,
-            fontSize = MaterialTheme.typography.body1.fontSize,
-            textAlign = TextAlign.Center,
-        )
+        is ProductPurchaseState.Disabled -> {
+            Button(
+                onClick = { },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, end = 8.dp),
+                enabled = false
+            ) {
+                Text(
+                    "Purchase Pro Version",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp, end = 8.dp),
+                    fontStyle = FontStyle.Normal,
+                    fontSize = MaterialTheme.typography.body1.fontSize,
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+        is ProductPurchaseState.Error -> {
+            Text(
+                "Purchase Error - ${productPurchaseState.errorMessage}",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, end = 8.dp)
+                    .background(MaterialTheme.colors.onError),
+                fontStyle = FontStyle.Normal,
+                fontSize = MaterialTheme.typography.body1.fontSize,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colors.onError
+            )
+        }
     }
     Spacer(modifier = Modifier.height(16.dp))
 

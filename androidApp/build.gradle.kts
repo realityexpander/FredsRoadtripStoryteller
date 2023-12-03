@@ -174,5 +174,9 @@ android {
 
         // Splash Screen
         implementation(libs.androidx.core.splashscreen)
+
+        // Firebase feedback // todo bump version to final for release
+        debugImplementation(libs.google.firebase.appdistribution.api.ktx)
+        debugImplementation(libs.google.firebase.appdistribution)
     }
 }

@@ -54,6 +54,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import data.MarkersRepo
 import data.appSettings
+import data.billing.ProductPurchaseState
 import data.configPropertyFloat
 import data.configPropertyString
 import data.loadMarkerDetails.loadMarkerDetails
@@ -136,10 +137,13 @@ val errorMessageFlow: SharedFlow<String> = _errorMessageFlow  // read-only share
 var _billingMessageFlow: MutableSharedFlow<String> = MutableSharedFlow()
 val billingMessageFlow: SharedFlow<String> = _billingMessageFlow  // read-only shared flow sent from Android side
 
-@Suppress("ObjectPropertyName")
-var _isProPurchasedFlow: MutableStateFlow<Boolean> = MutableStateFlow(false)
-val isProPurchasedFlow: SharedFlow<Boolean> = _isProPurchasedFlow  // read-only shared flow sent from Android side
+//@Suppress("ObjectPropertyName")
+//var _isProPurchasedFlow: MutableStateFlow<Boolean> = MutableStateFlow(false)
+//val isProPurchasedFlow: SharedFlow<Boolean> = _isProPurchasedFlow  // read-only shared flow sent from Android side
 
+@Suppress("ObjectPropertyName")
+var _productPurchaseStateFlow: MutableStateFlow<ProductPurchaseState> = MutableStateFlow(ProductPurchaseState.NotPurchased())
+val productPurchaseStateFlow: SharedFlow<ProductPurchaseState> = _productPurchaseStateFlow  // read-only shared flow sent from Android side
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -593,13 +597,14 @@ fun App(
                 billingMessageStr = billingMessage
 
                 coroutineScope.launch {
-                    delay(5000)
+                    delay(8000)
                     billingMessageStr = null
                 }
             }
         }
 
-        val isProPurchased = isProPurchasedFlow.collectAsState(false).value
+//        val isProPurchased = isProPurchasedFlow.collectAsState(false).value
+        val productPurchaseState = productPurchaseStateFlow.collectAsState(ProductPurchaseState.NotPurchased()).value
 
         // For render performance tuning.
         didFullFrameRender = false
@@ -808,7 +813,7 @@ fun App(
                                 shouldZoomCameraToLatLongZoom = LatLongZoom(marker.position, 14f)
                             }
                         },
-                        isProPurchased = isProPurchased,
+                        productPurchaseState = productPurchaseState,
                     )
                 }
             },
