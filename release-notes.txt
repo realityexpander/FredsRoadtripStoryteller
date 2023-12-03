@@ -1,2 +1,5 @@
-Alpha Release 12
 
+Alpha Release 12
+- map rendering improvements
+- Added billing system for pro users
+- Added more debug info to UI

@@ -141,6 +141,19 @@ https://github.com/JetBrains/compose-multiplatform/tree/master/examples/cocoapod
 - Compose Samples
   - https://github.com/android/compose-samples  
 
+- Billing
+- https://developer.android.com/google/play/billing/integrate
+- https://medium.com/androiddevelopers/working-with-google-play-billing-part-2-b859b55426d2
+- https://developer.android.com/google/play/billing/errors
+- Nice example in compose: https://www.answertopia.com/jetpack-compose/a-jetpack-compose-in-app-purchasing-tutorial/
+- Book from the author: https://www.ebookfrenzy.com/pdf_previews/JetpackCompose1.4EssentialsPreview.pdf
+- Handling test licenses: https://play.google.com/console/u/2/developers/7466162782462237210/license-tester
+- In-app products dashboard: https://play.google.com/console/u/2/developers/7466162782462237210/app/4975423493158681529/managed-products
+- https://developer.android.com/google/play/billing/integrate
+- https://reintech.io/blog/implementing-in-app-purchases-kotlin-google-play-billing-library
+- https://support.google.com/googleplay/android-developer/answer/1153481?hl=en&sjid=4505455023269193106-NC#zippy=%2Ccreate-a-single-in-app-product
+- https://www.namiml.com/blog/set-up-iap-google-play-android-app
+
 ### iOS
 - https://developers.google.com/maps/documentation/ios-sdk/utility/setup
 - Location Manager
