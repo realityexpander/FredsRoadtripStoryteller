@@ -69,6 +69,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import appNameStr
 import data.billing.ProductPurchaseState
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
@@ -164,123 +165,7 @@ fun AppDrawerContent(
     Spacer(modifier = Modifier.height(16.dp))    // Show onboarding button
 
     // Purchase Pro Version
-    println("📌📌📌AppDrawerContent: proPurchaseState: $productPurchaseState")
-    when(productPurchaseState) {
-        is ProductPurchaseState.NotPurchased -> {
-            Button(
-                onClick = {
-                    coroutineScope.launch {
-                        onCloseDrawer()
-                        purchaseProVersionAction()
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 8.dp, end = 8.dp),
-            ) {
-                Text(
-                    "Purchase Pro Version",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 8.dp, end = 8.dp),
-                    fontStyle = FontStyle.Normal,
-                    fontSize = MaterialTheme.typography.body1.fontSize,
-                    textAlign = TextAlign.Center,
-                )
-            }
-            productPurchaseState.lastBillingMessage?.let {
-                Text(
-                    productPurchaseState.lastBillingMessage,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 8.dp, end = 8.dp)
-                        .background(MaterialTheme.colors.error),
-                    fontStyle = FontStyle.Normal,
-                    fontSize = MaterialTheme.typography.body1.fontSize,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colors.onError,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
-        }
-        is ProductPurchaseState.Pending -> {
-            Button(
-                onClick = { },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 8.dp, end = 8.dp),
-                enabled = false
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 8.dp, end = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceAround,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        "Processing purchase...",
-                        modifier = Modifier
-                            .padding(start = 8.dp, end = 8.dp),
-                        fontStyle = FontStyle.Normal,
-                        fontSize = MaterialTheme.typography.body1.fontSize,
-                        textAlign = TextAlign.Center,
-                    )
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .height(18.dp)
-                            .width(18.dp),
-                        strokeWidth = 2.dp,
-                        color = MaterialTheme.colors.onPrimary,
-                        backgroundColor = MaterialTheme.colors.primary
-                    )
-                }
-            }
-        }
-        is ProductPurchaseState.Purchased -> {
-            Text(
-                "Pro Version Enabled",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 8.dp, end = 8.dp),
-                fontStyle = FontStyle.Normal,
-                fontSize = MaterialTheme.typography.body1.fontSize,
-                textAlign = TextAlign.Center,
-            )
-        }
-        is ProductPurchaseState.Disabled -> {
-            Button(
-                onClick = { },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 8.dp, end = 8.dp),
-                enabled = false
-            ) {
-                Text(
-                    "Purchase Pro Version",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 8.dp, end = 8.dp),
-                    fontStyle = FontStyle.Normal,
-                    fontSize = MaterialTheme.typography.body1.fontSize,
-                    textAlign = TextAlign.Center,
-                )
-            }
-        }
-        is ProductPurchaseState.Error -> {
-            Text(
-                "Purchase Error - ${productPurchaseState.errorMessage}",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 8.dp, end = 8.dp)
-                    .background(MaterialTheme.colors.onError),
-                fontStyle = FontStyle.Normal,
-                fontSize = MaterialTheme.typography.body1.fontSize,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colors.onError
-            )
-        }
-    }
+    ProductPurchaseButton(productPurchaseState, coroutineScope, onCloseDrawer)
     Spacer(modifier = Modifier.height(16.dp))
 
 
@@ -549,6 +434,134 @@ fun AppDrawerContent(
                     fontSize = MaterialTheme.typography.body1.fontSize,
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun ProductPurchaseButton(
+    productPurchaseState: ProductPurchaseState,
+    coroutineScope: CoroutineScope,
+    onCloseDrawer: () -> Unit
+) {
+    when (productPurchaseState) {
+        is ProductPurchaseState.NotPurchased -> {
+            Button(
+                onClick = {
+                    coroutineScope.launch {
+                        onCloseDrawer()
+                        purchaseProVersionAction()
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, end = 8.dp),
+            ) {
+                Text(
+                    "Purchase Pro Version",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp, end = 8.dp),
+                    fontStyle = FontStyle.Normal,
+                    fontSize = MaterialTheme.typography.body1.fontSize,
+                    textAlign = TextAlign.Center,
+                )
+            }
+            productPurchaseState.lastBillingMessage?.let {
+                Text(
+                    productPurchaseState.lastBillingMessage,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp, end = 8.dp)
+                        .background(MaterialTheme.colors.error),
+                    fontStyle = FontStyle.Normal,
+                    fontSize = MaterialTheme.typography.body1.fontSize,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colors.onError,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+        }
+
+        is ProductPurchaseState.Pending -> {
+            Button(
+                onClick = { },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, end = 8.dp),
+                enabled = false
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp, end = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        "Processing purchase...",
+                        modifier = Modifier
+                            .padding(start = 8.dp, end = 8.dp),
+                        fontStyle = FontStyle.Normal,
+                        fontSize = MaterialTheme.typography.body1.fontSize,
+                        textAlign = TextAlign.Center,
+                    )
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .height(18.dp)
+                            .width(18.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colors.onPrimary,
+                        backgroundColor = MaterialTheme.colors.primary
+                    )
+                }
+            }
+        }
+
+        is ProductPurchaseState.Purchased -> {
+            Text(
+                "Pro Version Enabled",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, end = 8.dp),
+                fontStyle = FontStyle.Normal,
+                fontSize = MaterialTheme.typography.body1.fontSize,
+                textAlign = TextAlign.Center,
+            )
+        }
+
+        is ProductPurchaseState.Disabled -> {
+            Button(
+                onClick = { },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, end = 8.dp),
+                enabled = false
+            ) {
+                Text(
+                    "Purchase Pro Version",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 8.dp, end = 8.dp),
+                    fontStyle = FontStyle.Normal,
+                    fontSize = MaterialTheme.typography.body1.fontSize,
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+
+        is ProductPurchaseState.Error -> {
+            Text(
+                "Purchase Error - ${productPurchaseState.errorMessage}",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, end = 8.dp)
+                    .background(MaterialTheme.colors.onError),
+                fontStyle = FontStyle.Normal,
+                fontSize = MaterialTheme.typography.body1.fontSize,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colors.onError
+            )
         }
     }
 }
