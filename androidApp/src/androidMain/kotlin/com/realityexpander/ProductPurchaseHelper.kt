@@ -30,7 +30,7 @@ private const val SLOW_PENDING_TRANSACTION = 4  // Billing hidden type for slow 
 private const val kProProductId = "pro" // only supports one product for now
 
 /**
- * PurchaseHelper
+ * ## PurchaseHelper
  *
  * This class handles the purchase flow for the Android app.
  *
@@ -39,13 +39,14 @@ private const val kProProductId = "pro" // only supports one product for now
  * Emits the current purchase state to the UI via a MutableStateFlow<ProductPurchaseState>.
  *
  * A purchase is considered complete when it is acknowledged.
+ * ####
  *
- * Purchase States:
- *  NotPurchased: No purchase has been made. (may have a message, such as an error from a previous purchase attempt)
- *  Pending: A purchase has been made, but is still pending.
- *  Purchased: A purchase has been made and is acknowledged.
- *  Disabled: BillingClient is disabled.
- *  Error: An error has occurred. (message to user is required)
+ * ### **Purchase States:**
+ *  - **`NotPurchased:`** No purchase has been made. (may have a message, such as an error from a previous purchase attempt)
+ *  - **`Pending:`** A purchase has been made, but is still pending.
+ *  - **`Purchased:`** A purchase has been made and is acknowledged.
+ *  - **`Disabled:`** BillingClient is disabled.
+ *  - **`Error:`** An error has occurred. (message to user is required)
  *
  * @param activity: Activity - the Android activity that is using this class
  * @param _billingMessageFlow: MutableSharedFlow<String> - a flow that emits messages to the UI
