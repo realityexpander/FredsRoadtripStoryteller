@@ -16,6 +16,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import co.touchlab.kermit.Logger as Log
 
 private const val SLOW_PENDING_TRANSACTION = 4  // Billing hidden type for slow pending transactions
+private const val kProProductId = "pro" // only supports one product for now
 
 /**
  * PurchaseHelper
@@ -44,8 +45,6 @@ data class ProductPurchaseHelper(
     // Check if a new purchase is being made & if it has been attempted to check for cancellations/timeout
     private var isNewPurchaseGate1 = false // checks if a new purchase is being made, for polling purchase progress.
     private var isNewPurchaseGate2 = false // checks if a new purchase timed out.
-
-    private val proProductId = "pro" // only supports one product for now
 
     // Stores the product name/id
     private val _productName = MutableStateFlow(null as String?)
