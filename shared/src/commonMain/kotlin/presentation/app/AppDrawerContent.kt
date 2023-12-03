@@ -162,12 +162,9 @@ fun AppDrawerContent(
             textAlign = TextAlign.Center,
         )
     }
-    Spacer(modifier = Modifier.height(16.dp))    // Show onboarding button
 
     // Purchase Pro Version
     ProductPurchaseButton(productPurchaseState, coroutineScope, onCloseDrawer)
-    Spacer(modifier = Modifier.height(16.dp))
-
 
     // Show about box
     Button(
@@ -355,9 +352,7 @@ fun AppDrawerContent(
     ) {
         // Header
 
-//        items(entries.size) { markerIdx ->
         items(searchMarkers.size) { markerIdx ->
-//            val marker = entries[markerIdx]
             val marker = searchMarkers[markerIdx]
 
             Row(
@@ -446,6 +441,7 @@ private fun ProductPurchaseButton(
 ) {
     when (productPurchaseState) {
         is ProductPurchaseState.NotPurchased -> {
+            Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
                     coroutineScope.launch {
@@ -481,9 +477,11 @@ private fun ProductPurchaseButton(
                     fontWeight = FontWeight.Bold,
                 )
             }
+            Spacer(modifier = Modifier.height(16.dp))
         }
 
         is ProductPurchaseState.Pending -> {
+            Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = { },
                 modifier = Modifier
@@ -516,9 +514,11 @@ private fun ProductPurchaseButton(
                     )
                 }
             }
+            Spacer(modifier = Modifier.height(16.dp))
         }
 
         is ProductPurchaseState.Purchased -> {
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 "Pro Version Enabled",
                 modifier = Modifier
@@ -528,9 +528,11 @@ private fun ProductPurchaseButton(
                 fontSize = MaterialTheme.typography.body1.fontSize,
                 textAlign = TextAlign.Center,
             )
+            Spacer(modifier = Modifier.height(8.dp))
         }
 
         is ProductPurchaseState.Disabled -> {
+            Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = { },
                 modifier = Modifier
@@ -548,9 +550,11 @@ private fun ProductPurchaseButton(
                     textAlign = TextAlign.Center,
                 )
             }
+            Spacer(modifier = Modifier.height(16.dp))
         }
 
         is ProductPurchaseState.Error -> {
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 "Purchase Error - ${productPurchaseState.errorMessage}",
                 modifier = Modifier
@@ -562,6 +566,7 @@ private fun ProductPurchaseButton(
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colors.onError
             )
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
