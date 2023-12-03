@@ -137,10 +137,6 @@ val errorMessageFlow: SharedFlow<String> = _errorMessageFlow  // read-only share
 var _billingMessageFlow: MutableSharedFlow<String> = MutableSharedFlow()
 val billingMessageFlow: SharedFlow<String> = _billingMessageFlow  // read-only shared flow sent from Android side
 
-//@Suppress("ObjectPropertyName")
-//var _isProPurchasedFlow: MutableStateFlow<Boolean> = MutableStateFlow(false)
-//val isProPurchasedFlow: SharedFlow<Boolean> = _isProPurchasedFlow  // read-only shared flow sent from Android side
-
 @Suppress("ObjectPropertyName")
 var _productPurchaseStateFlow: MutableStateFlow<ProductPurchaseState> = MutableStateFlow(ProductPurchaseState.NotPurchased())
 val productPurchaseStateFlow: SharedFlow<ProductPurchaseState> = _productPurchaseStateFlow  // read-only shared flow sent from Android side
@@ -563,35 +559,7 @@ fun App(
             }
         }
 
-//        // Pro Purchased flow
-//        LaunchedEffect(Unit) {
-//            isProPurchasedFlow.collectLatest { isProPurchased ->
-//                billingMessageStr = if(isProPurchased) { // todo temporary
-//                    "Thank you for your purchase!"
-//                } else {
-//                    "Purchase did not complete"
-//                }
-//
-//                coroutineScope.launch {
-//                    delay(5000)
-//                    billingMessageStr = null
-//                }
-//            }
-//        }
-
-        // Billing messages flow
-//        billingMessageFlow.collectAsState(null).value.let { billingMessage ->
-//            billingMessage?.run {
-//                Log.d("billingMessage = $billingMessage")
-//                coroutineScope.launch {
-//                    scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
-//                    scaffoldState.snackbarHostState
-//                        .showSnackbar(
-//                            billingMessage,
-//                            duration = SnackbarDuration.Long
-//                        )
-//                }
-//            }
+        // Billing messages
         LaunchedEffect(Unit) {
             billingMessageFlow.collectLatest { billingMessage ->
                 billingMessageStr = billingMessage
@@ -602,11 +570,10 @@ fun App(
                 }
             }
         }
-
-//        val isProPurchased = isProPurchasedFlow.collectAsState(false).value
+        // Product purchase state
         val productPurchaseState = productPurchaseStateFlow.collectAsState(ProductPurchaseState.NotPurchased()).value
 
-        // For render performance tuning.
+        // For render performance tuning
         didFullFrameRender = false
 
         BottomSheetScaffold(

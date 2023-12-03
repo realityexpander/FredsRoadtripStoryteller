@@ -56,7 +56,7 @@ class MainActivity : AppCompatActivity(),
 
     private lateinit var billingClient: BillingClient
     private lateinit var productDetails: ProductDetails
-    private lateinit var purchaseHelper: PurchaseHelper
+    private lateinit var productPurchaseHelper: ProductPurchaseHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -163,11 +163,11 @@ class MainActivity : AppCompatActivity(),
                 }
                 if(intent.action == "PurchasePro") {
                     // Guard
-                    purchaseHelper.productName.value ?: run {
+                    productPurchaseHelper.productName.value ?: run {
                         _errorMessageFlow.emit("PurchasePro: productDetails not initialized")
                         return@collect
                     }
-                    purchaseHelper.makePurchase()
+                    productPurchaseHelper.makePurchase()
                 }
             }
         }
@@ -191,8 +191,8 @@ class MainActivity : AppCompatActivity(),
             }
         }
 
-        purchaseHelper = PurchaseHelper(this, _billingMessageFlow, _productPurchaseStateFlow)
-        purchaseHelper.billingSetup()
+        productPurchaseHelper = ProductPurchaseHelper(this, _billingMessageFlow, _productPurchaseStateFlow)
+        productPurchaseHelper.billingSetup()
     }
 
     override fun onInit(status: Int) {

@@ -30,12 +30,11 @@ private const val SLOW_PENDING_TRANSACTION = 4  // Billing hidden type for slow 
  * @param _billingMessageFlow: MutableSharedFlow<String> - a flow that emits messages to the UI
  * @param _productPurchaseStateFlow: MutableStateFlow<ProductPurchaseState> - a flow that emits the current purchase state to the UI
  */
-data class PurchaseHelper(
+data class ProductPurchaseHelper(
     val activity: Activity,
     val _billingMessageFlow: MutableSharedFlow<String> = MutableStateFlow(""),
     val _productPurchaseStateFlow: MutableStateFlow<ProductPurchaseState> = MutableStateFlow(ProductPurchaseState.NotPurchased()),
 ) {
-
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
     private lateinit var billingClient: BillingClient
@@ -81,7 +80,7 @@ data class PurchaseHelper(
                 }
                 else -> {
                     coroutineScope.launch {
-                        _billingMessageFlow.emit("Purchase Error, Response Code: ${billingResult.responseCode}")
+                        _billingMessageFlow.emit("Purchase Error, Code: ${billingResult.responseCode}")
                         logd("Purchase Error, Response Code: ${billingResult.responseCode}")
                         _productPurchaseStateFlow.value = ProductPurchaseState.Error("Billing Error, Code: ${billingResult.responseCode}")
                     }
@@ -194,7 +193,7 @@ data class PurchaseHelper(
         ) {
             coroutineScope.launch {
                 _billingMessageFlow.emit("Purchase Submitted...")
-                logd("Purchase Completed, ${this@PurchaseHelper.purchase.products}, acknowledging...")
+                logd("Purchase Completed, ${this@ProductPurchaseHelper.purchase.products}, acknowledging...")
             }
 
             val acknowledgePurchaseParams = AcknowledgePurchaseParams.newBuilder()
@@ -205,7 +204,7 @@ data class PurchaseHelper(
                     BillingClient.BillingResponseCode.OK -> {
                         coroutineScope.launch {
                             _billingMessageFlow.emit("Purchase Completed Successfully")
-                            logd("Purchase Acknowledged, ${this@PurchaseHelper.purchase.products}")
+                            logd("Purchase Acknowledged, ${this@ProductPurchaseHelper.purchase.products}")
                         }
                         _productPurchaseStateFlow.value = ProductPurchaseState.Purchased
                     }

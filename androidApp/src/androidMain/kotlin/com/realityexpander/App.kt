@@ -40,8 +40,7 @@ class App: Application() {
                     throwable: Throwable?
                 ) {
                     CoroutineScope(Dispatchers.Main).launch {
-//                            _debugLogFlow.emit("debug string") // try instead of debugLog.add()
-
+                        //    _debugLogFlow.emit("debug string") // try instead of debugLog.add()
                         debugLog.add(
                             "${Clock.system(ZoneId.systemDefault()).instant()}: " +
                                     "$severity $tag: " + message
