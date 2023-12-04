@@ -25,7 +25,7 @@ ksoupVersion = "0.2.1"
 ktor-ClientCore = "2.3.5"
 ktor-ClientAndroid = "2.2.4"
 logger-Slf4jNop = "2.0.9"
-pods-google-maps = "8.3.0"
+pods-google-maps = "8.3.1"
 pods-google-mapsUtils = "4.2.2"
 
 
