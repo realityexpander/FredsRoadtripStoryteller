@@ -41,7 +41,7 @@ struct ContentView: View {
         _entitlementManager = StateObject(wrappedValue: entitlementManager)
         _purchaseManager = StateObject(wrappedValue: purchaseManager)
 
-       commonBilling.commandFlow().watch { command in
+        commonBilling.commandFlow().watch { command in
             guard let command = command else { return }
 
             switch command {
@@ -65,12 +65,12 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-        Color.blue.ignoresSafeArea(.all) // status bar color
+            Color.blue.ignoresSafeArea(.all) // status bar color
             ComposeView(
-               commonBilling: commonBilling
+                commonBilling: commonBilling
             ).ignoresSafeArea(.all, edges: .bottom) // Compose has own keyboard handler
 
-// IOS Map experiments, leave for refernce.
+            // IOS Map experiments, leave for refernce.
 //         Map(
 //            coordinateRegion: MKCoordinateRegion(
 //               center: CLLocationCoordinate2D(latitude: 37.779_379, longitude: -122.418_433),
