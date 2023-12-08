@@ -236,7 +236,7 @@ fun MarkerDetailsScreen(
                 onClickStartSpeakingMarker,
                 onDismiss
             )
-            Spacer(modifier = Modifier.padding(8.dp))
+            Spacer(modifier = Modifier.padding(4.dp))
 
             // Marker Info Content
             Column(
@@ -354,7 +354,6 @@ fun MarkerDetailsScreen(
                 } else {
                     PreviewPlaceholder("Another Image")
                 }
-                Spacer(modifier = Modifier.padding(8.dp))
 
                 // Attributions for photo
                 if(marker.photoAttributions.isNotEmpty()) {
@@ -366,6 +365,7 @@ fun MarkerDetailsScreen(
                         )
                     }
                 }
+                Spacer(modifier = Modifier.padding(8.dp))
 
                 // Show loading error (if any)
                 SnackbarHost(
