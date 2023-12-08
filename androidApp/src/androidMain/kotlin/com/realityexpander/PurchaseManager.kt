@@ -304,10 +304,10 @@ data class PurchaseManager(
                             commonBilling.updateState(BillingState.Pending)
                             return@PurchasesResponseListener
                         }
-                        3 -> {
+                        3 -> { // Note: this enum is never used. (unknown why)
                             logd("PURCHASE_STATE=3, Purchase(s) Found, purchaseState: $purchases")
                         }
-                        SLOW_PENDING_TRANSACTION -> {
+                        SLOW_PENDING_TRANSACTION -> { // NOTE: This is a hidden enum, not in the docs (!)
                             coroutineScope.launch {
                                 // billing.updateMessage("Previous Purchase Found, but is SLOW_PENDING_TRANSACTION.")
                                 logd("Previous Purchase Found, but is SLOW_PENDING_TRANSACTION, $purchase")

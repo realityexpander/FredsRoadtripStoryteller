@@ -71,6 +71,7 @@ struct ContentView: View {
             ).ignoresSafeArea(.all, edges: .bottom) // Compose has own keyboard handler
 
             // IOS Map experiments, leave for refernce.
+           
 //         Map(
 //            coordinateRegion: MKCoordinateRegion(
 //               center: CLLocationCoordinate2D(latitude: 37.779_379, longitude: -122.418_433),
@@ -130,6 +131,10 @@ struct ContentView: View {
 //        }.frame(height: 300)
 
             // iOS 17
+        // https://www.hackingwithswift.com/forums/swiftui/ios-17-mapkit-how-to-use-map-selection/22886
+           // https://medium.com/simform-engineering/mapkit-swiftui-in-ios-17-1fec82c3bf00
+           // https://www.kodeco.com/7738344-mapkit-tutorial-getting-started?page=4#toc-anchor-020
+           // https://www.kodeco.com/40607811-new-swiftui-support-for-mapkit-in-xcode-15?page=1#toc-anchor-005
 //          Map(position: $position, selection: $selected) {
 //             Marker("test", coordinate: locations[0].coordinate).tag(1)
 //             Marker("test2", coordinate: locations[1].coordinate).tag(2)

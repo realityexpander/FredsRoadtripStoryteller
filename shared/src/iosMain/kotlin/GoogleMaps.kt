@@ -243,14 +243,14 @@ actual fun GoogleMaps(
     //                            showSomething = !showSomething
     //                        }
 
-//                            override fun mapView(
-//                                mapView: GMSMapView,
-//                                didTapMarker: GMSMarker
-//                            ): Boolean {
-//                                val userData = didTapMarker.userData()
-//                                println("map marker click ${userData}")
-//                                return true
-//                            }
+                            override fun mapView(
+                                mapView: GMSMapView,
+                                didTapMarker: GMSMarker
+                            ): Boolean {
+                                val userData = didTapMarker.userData()
+                                println("map marker click ${userData}")
+                                return true
+                            }
 
     //                        override fun mapView(
     //                            mapView: GMSMapView,

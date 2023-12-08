@@ -6,7 +6,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,7 +27,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -238,6 +236,7 @@ fun MarkerDetailsScreen(
                 onClickStartSpeakingMarker,
                 onDismiss
             )
+            Spacer(modifier = Modifier.padding(8.dp))
 
             // Marker Info Content
             Column(
@@ -355,6 +354,7 @@ fun MarkerDetailsScreen(
                 } else {
                     PreviewPlaceholder("Another Image")
                 }
+                Spacer(modifier = Modifier.padding(8.dp))
 
                 // Attributions for photo
                 if(marker.photoAttributions.isNotEmpty()) {
@@ -493,14 +493,17 @@ fun MarkerDetailsScreen(
         // Show Pan/Zoom Image Dialog
         if(isPanZoomImageDialogVisible) {
             PanZoomImageDialog(
-                onDismiss = { isPanZoomImageDialogVisible = false },
+                onDismiss = {
+                    coroutineScope.launch {
+                        isPanZoomImageDialogVisible = false
+                    }
+                },
                 imageUrl = panZoomDialogImageUrl
             )
         }
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun TitleCloseSubtitleSpeakSection(
     marker: Marker,
@@ -569,7 +572,6 @@ private fun TitleCloseSubtitleSpeakSection(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 // ID, Navigate to Marker, Locate on Map, Speak
 @Composable
 private fun MarkerIdWithNavigateLocateSpeakActionButtonSection(
@@ -698,6 +700,7 @@ fun PanZoomImageDialog(
 ) {
     val kMaxZoomInFactor = 5f
 
+    val coroutineScope = rememberCoroutineScope()
     val painterResource: Resource<Painter> =
         asyncPainterResource(
             data = imageUrl,
@@ -717,24 +720,25 @@ fun PanZoomImageDialog(
         mutableStateOf(false)
     }
 
-    Dialog(
-        properties = DialogProperties(
-            dismissOnBackPress = true,
-            dismissOnClickOutside = true,
-            usePlatformDefaultWidth = false,
-        ),
-        onDismissRequest = {
-            onDismiss()
-        },
+    BoxWithConstraints(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                MaterialTheme.colors.surface,
+                shape = MaterialTheme.shapes.medium
+            )
     ) {
 
-        BoxWithConstraints(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    MaterialTheme.colors.surface,
-                    shape = MaterialTheme.shapes.medium
-                )
+        Dialog(
+            properties =
+                DialogProperties(
+                    dismissOnBackPress = true,
+                    dismissOnClickOutside = true,
+                    usePlatformDefaultWidth = false,
+                ),
+            onDismissRequest = {
+                onDismiss()
+            },
         ) {
 
             // Setup pan/zoom (not rotation) transformable state
@@ -756,101 +760,92 @@ fun PanZoomImageDialog(
 
                     // rotationZ += rotationChange
                 }
-
-            KamelImageBox(
-                resource = painterResource,
-                modifier = Modifier
-                    .fillMaxWidth(),
-                onLoading = { progress ->
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        if (progress < 0.05f) {
-                            Text(
-                                "Loading marker image...",
-                                color = MaterialTheme.colors.onSurface,
-                            )
-                        } else {
-                            CircularProgressIndicator(
-                                progress,
-                                color = MaterialTheme.colors.onSurface,
-                                backgroundColor = MaterialTheme.colors.onSurface.copy(
-                                    alpha = 0.4f
-                                ),
-                            )
+            Box {
+                KamelImage(
+                    resource = painterResource,
+                    contentDescription = "Marker Image",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer {
+                            scaleX = scale
+                            scaleY = scale
+                            translationX = offset.x
+                            translationY = offset.y
+                            // this.rotationZ = rotationZ  // allow rotation?
                         }
-
-                        // Prevent flicker of progress indicator (ugh)
-                        if (progress > 0.85f) {
-                            isFinishedLoading = true
-                        }
-                    }
-                },
-                onFailure = { exception: Throwable ->
-                    Text(
-                        "Image loading error: " + exception.message.toString(),
-                        color = MaterialTheme.colors.error,
-                    )
-                },
-                animationSpec = if (isFinishedLoading)
-                    TweenSpec(800)
-                else
-                    null,
-                onSuccess = { painter ->
-                    Image(
-                        painter,
-                        "Marker Image",
-                        contentScale = ContentScale.Fit,
-                        alignment = Alignment.Center,
-                        modifier = Modifier.fillMaxSize()
-                            .graphicsLayer {
-                                scaleX = scale
-                                scaleY = scale
-                                translationX = offset.x
-                                translationY = offset.y
-                                // this.rotationZ = rotationZ  // allow rotation?
+                        .transformable(
+                            state,
+                            lockRotationOnZoomPan = true
+                        ),
+                    contentScale = ContentScale.Fit,
+                    onLoading = { progress ->
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            if (progress < 0.05f) {
+                                Text(
+                                    "Loading marker image...",
+                                    color = MaterialTheme.colors.onSurface,
+                                )
+                            } else {
+                                CircularProgressIndicator(
+                                    progress,
+                                    color = MaterialTheme.colors.onSurface,
+                                    backgroundColor = MaterialTheme.colors.onSurface.copy(
+                                        alpha = 0.4f
+                                    ),
+                                )
                             }
-                            .transformable(
-                                state,
-                                lockRotationOnZoomPan = true
-                            )
+
+                            // Prevent flicker of progress indicator (ugh)
+                            if (progress > 0.85f) {
+                                isFinishedLoading = true
+                            }
+                        }
+                    },
+                    onFailure = { exception: Throwable ->
+                        Text(
+                            "Image loading error: " + exception.message.toString(),
+                            color = MaterialTheme.colors.error,
+                        )
+                    },
+                )
+
+                // Hint Text
+                Text(
+                    "Pinch to zoom, drag to pan",
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .align(Alignment.BottomCenter)
+                        .background(
+                            MaterialTheme.colors.surface.copy(alpha = 0.5f),
+                            shape = MaterialTheme.shapes.medium
+                        )
+                )
+
+                // Close Button
+                IconButton(
+                    onClick = {
+                        onDismiss()
+                    },
+                    enabled = true,
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .align(Alignment.TopEnd)
+                        .background(
+                            MaterialTheme.colors.surface.copy(alpha = 0.5f),
+                            shape = MaterialTheme.shapes.medium
+                        )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close",
+                        modifier = Modifier.alpha(0.8f)
                     )
                 }
-            )
-
-            // Close Button
-            IconButton(
-                onClick = {
-                    onDismiss()
-                },
-                modifier = Modifier
-                    .padding(8.dp)
-                    .align(Alignment.TopEnd)
-                    .background(
-                        MaterialTheme.colors.surface.copy(alpha = 0.5f),
-                        shape = MaterialTheme.shapes.medium
-                    )
-                    .clickable { onDismiss() }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "Close",
-                    modifier = Modifier.alpha(0.8f)
-                )
             }
 
-            // Hint Text
-            Text(
-                "Pinch to zoom, drag to pan",
-                modifier = Modifier
-                    .padding(8.dp)
-                    .align(Alignment.BottomCenter)
-                    .background(
-                        MaterialTheme.colors.surface.copy(alpha = 0.5f),
-                        shape = MaterialTheme.shapes.medium
-                    )
-            )
         }
     }
 }
