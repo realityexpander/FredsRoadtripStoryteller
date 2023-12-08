@@ -38,7 +38,9 @@ class PurchaseManager: NSObject, ObservableObject {
     ) {
         self.entitlementManager = entitlementManager
         self.commonBilling = commonBilling
-        self.commonBilling.updateState(billingState: BillingState.NotPurchased(lastBillingMessage: "Initializing..."))
+        self.commonBilling.updateState(
+            billingState: BillingState.NotPurchased(lastBillingMessage: "Initializing...")
+        )
         super.init()
 
         updates = observeTransactionUpdates()
