@@ -22,7 +22,7 @@ kotlin {
         version = "1.0.0"
         summary = "Some description for the Shared Module"
         homepage = "Link to the Shared Module homepage"
-        ios.deploymentTarget = "14.1"
+        ios.deploymentTarget = "15.4"
         podfile = project.file("../iosApp/Podfile") // why doesn't it load the cocoapods from the iosApp podfile?
         framework {
             baseName = "shared"
@@ -116,10 +116,10 @@ kotlin {
                 api(libs.google.firebase.analytics.ktx.get())
                 api(libs.google.firebase.crashlytics.get())
 
-                // Firebase feedback // todo bump version to final for release
-                // todo Add for debug builds only - edit: androidMain/triggerDeveloperFeedback.kt // KEEP THIS REMINDER
-                implementation(libs.google.firebase.appdistribution)
-                implementation(libs.google.firebase.appdistribution.api.ktx)
+//                // Firebase feedback // todo bump version to final for release
+//                // todo Add for debug builds only - edit: androidMain/triggerDeveloperFeedback.kt // KEEP THIS REMINDER
+//                implementation(libs.google.firebase.appdistribution)
+//                implementation(libs.google.firebase.appdistribution.api.ktx)
 
                 // Billing
                 api(libs.android.billingclient.billing)

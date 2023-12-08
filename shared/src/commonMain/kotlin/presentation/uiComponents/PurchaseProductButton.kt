@@ -1,5 +1,7 @@
 package presentation.uiComponents
 
+import BillingState
+import CommonBilling
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -20,34 +22,34 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import consumeProductAction
-import data.billing.ProductPurchaseState
 import isDebuggable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import purchaseProductAction
 
 // Set to true to enable `consume product` button for testing payments
-private const val isTestingPayments_enableConsumeProduct = false
+private const val isTestingPayments_enableConsumeProduct = true
 
 @Composable
 fun PurchaseProductButton(
-    productPurchaseState: ProductPurchaseState,
+    billingState: BillingState,
+    commonBilling: CommonBilling,
     coroutineScope: CoroutineScope,
     onCloseDrawer: () -> Unit
 ) {
-    when (productPurchaseState) {
-        is ProductPurchaseState.NotPurchased -> {
+    when (billingState) {
+        is BillingState.NotPurchased -> {
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
                     coroutineScope.launch {
                         onCloseDrawer()
-                        purchaseProductAction()
+                        purchaseProductAction(commonBilling)
                     }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 8.dp, end = 8.dp),
+                    .padding(start = 16.dp, end = 16.dp),
             ) {
                 Text(
                     "Purchase Pro Version",
@@ -59,30 +61,32 @@ fun PurchaseProductButton(
                     textAlign = TextAlign.Center,
                 )
             }
-            productPurchaseState.lastBillingMessage?.let {
-                Text(
-                    productPurchaseState.lastBillingMessage,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 8.dp, end = 8.dp)
-                        .background(MaterialTheme.colors.error),
-                    fontStyle = FontStyle.Normal,
-                    fontSize = MaterialTheme.typography.body1.fontSize,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colors.onError,
-                    fontWeight = FontWeight.Bold,
-                )
+            billingState.lastBillingMessage?.let {
+                if(it.isNotBlank()) {
+                    Text(
+                        billingState.lastBillingMessage,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 8.dp, end = 8.dp)
+                            .background(MaterialTheme.colors.error),
+                        fontStyle = FontStyle.Normal,
+                        fontSize = MaterialTheme.typography.body1.fontSize,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colors.onError,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        is ProductPurchaseState.Pending -> {
+        is BillingState.Pending -> {
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = { },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 8.dp, end = 8.dp),
+                    .padding(start = 16.dp, end = 16.dp),
                 enabled = false
             ) {
                 Row(
@@ -113,13 +117,13 @@ fun PurchaseProductButton(
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        is ProductPurchaseState.Purchased -> {
+        is BillingState.Purchased -> {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                "Pro Version Enabled",
+                "Pro Version Enabled ✔︎",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 8.dp, end = 8.dp),
+                    .padding(start = 16.dp, end = 16.dp),
                 fontStyle = FontStyle.Normal,
                 fontSize = MaterialTheme.typography.body1.fontSize,
                 textAlign = TextAlign.Center,
@@ -127,13 +131,13 @@ fun PurchaseProductButton(
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-        is ProductPurchaseState.Disabled -> {
+        is BillingState.Disabled -> {
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = { },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 8.dp, end = 8.dp),
+                    .padding(start = 16.dp, end = 16.dp),
                 enabled = false
             ) {
                 Text(
@@ -149,13 +153,13 @@ fun PurchaseProductButton(
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        is ProductPurchaseState.Error -> {
+        is BillingState.Error -> {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                "Purchase Error - ${productPurchaseState.errorMessage}",
+                "Purchase Error - ${billingState.errorMessage}",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 8.dp, end = 8.dp)
+                    .padding(start = 16.dp, end = 16.dp)
                     .background(MaterialTheme.colors.onError),
                 fontStyle = FontStyle.Normal,
                 fontSize = MaterialTheme.typography.body1.fontSize,
@@ -169,18 +173,18 @@ fun PurchaseProductButton(
     // Show consume product button for testing payments
     if(isTestingPayments_enableConsumeProduct
         && isDebuggable
-        && productPurchaseState is ProductPurchaseState.Purchased
+        && billingState is BillingState.Purchased
     ) {
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
                 coroutineScope.launch {
-                    consumeProductAction()
+                    consumeProductAction(commonBilling)
                 }
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 8.dp, end = 8.dp)
+                .padding(start = 16.dp, end = 16.dp)
             ,
         ) {
             Text(

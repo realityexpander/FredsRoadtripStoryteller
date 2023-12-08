@@ -1,8 +1,7 @@
-import android.speech.tts.TextToSpeech
-import com.google.firebase.appdistribution.ktx.appDistribution
-import com.google.firebase.ktx.Firebase
+//import com.google.firebase.appdistribution.ktx.appDistribution
+//import com.google.firebase.ktx.Firebase
 
 actual fun triggerDeveloperFeedback() {
     // todo remember to uncomment for debug release
-        Firebase.appDistribution.startFeedback("We value your feedback!")
+//        Firebase.appDistribution.startFeedback("We value your feedback!")
 }

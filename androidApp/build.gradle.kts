@@ -1,4 +1,4 @@
-import com.google.firebase.appdistribution.gradle.firebaseAppDistribution
+
 import org.jetbrains.compose.internal.utils.localPropertiesFile
 import java.util.Properties
 
@@ -15,7 +15,7 @@ plugins {
     // Crashlytics
     id("com.google.firebase.crashlytics")
     // Firebase App Distribution Gradle plugin
-    id("com.google.firebase.appdistribution")
+//    id("com.google.firebase.appdistribution")
 
     id("com.github.gmazzo.buildconfig")
 }
@@ -28,8 +28,8 @@ kotlin {
                 implementation(project(":shared"))
 
                 // Firebase feedback // todo bump version to final for release
-                implementation(libs.google.firebase.appdistribution)
-                implementation(libs.google.firebase.appdistribution.api.ktx)
+//                implementation(libs.google.firebase.appdistribution)
+//                implementation(libs.google.firebase.appdistribution.api.ktx)
             }
         }
         androidMain.kotlin // to remove useless warning: "Variable 'androidMain' is never used"
@@ -95,12 +95,12 @@ android {
             isJniDebuggable = true
             isDefault = true
 
-            firebaseAppDistribution {
-                artifactType = "APK"
-                releaseNotesFile = "release-notes.txt"
-                testersFile = "testers-debug.txt"
-            }
-            //buildConfigField("String", "yahoo", "\"true\"") // android only
+//            firebaseAppDistribution {
+//                artifactType = "APK"
+//                releaseNotesFile = "release-notes.txt"
+//                testersFile = "testers-debug.txt"
+//            }
+            //buildConfigField("String", "android", "\"true\"") // android only
         }
 
         // for APK: ./gradlew assembleRelease appDistributionUploadRelease
@@ -113,11 +113,11 @@ android {
                 "proguard-rules.pro"
             )
 
-            firebaseAppDistribution {
-                artifactType = "APK"
-                releaseNotesFile = "release-notes.txt"
-                testersFile = "testers-debug.txt" // NOTE: This is the same as debug testers
-            }
+//            firebaseAppDistribution {
+//                artifactType = "APK"
+//                releaseNotesFile = "release-notes.txt"
+//                testersFile = "testers-debug.txt" // NOTE: This is the same as debug testers
+//            }
         }
     }
 

@@ -1,3 +1,4 @@
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -43,6 +44,7 @@ import cocoapods.GoogleMaps.kGMSTypeSatellite
 import data.loadMarkers.milesToMeters
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.CoreLocation.CLLocationCoordinate2DMake
+import platform.MapKit.MKMapView
 import platform.UIKit.UIColor
 import platform.darwin.NSObject
 import presentation.maps.CameraLocationBounds
@@ -100,6 +102,7 @@ actual fun GoogleMaps(
     var showSomething = remember { false } // leave for testing purposes
 
     val googleMapView = remember(isMapRedrawTriggered) { GMSMapView() }
+    val appleMapView = remember(isMapRedrawTriggered) { MKMapView() }
 
     LaunchedEffect(userLocation, markers) {
         if (userLocation != null) {
@@ -136,241 +139,327 @@ actual fun GoogleMaps(
         }
     }
 
-    // Note: Why there so many `did_____Change` variables, and the `isRedrawMapTriggered` variable?
-    // Implementing the `GoogleMaps` using UIKit inside a composable is a bit of a hack, as it's
-    //       not really meant to be used inside a Composable. To work with this limitation we have to
-    //       trigger independent updates of the map "parts" (ie: markers, heatmaps), and sometimes
-    //       re-render the map elements, on a one-time basis. This is done by setting the
-    //       `isRedrawMapTriggered` variable to `true` and then back to `false` after the map is
-    //       re-rendered. This is done in the `update` block of the `UIKitView` below.
-    // If it's not done like this, the UI for the map will not allow the user to move around
-    //       using gestures.
     Box(modifier.fillMaxSize()) {
+
+        // Use MKMapView from Apple
+        if (false) {
+//            UIKitView(
+//                modifier = Modifier,
+//                interactive = true,
+//                factory = {
+//                    appleMapView.delegate = object : MKMapViewDelegateProtocol, NSObject() {
+//                        override fun mapView(
+//                            mapView: MKMapView,
+//                            didSelectAnnotation: MKAnnotationProtocol
+//                        ) {
+//                            println("mapView didSelectAnnotation")
+//                        }
+//                    }
+//
+//                    appleMapView
+//                },
+//                update = { mapView ->
+//
+//                    // render the markers
+//                    if (isMarkersEnabled) {
+//                        mapView.removeAnnotations(mapView.annotations)
+//                        markers?.forEach { marker ->
+//                            val annotation1 = object : MKAnnotationProtocol, NSObject() {
+//                                override fun coordinate(): CValue<CLLocationCoordinate2D> {
+//                                    return CLLocationCoordinate2DMake(
+//                                        latitude = marker.position.latitude,
+//                                        longitude = marker.position.longitude
+//                                    )
+//                                }
+//
+//                                override fun title(): String {
+//                                    return marker.title
+//                                }
+//
+//                                override fun subtitle(): String {
+//                                    return marker.subtitle
+//                                }
+//                            }
+//                            mapView.addAnnotation(annotation1)
+//
+//                            val annotationView = MKMarkerAnnotationView(
+//                                annotation = annotation1,
+//                                reuseIdentifier = null
+//                            ).apply {
+//                                markerTintColor = UIColor.blueColor()
+//                                //glyphImage = UIImage.imageNamed("map-marker")
+//                                glyphTintColor = UIColor.whiteColor()
+//                                canShowCallout = true
+//                                //calloutOffset = CGPoint(x = -5.0, y = 5.0)
+//                                rightCalloutAccessoryView = UIButton.buttonWithType(
+//                                    buttonType = UIButtonTypeDetailDisclosure
+//                                ).apply {
+//                                    addTarget(
+//                                        target = object : NSObject(), NSObjectProtocol {
+//                                            override fun performSelector(
+//                                                aSelector: CPointer<out CPointed>? /* SEL */,
+//                                                withObject: Any?
+//                                            ): Any? {
+//                                                println("performSelector")
+//                                                return null
+//                                            }
+//                                        },
+//                                        action = NSSelectorFromString("performSelector:withObject:"),
+//                                        forControlEvents = UIControlEventTouchUpInside
+//                                    )
+//                                }
+//                            }
+//                            mapView.setShowsUserLocation(true)
+//                        }
+//
+//                        println("mapView.annotations=${mapView.annotations}, mapView.annotations.size=${mapView.annotations.size}, ${mapView.selectedAnnotations}")
+//                    }
+//                }
+//            )
+        }
+
+
+        // Note: Why there so many `did_____Change` variables, and the `isRedrawMapTriggered` variable?
+        // Implementing the `GoogleMaps` using UIKit inside a composable is a bit of a hack, as it's
+        //       not really meant to be used inside a Composable. To work with this limitation we have to
+        //       trigger independent updates of the map "parts" (ie: markers, heatmaps), and sometimes
+        //       re-render the map elements, on a one-time basis. This is done by setting the
+        //       `isRedrawMapTriggered` variable to `true` and then back to `false` after the map is
+        //       re-rendered. This is done in the `update` block of the `UIKitView` below.
+        // If it's not done like this, the UI for the map will not allow the user to move around
+        //       using gestures.
         // Google Maps
-        UIKitView(
-            modifier = Modifier,
-            interactive = true,
-            factory = {
-////                // Does not work yet... :(
+        if (true) {
+            UIKitView(
+                modifier = Modifier,
+                interactive = true,
+                factory = {
+    ////                // Does not work yet... :(
                     googleMapView.delegate = object : NSObject(), GMSMapViewDelegateProtocol {
-//                        override fun mapView(
-//                            mapView: GMSMapView,
-//                            didTapAtCoordinate: CValue<CLLocationCoordinate2D>
-//                        ) {
-//                            showSomething = !showSomething
-//                        }
+    //                        override fun mapView(
+    //                            mapView: GMSMapView,
+    //                            didTapAtCoordinate: CValue<CLLocationCoordinate2D>
+    //                        ) {
+    //                            showSomething = !showSomething
+    //                        }
 
-//                        override fun mapView(
-//                            mapView: GMSMapView,
-//                            didTapMarker: GMSMarker
-//                        ): Boolean {
-//                            val userData = didTapMarker.userData()
-//                            println("map marker click ${userData}")
-//                            return true
-//                        }
+//                            override fun mapView(
+//                                mapView: GMSMapView,
+//                                didTapMarker: GMSMarker
+//                            ): Boolean {
+//                                val userData = didTapMarker.userData()
+//                                println("map marker click ${userData}")
+//                                return true
+//                            }
 
-//                        override fun mapView(
-//                            mapView: GMSMapView,
-//                            didTapInfoWindowOfMarker: GMSMarker
-//                        ) {
-//                            val userData = didTapInfoWindowOfMarker.userData()
-//                            println("map marker click ${userData}")
-//                        }
-                        
+    //                        override fun mapView(
+    //                            mapView: GMSMapView,
+    //                            didTapInfoWindowOfMarker: GMSMarker
+    //                        ) {
+    //                            val userData = didTapInfoWindowOfMarker.userData()
+    //                            println("map marker click ${userData}")
+    //                        }
 
-//                        override fun mapView(
-//                            mapView: GMSMapView,
-//                            didLongPressAtCoordinate: CValue<CLLocationCoordinate2D>
-//                        ) {
-//                            val userData = didLongPressAtCoordinate
-//                            println("map marker click ${userData}")
-//                            super.mapView(mapView, didLongPressAtCoordinate)
-//                        }
+
+    //                        override fun mapView(
+    //                            mapView: GMSMapView,
+    //                            didLongPressAtCoordinate: CValue<CLLocationCoordinate2D>
+    //                        ) {
+    //                            val userData = didLongPressAtCoordinate
+    //                            println("map marker click ${userData}")
+    //                            super.mapView(mapView, didLongPressAtCoordinate)
+    //                        }
 
                     }
 
-                googleMapView
-            },
-            update = { view ->
-                if(isTrackingEnabled) {
-                    userLocation?.let { myLocation ->
-                        view.animateWithCameraUpdate(
-                            GMSCameraUpdate.setTarget(
-                                CLLocationCoordinate2DMake(
-                                    latitude = myLocation.latitude,
-                                    longitude = myLocation.longitude
-                                )
-                            )
-                        )
-                    }
-                } else {
-                    if(!isMapSetupCompleted) { // Sets the camera once during setup, this allows the user to move the map around
-                        shouldSetInitialCameraPosition?.let { cameraPosition ->
+                    googleMapView
+                },
+                update = { view ->
+                    println(
+                        "view.selectedMarker=${view.selectedMarker}, " +
+                                "view.selectedMarker.userData=${view.selectedMarker?.userData()},"
+                    )
+
+                    if (isTrackingEnabled) {
+                        userLocation?.let { myLocation ->
                             view.animateWithCameraUpdate(
                                 GMSCameraUpdate.setTarget(
                                     CLLocationCoordinate2DMake(
-                                        latitude = cameraPosition.target.latitude,
-                                        longitude = cameraPosition.target.longitude
+                                        latitude = myLocation.latitude,
+                                        longitude = myLocation.longitude
+                                    )
+                                )
+                            )
+                        }
+                    } else {
+                        if (!isMapSetupCompleted) { // Sets the camera once during setup, this allows the user to move the map around
+                            shouldSetInitialCameraPosition?.let { cameraPosition ->
+                                view.animateWithCameraUpdate(
+                                    GMSCameraUpdate.setTarget(
+                                        CLLocationCoordinate2DMake(
+                                            latitude = cameraPosition.target.latitude,
+                                            longitude = cameraPosition.target.longitude
+                                        )
+                                    )
+                                )
+                            }
+                        }
+                    }
+
+                    // set the map up only once, this allows the user to move the map around
+                    if (!isMapSetupCompleted) {
+                        view.settings.setAllGesturesEnabled(true)
+                        view.settings.setScrollGestures(true)
+                        view.settings.setZoomGestures(true)
+                        view.settings.setCompassButton(false)
+
+                        view.myLocationEnabled = true // show the users dot
+                        view.settings.myLocationButton = false // we use our own location circle
+
+                        isMapSetupCompleted = true
+                    }
+
+                    if (didMapTypeChange) {
+                        didMapTypeChange = false
+                        view.mapType = gmsMapViewType
+                    }
+
+                    if (didCameraPositionChange) {
+                        didCameraPositionChange = false
+                        shouldSetInitialCameraPosition?.let { cameraPosition ->
+                            view.setCamera(
+                                GMSCameraPosition.cameraWithLatitude(
+                                    cameraPosition.target.latitude,
+                                    cameraPosition.target.longitude,
+                                    cameraPosition.zoom // Note Zoom level is forced here, which changes user's zoom level
+                                )
+                            )
+                        }
+                    }
+
+                    if (didCameraLocationLatLongChange) {
+                        didCameraLocationLatLongChange = false
+                        shouldCenterCameraOnLatLong?.let { cameraLocation ->
+                            view.animateWithCameraUpdate(
+                                GMSCameraUpdate.setTarget(
+                                    CLLocationCoordinate2DMake(
+                                        latitude = cameraLocation.latitude,
+                                        longitude = cameraLocation.longitude
                                     )
                                 )
                             )
                         }
                     }
-                }
 
-                // set the map up only once, this allows the user to move the map around
-                if(!isMapSetupCompleted) {
-                    view.settings.setAllGesturesEnabled(true)
-                    view.settings.setScrollGestures(true)
-                    view.settings.setZoomGestures(true)
-                    view.settings.setCompassButton(false)
+                    if (didCameraPositionLatLongBoundsChange) {
+                        didCameraPositionLatLongBoundsChange = false
+                        cameraLocationBounds?.let { cameraPositionLatLongBounds ->
+                            var bounds = GMSCoordinateBounds()
 
-                    view.myLocationEnabled = true // show the users dot
-                    view.settings.myLocationButton = false // we use our own location circle
-
-                    isMapSetupCompleted = true
-                }
-
-                if(didMapTypeChange) {
-                    didMapTypeChange = false
-                    view.mapType = gmsMapViewType
-                }
-
-                if(didCameraPositionChange) {
-                    didCameraPositionChange = false
-                    shouldSetInitialCameraPosition?.let { cameraPosition ->
-                        view.setCamera(
-                            GMSCameraPosition.cameraWithLatitude(
-                                cameraPosition.target.latitude,
-                                cameraPosition.target.longitude,
-                                cameraPosition.zoom // Note Zoom level is forced here, which changes user's zoom level
-                            )
-                        )
-                    }
-                }
-
-                if(didCameraLocationLatLongChange) {
-                    didCameraLocationLatLongChange = false
-                    shouldCenterCameraOnLatLong?.let { cameraLocation ->
-                        view.animateWithCameraUpdate(
-                            GMSCameraUpdate.setTarget(
-                                CLLocationCoordinate2DMake(
-                                    latitude = cameraLocation.latitude,
-                                    longitude = cameraLocation.longitude
+                            cameraPositionLatLongBounds.coordinates.forEach { latLong ->
+                                bounds = bounds.includingCoordinate(
+                                    CLLocationCoordinate2DMake(
+                                        latitude = latLong.latitude,
+                                        longitude = latLong.longitude
+                                    )
                                 )
-                            )
-                        )
-                    }
-                }
-
-                if(didCameraPositionLatLongBoundsChange) {
-                    didCameraPositionLatLongBoundsChange = false
-                    cameraLocationBounds?.let { cameraPositionLatLongBounds ->
-                        var bounds = GMSCoordinateBounds()
-
-                        cameraPositionLatLongBounds.coordinates.forEach { latLong ->
-                            bounds = bounds.includingCoordinate(
-                                CLLocationCoordinate2DMake(
-                                    latitude = latLong.latitude,
-                                    longitude = latLong.longitude
+                            }
+                            view.animateWithCameraUpdate(
+                                GMSCameraUpdate.fitBounds(
+                                    bounds,
+                                    cameraPositionLatLongBounds.padding.toDouble()
                                 )
                             )
                         }
-                        view.animateWithCameraUpdate(
-                            GMSCameraUpdate.fitBounds(
-                                bounds,
-                                cameraPositionLatLongBounds.padding.toDouble()
-                            )
-                        )
-                    }
-                }
-
-                if(isMapRedrawTriggered) {
-                    // reset the markers & polylines, selected marker, etc.
-                    val oldSelectedMarker = view.selectedMarker
-                    var curSelectedMarker: GMSMarker? = null
-                    val curSelectedMarkerId = view.selectedMarker?.userData as? String
-                    view.clear()
-
-                    // render the user's location "talk" circle
-                    userLocation?.let {
-                        GMSCircle().apply {
-                            position = CLLocationCoordinate2DMake(
-                                userLocation.latitude,
-                                userLocation.longitude
-                            )
-                            radius = seenRadiusMiles.milesToMeters()
-                            fillColor = UIColor.blueColor().colorWithAlphaComponent(0.4)
-                            strokeColor = UIColor.whiteColor().colorWithAlphaComponent(0.8)
-                            strokeWidth = 4.0
-                            map = view
-                        }
                     }
 
-                    // render the "lastMarkerCacheUpdateLocation" circle
-                    // Show Last cache loaded location
-                    if(isMarkersLastUpdatedLocationVisible) {
-                        cachedMarkersLastUpdatedLocation?.let { cachedMarkersLastUpdatedLocation ->
+                    if (isMapRedrawTriggered) {
+                        // reset the markers & polylines, selected marker, etc.
+                        val oldSelectedMarker = view.selectedMarker
+                        var curSelectedMarker: GMSMarker? = null
+                        val curSelectedMarkerId = view.selectedMarker?.userData as? String
+                        view.clear()
+
+                        // render the user's location "talk" circle
+                        userLocation?.let {
                             GMSCircle().apply {
                                 position = CLLocationCoordinate2DMake(
-                                    cachedMarkersLastUpdatedLocation.latitude,
-                                    cachedMarkersLastUpdatedLocation.longitude
+                                    userLocation.latitude,
+                                    userLocation.longitude
                                 )
-                                radius = kMaxReloadRadiusMiles.milesToMeters() * 2
-                                fillColor = UIColor.yellowColor().colorWithAlphaComponent(0.1)
-                                strokeColor = UIColor.whiteColor().colorWithAlphaComponent(0.3)
-                                strokeWidth = 2.0
+                                radius = seenRadiusMiles.milesToMeters()
+                                fillColor = UIColor.blueColor().colorWithAlphaComponent(0.4)
+                                strokeColor = UIColor.whiteColor().colorWithAlphaComponent(0.8)
+                                strokeWidth = 4.0
                                 map = view
                             }
                         }
-                    }
 
-                    // render the markers
-                    if(isMarkersEnabled) {
-                        markers?.forEach { marker ->
-                            val tempMarker = GMSMarker().apply {
-                                position = CLLocationCoordinate2DMake(
-                                    marker.position.latitude,
-                                    marker.position.longitude
-                                )
-                                title = marker.title
-                                userData = marker.id
-                                icon = markerImageWithColor(UIColor.blueColor())
-                                map = view
-                            }
-
-                            if (tempMarker.userData as String == curSelectedMarkerId) {
-                                curSelectedMarker = tempMarker
-                            }
-                        }
-                    }
-
-                    // render the polyline
-                    polyLine?.let { polyLine ->
-                        val points = polyLine.map {
-                            CLLocationCoordinate2DMake(it.latitude, it.longitude)
-                        }
-                        val path = GMSMutablePath().apply {
-                            points.forEach { point ->
-                                addCoordinate(point)
+                        // render the "lastMarkerCacheUpdateLocation" circle
+                        // Show Last cache loaded location
+                        if (isMarkersLastUpdatedLocationVisible) {
+                            cachedMarkersLastUpdatedLocation?.let { cachedMarkersLastUpdatedLocation ->
+                                GMSCircle().apply {
+                                    position = CLLocationCoordinate2DMake(
+                                        cachedMarkersLastUpdatedLocation.latitude,
+                                        cachedMarkersLastUpdatedLocation.longitude
+                                    )
+                                    radius = kMaxReloadRadiusMiles.milesToMeters()
+                                    fillColor = UIColor.yellowColor().colorWithAlphaComponent(0.1)
+                                    strokeColor = UIColor.whiteColor().colorWithAlphaComponent(0.3)
+                                    strokeWidth = 2.0
+                                    map = view
+                                }
                             }
                         }
 
-                        GMSPolyline().apply {
-                            this.path = path
-                            this.map = view
+                        // render the markers
+                        if (isMarkersEnabled) {
+                            markers?.forEach { marker ->
+                                val tempMarker = GMSMarker().apply {
+                                    position = CLLocationCoordinate2DMake(
+                                        marker.position.latitude,
+                                        marker.position.longitude
+                                    )
+                                    title = marker.title
+                                    userData = marker.id
+                                    icon = markerImageWithColor(UIColor.blueColor())
+                                    map = view
+                                }
+
+                                if (tempMarker.userData as String == curSelectedMarkerId) {
+                                    curSelectedMarker = tempMarker
+                                }
+                            }
                         }
-                    }
 
-                    // re-select the marker (if it was selected before)
-                    oldSelectedMarker?.let { _ ->
-                        view.selectedMarker = curSelectedMarker
-                    }
+                        // render the polyline
+                        polyLine?.let { polyLine ->
+                            val points = polyLine.map {
+                                CLLocationCoordinate2DMake(it.latitude, it.longitude)
+                            }
+                            val path = GMSMutablePath().apply {
+                                points.forEach { point ->
+                                    addCoordinate(point)
+                                }
+                            }
 
-                    isMapRedrawTriggered = false
-                }
-            },
-        )
+                            GMSPolyline().apply {
+                                this.path = path
+                                this.map = view
+                            }
+                        }
+
+                        // re-select the marker (if it was selected before)
+                        oldSelectedMarker?.let { _ ->
+                            view.selectedMarker = curSelectedMarker
+                        }
+
+                        isMapRedrawTriggered = false
+                    }
+                },
+            )
+        }
 
         // Local Map Controls
         AnimatedVisibility(
@@ -423,7 +512,6 @@ actual fun GoogleMaps(
             }
         }
 
-
         Column(
             modifier = Modifier
                 .padding(16.dp)
@@ -431,7 +519,7 @@ actual fun GoogleMaps(
             horizontalAlignment = Alignment.End
         ) {
             // Toggle tracking
-            if(onToggleIsTrackingEnabledClick != null) {
+            if (onToggleIsTrackingEnabledClick != null) {
                 FloatingActionButton(
                     modifier = Modifier
                         .padding(16.dp),
@@ -448,7 +536,7 @@ actual fun GoogleMaps(
             }
 
             // Center on user's
-            if(onFindMeButtonClick != null) {
+            if (onFindMeButtonClick != null) {
                 FloatingActionButton(
                     modifier = Modifier
                         .padding(16.dp),

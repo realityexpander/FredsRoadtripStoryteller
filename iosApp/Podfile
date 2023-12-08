@@ -1,8 +1,8 @@
 target 'iosApp' do
   use_frameworks!
-  platform :ios, '14.1'
+  platform :ios, '15.4'  # ios.deploymentTarget
   pod 'shared', :path => '../shared'
-  pod 'GoogleMaps', '8.3.0' # latest version
+  pod 'GoogleMaps', '8.3.1' # latest version
 end
 
 # pod 'GoogleMaps', '8.2.0'

@@ -1,5 +1,7 @@
 package previews
 
+import BillingState
+import CommonBilling
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -58,6 +60,8 @@ fun AppDrawerPreview() {
                         title = "Plans to fight the Ordinance",
                         insertedAtEpochMilliseconds = 0,
                     ),
+                    commonBilling = CommonBilling(),
+                    billingState = BillingState.NotPurchased(),
                 )
 
             }

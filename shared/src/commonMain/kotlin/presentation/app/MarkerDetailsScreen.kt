@@ -229,6 +229,16 @@ fun MarkerDetailsScreen(
             // Subtitle & Speak Button
             TitleCloseSubtitleSpeakSection(marker, onDismiss)
 
+            // ID, Navigate to Marker, Locate on Map, Speak
+            MarkerIdWithNavigateLocateSpeakActionButtonSection(
+                marker,
+                isTextToSpeechCurrentlySpeaking,
+                coroutineScope,
+                onLocateMarkerOnMap,
+                onClickStartSpeakingMarker,
+                onDismiss
+            )
+
             // Marker Info Content
             Column(
                 Modifier
@@ -378,16 +388,6 @@ fun MarkerDetailsScreen(
 
                     )
                 }
-
-                // ID, Navigate to Marker, Locate on Map, Speak
-                MarkerIdWithNavigateLocateSpeakActionButtonSection(
-                    marker,
-                    isTextToSpeechCurrentlySpeaking,
-                    coroutineScope,
-                    onLocateMarkerOnMap,
-                    onClickStartSpeakingMarker,
-                    onDismiss
-                )
 
                 // Inscription
                 if (marker.englishInscription.isNotBlank()) { // todo add spanish translation

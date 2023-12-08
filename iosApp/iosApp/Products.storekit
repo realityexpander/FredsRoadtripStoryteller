@@ -1,0 +1,35 @@
+{
+  "identifier" : "ADC54703",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "17.99",
+      "familyShareable" : false,
+      "internalID" : "6473706318",
+      "localizations" : [
+        {
+          "description" : "Pro - Remove all limitations",
+          "displayName" : "Pro - Unlimited Version",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "pro",
+      "referenceName" : "pro",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "6473706460",
+    "_developerTeamID" : "8M6DWG8MX5",
+    "_lastSynchronizedDate" : 723411597.66389894
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 2,
+    "minor" : 0
+  }
+}

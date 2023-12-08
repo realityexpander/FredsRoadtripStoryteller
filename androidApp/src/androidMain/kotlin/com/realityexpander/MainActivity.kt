@@ -1,11 +1,10 @@
 package com.realityexpander
 
+import BillingCommand
+import CommonBilling
 import GPSLocationService
 import MainView
-import ProductPurchaseAction
-import _billingMessageFlow
 import _errorMessageFlow
-import _productPurchaseStateFlow
 import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -52,9 +51,10 @@ class MainActivity : AppCompatActivity(),
     private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
     private val splashState = MutableStateFlow(false)
 
-    private var isSendingUserToAppSettingsScreen = false
+    private var isSendingUserToAndroidAppSettingsScreen = false
 
-    private lateinit var productPurchaseHelper: ProductPurchaseHelper
+    private val commonBilling = CommonBilling()
+    private lateinit var purchaseManager: PurchaseManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,10 +87,11 @@ class MainActivity : AppCompatActivity(),
 
                         // Intent to open the App Settings
                         Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            @Suppress("RemoveRedundantQualifierName") // We are using the Android flavor of Uri
                             data = android.net.Uri.parse("package:$packageName")
                             startActivity(this)
                         }
-                        isSendingUserToAppSettingsScreen = true
+                        isSendingUserToAndroidAppSettingsScreen = true
                     }
                     .setNegativeButton("Cancel") { _, _ ->
 
@@ -114,7 +115,7 @@ class MainActivity : AppCompatActivity(),
                 appSettings.isPermissionsGranted = true
 
                 setContent {
-                    MainView()
+                    MainView(commonBilling)
                 }
             }
         }
@@ -131,50 +132,79 @@ class MainActivity : AppCompatActivity(),
             Log.i("onMapsSdkInitialized: initialized Google Maps SDK, version: ${it.name}")
         }
 
-        // Collects the intent flow from the common module Android specific code
-        // note: for some reason, this doesn't work in the common module, so we must collect assert(true)
-        //       flow from the Android specific code, and then emit the intent from this MainActivity.
+        // Collects the "command intent" flow from the common module for Android specific code
+        // note: for some reason, this doesn't work in the common module, so we must collect the intent
+        //       flow from the Android-specific code, and then emit the intent from this MainActivity. __/shrug\__
         val scope = CoroutineScope(Dispatchers.Main)
         scope.launch {
             intentFlow.collect { intent ->
-                if(intent.action == GPSLocationService.ACTION_STOP_BACKGROUND_UPDATES) {
-                    stopBackgroundUpdates()
-                }
-                if(intent.action == GPSLocationService.ACTION_START_BACKGROUND_UPDATES) {
-                    startBackgroundUpdates()
-                }
-                if(intent.action == Intent.ACTION_VIEW) { // open a web link
-                    startActivity(intent)
-                }
-                if(intent.action == Intent.ACTION_SEND) { // send an email
-                    try {
-                        startActivity(Intent.createChooser(intent, "Send Email"))
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        Log.e("MainActivity: onCreate: startActivity(Intent.createChooser(intent, \"Send Email\")) failed: $e")
+                when (intent.action) {
+                    GPSLocationService.ACTION_STOP_BACKGROUND_UPDATES -> {
+                        stopBackgroundUpdates()
+                    }
+                    GPSLocationService.ACTION_START_BACKGROUND_UPDATES -> {
+                        startBackgroundUpdates()
+                    }
+                    Intent.ACTION_VIEW -> { // open a web link
+                        startActivity(intent)
+                    }
+                    Intent.ACTION_SEND -> { // send an email
+                        try {
+                            startActivity(Intent.createChooser(intent, "Send Email"))
+                        } catch (e: Exception) {
+                            _errorMessageFlow.emit("Send Email failed: ${e.localizedMessage}")
+                            e.printStackTrace()
+                            Log.e("MainActivity: onCreate: startActivity(Intent.createChooser(intent, \"Send Email\")) failed: $e")
+                        }
+                    }
+                    "Navigation" -> { // open navigation
+                        val lat = intent.getDoubleExtra("lat", 0.0)
+                        val lng = intent.getDoubleExtra("lng", 0.0)
+                        val markerTitle = intent.getStringExtra("markerTitle") ?: ""
+                        startNavigation(lat, lng, markerTitle)
                     }
                 }
-                if(intent.action == "Navigation") { // open navigation
-                    val lat = intent.getDoubleExtra("lat", 0.0)
-                    val lng = intent.getDoubleExtra("lng", 0.0)
-                    val markerTitle = intent.getStringExtra("markerTitle") ?: ""
-                    startNavigation(lat, lng, markerTitle)
-                }
-                if(intent.action == ProductPurchaseAction.PurchasePro.value) {
-                    // Guard
-                    productPurchaseHelper.productName.value ?: run {
-                        _errorMessageFlow.emit("PurchasePro: productDetails not initialized")
-                        return@collect
+
+//                // In-app purchase // todo use CommonBilling
+//                if(intent.action == ProductPurchaseAction.PurchasePro.value) {
+//                    // Guard
+//                    purchaseManager.productName.value ?: run {
+//                        _errorMessageFlow.emit("PurchasePro: productDetails not initialized")
+//                        return@collect
+//                    }
+//                    purchaseManager.makePurchase()
+//                }
+//                if(intent.action == ProductPurchaseAction.ConsumePro.value) {
+//                    // Guard
+//                    purchaseManager.productName.value ?: run {
+//                        _errorMessageFlow.emit("ConsumePro: productDetails not initialized")
+//                        return@collect
+//                    }
+//                    purchaseManager.consumeProduct()
+//                }
+            }
+        }
+
+        // Collect the billing commands from the common billing module for Android specific libraries
+        scope.launch {
+            commonBilling.commandFlow().collect { billingCommand ->
+                when(billingCommand) {
+                    is BillingCommand.Purchase -> {
+                        // Guard
+                        purchaseManager.productName.value ?: run {
+                            _errorMessageFlow.emit("PurchasePro: productDetails not initialized")
+                            return@collect
+                        }
+                        purchaseManager.makePurchase()
                     }
-                    productPurchaseHelper.makePurchase()
-                }
-                if(intent.action == ProductPurchaseAction.ConsumePro.value) {
-                    // Guard
-                    productPurchaseHelper.productName.value ?: run {
-                        _errorMessageFlow.emit("ConsumePro: productDetails not initialized")
-                        return@collect
+                    is BillingCommand.Consume -> {
+                        // Guard
+                        purchaseManager.productName.value ?: run {
+                            _errorMessageFlow.emit("ConsumePro: productDetails not initialized")
+                            return@collect
+                        }
+                        purchaseManager.consumeProduct()
                     }
-                    productPurchaseHelper.consumeProduct()
                 }
             }
         }
@@ -193,20 +223,21 @@ class MainActivity : AppCompatActivity(),
         } else {
             // Coming back from a suspended state
             setContent {
-                println("🧽🧽🧽MainActivity: onCreate: setContent: appSettings.isPermissionsGranted=${appSettings.isPermissionsGranted}")
-                MainView()
+                MainView(commonBilling)
             }
         }
 
         // Setup the in-app purchase helper
-        productPurchaseHelper = ProductPurchaseHelper(
+        purchaseManager = PurchaseManager(
             this,
-            _billingMessageFlow,
-            _productPurchaseStateFlow
+//            _billingMessageFlow,
+//            _productPurchaseStateFlow
+            commonBilling
         )
-        productPurchaseHelper.billingSetup()
+        purchaseManager.billingSetup()
     }
 
+    // TextToSpeech.OnInitListener
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
             val result = textToSpeech!!.setLanguage(Locale.US)
@@ -276,8 +307,8 @@ class MainActivity : AppCompatActivity(),
         isTemporarilyPreventPerformanceTuningActive = true
 
         // Relaunch the permission dialog if the user was previously sent to the Android's "App Settings" screen
-        if(isSendingUserToAppSettingsScreen) {
-            isSendingUserToAppSettingsScreen = false
+        if(isSendingUserToAndroidAppSettingsScreen) {
+            isSendingUserToAndroidAppSettingsScreen = false
             permissionLauncher.launch(arrayOf(
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -320,7 +351,7 @@ class MainActivity : AppCompatActivity(),
         Log.i("onPurchasesUpdated ${billingResult.responseCode}")
         if (purchases != null) {
             for (purchase in purchases) {
-                Log.i("purchase: $purchase")
+                Log.i("purchase: $purchase") // todo - update pro product here?
             }
         } else {
             Log.i("No purchases found from query")

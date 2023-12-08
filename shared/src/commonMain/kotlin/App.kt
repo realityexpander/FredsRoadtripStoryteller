@@ -1,3 +1,4 @@
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -54,7 +55,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import data.MarkersRepo
 import data.appSettings
-import data.billing.ProductPurchaseState
 import data.configPropertyFloat
 import data.configPropertyString
 import data.loadMarkerDetails.loadMarkerDetails
@@ -69,7 +69,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -134,17 +133,10 @@ val synchronizedObject = SynchronizedObject()
 var _errorMessageFlow: MutableSharedFlow<String> = MutableSharedFlow()
 val errorMessageFlow: SharedFlow<String> = _errorMessageFlow  // read-only shared flow sent from Platform side
 
-@Suppress("ObjectPropertyName")
-var _billingMessageFlow: MutableSharedFlow<String> = MutableSharedFlow()
-val billingMessageFlow: SharedFlow<String> = _billingMessageFlow  // read-only shared flow sent from Platform side
-
-@Suppress("ObjectPropertyName")
-var _productPurchaseStateFlow: MutableStateFlow<ProductPurchaseState> = MutableStateFlow(ProductPurchaseState.NotPurchased())
-val productPurchaseStateFlow: SharedFlow<ProductPurchaseState> = _productPurchaseStateFlow  // read-only shared flow sent from Platform side
-
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun App(
+    commonBilling: CommonBilling,
     markersRepo: MarkersRepo = MarkersRepo(appSettings),
     gpsLocationService: GPSLocationService = GPSLocationService()
 ) {
@@ -166,7 +158,9 @@ fun App(
             mutableStateOf<String?>(null)
         }
 
-        // Billing Message state & value
+        // Billing State & Message
+        val billingState = commonBilling.billingStateFlow()
+            .collectAsState(BillingState.NotPurchased()).value
         var billingMessageStr by remember {
             mutableStateOf<String?>(null)
         }
@@ -562,7 +556,7 @@ fun App(
 
         // Billing messages
         LaunchedEffect(Unit) {
-            billingMessageFlow.collectLatest { billingMessage ->
+            commonBilling.billingMessageFlow().collectLatest { billingMessage ->
                 billingMessageStr = billingMessage
 
                 coroutineScope.launch {
@@ -571,8 +565,6 @@ fun App(
                 }
             }
         }
-        // Product purchase state
-        val productPurchaseState = productPurchaseStateFlow.collectAsState(ProductPurchaseState.NotPurchased()).value
 
         // For render performance tuning
         didFullFrameRender = false
@@ -781,7 +773,8 @@ fun App(
                                 shouldZoomCameraToLatLongZoom = LatLongZoom(marker.position, 14f)
                             }
                         },
-                        productPurchaseState = productPurchaseState,
+                        commonBilling = commonBilling,
+                        billingState = billingState,
                     )
                 }
             },
@@ -958,7 +951,7 @@ fun App(
 
                     // Show Billing Message
                     AnimatedVisibility(billingMessageStr != null) {
-                        if(billingMessageStr != null) {
+                        if(billingMessageStr != null && billingMessageStr.toString().isNotBlank()) {
                             Text(
                                 modifier = Modifier.fillMaxWidth()
                                     .background(MaterialTheme.colors.secondary),

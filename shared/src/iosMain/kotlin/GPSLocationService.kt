@@ -19,6 +19,7 @@ import kotlin.coroutines.suspendCoroutine
 import co.touchlab.kermit.Logger as Log
 
 // Implement the LocationService in iOS
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual class GPSLocationService  {
 
     // Define a native CLLocationManager object

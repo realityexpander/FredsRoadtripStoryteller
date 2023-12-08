@@ -1,6 +1,8 @@
 package presentation.app
 
+import BillingState
 import BottomSheetScreen
+import CommonBilling
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -66,7 +68,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import appNameStr
-import data.billing.ProductPurchaseState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
@@ -89,7 +90,8 @@ fun AppDrawerContent(
     onClickStartSpeakingMarker: (Marker, isSpeakDetailsEnabled: Boolean) -> Unit = { _, _ -> },
     onClickStopSpeakingMarker: () -> Unit = {},
     onLocateMarker: (Marker) -> Unit = {},
-    productPurchaseState: ProductPurchaseState = ProductPurchaseState.Disabled,
+    commonBilling: CommonBilling,
+    billingState: BillingState,
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -147,7 +149,7 @@ fun AppDrawerContent(
         },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 8.dp, end = 8.dp),
+            .padding(start = 16.dp, end = 16.dp),
     ) {
         Text(
             "How to use this App",
@@ -161,7 +163,12 @@ fun AppDrawerContent(
     }
 
     // Purchase Pro Version
-    PurchaseProductButton(productPurchaseState, coroutineScope, onCloseDrawer)
+    PurchaseProductButton(
+        billingState,
+        commonBilling,
+        coroutineScope,
+        onCloseDrawer
+    )
 
     // Show about box
     Button(
@@ -174,7 +181,7 @@ fun AppDrawerContent(
         },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 8.dp, end = 8.dp),
+            .padding(start = 16.dp, end = 16.dp),
     ) {
         Text(
             "About this App",
