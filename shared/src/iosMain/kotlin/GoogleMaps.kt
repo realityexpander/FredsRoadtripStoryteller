@@ -20,6 +20,8 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -32,10 +34,12 @@ import cocoapods.GoogleMaps.GMSCameraPosition
 import cocoapods.GoogleMaps.GMSCameraUpdate
 import cocoapods.GoogleMaps.GMSCircle
 import cocoapods.GoogleMaps.GMSCoordinateBounds
+import cocoapods.GoogleMaps.GMSMapStyle
 import cocoapods.GoogleMaps.GMSMapView
 import cocoapods.GoogleMaps.GMSMapViewDelegateProtocol
 import cocoapods.GoogleMaps.GMSMarker
 import cocoapods.GoogleMaps.GMSMarker.Companion.markerImageWithColor
+import cocoapods.GoogleMaps.GMSMarker.Companion.markerWithPosition
 import cocoapods.GoogleMaps.GMSMutablePath
 import cocoapods.GoogleMaps.GMSPolyline
 import cocoapods.GoogleMaps.animateWithCameraUpdate
@@ -101,7 +105,22 @@ actual fun GoogleMaps(
     // var isHeatMapEnabled by remember { mutableStateOf(false) }  // reserved for future use
     var showSomething = remember { false } // leave for testing purposes
 
-    val googleMapView = remember(isMapRedrawTriggered) { GMSMapView() }
+    val googleMapView = remember(isMapRedrawTriggered) {
+        GMSMapView().apply {
+            setMyLocationEnabled(true)
+            settings.myLocationButton = true
+            settings.setMyLocationButton(true)
+            settings.setScrollGestures(true)
+            settings.setZoomGestures(true)
+            settings.setCompassButton(false)
+            this.setMapStyle(
+                GMSMapStyle.styleWithJSONString(
+                    mapStyle1(),
+                    error = null
+                )
+            )
+        }
+    }
     val appleMapView = remember(isMapRedrawTriggered) { MKMapView() }
 
     LaunchedEffect(userLocation, markers) {
@@ -136,6 +155,58 @@ actual fun GoogleMaps(
     LaunchedEffect(shouldCenterCameraOnLatLong) {
         if (shouldCenterCameraOnLatLong != null) {
             didCameraLocationLatLongChange = true
+        }
+    }
+
+    // Only used to track selected marker
+    val mapMarkers = remember(markers) { mutableStateMapOf<String,GMSMarker>() }
+    var selectedMarker by remember(googleMapView.selectedMarker) { mutableStateOf(googleMapView.selectedMarker) }
+    val delegate = remember { object : NSObject(), GMSMapViewDelegateProtocol {
+        //    override fun mapView(
+        //        mapView: GMSMapView,
+        //        didTapAtCoordinate: CValue<CLLocationCoordinate2D>
+        //    ) {
+        //        showSomething = !showSomething
+        //    }
+
+        //    override fun mapView(
+        //        mapView: GMSMapView,
+        //        didTapMarker: GMSMarker
+        //    ): Boolean {
+        //        val userData = didTapMarker.userData()
+        //        println("map marker click ${userData}")
+        //        return false
+        //    }
+
+        override fun mapView(
+            mapView: GMSMapView,
+            didTapInfoWindowOfMarker: GMSMarker
+        ) {
+            val userData = didTapInfoWindowOfMarker.userData()
+            onMarkerInfoClick?.let { onMarkerInfoClick ->
+                val marker = markers?.find { it.id == userData }
+                marker ?: return
+
+                onMarkerInfoClick(marker)
+            }
+            //println("map marker click ${userData}")
+        }
+
+
+        //    override fun mapView(
+        //        mapView: GMSMapView,
+        //        didLongPressAtCoordinate: CValue<CLLocationCoordinate2D>
+        //    ) {
+        //        val userData = didLongPressAtCoordinate
+        //        println("map marker click ${userData}")
+        //        super.mapView(mapView, didLongPressAtCoordinate)
+        //    }
+
+    }}
+    LaunchedEffect(shouldShowInfoMarker) {
+        if (shouldShowInfoMarker != null) {
+            onDidShowInfoMarker()
+            selectedMarker = mapMarkers[shouldShowInfoMarker.id]
         }
     }
 
@@ -234,42 +305,10 @@ actual fun GoogleMaps(
                 modifier = Modifier,
                 interactive = true,
                 factory = {
-    ////                // Does not work yet... :(
-                    googleMapView.delegate = object : NSObject(), GMSMapViewDelegateProtocol {
-    //                        override fun mapView(
-    //                            mapView: GMSMapView,
-    //                            didTapAtCoordinate: CValue<CLLocationCoordinate2D>
-    //                        ) {
-    //                            showSomething = !showSomething
-    //                        }
-
-                            override fun mapView(
-                                mapView: GMSMapView,
-                                didTapMarker: GMSMarker
-                            ): Boolean {
-                                val userData = didTapMarker.userData()
-                                println("map marker click ${userData}")
-                                return true
-                            }
-
-    //                        override fun mapView(
-    //                            mapView: GMSMapView,
-    //                            didTapInfoWindowOfMarker: GMSMarker
-    //                        ) {
-    //                            val userData = didTapInfoWindowOfMarker.userData()
-    //                            println("map marker click ${userData}")
-    //                        }
-
-
-    //                        override fun mapView(
-    //                            mapView: GMSMapView,
-    //                            didLongPressAtCoordinate: CValue<CLLocationCoordinate2D>
-    //                        ) {
-    //                            val userData = didLongPressAtCoordinate
-    //                            println("map marker click ${userData}")
-    //                            super.mapView(mapView, didLongPressAtCoordinate)
-    //                        }
-
+                    googleMapView.apply {
+                        setDelegate(delegate)
+                        this.selectedMarker = selectedMarker
+                        this.setMyLocationEnabled(true)
                     }
 
                     googleMapView
@@ -277,7 +316,9 @@ actual fun GoogleMaps(
                 update = { view ->
                     println(
                         "view.selectedMarker=${view.selectedMarker}, " +
-                                "view.selectedMarker.userData=${view.selectedMarker?.userData()},"
+                        "view.selectedMarker.userData=${view.selectedMarker?.userData()}," +
+                        "selectedMarker=${selectedMarker?.snippet}, " +
+                        "selectedMarker.userData=${selectedMarker?.userData()}"
                     )
 
                     if (isTrackingEnabled) {
@@ -415,6 +456,7 @@ actual fun GoogleMaps(
 
                         // render the markers
                         if (isMarkersEnabled) {
+                            mapMarkers.clear()
                             markers?.forEach { marker ->
                                 val tempMarker = GMSMarker().apply {
                                     position = CLLocationCoordinate2DMake(
@@ -423,9 +465,14 @@ actual fun GoogleMaps(
                                     )
                                     title = marker.title
                                     userData = marker.id
-                                    icon = markerImageWithColor(UIColor.blueColor())
+                                    icon = if(marker.isSeen)
+                                            markerImageWithColor(UIColor.grayColor())
+                                        else
+                                            markerImageWithColor(UIColor.redColor())
                                     map = view
+                                    snippet = marker.id
                                 }
+                                mapMarkers[marker.id] = tempMarker
 
                                 if (tempMarker.userData as String == curSelectedMarkerId) {
                                     curSelectedMarker = tempMarker
@@ -456,6 +503,10 @@ actual fun GoogleMaps(
                         }
 
                         isMapRedrawTriggered = false
+                    }
+
+                    selectedMarker?.let { selectedMarker ->
+                        view.setSelectedMarker(selectedMarker)
                     }
                 },
             )
@@ -551,4 +602,242 @@ actual fun GoogleMaps(
             }
         }
     }
+}
+
+// https://mapstyle.withgoogle.com/
+fun mapStyle1(): String {
+    return """
+    [
+  {
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#242f3e"
+      }
+    ]
+  },
+  {
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#746855"
+      }
+    ]
+  },
+  {
+    "elementType": "labels.text.stroke",
+    "stylers": [
+      {
+        "color": "#242f3e"
+      }
+    ]
+  },
+  {
+    "featureType": "administrative.land_parcel",
+    "elementType": "labels",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "administrative.locality",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#d59563"
+      }
+    ]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "labels.text",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#d59563"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.business",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#263c3f"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "labels.text",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#6b9a76"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#38414e"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "color": "#212a37"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#9ca5b3"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#746855"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "color": "#1f2835"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#f3d19c"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway.controlled_access",
+    "stylers": [
+      {
+        "visibility": "simplified"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway.controlled_access",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "visibility": "simplified"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway.controlled_access",
+    "elementType": "labels",
+    "stylers": [
+      {
+        "visibility": "on"
+      }
+    ]
+  },
+  {
+    "featureType": "road.local",
+    "elementType": "labels",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "transit",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#2f3948"
+      }
+    ]
+  },
+  {
+    "featureType": "transit.station",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#d59563"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#17263c"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#515c6d"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "labels.text.stroke",
+    "stylers": [
+      {
+        "color": "#17263c"
+      }
+    ]
+  }
+]
+    """.trimIndent()
+
 }
