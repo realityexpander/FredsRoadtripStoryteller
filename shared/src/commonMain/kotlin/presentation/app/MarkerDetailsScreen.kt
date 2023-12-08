@@ -79,7 +79,7 @@ import presentation.maps.Marker
 import presentation.uiComponents.PreviewPlaceholder
 import stopTextToSpeech
 
-const val kMaxWeightOfBottomDrawer = 0.9f
+const val kMaxWeightOfBottomDrawer = 0.9f // 90% of screen height (10% peeking thru at the top)
 
 @OptIn(ExperimentalKamelApi::class)
 @Composable
