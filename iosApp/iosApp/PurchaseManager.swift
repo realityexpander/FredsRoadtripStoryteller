@@ -2,8 +2,21 @@
 import Foundation
 import shared
 import StoreKit
-
-// from: https://github.com/RevenueCat/storekit2-demo-app
+/**
+ * ## PurchaseManager - iOS
+ *
+ * This class is responsible for managing the purchase flow for the iOS app.
+ *
+ * It is responsible for:
+ * - Loading products from the App Store
+ * - Purchasing products
+ * - Consuming products
+ * - Updating the UI with the current state of the purchase
+ * - Updating the UI with the current state of the entitlement
+ * - Updating the UI with the current state of the subscription
+ *
+ * from: https://github.com/RevenueCat/storekit2-demo-app
+ */
 
 @MainActor
 class PurchaseManager: NSObject, ObservableObject {

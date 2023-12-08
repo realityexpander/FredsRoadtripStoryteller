@@ -29,7 +29,7 @@ import co.touchlab.kermit.Logger as Log
 
 private const val SLOW_PENDING_TRANSACTION = 4  // Billing hidden type for slow pending transactions
 /**
- * ## PurchaseHelper
+ * ## PurchaseManager - Android
  *
  * This class handles the purchase flow for the Android app.
  *
