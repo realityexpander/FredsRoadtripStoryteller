@@ -93,6 +93,8 @@ import presentation.maps.toLocation
 import presentation.speech.speakRecentlySeenMarker
 import presentation.uiComponents.AppTheme
 import kotlin.random.Random
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
 import co.touchlab.kermit.Logger as Log
 
 val json = Json {
@@ -158,11 +160,34 @@ fun App(
             mutableStateOf<String?>(null)
         }
 
+        // Error messages flow
+        LaunchedEffect(Unit) {
+            errorMessageFlow.collectLatest { errorMessage ->
+                Log.w(errorMessage)
+                errorMessageStr = errorMessage
+
+                delay(5000)
+                errorMessageStr = null
+            }
+        }
+
         // Billing State & Message
         val billingState = commonBilling.billingStateFlow()
             .collectAsState(BillingState.NotPurchased()).value
         var billingMessageStr by remember {
             mutableStateOf<String?>(null)
+        }
+
+        // Billing messages
+        LaunchedEffect(Unit) {
+            commonBilling.billingMessageFlow().collectLatest { billingMessage ->
+                billingMessageStr = billingMessage
+
+                coroutineScope.launch {
+                    delay(8000)
+                    billingMessageStr = null
+                }
+            }
         }
 
         // Seen Marker & Speaking UI
@@ -541,29 +566,6 @@ fun App(
         LaunchedEffect(Unit) {
             // Update location
             userLocation = jiggleLocationToForceUiUpdate(userLocation)
-        }
-
-        // Error messages flow
-        LaunchedEffect(Unit) {
-            errorMessageFlow.collectLatest { errorMessage ->
-                Log.w(errorMessage)
-                errorMessageStr = errorMessage
-
-                delay(5000)
-                errorMessageStr = null
-            }
-        }
-
-        // Billing messages
-        LaunchedEffect(Unit) {
-            commonBilling.billingMessageFlow().collectLatest { billingMessage ->
-                billingMessageStr = billingMessage
-
-                coroutineScope.launch {
-                    delay(8000)
-                    billingMessageStr = null
-                }
-            }
         }
 
         // For render performance tuning
@@ -1281,6 +1283,18 @@ private fun addSeenMarkersToRecentlySeenList(
 
         //Log.d("👁️🛑 END NO-update isSeen: processing time = ${Clock.System.now() - startTime}\n")
         onFinishedProcessRecentlySeenList(Clock.System.now())
+}
+
+private val kMaxTrialTime = 3.days
+private fun calcInstalledTimeLeft(
+    installedTime: Instant,
+    maxTrialTime: Duration = kMaxTrialTime
+): Duration {
+    val now = Clock.System.now()
+    val installedDuration = now - installedTime
+    val timeLeft = maxTrialTime - installedDuration
+
+    return timeLeft
 }
 
 @OptIn(ExperimentalMaterialApi::class)

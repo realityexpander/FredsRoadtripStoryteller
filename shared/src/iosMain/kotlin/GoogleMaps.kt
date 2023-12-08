@@ -72,7 +72,7 @@ actual fun GoogleMaps(
     shouldSetInitialCameraPosition: CameraPosition?,  // best for showing a bunch of markers
     shouldCenterCameraOnLatLong: LatLong?, // usually only used for initial camera position bc zoom level is forced
     onDidCenterCameraOnLatLong: () -> Unit,
-    cameraLocationBounds: CameraLocationBounds?,  // shows the user's location with a 100m radius circle
+    cameraLocationBounds: CameraLocationBounds?,  // Not yet implemented
     polyLine: List<LatLong>?,
     onMapClick: ((LatLong) -> Unit)?,
     onMapLongClick: ((LatLong) -> Unit)?,
@@ -84,7 +84,7 @@ actual fun GoogleMaps(
     isMarkersLastUpdatedLocationVisible: Boolean,
     shouldShowInfoMarker: Marker?,
     onDidShowInfoMarker: () -> Unit,
-    shouldZoomToLatLongZoom: LatLongZoom?,
+    shouldZoomToLatLongZoom: LatLongZoom?,  // one-time zoom to a lat/long
     onDidZoomToLatLongZoom: () -> Unit,
     shouldAllowCacheReset: Boolean,
     onDidAllowCacheReset: () -> Unit,
