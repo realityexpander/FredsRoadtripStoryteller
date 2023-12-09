@@ -9,6 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import kotlinx.serialization.encodeToString
 import presentation.maps.Location
 import presentation.maps.RecentlySeenMarker
@@ -56,6 +57,9 @@ class AppSettings(val settingsInstance: Settings) {
     var lastSpokenRecentlySeenMarker: RecentlySeenMarker by
         SettingsDelegate(settingsInstance,
        kLastSpokenRecentlySeenMarker, defaultValue = RecentlySeenMarker("",""))
+    var installAtEpochMilli: Long by
+        SettingsDelegate(settingsInstance,
+       kInstallAtEpochMilli, defaultValue = Clock.System.now().toEpochMilliseconds())
 
     // • For Settings panel
     var isSpeakWhenUnseenMarkerFoundEnabled by
@@ -102,7 +106,9 @@ class AppSettings(val settingsInstance: Settings) {
         kIsSpeakDetailsWhenUnseenMarkerFoundEnabled to
          isSpeakDetailsWhenUnseenMarkerFoundEnabled,
         kLastSpokenRecentlySeenMarker to
-         lastSpokenRecentlySeenMarker
+         lastSpokenRecentlySeenMarker,
+        kInstallAtEpochMilli to
+         installAtEpochMilli
     )
 
     // - REMEMBER TO ADD NEW SETTINGS TO THE CONST LIST! - FORMATTING IS INTENTIONAL
@@ -131,6 +137,8 @@ class AppSettings(val settingsInstance: Settings) {
             "kUiRecentlySeenMarkersList"
         const val kLastSpokenRecentlySeenMarker =
             "kLastSpokenRecentlySeenMarker"
+        const val kInstallAtEpochMilli =
+            "kInstallAtEpochMilli"
 
         // • For Settings panel
         const val kIsSpeakWhenUnseenMarkerFoundEnabled =

@@ -18,6 +18,8 @@ struct ContentView: View {
 
     @StateObject
     private var purchaseManager: PurchaseManager
+   
+   private var commonMeta: CommonMeta
 
     //  Leave for reference for now
     //   let cityHallLocation = CLLocationCoordinate2D(latitude: 37.779_379, longitude: -122.418_433)
@@ -30,6 +32,20 @@ struct ContentView: View {
     @State var selected: Int?
 
     init() {
+       // set the app meta info
+       let nsObject: AnyObject? = Bundle.main.infoDictionary!["CFBundleShortVersionString"] as AnyObject
+       let version = nsObject as! String
+       let nsObject2: AnyObject? = Bundle.main.infoDictionary!["CFBundleVersion"] as AnyObject
+       let bundleVersion = nsObject2 as! String
+       let appPurchaseDate = environment(
+       
+       commonMeta = CommonMeta()
+       #if DEBUG
+         commonMeta.isDebug = true
+       #else
+         commonMeta.isDebug = false
+       #endif
+       
         commonBilling = CommonBilling()
 
         let entitlementManager = EntitlementManager()
@@ -64,6 +80,7 @@ struct ContentView: View {
     }
 
     var body: some View {
+        
         ZStack {
             Color.blue.ignoresSafeArea(.all) // status bar color
             ComposeView(

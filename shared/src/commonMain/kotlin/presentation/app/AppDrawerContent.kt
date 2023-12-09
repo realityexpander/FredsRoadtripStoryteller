@@ -1,8 +1,8 @@
 package presentation.app
 
-import BillingState
 import BottomSheetScreen
 import CommonBilling
+import CommonBilling.BillingState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -161,6 +161,7 @@ fun AppDrawerContent(
             textAlign = TextAlign.Center,
         )
     }
+    Spacer(modifier = Modifier.height(16.dp))
 
     // Purchase Pro Version
     PurchaseProductButton(

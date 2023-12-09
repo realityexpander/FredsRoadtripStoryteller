@@ -1,7 +1,7 @@
 package presentation.uiComponents
 
-import BillingState
 import CommonBilling
+import CommonBilling.BillingState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -21,7 +21,9 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import calcTrialTimeRemainingString
 import consumeProductAction
+import data.appSettings
 import isDebuggable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -40,6 +42,18 @@ fun PurchaseProductButton(
     when (billingState) {
         is BillingState.NotPurchased -> {
             Spacer(modifier = Modifier.height(16.dp))
+            // Show trial time remaining
+            Text(
+                text = calcTrialTimeRemainingString(appSettings.installAtEpochMilli),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp),
+                fontStyle = FontStyle.Normal,
+                fontSize = MaterialTheme.typography.body1.fontSize,
+                textAlign = TextAlign.Center,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+
             Button(
                 onClick = {
                     coroutineScope.launch {
@@ -133,6 +147,18 @@ fun PurchaseProductButton(
 
         is BillingState.Disabled -> {
             Spacer(modifier = Modifier.height(16.dp))
+            // Show trial time remaining
+            Text(
+                text = calcTrialTimeRemainingString(appSettings.installAtEpochMilli),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp),
+                fontStyle = FontStyle.Normal,
+                fontSize = MaterialTheme.typography.body1.fontSize,
+                textAlign = TextAlign.Center,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+
             Button(
                 onClick = { },
                 modifier = Modifier
@@ -155,6 +181,18 @@ fun PurchaseProductButton(
 
         is BillingState.Error -> {
             Spacer(modifier = Modifier.height(8.dp))
+            // Show trial time remaining
+            Text(
+                text = calcTrialTimeRemainingString(appSettings.installAtEpochMilli),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp),
+                fontStyle = FontStyle.Normal,
+                fontSize = MaterialTheme.typography.body1.fontSize,
+                textAlign = TextAlign.Center,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+
             Text(
                 "Purchase Error - ${billingState.errorMessage}",
                 modifier = Modifier

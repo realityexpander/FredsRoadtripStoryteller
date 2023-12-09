@@ -11,21 +11,26 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
 
 const val kProProductId = "pro" // only supports one product for now
+private val kMaxTrialTime = 3.days
 
-sealed class BillingState {
-    data class NotPurchased(val lastBillingMessage: String? = null) : BillingState()
-    data object Pending : BillingState()
-    data object Purchased : BillingState()
-    data class Error(val errorMessage: String) : BillingState()
-    data object Disabled : BillingState()
-}
+//sealed class BillingState {
+//    data class NotPurchased(val lastBillingMessage: String? = null) : BillingState()
+//    data object Pending : BillingState()
+//    data object Purchased : BillingState()
+//    data class Error(val errorMessage: String) : BillingState()
+//    data object Disabled : BillingState()
+//}
 
-sealed class BillingCommand {
-    data class Purchase(val productId: String) : BillingCommand()
-    data class Consume(val productId: String) : BillingCommand()
-}
+//sealed class BillingCommand {
+//    data class Purchase(val productId: String) : BillingCommand()
+//    data class Consume(val productId: String) : BillingCommand()
+//}
 
 /**
  * CommonBilling is a class that is used to communicate between the shared code and the platform
@@ -63,6 +68,19 @@ open class CommonBilling {
         MutableStateFlow("")
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
+
+    sealed class BillingState {
+        data class NotPurchased(val lastBillingMessage: String? = null) : BillingState()
+        data object Pending : BillingState()
+        data object Purchased : BillingState()
+        data class Error(val errorMessage: String) : BillingState()
+        data object Disabled : BillingState()
+    }
+
+    sealed class BillingCommand {
+        data class Purchase(val productId: String) : BillingCommand()
+        data class Consume(val productId: String) : BillingCommand()
+    }
 
     fun purchaseProCommand() {
         coroutineScope.launch {
@@ -107,6 +125,7 @@ open class CommonBilling {
     fun billingMessageFlow(): CommonFlow<String> {
         return _billingMessageFlow.asCommonFlow()
     }
+
 }
 
 fun <T> Flow<T>.asCommonFlow(): CommonFlow<T> = CommonFlow(this)
@@ -123,5 +142,40 @@ class CommonFlow<T>(private val origin: Flow<T>) : Flow<T> by origin {
                 job.cancel()
             }
         }
+    }
+}
+
+fun calcTrialTimeRemaining(
+    installAtEpochMilli: Long,
+    maxTrialTime: Duration = kMaxTrialTime
+): Duration {
+    val now = Clock.System.now()
+    val installAt = Instant.fromEpochMilliseconds(installAtEpochMilli)
+    val timeLeft = maxTrialTime - (now - installAt)
+
+    return timeLeft
+}
+
+fun calcTrialTimeRemainingString(
+    installAtEpochMilli: Long,
+    maxTrialTime: Duration = kMaxTrialTime
+): String {
+    val timeLeft = calcTrialTimeRemaining(installAtEpochMilli, maxTrialTime)
+    if(timeLeft <= Duration.ZERO) return "Trial expired - Please purchase Pro version for unlimited features"
+
+    return timeLeft.toHumanReadableString() + " remaining for Trial version"
+}
+
+fun Duration.toHumanReadableString(): String {
+    val days = this.inWholeDays
+    val hours = this.inWholeHours - (days * 24)
+    val minutes = this.inWholeMinutes - (days * 24 * 60) - (hours * 60)
+    val seconds = this.inWholeSeconds - (days * 24 * 60 * 60) - (hours * 60 * 60) - (minutes * 60)
+
+    return when {
+        days > 0 -> "$days days, $hours hours, $minutes minutes"
+        hours > 0 -> "$hours hours, $minutes minutes"
+        minutes > 0 -> "$minutes minutes"
+        else -> "$seconds seconds"
     }
 }

@@ -1,4 +1,5 @@
 
+import CommonBilling.BillingState
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -93,8 +94,7 @@ import presentation.maps.toLocation
 import presentation.speech.speakRecentlySeenMarker
 import presentation.uiComponents.AppTheme
 import kotlin.random.Random
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.seconds
 import co.touchlab.kermit.Logger as Log
 
 val json = Json {
@@ -159,8 +159,6 @@ fun App(
         var errorMessageStr by remember {
             mutableStateOf<String?>(null)
         }
-
-        // Error messages flow
         LaunchedEffect(Unit) {
             errorMessageFlow.collectLatest { errorMessage ->
                 Log.w(errorMessage)
@@ -177,16 +175,27 @@ fun App(
         var billingMessageStr by remember {
             mutableStateOf<String?>(null)
         }
-
-        // Billing messages
         LaunchedEffect(Unit) {
             commonBilling.billingMessageFlow().collectLatest { billingMessage ->
                 billingMessageStr = billingMessage
 
+                // Clear message on UI after a few seconds
                 coroutineScope.launch {
-                    delay(8000)
+                    delay(8.seconds)
                     billingMessageStr = null
                 }
+            }
+        }
+
+        // Set installation time for trial period
+        LaunchedEffect(Unit) {
+            if(appSettings.hasKey("installAtEpochMilli")) {
+                installAtEpochMilli = appSettings.installAtEpochMilli
+            } else {
+                if(installAtEpochMilli == 0L) { // Android sets this at launch from Build settings, iOS does not, so we set it here.
+                    installAtEpochMilli = Clock.System.now().toEpochMilliseconds()
+                }
+                appSettings.installAtEpochMilli = installAtEpochMilli
             }
         }
 
@@ -1283,18 +1292,6 @@ private fun addSeenMarkersToRecentlySeenList(
 
         //Log.d("👁️🛑 END NO-update isSeen: processing time = ${Clock.System.now() - startTime}\n")
         onFinishedProcessRecentlySeenList(Clock.System.now())
-}
-
-private val kMaxTrialTime = 3.days
-private fun calcInstalledTimeLeft(
-    installedTime: Instant,
-    maxTrialTime: Duration = kMaxTrialTime
-): Duration {
-    val now = Clock.System.now()
-    val installedDuration = now - installedTime
-    val timeLeft = maxTrialTime - installedDuration
-
-    return timeLeft
 }
 
 @OptIn(ExperimentalMaterialApi::class)
