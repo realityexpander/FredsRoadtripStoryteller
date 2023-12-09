@@ -27,11 +27,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import appMetadata
 import appNameStr
-import buildNumberStr
 import debugLog
-import installAtEpochMilli
-import isDebuggable
 import json
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
@@ -42,7 +40,6 @@ import openWebUrlAction
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import sendEmailAction
-import versionStr
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
@@ -122,14 +119,25 @@ fun AboutBoxDialog(
 
                             // Version number
                             Text(
-                                "$appNameStr v$versionStr build $buildNumberStr ${if (isDebuggable) "debug" else "release"}",
+                                "$appNameStr v${appMetadata.versionStr} " +
+                                        if(appMetadata.platformId == "android")
+                                            "build ${appMetadata.androidBuildNumberStr} "
+                                            else
+                                            "build ${appMetadata.iOSBundleVersionStr} "
+                                        +
+                                        if (appMetadata.isDebuggable)
+                                            "debug"
+                                        else
+                                            "release",
                                 style = MaterialTheme.typography.caption,
                                 color = MaterialTheme.colors.onBackground
                             )
-                            if (installAtEpochMilli > 0) {
-                                val it = Instant.fromEpochMilliseconds(installAtEpochMilli)
-                                    .toLocalDateTime(TimeZone.currentSystemDefault())
-                                Text("Installed at: ${it.date} ${it.time.hour}:${it.time.minute}")
+                            if (appMetadata.installAtEpochMilli > 0) {
+                                val installTime =
+                                    Instant.fromEpochMilliseconds(appMetadata.installAtEpochMilli)
+                                        .toLocalDateTime(TimeZone.currentSystemDefault())
+                                Text("Installed: ${installTime.date} " +
+                                        "${installTime.time.hour}:${installTime.time.minute} UTC")
                             }
 
                             Text("Debug log size: ${debugLog.size}")
@@ -138,7 +146,9 @@ fun AboutBoxDialog(
                                 onClick = {
                                     onDismiss()
                                     coroutineScope.launch {
-                                        debugLog.add("AboutBoxDialog: Send debug log, debugLog.size=${debugLog.size}, $appNameStr version $versionStr build $buildNumberStr")
+                                        debugLog.add("AboutBoxDialog: Send debug log, debugLog.size=${debugLog.size}, " +
+                                                "$appNameStr version " +
+                                                "${appMetadata.versionStr} build ${appMetadata.androidBuildNumberStr}")
                                         sendEmailAction(body = json.encodeToString(debugLog))
                                     }
                                 },

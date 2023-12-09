@@ -97,32 +97,23 @@ import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 import co.touchlab.kermit.Logger as Log
 
-val json = Json {
-    prettyPrint = true
-    isLenient = true
-    ignoreUnknownKeys = true
-}
-
+// Reset App at launch
 const val kForceClearAllSettingsAtLaunch = false
+
+data class CommonAppMetadata(
+    var isDebuggable: Boolean = false,
+    var versionStr: String = "0.0.0",
+    var androidBuildNumberStr: String = "n/a",   // Android only
+    var iOSBundleVersionStr: String = "n/a", // iOS only
+    var installAtEpochMilli: Long = 0L,
+    var platformId: String = "unknown"
+)
+var appMetadata = CommonAppMetadata()
+var debugLog = mutableListOf("Debug log: start time:" + Clock.System.now())
+
 var appNameStr = configPropertyString("app.name", "app.name string not found")
 val kMaxReloadRadiusMiles = configPropertyFloat("app.maxReloadRadiusMiles", 2.0f).toDouble()
 const val kMaxMarkerDetailsAgeSeconds = 60 * 60 * 24 * 30  // 30 days
-
-// Debug Log info - Set at launch from the Platform side
-var isDebuggable = false // todo get for iOS
-var versionStr = "0.0.0" // todo get for iOS
-var buildNumberStr = "0" // todo get for iOS
-var installAtEpochMilli = 0L // todo get for iOS?
-var debugLog = mutableListOf("Debug log: start time:" + Clock.System.now())
-
-sealed class BottomSheetScreen {
-    data object SettingsScreen : BottomSheetScreen()
-    data class MarkerDetailsScreen(
-        val marker: Marker? = null,  // Can pass in a MapMarker...
-        val id: String? = marker?.id // ...or just an id string
-    ) : BottomSheetScreen()
-    data object None : BottomSheetScreen()
-}
 
 // Improve performance by restricting cluster size & updates
 var frameCount = 0
@@ -135,10 +126,26 @@ val synchronizedObject = SynchronizedObject()
 var _errorMessageFlow: MutableSharedFlow<String> = MutableSharedFlow()
 val errorMessageFlow: SharedFlow<String> = _errorMessageFlow  // read-only shared flow sent from Platform side
 
+val json = Json {
+    prettyPrint = true
+    isLenient = true
+    ignoreUnknownKeys = true
+}
+
+sealed class BottomSheetScreen {
+    data object SettingsScreen : BottomSheetScreen()
+    data class MarkerDetailsScreen(
+        val marker: Marker? = null,  // Can pass in a MapMarker...
+        val id: String? = marker?.id // ...or just an id string
+    ) : BottomSheetScreen()
+    data object None : BottomSheetScreen()
+}
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun App(
     commonBilling: CommonBilling,
+    commonAppMetadata: CommonAppMetadata,
     markersRepo: MarkersRepo = MarkersRepo(appSettings),
     gpsLocationService: GPSLocationService = GPSLocationService()
 ) {
@@ -187,16 +194,19 @@ fun App(
             }
         }
 
-        // Set installation time for trial period
+        // Set installation time stamp for trial period
         LaunchedEffect(Unit) {
-            if(appSettings.hasKey("installAtEpochMilli")) {
-                installAtEpochMilli = appSettings.installAtEpochMilli
-            } else {
-                if(installAtEpochMilli == 0L) { // Android sets this at launch from Build settings, iOS does not, so we set it here.
-                    installAtEpochMilli = Clock.System.now().toEpochMilliseconds()
+            if(!appSettings.hasKey("installAtEpochMilli")) {
+                if(commonAppMetadata.installAtEpochMilli == 0L) { // iOS does not set this at so we set it here. Android sets this from Build settings.
+                    commonAppMetadata.installAtEpochMilli = Clock.System.now().toEpochMilliseconds()
                 }
-                appSettings.installAtEpochMilli = installAtEpochMilli
+
+                appSettings.installAtEpochMilli = commonAppMetadata.installAtEpochMilli
+                appMetadata = commonAppMetadata.copy(
+                    installAtEpochMilli = appSettings.installAtEpochMilli
+                )
             }
+
         }
 
         // Seen Marker & Speaking UI

@@ -7,7 +7,8 @@ import kotlinx.coroutines.flow.SharedFlow
 
 actual fun getPlatformName(): String = "Android"
 
-@Composable fun MainView(test: CommonBilling) = App(test)
+@Composable fun MainView(commonBilling: CommonBilling, appMetadata: CommonAppMetadata) =
+    App(commonBilling, appMetadata)
 
 lateinit var appContext: Context // Android specific context
 var textToSpeech: TextToSpeech? = null  // Android specific TextToSpeech

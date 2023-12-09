@@ -7,20 +7,16 @@ import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import appContext
-import buildNumberStr
 import co.touchlab.kermit.ExperimentalKermitApi
 import co.touchlab.kermit.LogWriter
 import co.touchlab.kermit.Logger
 import co.touchlab.kermit.Severity
 import co.touchlab.kermit.crashlytics.CrashlyticsLogWriter
 import debugLog
-import installAtEpochMilli
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import versionStr
 import java.time.Clock
-import java.time.Instant
 import java.time.ZoneId
 
 class App: Application() {
@@ -68,19 +64,6 @@ class App: Application() {
 
         appContext = applicationContext
 
-        // get from gradle.properties
-        val packageName = applicationContext.packageName
-        versionStr =
-            packageManager.getPackageInfo(packageName, 0).versionName
-        buildNumberStr =
-            packageManager.getPackageInfo(packageName, 0).longVersionCode.toString()
-        installAtEpochMilli =
-            packageManager.getPackageInfo(packageName, 0).firstInstallTime
-
-        Logger.d("App.onCreate(): Starting app, " +
-                "version $versionStr " +
-                "build $buildNumberStr, " +
-                "first install at ${Instant.ofEpochMilli(installAtEpochMilli)}")
     }
 
 }

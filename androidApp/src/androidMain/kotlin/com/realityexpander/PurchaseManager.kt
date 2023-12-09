@@ -2,8 +2,9 @@
 
 package com.realityexpander
 
-import BillingState
 import CommonBilling
+import CommonBilling.BillingState
+import CommonBilling.Companion.kProProductId
 import android.app.Activity
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
@@ -17,7 +18,6 @@ import com.android.billingclient.api.PurchasesResponseListener
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
-import kProProductId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -120,7 +120,7 @@ data class PurchaseManager(
                     //    billing.updateMessage("Billing Client Connected")
                     //}
                         coroutineScope.launch {
-                            queryProduct(kProProductId)
+                            queryProduct(CommonBilling.kProProductId)
                             delay(250)
                             reloadPurchases()
                         }

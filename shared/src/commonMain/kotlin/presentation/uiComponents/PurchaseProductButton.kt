@@ -21,10 +21,10 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import appMetadata
 import calcTrialTimeRemainingString
 import consumeProductAction
 import data.appSettings
-import isDebuggable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import purchaseProductAction
@@ -210,7 +210,7 @@ fun PurchaseProductButton(
 
     // Show consume product button for testing payments
     if(isTestingPayments_enableConsumeProduct
-        && isDebuggable
+        && appMetadata.isDebuggable
         && billingState is BillingState.Purchased
     ) {
         Spacer(modifier = Modifier.height(16.dp))

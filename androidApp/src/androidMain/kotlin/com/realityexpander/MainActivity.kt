@@ -1,7 +1,8 @@
 package com.realityexpander
 
-import BillingCommand
+import CommonAppMetadata
 import CommonBilling
+import CommonBilling.BillingCommand
 import GPSLocationService
 import MainView
 import _errorMessageFlow
@@ -10,11 +11,13 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.Text
@@ -22,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import appContext
+import co.touchlab.kermit.Logger
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
@@ -31,7 +35,6 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.realityexpander.gpsForegroundNotificationService.GPSForegroundNotificationService
 import data.appSettings
 import intentFlow
-import isDebuggable
 import isTemporarilyPreventPerformanceTuningActive
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -54,14 +57,31 @@ class MainActivity : AppCompatActivity(),
     private var isSendingUserToAndroidAppSettingsScreen = false
 
     private val commonBilling = CommonBilling()
+    private val appMetadata = CommonAppMetadata()
     private lateinit var purchaseManager: PurchaseManager
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Collect App Metadata
+        val packageName = applicationContext.packageName
+        appMetadata.platformId = "android"
+        appMetadata.isDebuggable = 0 != applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE
+        appMetadata.versionStr = packageManager.getPackageInfo(packageName, 0).versionName
+        appMetadata.installAtEpochMilli = packageManager.getPackageInfo(packageName, 0).firstInstallTime
+        if(Build.VERSION_CODES.P <= Build.VERSION.SDK_INT) {
+            appMetadata.androidBuildNumberStr = packageManager.getPackageInfo(packageName, 0).longVersionCode.toString()
+        } else {
+            @Suppress("DEPRECATION") // we are handling the deprecated version here
+            appMetadata.androidBuildNumberStr = packageManager.getPackageInfo(packageName, 0).versionCode.toString()
+        }
+        Logger.d("App.onCreate(): Starting app, " +
+                appMetadata
+        )
+
         val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
-        isDebuggable = 0 != applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE
-         textToSpeech = TextToSpeech(this, this)
+        textToSpeech = TextToSpeech(this, this)
 
         // https://proandroiddev.com/implementing-core-splashscreen-api-e62f0e690f74
         installSplashScreen().apply {
@@ -115,7 +135,7 @@ class MainActivity : AppCompatActivity(),
                 appSettings.isPermissionsGranted = true
 
                 setContent {
-                    MainView(commonBilling)
+                    MainView(commonBilling, appMetadata)
                 }
             }
         }
@@ -223,7 +243,7 @@ class MainActivity : AppCompatActivity(),
         } else {
             // Coming back from a suspended state
             setContent {
-                MainView(commonBilling)
+                MainView(commonBilling, appMetadata)
             }
         }
 

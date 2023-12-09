@@ -39,7 +39,7 @@ class PurchaseManager: NSObject, ObservableObject {
         self.entitlementManager = entitlementManager
         self.commonBilling = commonBilling
         self.commonBilling.updateState(
-            billingState: BillingState.NotPurchased(lastBillingMessage: "Initializing...")
+            billingState: CommonBilling.BillingStateNotPurchased(lastBillingMessage: "Initializing...")
         )
         super.init()
 
@@ -72,20 +72,20 @@ class PurchaseManager: NSObject, ObservableObject {
         case let .success(.verified(transaction)):
             // Successful purchase
             await transaction.finish() // Required to complete transaction
-            commonBilling.updateState(billingState: BillingState.Purchased())
+           commonBilling.updateState(billingState: CommonBilling.BillingStatePurchased())
             commonBilling.updateMessage(message: "Purchase successful")
             await updatePurchasedProducts()
         case let .success(.unverified(_, error)):
             // Successful purchase but transaction/receipt can't be verified
             // Could be a jail-broken phone
-            commonBilling.updateState(billingState: BillingState.Error(errorMessage: error.localizedDescription))
+            commonBilling.updateState(billingState: CommonBilling.BillingStateError(errorMessage: error.localizedDescription))
             commonBilling.updateMessage(message: "Purchase successful but receipt is unverified")
             break
         case .pending:
             // Transaction waiting on SCA (Strong Customer Authentication) or
             // approval from Ask to Buy
             commonBilling.updateMessage(message: "Purchase is pending")
-            commonBilling.updateState(billingState: BillingState.Pending())
+            commonBilling.updateState(billingState: CommonBilling.BillingStatePending())
             break
         case .userCancelled:
             // ^^^
@@ -93,7 +93,7 @@ class PurchaseManager: NSObject, ObservableObject {
             // self.commonBilling.updateMessage(message: "Purchase cancelled")
             break
         @unknown default:
-            commonBilling.updateState(billingState: BillingState.Error(errorMessage: "Unknown status"))
+            commonBilling.updateState(billingState: CommonBilling.BillingStateError(errorMessage: "Unknown status"))
             commonBilling.updateMessage(message: "Purchase failed - unknown status")
             break
         }
@@ -105,7 +105,7 @@ class PurchaseManager: NSObject, ObservableObject {
     }
 
     func purchaseCommandError(_ errorMessage: String) {
-        commonBilling.updateState(billingState: BillingState.Error(errorMessage: errorMessage))
+        commonBilling.updateState(billingState: CommonBilling.BillingStateError(errorMessage: errorMessage))
         commonBilling.updateMessage(message: "Purchase command error: \(errorMessage)")
     }
 
@@ -132,11 +132,11 @@ class PurchaseManager: NSObject, ObservableObject {
         entitlementManager.isProPurchased = !purchasedProductIDs.isEmpty
         if entitlementManager.isProPurchased {
             commonBilling.updateState(
-                billingState: BillingState.Purchased()
+                billingState: CommonBilling.BillingStatePurchased()
             )
         } else {
             commonBilling.updateState(
-                billingState: BillingState.NotPurchased(lastBillingMessage: revokeReason ?? "")
+                billingState: CommonBilling.BillingStateNotPurchased(lastBillingMessage: revokeReason ?? "")
             )
         }
     }

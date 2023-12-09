@@ -12,14 +12,13 @@ struct Location: Identifiable {
 
 struct ContentView: View {
     private var commonBilling: CommonBilling
+    private var commonAppMetadata: CommonAppMetadata
 
     @StateObject
     private var entitlementManager: EntitlementManager
 
     @StateObject
     private var purchaseManager: PurchaseManager
-   
-   private var commonMeta: CommonMeta
 
     //  Leave for reference for now
     //   let cityHallLocation = CLLocationCoordinate2D(latitude: 37.779_379, longitude: -122.418_433)
@@ -37,14 +36,21 @@ struct ContentView: View {
        let version = nsObject as! String
        let nsObject2: AnyObject? = Bundle.main.infoDictionary!["CFBundleVersion"] as AnyObject
        let bundleVersion = nsObject2 as! String
-       let appPurchaseDate = environment(
-       
-       commonMeta = CommonMeta()
+
        #if DEBUG
-         commonMeta.isDebug = true
+         let isDebuggable = true
        #else
-         commonMeta.isDebug = false
+         let isDebuggable = false
        #endif
+
+       self.commonAppMetadata = CommonAppMetadata(
+          isDebuggable: isDebuggable,
+          versionStr: version,
+          androidBuildNumberStr: "n/a",  // Android only
+          iOSBundleVersionStr: bundleVersion,
+          installAtEpochMilli: 0,
+          platformId: "iOS"
+      )
        
         commonBilling = CommonBilling()
 
@@ -61,14 +67,14 @@ struct ContentView: View {
             guard let command = command else { return }
 
             switch command {
-            case is BillingCommand.Purchase:
+            case is CommonBilling.BillingCommandPurchase:
                 Task {
-                    let productStr = (command as! BillingCommand.Purchase).productId
+                    let productStr = (command as! CommonBilling.BillingCommandPurchase).productId
                     try? await purchaseManager.purchase(productStr)
                 }
-            case is BillingCommand.Consume:
+            case is CommonBilling.BillingCommandConsume:
                 Task {
-                    let productStr = (command as! BillingCommand.Purchase).productId
+                    let productStr = (command as! CommonBilling.BillingCommandPurchase).productId
                     try? await purchaseManager.consume(productStr)
                 }
             default:
@@ -84,10 +90,11 @@ struct ContentView: View {
         ZStack {
             Color.blue.ignoresSafeArea(.all) // status bar color
             ComposeView(
-                commonBilling: commonBilling
+                commonBilling: commonBilling,
+                commonAppMetadata: commonAppMetadata
             ).ignoresSafeArea(.all, edges: .bottom) // Compose has own keyboard handler
 
-            // IOS Map experiments, leave for refernce.
+            // IOS Map experiments, leave for reference.
            
 //         Map(
 //            coordinateRegion: MKCoordinateRegion(
@@ -207,9 +214,11 @@ struct ContentView: View {
 
 struct ComposeView: UIViewControllerRepresentable {
     private var commonBilling: CommonBilling
+    private var commonAppMetadata: CommonAppMetadata
 
-    init(commonBilling: CommonBilling) {
+    init(commonBilling: CommonBilling, commonAppMetadata: CommonAppMetadata) {
         self.commonBilling = commonBilling
+        self.commonAppMetadata = commonAppMetadata
     }
 
     func makeUIViewController(context: Context) -> UIViewController {
@@ -221,7 +230,10 @@ struct ComposeView: UIViewControllerRepresentable {
         GMSServices.provideAPIKey(googleMapsApiKey)
 
         // Start the App
-        return Main_iosKt.MainViewController(commonBilling: commonBilling)
+        return Main_iosKt.MainViewController(
+            commonBilling: commonBilling,
+            commonAppMetadata: commonAppMetadata
+        )
     }
 
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}

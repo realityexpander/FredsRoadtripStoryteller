@@ -1,4 +1,5 @@
 
+import CommonBilling.Companion.kMaxTrialTime
 import io.ktor.utils.io.core.Closeable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -15,9 +16,6 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
-
-const val kProProductId = "pro" // only supports one product for now
-private val kMaxTrialTime = 3.days
 
 //sealed class BillingState {
 //    data class NotPurchased(val lastBillingMessage: String? = null) : BillingState()
@@ -126,6 +124,10 @@ open class CommonBilling {
         return _billingMessageFlow.asCommonFlow()
     }
 
+    companion object {
+        const val kProProductId = "pro_version"
+        val kMaxTrialTime = 3.days
+    }
 }
 
 fun <T> Flow<T>.asCommonFlow(): CommonFlow<T> = CommonFlow(this)
