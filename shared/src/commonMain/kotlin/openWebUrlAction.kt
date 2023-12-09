@@ -1,1 +1,1 @@
-expect fun openWebUrlAction(url: String)
+expect fun openWebUrlAction(urlStr: String)

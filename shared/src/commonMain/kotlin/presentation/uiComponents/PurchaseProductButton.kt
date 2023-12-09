@@ -212,6 +212,7 @@ fun PurchaseProductButton(
     if(isTestingPayments_enableConsumeProduct
         && appMetadata.isDebuggable
         && billingState is BillingState.Purchased
+        && appMetadata.platformId == "android"
     ) {
         Spacer(modifier = Modifier.height(16.dp))
         Button(

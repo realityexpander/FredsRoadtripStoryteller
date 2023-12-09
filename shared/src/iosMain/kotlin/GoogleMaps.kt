@@ -180,6 +180,7 @@ actual fun GoogleMaps(
 
         override fun mapView(
             mapView: GMSMapView,
+            @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
             didTapInfoWindowOfMarker: GMSMarker
         ) {
             val userData = didTapInfoWindowOfMarker.userData()
