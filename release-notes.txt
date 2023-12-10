@@ -1,3 +1,9 @@
+Alpha Build 14
+- Add iOS functionality
+  - Open web links
+  - Send emails
+  - Speak text
+  - Send debug log
 
 Alpha Build 13
 - map rendering improvements
