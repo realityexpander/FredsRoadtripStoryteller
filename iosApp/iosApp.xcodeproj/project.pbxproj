@@ -16,6 +16,7 @@
 		D71EB5362B1FB69600FBF693 /* PurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D71EB5352B1FB69600FBF693 /* PurchaseManager.swift */; };
 		D7B5CB2A2B1D8C0600A92BEE /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7B5CB292B1D8C0600A92BEE /* StoreKit.framework */; };
 		D7C37E3E2AD358F70098785F /* AppSecrets.plist in Resources */ = {isa = PBXBuildFile; fileRef = D7C37E3D2AD358F70098785F /* AppSecrets.plist */; };
+		D7E2480C2B2567F8002AA4A7 /* TextToSpeechManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7E2480B2B2567F8002AA4A7 /* TextToSpeechManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -33,6 +34,7 @@
 		D77CC9712B1E628B006EC035 /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 		D7B5CB292B1D8C0600A92BEE /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		D7C37E3D2AD358F70098785F /* AppSecrets.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = AppSecrets.plist; sourceTree = "<group>"; };
+		D7E2480B2B2567F8002AA4A7 /* TextToSpeechManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextToSpeechManager.swift; sourceTree = "<group>"; };
 		FF8CA3F5360CEAB49D74065F /* Pods-iosApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iosApp.release.xcconfig"; path = "Target Support Files/Pods-iosApp/Pods-iosApp.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -97,6 +99,7 @@
 				3251B1352AA8C336001521C0 /* ContentView.swift */,
 				D7C37E3D2AD358F70098785F /* AppSecrets.plist */,
 				D77CC9712B1E628B006EC035 /* Products.storekit */,
+				D7E2480B2B2567F8002AA4A7 /* TextToSpeechManager.swift */,
 			);
 			path = iosApp;
 			sourceTree = "<group>";
@@ -148,7 +151,7 @@
 			attributes = {
 				LastSwiftUpdateCheck = 1130;
 				LastUpgradeCheck = 1130;
-				ORGANIZATIONNAME = orgName;
+				ORGANIZATIONNAME = "Chris Athanas";
 				TargetAttributes = {
 					7555FF7A242A565900829871 = {
 						CreatedOnToolsVersion = 11.3.1;
@@ -237,6 +240,7 @@
 				3251B1362AA8C336001521C0 /* ContentView.swift in Sources */,
 				D71EB5362B1FB69600FBF693 /* PurchaseManager.swift in Sources */,
 				2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */,
+				D7E2480C2B2567F8002AA4A7 /* TextToSpeechManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

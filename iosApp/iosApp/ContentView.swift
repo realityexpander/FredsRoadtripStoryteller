@@ -4,21 +4,23 @@ import SwiftUI
 import UIKit
 // import MapKit
 
-struct Location: Identifiable {
-    let id = UUID()
-    let name: String
-    let coordinate: CLLocationCoordinate2D
-}
+//struct Location: Identifiable {
+//    let id = UUID()
+//    let name: String
+//    let coordinate: CLLocationCoordinate2D
+//}
 
 struct ContentView: View {
-    private var commonBilling: CommonBilling
     private var commonAppMetadata: CommonAppMetadata
-
+    
+    private let commonBilling: CommonBilling = CommonBilling()
     @StateObject
     private var entitlementManager: EntitlementManager
-
     @StateObject
     private var purchaseManager: PurchaseManager
+    
+    private var commonSpeech: CommonSpeech = CommonSpeech()
+    private var textToSpeechManager: TextToSpeechManager
 
     //  Leave for reference for now
     //   let cityHallLocation = CLLocationCoordinate2D(latitude: 37.779_379, longitude: -122.418_433)
@@ -28,32 +30,32 @@ struct ContentView: View {
     //       Location(name: "Tower of London", coordinate: CLLocationCoordinate2D(latitude: 51.508, longitude: -0.076))
     //   ]
     //   @State var position: MapCameraPosition = .automatic
-    @State var selected: Int?
+    //   @State var selected: Int?
 
     init() {
-       // set the app meta info
-       let nsObject: AnyObject? = Bundle.main.infoDictionary!["CFBundleShortVersionString"] as AnyObject
-       let version = nsObject as! String
-       let nsObject2: AnyObject? = Bundle.main.infoDictionary!["CFBundleVersion"] as AnyObject
-       let bundleVersion = nsObject2 as! String
+        // Set the app meta info
+        let nsObject: AnyObject? = Bundle.main.infoDictionary!["CFBundleShortVersionString"] as AnyObject
+        let version = nsObject as! String
+        let nsObject2: AnyObject? = Bundle.main.infoDictionary!["CFBundleVersion"] as AnyObject
+        let bundleVersion = nsObject2 as! String
+        #if DEBUG
+            let isDebuggable = true
+        #else
+            let isDebuggable = false
+        #endif
+        commonAppMetadata = CommonAppMetadata(
+            isDebuggable: isDebuggable,
+            versionStr: version,
+            androidBuildNumberStr: "n/a", // Android only
+            iOSBundleVersionStr: bundleVersion,
+            installAtEpochMilli: 0,
+            platformId: "iOS"
+        )
 
-       #if DEBUG
-         let isDebuggable = true
-       #else
-         let isDebuggable = false
-       #endif
+        // Setup speech
+        textToSpeechManager = TextToSpeechManager(commonSpeech: commonSpeech)
 
-       self.commonAppMetadata = CommonAppMetadata(
-          isDebuggable: isDebuggable,
-          versionStr: version,
-          androidBuildNumberStr: "n/a",  // Android only
-          iOSBundleVersionStr: bundleVersion,
-          installAtEpochMilli: 0,
-          platformId: "iOS"
-      )
-       
-        commonBilling = CommonBilling()
-
+        // Setup billing
         let entitlementManager = EntitlementManager()
         let purchaseManager =
             PurchaseManager(
@@ -62,7 +64,9 @@ struct ContentView: View {
             )
         _entitlementManager = StateObject(wrappedValue: entitlementManager)
         _purchaseManager = StateObject(wrappedValue: purchaseManager)
-
+    }
+    
+    func listenToCommonBillingCommandFlow() {
         commonBilling.commandFlow().watch { command in
             guard let command = command else { return }
 
@@ -70,32 +74,41 @@ struct ContentView: View {
             case is CommonBilling.BillingCommandPurchase:
                 Task {
                     let productStr = (command as! CommonBilling.BillingCommandPurchase).productId
-                    try? await purchaseManager.purchase(productStr)
+                    try? await self.purchaseManager.purchase(productStr)
                 }
             case is CommonBilling.BillingCommandConsume:
                 Task {
                     let productStr = (command as! CommonBilling.BillingCommandPurchase).productId
-                    try? await purchaseManager.consume(productStr)
+                    try? await self.purchaseManager.consume(productStr)
                 }
             default:
                 Task {
-                    purchaseManager.purchaseCommandError("Unknown billing command")
+                    self.purchaseManager.purchaseCommandError("Unknown billing command")
                 }
+            }
+        }
+    }
+    
+    func listenToCommonSpeechSpeakTextFlow() {
+        commonSpeech.speakTextCommonFlow().watch { text in
+            print("Speak: \(text ?? "") ")
+            guard let text2 = text else { return }
+            Task {
+                textToSpeechManager.speakText(text: text2 as String)
             }
         }
     }
 
     var body: some View {
-        
         ZStack {
             Color.blue.ignoresSafeArea(.all) // status bar color
             ComposeView(
+                commonAppMetadata: commonAppMetadata,
                 commonBilling: commonBilling,
-                commonAppMetadata: commonAppMetadata
+                commonSpeech: commonSpeech
             ).ignoresSafeArea(.all, edges: .bottom) // Compose has own keyboard handler
 
             // IOS Map experiments, leave for reference.
-           
 //         Map(
 //            coordinateRegion: MKCoordinateRegion(
 //               center: CLLocationCoordinate2D(latitude: 37.779_379, longitude: -122.418_433),
@@ -155,10 +168,10 @@ struct ContentView: View {
 //        }.frame(height: 300)
 
             // iOS 17
-        // https://www.hackingwithswift.com/forums/swiftui/ios-17-mapkit-how-to-use-map-selection/22886
-           // https://medium.com/simform-engineering/mapkit-swiftui-in-ios-17-1fec82c3bf00
-           // https://www.kodeco.com/7738344-mapkit-tutorial-getting-started?page=4#toc-anchor-020
-           // https://www.kodeco.com/40607811-new-swiftui-support-for-mapkit-in-xcode-15?page=1#toc-anchor-005
+            // https://www.hackingwithswift.com/forums/swiftui/ios-17-mapkit-how-to-use-map-selection/22886
+            // https://medium.com/simform-engineering/mapkit-swiftui-in-ios-17-1fec82c3bf00
+            // https://www.kodeco.com/7738344-mapkit-tutorial-getting-started?page=4#toc-anchor-020
+            // https://www.kodeco.com/40607811-new-swiftui-support-for-mapkit-in-xcode-15?page=1#toc-anchor-005
 //          Map(position: $position, selection: $selected) {
 //             Marker("test", coordinate: locations[0].coordinate).tag(1)
 //             Marker("test2", coordinate: locations[1].coordinate).tag(2)
@@ -204,6 +217,8 @@ struct ContentView: View {
             _ = Task<Void, Never> {
                 do {
                     try await purchaseManager.loadProducts()
+                    listenToCommonBillingCommandFlow()
+                    listenToCommonSpeechSpeakTextFlow()
                 } catch {
                     print(error)
                 }
@@ -213,12 +228,18 @@ struct ContentView: View {
 }
 
 struct ComposeView: UIViewControllerRepresentable {
-    private var commonBilling: CommonBilling
     private var commonAppMetadata: CommonAppMetadata
+    private var commonBilling: CommonBilling
+    private var commonSpeech: CommonSpeech
 
-    init(commonBilling: CommonBilling, commonAppMetadata: CommonAppMetadata) {
-        self.commonBilling = commonBilling
+    init(
+        commonAppMetadata: CommonAppMetadata,
+        commonBilling: CommonBilling,
+        commonSpeech: CommonSpeech
+    ) {
         self.commonAppMetadata = commonAppMetadata
+        self.commonBilling = commonBilling
+        self.commonSpeech = commonSpeech
     }
 
     func makeUIViewController(context: Context) -> UIViewController {
@@ -232,7 +253,8 @@ struct ComposeView: UIViewControllerRepresentable {
         // Start the App
         return Main_iosKt.MainViewController(
             commonBilling: commonBilling,
-            commonAppMetadata: commonAppMetadata
+            commonAppMetadata: commonAppMetadata,
+            commonSpeech: commonSpeech
         )
     }
 

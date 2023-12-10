@@ -34,7 +34,10 @@
 //}
 
 actual fun speakTextToSpeech(text: String) {
-println("speakTextToSpeech: $text") // todo complete
+    iosCommonSpeech.speakText(text)
 }
-actual fun isTextToSpeechSpeaking(): Boolean = false // TODO: Implement
-actual fun stopTextToSpeech() {} // TODO: Implement
+actual fun isTextToSpeechSpeaking(): Boolean =
+    iosCommonSpeech.isTextToSpeechSpeaking()
+actual fun stopTextToSpeech() {
+    iosCommonSpeech.stopTextToSpeech()
+}

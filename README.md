@@ -177,6 +177,29 @@ https://github.com/JetBrains/compose-multiplatform/tree/master/examples/cocoapod
 - How to convert iOS UIImage to Compose ImageBitmap in Compose Multiplatform?
   - https://slack-chats.kotlinlang.org/t/12086405/hi-all-how-to-convert-ios-uiimage-to-compose-imagebitmap-in-
 
+- Maps stuff
+- Override MKMapViewDelegateProtocol in Compose Multiplatform to receive pin selected events
+- https://stackoverflow.com/questions/77266473/override-mkmapviewdelegateprotocol-in-compose-multiplatform-to-receive-pin-selec
+
+- How to programmatically select annotation in Google Maps iOS?
+- https://stackoverflow.com/questions/49156832/ios-google-map-programmatically-select-annotation-swift
+
+- SwiftUI iOS 14 MapKit Annotation Tap Gesture (didSelect)
+- https://developer.apple.com/forums/thread/659748
+
+- Meet MapKit for SwiftUI
+https://developer.apple.com/videos/play/wwdc2023/10043/
+
+-[Solved] iOS 17 MapKit: How to use Map(selection:)?
+-https://www.hackingwithswift.com/forums/swiftui/ios-17-mapkit-how-to-use-map-selection/22886
+
+https://www.hackingwithswift.com/books/ios-swiftui/integrating-mapkit-with-swiftui
+
+
+- STORE stuff
+- StoreHelper Quick Start: https://github.com/russell-archer/StoreHelper/blob/main/Documentation/quickstart.md
+- StoreHelper Guide https://github.com/russell-archer/StoreHelper/blob/main/Documentation/guide.md#get-started
+
 ### Dev notes
 - Why mutableStateList
   - https://stackoverflow.com/questions/67252538/jetpack-compose-update-composable-when-list-changes

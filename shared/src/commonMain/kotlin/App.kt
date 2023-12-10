@@ -1,5 +1,6 @@
 
 import CommonBilling.BillingState
+import CommonSpeech.SpeechState
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -141,11 +142,15 @@ sealed class BottomSheetScreen {
     data object None : BottomSheetScreen()
 }
 
+// Speech for iOS // todo make this common with Android?
+var iosCommonSpeech: CommonSpeech = CommonSpeech()
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun App(
     commonBilling: CommonBilling,
     commonAppMetadata: CommonAppMetadata,
+    commonSpeech: CommonSpeech,
     markersRepo: MarkersRepo = MarkersRepo(appSettings),
     gpsLocationService: GPSLocationService = GPSLocationService()
 ) {
@@ -208,7 +213,21 @@ fun App(
             }
 
             // todo Launch onboarding dialog if first time? // todo
+        }
 
+        // Setup CommonSpeech // used for iOS only for now
+        LaunchedEffect(Unit) {
+            iosCommonSpeech = commonSpeech
+            iosCommonSpeech.speechStateCommonFlow.collectLatest { speechState ->
+                when(speechState) {
+                    is SpeechState.Speaking -> {
+                        Log.d("CommonSpeech.SpeechState.Speaking")
+                    }
+                    is SpeechState.NotSpeaking -> {
+                        Log.d("CommonSpeech.SpeechState.NotSpeaking")
+                    }
+                }
+            }
         }
 
         // Seen Marker & Speaking UI

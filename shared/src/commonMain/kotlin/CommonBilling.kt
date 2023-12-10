@@ -1,34 +1,18 @@
 
 import CommonBilling.Companion.kMaxTrialTime
-import io.ktor.utils.io.core.Closeable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import util.CommonFlow
+import util.asCommonFlow
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
-
-//sealed class BillingState {
-//    data class NotPurchased(val lastBillingMessage: String? = null) : BillingState()
-//    data object Pending : BillingState()
-//    data object Purchased : BillingState()
-//    data class Error(val errorMessage: String) : BillingState()
-//    data object Disabled : BillingState()
-//}
-
-//sealed class BillingCommand {
-//    data class Purchase(val productId: String) : BillingCommand()
-//    data class Consume(val productId: String) : BillingCommand()
-//}
 
 /**
  * CommonBilling is a class that is used to communicate between the shared code and the platform
@@ -125,25 +109,8 @@ open class CommonBilling {
     }
 
     companion object {
-        const val kProProductId = "pro_version"
+        const val kProProductId = "pro"
         val kMaxTrialTime = 3.days
-    }
-}
-
-fun <T> Flow<T>.asCommonFlow(): CommonFlow<T> = CommonFlow(this)
-class CommonFlow<T>(private val origin: Flow<T>) : Flow<T> by origin {
-    fun watch(block: (T) -> Unit): Closeable {
-        val job = Job()
-
-        onEach {
-            block(it)
-        }.launchIn(CoroutineScope(Dispatchers.Main + job))
-
-        return object : Closeable {
-            override fun close() {
-                job.cancel()
-            }
-        }
     }
 }
 

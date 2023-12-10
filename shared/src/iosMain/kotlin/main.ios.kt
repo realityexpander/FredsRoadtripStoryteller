@@ -4,8 +4,9 @@ actual fun getPlatformName(): String = "iOS"
 
 fun MainViewController(
     commonBilling: CommonBilling,
-    commonAppMetadata: CommonAppMetadata
+    commonAppMetadata: CommonAppMetadata,
+    commonSpeech: CommonSpeech
 ) =
     ComposeUIViewController {
-        App(commonBilling, commonAppMetadata)
+        App(commonBilling, commonAppMetadata, commonSpeech)
     }

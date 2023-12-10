@@ -64,7 +64,10 @@ class PurchaseManager: NSObject, ObservableObject {
         let product = products.first { product in
             product.id == productStr
         }
-        guard let product = product else { return }
+        guard let product = product else {
+            commonBilling.updateMessage(message: "Product not found, id:\(productStr)")
+            return
+        }
 
         let result = try await product.purchase()
 
