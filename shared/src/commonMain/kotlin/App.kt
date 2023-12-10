@@ -150,7 +150,7 @@ var iosCommonSpeech: CommonSpeech = CommonSpeech()
 fun App(
     commonBilling: CommonBilling,
     commonAppMetadata: CommonAppMetadata,
-    commonSpeech: CommonSpeech,
+    commonSpeech: CommonSpeech = CommonSpeech(),
     markersRepo: MarkersRepo = MarkersRepo(appSettings),
     gpsLocationService: GPSLocationService = GPSLocationService()
 ) {
