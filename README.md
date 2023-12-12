@@ -3,6 +3,8 @@
 Compose KMP Proof-of-concept experimental app using Google Maps for iOS and Android
 Pure Kotlin App for Android and iOS
 
+_Note: The name of the app is currently being decided._
+
 <!-- img width="1700" alt="image" src="https://github.com/realityexpander/GoolgeMapsUsingCocoaPodsExample/assets/5157474/7b0395d3-04e6-48df-9219-990cb10d81e1" -->
 
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/db768efa-878e-47fe-96ac-bbdfadc5ad18">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/db768efa-878e-47fe-96ac-bbdfadc5ad18)
