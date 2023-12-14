@@ -15,50 +15,13 @@ Hear historical markers as you travel - Learn about local history as you drive.
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/265ae655-f57c-48a7-a60e-9a515d49efd3">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/265ae655-f57c-48a7-a60e-9a515d49efd3)
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/ded7dd66-399b-41c7-9f74-00d8a27531dc">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/ded7dd66-399b-41c7-9f74-00d8a27531dc)
 
-Wiki: [Fred's Roadtrip Storyteller Wiki](https://github.com/realityexpander/FredsRoadtripStoryteller/wiki)
+- Wiki: [Fred's Roadtrip Storyteller Wiki](https://github.com/realityexpander/FredsRoadtripStoryteller/wiki)
 
-Link to Marketing site source: https://github.com/realityexpander/FredsTalkingMarkersWebsite
-Link to Marketing Site: https://realityexpander.github.io/FredsTalkingMarkersWebsite/index.html
+- Link to Marketing site source: https://github.com/realityexpander/FredsTalkingMarkersWebsite
+- Link to Marketing Site: https://realityexpander.github.io/FredsTalkingMarkersWebsite/index.html
 
-Potential app names:
-// https://www.mightynetworks.com/app-name-generator
-
-speaks historical markers as you drive by them:
-History Companion
-Drive & Discover
-Roadside Storyteller
-Time Travel Guide
-Historical Marker Navigator
-Explore the Past
-Marker Moments
-History Driven
-Drive Through Time
-Roadside Heritage
-
-automatically read historical markers as you drive by:
-Marker Mate
-Drive By History
-Historic Marker Reader
-Time Traveler
-Driving History
-Spot the Signs
-Roadside Remembrance
-Mobile Marker Mapper
-Drive and Discover
-Historical Insights
-
-read historical markers as drive by to annoy kids:
-Historic Tour Guide
-Historical RoadTrip
-Time Travel Tracker
-Historic Marker Explorer
-Roadside Reminders
-Travel Tales
-EduVenture
-Historical Roadside Companion
-History Quest
-Memory Lane Discoverer
-Time Traverse
+## Potential app names:
+- https://www.mightynetworks.com/app-name-generator
 
 icons: https://www.google.com/search?q=flat+icons+navigation&sca_esv=585465592&tbm=isch&sxsrf=AM9HkKkbHZOj7DIYI42VD56hpTfPgmYrYQ:1701032930698&source=lnms&sa=X&ved=2ahUKEwj_kte8yeKCAxVQIEQIHeeIDDsQ_AUoAXoECAIQAw&biw=1622&bih=1050&dpr=2#imgrc=Tx7XOXuIaxmJtM
 
@@ -79,7 +42,7 @@ https://github.com/JetBrains/compose-multiplatform/tree/master/examples/cocoapod
 - must do "pod install" from the iosApp folder
 
 ### Code style
-  - https://github.com/realityexpander/ktor-web-app-server/blob/main/src/main/kotlin/LIBRARY_README.md
+  - https://github.com/realityexpander/FredsRoadtripStoryteller/blob/main/raw_assets/CodeStyle.md
 
 ### KMP Stuff
 - KMP Wizard
