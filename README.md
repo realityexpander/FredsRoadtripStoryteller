@@ -15,7 +15,7 @@ Hear historical markers as you travel - Learn about local history as you drive.
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/265ae655-f57c-48a7-a60e-9a515d49efd3">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/265ae655-f57c-48a7-a60e-9a515d49efd3)
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/ded7dd66-399b-41c7-9f74-00d8a27531dc">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/ded7dd66-399b-41c7-9f74-00d8a27531dc)
 
-Wiki: [Freds Talking Historical Markers Wiki](https://github.com/realityexpander/FredsHistoryMarkers/wiki)
+Wiki: [Fred's Roadtrip Storyteller Wiki](https://github.com/realityexpander/FredsRoadtripStoryteller/wiki)
 
 Link to Marketing site source: https://github.com/realityexpander/FredsTalkingMarkersWebsite
 Link to Marketing Site: https://realityexpander.github.io/FredsTalkingMarkersWebsite/index.html
