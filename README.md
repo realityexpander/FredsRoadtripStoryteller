@@ -1,5 +1,5 @@
 # Fred's Roadtrip Storyteller
-## Hear historical markers as you travel
+Hear historical markers as you travel - Learn about local history as you drive.
 
 Compose KMP Proof-of-concept experimental app using Google Maps for iOS and Android
 Pure Kotlin App for Android and iOS
