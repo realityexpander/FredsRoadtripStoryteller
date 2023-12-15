@@ -17,8 +17,8 @@ Hear historical markers as you travel - Learn about local history as you drive.
 
 - Wiki: [Fred's Roadtrip Storyteller Wiki](https://github.com/realityexpander/FredsRoadtripStoryteller/wiki)
 
-- Link to Marketing site source: https://github.com/realityexpander/FredsTalkingMarkersWebsite
-- Link to Marketing Site: https://realityexpander.github.io/FredsTalkingMarkersWebsite/index.html
+- Link to Marketing site source: https://github.com/realityexpander/FredsRoadtripStorytellerWebsite
+- Link to Marketing Site: https://realityexpander.github.io/FredsRoadtripStorytellerWebsite/index.html
 
 ## Potential app names:
 - https://www.mightynetworks.com/app-name-generator
