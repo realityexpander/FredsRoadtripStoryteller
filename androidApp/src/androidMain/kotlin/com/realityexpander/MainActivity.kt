@@ -184,24 +184,6 @@ class MainActivity : AppCompatActivity(),
                         startNavigation(lat, lng, markerTitle)
                     }
                 }
-
-//                // In-app purchase // todo use CommonBilling
-//                if(intent.action == ProductPurchaseAction.PurchasePro.value) {
-//                    // Guard
-//                    purchaseManager.productName.value ?: run {
-//                        _errorMessageFlow.emit("PurchasePro: productDetails not initialized")
-//                        return@collect
-//                    }
-//                    purchaseManager.makePurchase()
-//                }
-//                if(intent.action == ProductPurchaseAction.ConsumePro.value) {
-//                    // Guard
-//                    purchaseManager.productName.value ?: run {
-//                        _errorMessageFlow.emit("ConsumePro: productDetails not initialized")
-//                        return@collect
-//                    }
-//                    purchaseManager.consumeProduct()
-//                }
             }
         }
 
