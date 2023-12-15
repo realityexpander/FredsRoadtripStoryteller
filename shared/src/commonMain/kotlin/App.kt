@@ -55,6 +55,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import data.MarkersRepo
 import data.appSettings
 import data.configPropertyFloat
@@ -890,7 +891,8 @@ fun App(
                                 Text(
                                     text = appNameStr,
                                     fontStyle = FontStyle.Normal,
-                                    fontWeight = FontWeight.Medium
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp
                                 )
                             },
                             actions = {
@@ -903,7 +905,7 @@ fun App(
                                         } else {
                                             BottomSheetScreen.None
                                         }
-                                }) { // show settings page
+                                }) {
                                     Icon(
                                         imageVector = Icons.Default.Settings,
                                         contentDescription = "Settings"

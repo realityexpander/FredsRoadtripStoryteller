@@ -168,6 +168,10 @@ actual fun GoogleMaps(
             )
         )
     }
+    val mapStyle = if (MaterialTheme.colors.isLight)
+            mapStyleLight()
+        else
+            mapStyleDark()
     var properties by remember {
         mutableStateOf(
             MapProperties(
@@ -175,8 +179,19 @@ actual fun GoogleMaps(
                 minZoomPreference = 1f,
                 maxZoomPreference = 25f,
                 mapStyleOptions = MapStyleOptions(
-                    mapStyle()  // Dark green map style
+                    mapStyle
                 )
+            )
+        )
+    }
+
+    LaunchedEffect(MaterialTheme.colors.isLight) {
+        properties = MapProperties(
+            isMyLocationEnabled = true,  // always show the dot
+            minZoomPreference = 1f,
+            maxZoomPreference = 25f,
+            mapStyleOptions = MapStyleOptions(
+                mapStyle
             )
         )
     }
@@ -1212,10 +1227,62 @@ private fun calcRestrictedClusterRadiusMetersForCameraZoomLevel(
     )
 
 @NoLiveLiterals
-// https://mapstyle.withgoogle.com/
-fun mapStyle(): String {
+fun mapStyleLight(): String {
     return """
-    [
+        [
+          {
+            "featureType": "administrative.land_parcel",
+            "elementType": "labels",
+            "stylers": [
+              {
+                "visibility": "off"
+              }
+            ]
+          },
+          {
+            "featureType": "poi",
+            "elementType": "labels.text",
+            "stylers": [
+              {
+                "visibility": "off"
+              }
+            ]
+          },
+          {
+            "featureType": "poi.business",
+            "stylers": [
+              {
+                "visibility": "off"
+              }
+            ]
+          },
+          {
+            "featureType": "poi.park",
+            "elementType": "labels.text",
+            "stylers": [
+              {
+                "visibility": "off"
+              }
+            ]
+          },
+          {
+            "featureType": "road.local",
+            "elementType": "labels",
+            "stylers": [
+              {
+                "visibility": "off"
+              }
+            ]
+          }
+        ]
+    """.trimIndent()
+}
+
+@NoLiveLiterals
+// https://mapstyle.withgoogle.com/
+fun mapStyleDark(): String {
+    return """
+[
   {
     "elementType": "geometry",
     "stylers": [

@@ -2,9 +2,7 @@ package presentation.uiComponents
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ContentAlpha.medium
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.MaterialTheme.shapes
 import androidx.compose.material.Shapes
 import androidx.compose.material.Typography
 import androidx.compose.material.darkColors
@@ -55,8 +53,8 @@ fun AppTheme(
         )
     }
     val typography = Typography(
-            // bodyMedium = TextStyle( // material3
-            body2 = TextStyle(
+        // bodyMedium = TextStyle( // material3
+        body2 = TextStyle(
             fontFamily = FontFamily.Default,
             fontWeight = FontWeight.Normal,
             fontSize = 16.sp
