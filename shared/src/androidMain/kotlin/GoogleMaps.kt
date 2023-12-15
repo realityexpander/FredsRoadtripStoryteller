@@ -111,16 +111,6 @@ val blankMarkerBitmap =
         context = appContext,
         vectorResId = R.drawable.invisible_map_icon_24 // invisible icon, 48x48, spacer for the infoWindow
     )
-val grayMarkerBitmap =
-    bitmapDescriptorFromVector(
-        context = appContext,
-        vectorResId = R.drawable.grey_marker
-    )
-val redMarkerBitmap =
-    bitmapDescriptorFromVector(
-        context = appContext,
-        vectorResId = R.drawable.red_marker
-    )
 
 // Android Google Maps implementation
 @NoLiveLiterals
@@ -205,8 +195,6 @@ actual fun GoogleMaps(
 
     // Marker images
     val rememberBlankMarkerBitmap = remember { blankMarkerBitmap }
-    val rememberGrayMarkerBitmap = remember { grayMarkerBitmap }
-    val rememberRedMarkerBitmap = remember { redMarkerBitmap }
 
     // Usually used to setup the initial camera position (doesn't support tracking due to forcing zoom level)
     LaunchedEffect(shouldSetInitialCameraPosition) {
@@ -470,7 +458,7 @@ actual fun GoogleMaps(
                 }
 
                 // Collect the cluster items in the radius
-                markers?.forEachIndexed { idx, marker ->
+                markers?.forEachIndexed { _, marker ->
                     if (marker.isMarkerWithinRadiusMilesOfLatLng(
                             clusterRadiusMiles,
                             clusterCenterLatLng
