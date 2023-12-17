@@ -75,8 +75,8 @@ fun SplashScreenForPermissions(
                 Text(
                     text = appNameStr,
                     color = Color.White,
-                    textAlign = TextAlign.Center,
-                    fontSize = MaterialTheme.typography.h3.fontSize,
+                    textAlign = TextAlign.Start,
+                    fontSize = MaterialTheme.typography.h4.fontSize,
                     modifier = Modifier.weight(1f)
                 )
             }
