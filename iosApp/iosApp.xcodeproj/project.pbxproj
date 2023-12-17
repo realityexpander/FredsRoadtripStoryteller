@@ -377,7 +377,7 @@
 				DEVELOPMENT_TEAM = 8M6DWG8MX5;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = iosApp/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Freds Drive-by Hear-itage";
+				INFOPLIST_KEY_CFBundleDisplayName = "Freds Roadtrip Storyteller";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.travel";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.4;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -405,7 +405,7 @@
 				DEVELOPMENT_TEAM = 8M6DWG8MX5;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = iosApp/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Freds Drive-by Hear-itage";
+				INFOPLIST_KEY_CFBundleDisplayName = "Freds Roadtrip Storyteller";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.travel";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.4;
 				LD_RUNPATH_SEARCH_PATHS = (
