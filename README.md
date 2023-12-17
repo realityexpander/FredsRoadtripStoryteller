@@ -36,7 +36,7 @@ https://www.privacypolicygenerator.info/download.php?lang=en&token=dhslNflkEHizH
 
 Firebase console: https://console.firebase.google.com/u/0/project/talkingmarkers/overview
 
-Source: (Code snapshot taken 10/8/24)
+Source: (Code snapshot taken 10/8/23)
 https://github.com/JetBrains/compose-multiplatform/tree/master/examples/cocoapods-ios-example
 
 - Must create AppSecrets.plist from within Xcode - in password vault
