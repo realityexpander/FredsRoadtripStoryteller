@@ -1,4 +1,4 @@
-![image](https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/7c8e714c-64a9-48ad-accb-fcff53c530be)
+[<img width="512" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/7c8e714c-64a9-48ad-accb-fcff53c530be">](https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/7c8e714c-64a9-48ad-accb-fcff53c530be)
 
 # Fred's Roadtrip Storyteller
 Hear historical markers as you travel - Learn about local history as you drive.
