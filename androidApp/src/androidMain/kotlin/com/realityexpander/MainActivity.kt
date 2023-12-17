@@ -232,8 +232,6 @@ class MainActivity : AppCompatActivity(),
         // Setup the in-app purchase helper
         purchaseManager = PurchaseManager(
             this,
-//            _billingMessageFlow,
-//            _productPurchaseStateFlow
             commonBilling
         )
         purchaseManager.billingSetup()

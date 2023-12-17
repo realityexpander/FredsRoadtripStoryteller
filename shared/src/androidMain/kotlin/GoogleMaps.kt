@@ -586,44 +586,71 @@ actual fun GoogleMaps(
                 val startTime = Clock.System.now()
 
                 TileOverlay(
-                    tileProvider = remember(shouldCalcClusterItems, markers) {
-                        if (!shouldCalcClusterItems) {
-                            // Log.d { "💿 Using cached heatmap items, cachedHeatmap = $cachedTileProvider" }
-                            return@remember heatmapTileProvider
+//                    tileProvider = remember(shouldCalcClusterItems, markers) {
+                    tileProvider =
+//                        if (!shouldCalcClusterItems) {
+                        if (didUpdateClusterItems) {
+//                            // Log.d { "💿 Using cached heatmap items, cachedHeatmap = $cachedTileProvider" }
+////                            return@remember heatmapTileProvider
+                            heatmapTileProvider
                         } else {
                             // check if the localMarkers are different than the cached localMarkers
                             if (markers.size == cachedMarkerIdToSeeableClusterItemMap.size) {
                                 // Log.d("💿 Using cached heatmap items because list of localMarkers has not changed, cachedHeatmap = $cachedTileProvider")
-                                return@remember heatmapTileProvider
+//                                return@remember heatmapTileProvider
+                                heatmapTileProvider
                             }
 
-                            // Calculate the heatmap
-                            val result = HeatmapTileProvider.Builder()
-                                .weightedData(
-                                    if (markers.isNotEmpty()) {
-                                        markers.map { marker ->
-                                            WeightedLatLng(
-                                                LatLng(
-                                                    marker.position.latitude,
-                                                    marker.position.longitude
-                                                ),
-                                                2.0
-                                            )
-                                        }
-                                    } else {
-                                        listOf( // default cache value (heatmap must have at least 1 item, and this wont be visible)
-                                            WeightedLatLng(
-                                                LatLng(0.0, 0.0), 0.0
-                                            )
+                        // Calculate the heatmap
+                        val result = HeatmapTileProvider.Builder()
+                            .weightedData(
+                                if (markers.isNotEmpty()) {
+                                    markers.map { marker ->
+                                        WeightedLatLng(
+                                            LatLng(
+                                                marker.position.latitude,
+                                                marker.position.longitude
+                                            ),
+                                            2.0
                                         )
-                                    })
-                                .radius(25) // convolution filter size in pixels
-                                .build()
-                            // Log.d("💿 Recalculating heatmap items, localMarkers.size= ${localMarkers.size}, HeatmapTileProvider= $result")
-                            heatmapTileProvider = result
-                            return@remember result
+                                    }
+                                } else {
+                                    listOf( // default cache value (heatmap must have at least 1 item, and this wont be visible)
+                                        WeightedLatLng(
+                                            LatLng(0.0, 0.0), 0.0
+                                        )
+                                    )
+                                })
+                            .radius(25) // convolution filter size in pixels
+                            .build()
+                        // Log.d("💿 Recalculating heatmap items, localMarkers.size= ${markers.size}, HeatmapTileProvider= $result")
+                        heatmapTileProvider = result
+//                            return@remember result
+                        result
                         }
-                    },
+//                    }
+//                    HeatmapTileProvider.Builder()
+//                        .weightedData(
+//                            if (markers.isNotEmpty()) {
+//                                markers.map { marker ->
+//                                    WeightedLatLng(
+//                                        LatLng(
+//                                            marker.position.latitude,
+//                                            marker.position.longitude
+//                                        ),
+//                                        2.0
+//                                    )
+//                                }
+//                            } else {
+//                                listOf( // default cache value (heatmap must have at least 1 item, and this wont be visible)
+//                                    WeightedLatLng(
+//                                        LatLng(0.0, 0.0), 0.0
+//                                    )
+//                                )
+//                            })
+//                        .radius(25) // convolution filter size in pixels
+//                        .build()
+                    ,
                     state = rememberTileOverlayState(),
                     visible = isHeatMapEnabled,
                     fadeIn = true,

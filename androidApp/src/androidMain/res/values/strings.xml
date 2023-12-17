@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Freds Historical Markers</string>
+    <string name="app_name" translatable="false">Freds Roadtrip Storyteller</string>
     <string name="stop_speaking_text_to_speech_action_label">Stop Speaking</string>
     <string name="mute_all_text_to_speech_action_label">Mute All Speech</string>
 </resources>
