@@ -168,6 +168,9 @@ https://www.hackingwithswift.com/books/ios-swiftui/integrating-mapkit-with-swift
 - StoreHelper Quick Start: https://github.com/russell-archer/StoreHelper/blob/main/Documentation/quickstart.md
 - StoreHelper Guide https://github.com/russell-archer/StoreHelper/blob/main/Documentation/guide.md#get-started
 
+- Simulate Location
+- https://gpx-poi.com/
+
 ### Dev notes
 - Why mutableStateList
   - https://stackoverflow.com/questions/67252538/jetpack-compose-update-composable-when-list-changes
