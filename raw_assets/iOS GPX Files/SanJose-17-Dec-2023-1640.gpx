@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.topografix.com/GPX/1/1" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd" version="1.1" creator="Open GPX Tracker for iOS">
+	<wpt lat="37.07616976745072" lon="-121.97858079315587">
+		<time>2023-12-17T22:39:46Z</time>
+		<name>4:39:46 PM</name>
+		<desc>Dec 17, 2023 at 4:39:46 PM</desc>
+	</wpt>
+	<wpt lat="37.289068201924586" lon="-121.92968079159147">
+		<time>2023-12-17T22:39:52Z</time>
+		<name>4:39:52 PM</name>
+		<desc>Dec 17, 2023 at 4:39:52 PM</desc>
+	</wpt>
+	<wpt lat="37.34131542903864" lon="-122.09268079680609">
+		<time>2023-12-17T22:39:57Z</time>
+		<name>4:39:57 PM</name>
+		<desc>Dec 17, 2023 at 4:39:57 PM</desc>
+	</wpt>
+	<wpt lat="37.422952547421914" lon="-122.14256867718997">
+		<time>2023-12-17T22:40:02Z</time>
+		<name>4:40:02 PM</name>
+		<desc>Dec 17, 2023 at 4:40:02 PM</desc>
+	</wpt>
+	<wpt lat="37.40686764874819" lon="-121.89905654818752">
+		<time>2023-12-17T22:40:07Z</time>
+		<name>4:40:07 PM</name>
+		<desc>Dec 17, 2023 at 4:40:07 PM</desc>
+	</wpt>
+	<wpt lat="37.31892820701544" lon="-121.77507775634243">
+		<time>2023-12-17T22:40:12Z</time>
+		<name>4:40:12 PM</name>
+		<desc>Dec 17, 2023 at 4:40:12 PM</desc>
+	</wpt>
+	<trk>
+	</trk>
+</gpx>
