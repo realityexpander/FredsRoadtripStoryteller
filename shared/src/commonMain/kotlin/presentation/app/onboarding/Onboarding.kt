@@ -1,3 +1,4 @@
+
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.pager.HorizontalPager
@@ -23,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
@@ -61,7 +64,7 @@ fun OnboardingDialog(
         // provide pageCount
         pages.size
     }
-    val scope = rememberCoroutineScope()
+    val coroutineScope = rememberCoroutineScope()
 
     Dialog(
         properties = DialogProperties(
@@ -73,103 +76,114 @@ fun OnboardingDialog(
             onDismiss()
         },
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            HorizontalPager(
-                modifier = Modifier,
-                state = pagerState,
-                pageSpacing = 0.dp,
-                userScrollEnabled = true,
-                reverseLayout = false,
-                contentPadding = PaddingValues(0.dp),
-                beyondBoundsPageCount = 0,
-                pageSize = PageSize.Fill,
-                flingBehavior = PagerDefaults.flingBehavior(state = pagerState),
-                key = { pages[it] },
-                pageNestedScrollConnection = PagerDefaults.pageNestedScrollConnection(
-                    Orientation.Horizontal
-                ),
-                pageContent = { index ->
-                    Image(
-                        painter = painterResource(res = pages[index]),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
-            )
+
+        Surface(
+            modifier = Modifier
+                .background(MaterialTheme.colors.background)
+        ) {
             Box(
-                modifier = Modifier
-                    .offset(y = -(16).dp)
-                    .fillMaxWidth(0.5f)
-                    .clip(RoundedCornerShape(100))
-                    .background(MaterialTheme.colors.background)
-                    .padding(8.dp)
-                    .align(Alignment.BottomCenter)
+                modifier = Modifier.fillMaxSize()
             ) {
-                IconButton(
-                    onClick = {
-                        scope.launch {
-                            pagerState.animateScrollToPage(
-                                pagerState.currentPage - 1
-                            )
-                        }
-                    },
-                    modifier = Modifier.align(Alignment.CenterStart)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowLeft,
-                        contentDescription = "Go back",
-                        tint = MaterialTheme.colors.onBackground
-                    )
-                }
+                HorizontalPager(
+                    modifier = Modifier,
+                    state = pagerState,
+                    pageSpacing = 0.dp,
+                    userScrollEnabled = true,
+                    reverseLayout = false,
+                    contentPadding = PaddingValues(0.dp),
+                    beyondBoundsPageCount = 0,
+                    pageSize = PageSize.Fill,
+                    flingBehavior = PagerDefaults.flingBehavior(state = pagerState),
+                    key = { pages[it] },
+                    pageNestedScrollConnection = PagerDefaults.pageNestedScrollConnection(
+                        Orientation.Horizontal
+                    ),
+                    pageContent = { index ->
+                        Image(
+                            painter = painterResource(res = pages[index]),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                )
 
-                DotsIndicator(
+                // Dots Indicator
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.Center),
-                    totalDots = pages.size,
-                    selectedIndex = pagerState.currentPage,
-                    selectedColor = MaterialTheme.colors.onBackground,
-                    unSelectedColor = MaterialTheme.colors.onBackground.copy(alpha = 0.25f)
-                )
+                        .wrapContentSize()
+                        .offset(y = -(16).dp)
+                        .fillMaxWidth(0.5f)
+                        .clip(RoundedCornerShape(100))
+                        .background(MaterialTheme.colors.background)
+                        .padding(8.dp)
+                        .align(Alignment.BottomCenter)
+                ) {
+                    IconButton(
+                        onClick = {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(
+                                    pagerState.currentPage - 1
+                                )
+                            }
+                        },
+                        modifier = Modifier.align(Alignment.CenterStart)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowLeft,
+                            contentDescription = "Go back",
+                            tint = MaterialTheme.colors.onBackground
+                        )
+                    }
 
+                    DotsIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.Center),
+                        totalDots = pages.size,
+                        selectedIndex = pagerState.currentPage,
+                        selectedColor = MaterialTheme.colors.onBackground,
+                        unSelectedColor = MaterialTheme.colors.onBackground.copy(alpha = 0.25f)
+                    )
+
+                    IconButton(
+                        onClick = {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(
+                                    pagerState.currentPage + 1
+                                )
+                            }
+                        },
+                        modifier = Modifier.align(Alignment.CenterEnd)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowRight,
+                            contentDescription = "Go forward",
+                            tint = MaterialTheme.colors.onBackground
+                        )
+                    }
+                }
+
+                // Close Button
                 IconButton(
                     onClick = {
-                        scope.launch {
-                            pagerState.animateScrollToPage(
-                                pagerState.currentPage + 1
-                            )
-                        }
+                        onDismiss()
                     },
-                    modifier = Modifier.align(Alignment.CenterEnd)
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .align(Alignment.TopEnd)
+                        .background(
+                            MaterialTheme.colors.surface.copy(alpha = 0.5f),
+                            shape = MaterialTheme.shapes.medium
+                        )
+                        .clickable { onDismiss() }
                 ) {
                     Icon(
-                        imageVector = Icons.Default.KeyboardArrowRight,
-                        contentDescription = "Go forward",
-                        tint = MaterialTheme.colors.onBackground
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close",
+                        modifier = Modifier.alpha(0.8f)
                     )
                 }
-            }
-
-            // Close Button
-            IconButton(
-                onClick = {
-                    onDismiss()
-                },
-                modifier = Modifier
-                    .padding(8.dp)
-                    .align(Alignment.TopEnd)
-                    .background(
-                        MaterialTheme.colors.surface.copy(alpha = 0.5f),
-                        shape = MaterialTheme.shapes.medium
-                    )
-                    .clickable { onDismiss() }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "Close",
-                    modifier = Modifier.alpha(0.8f)
-                )
             }
         }
     }

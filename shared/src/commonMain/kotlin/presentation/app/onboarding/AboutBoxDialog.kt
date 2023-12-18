@@ -14,7 +14,6 @@ import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -58,126 +57,127 @@ fun AboutBoxDialog(
             onDismiss()
         },
     ) {
-        Surface(
-            modifier = Modifier
-                .background(MaterialTheme.colors.background)
+        Box(
+            modifier = Modifier.fillMaxSize()
+                .background(MaterialTheme.colors.background),
+            contentAlignment = Alignment.TopCenter
         ) {
-            Box(
+            Image(
+                painter = painterResource("about_box.png"),
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
                 modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.TopCenter
-            ) {
-                Image(
-                    painter = painterResource("about_box.png"),
-                    contentDescription = null,
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier.fillMaxSize(),
-                    alignment = Alignment.TopCenter
-                )
+                alignment = Alignment.TopCenter
+            )
 
-                Box(
+            // Close Button
+            IconButton(
+                onClick = {
+                    onDismiss()
+                },
+                modifier = Modifier
+                    .padding(8.dp)
+                    .align(Alignment.TopEnd)
+                    .background(
+                        MaterialTheme.colors.surface.copy(alpha = 0.5f),
+                        shape = MaterialTheme.shapes.medium
+                    )
+                    .clickable { onDismiss() }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Close",
+                    modifier = Modifier.alpha(0.8f)
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .offset(y = -(16).dp)
+                    .padding(8.dp)
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+            ) {
+                Column(
                     modifier = Modifier
-                        .offset(y = -(16).dp)
                         .fillMaxWidth()
-                        .padding(8.dp)
-                        .align(Alignment.BottomCenter)
+                        .align(Alignment.BottomCenter),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    // Link to app website
+                    Button(
+                        onClick = {
+                            openWebUrlAction("https://FredsRoadtripStoryteller.com")
+                            onDismiss()
+                        },
+                    ) {
+                        Text("$appNameStr website")
+                    }
+                    Spacer(modifier = Modifier.padding(16.dp))
+
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .align(Alignment.BottomCenter),
+                            .padding(8.dp)
+                            .background(MaterialTheme.colors.background.copy(alpha = 0.5f)),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Link to app website
+
+                        // Link to HMDB.org
                         Button(
                             onClick = {
-                                openWebUrlAction("https://realityexpander.github.io/FredsTalkingMarkersWebsite")
+                                openWebUrlAction("https://hmdb.org")
                                 onDismiss()
                             },
                         ) {
-                            Text("$appNameStr website")
+                            Text("Visit HMDB.org")
                         }
-                        Spacer(modifier = Modifier.padding(16.dp))
+                        Text("Historical Marker data is from HMDB.org")
+                        Spacer(modifier = Modifier.padding(8.dp))
 
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(MaterialTheme.colors.background.copy(alpha = 0.5f)),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-
-                            // Link to HMDB.org
-                            Button(
-                                onClick = {
-                                    openWebUrlAction("https://hmdb.org")
-                                    onDismiss()
-                                },
-                            ) {
-                                Text("Visit HMDB.org")
-                            }
-                            Text("Historical Marker data is from HMDB.org")
-                            Spacer(modifier = Modifier.padding(8.dp))
-
-                            // Version number
+                        // Version number
+                        Text(
+                            "$appNameStr v${appMetadata.versionStr} " +
+                                    if (appMetadata.platformId == "android")
+                                        "build ${appMetadata.androidBuildNumberStr} "
+                                    else
+                                        "build ${appMetadata.iOSBundleVersionStr} "
+                                                +
+                                                if (appMetadata.isDebuggable)
+                                                    "debug"
+                                                else
+                                                    "release",
+                            style = MaterialTheme.typography.caption,
+                            color = MaterialTheme.colors.onBackground
+                        )
+                        if (appMetadata.installAtEpochMilli > 0) {
+                            val installTime =
+                                Instant.fromEpochMilliseconds(appMetadata.installAtEpochMilli)
+                                    .toLocalDateTime(TimeZone.currentSystemDefault())
                             Text(
-                                "$appNameStr v${appMetadata.versionStr} " +
-                                        if(appMetadata.platformId == "android")
-                                            "build ${appMetadata.androidBuildNumberStr} "
-                                            else
-                                            "build ${appMetadata.iOSBundleVersionStr} "
-                                        +
-                                        if (appMetadata.isDebuggable)
-                                            "debug"
-                                        else
-                                            "release",
-                                style = MaterialTheme.typography.caption,
-                                color = MaterialTheme.colors.onBackground
+                                "Installed: ${installTime.date} " +
+                                        "${installTime.time.hour}:${installTime.time.minute} UTC"
                             )
-                            if (appMetadata.installAtEpochMilli > 0) {
-                                val installTime =
-                                    Instant.fromEpochMilliseconds(appMetadata.installAtEpochMilli)
-                                        .toLocalDateTime(TimeZone.currentSystemDefault())
-                                Text("Installed: ${installTime.date} " +
-                                        "${installTime.time.hour}:${installTime.time.minute} UTC")
-                            }
+                        }
 
-                            Text("Debug log size: ${debugLog.size}")
-                            // Send debug log
-                            Button(
-                                onClick = {
-                                    onDismiss()
-                                    coroutineScope.launch {
-                                        debugLog.add("AboutBoxDialog: Send debug log, debugLog.size=${debugLog.size}, " +
+                        Text("Debug log size: ${debugLog.size}")
+                        // Send debug log
+                        Button(
+                            onClick = {
+                                onDismiss()
+                                coroutineScope.launch {
+                                    debugLog.add(
+                                        "AboutBoxDialog: Send debug log, debugLog.size=${debugLog.size}, " +
                                                 "$appNameStr version " +
-                                                "${appMetadata.versionStr} build ${appMetadata.androidBuildNumberStr}")
-                                        sendEmailAction(body = json.encodeToString(debugLog))
-                                    }
-                                },
-                            ) {
-                                Text("Send debug log")
-                            }
+                                                "${appMetadata.versionStr} build ${appMetadata.androidBuildNumberStr}"
+                                    )
+                                    sendEmailAction(body = json.encodeToString(debugLog))
+                                }
+                            },
+                        ) {
+                            Text("Send debug log")
                         }
                     }
-                }
-
-                // Close Button
-                IconButton(
-                    onClick = {
-                        onDismiss()
-                    },
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .align(Alignment.TopEnd)
-                        .background(
-                            MaterialTheme.colors.surface.copy(alpha = 0.5f),
-                            shape = MaterialTheme.shapes.medium
-                        )
-                        .clickable { onDismiss() }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Close",
-                        modifier = Modifier.alpha(0.8f)
-                    )
                 }
             }
         }
