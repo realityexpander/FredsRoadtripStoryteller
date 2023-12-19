@@ -6,6 +6,9 @@ Hear historical markers as you travel - Learn about local history as you drive.
 - Compose KMP Proof-of-concept experimental app using Google Maps for iOS and Android
 - Pure Kotlin App using shared core AND Compose based UI
 
+## YouTube series following the development of the app: 
+[<img alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/e45ea030-00c2-45d4-b214-4983a53d7d36">](https://youtu.be/kbKcwn_DuJ8)
+
 <!-- img width="1700" alt="image" src="https://github.com/realityexpander/GoolgeMapsUsingCocoaPodsExample/assets/5157474/7b0395d3-04e6-48df-9219-990cb10d81e1" -->
 
 _note: screenshots are currently being updated with current name & latest UI changes_
