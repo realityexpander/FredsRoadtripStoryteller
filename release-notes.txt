@@ -5,6 +5,9 @@ Alpha Build 14
   - Speak text
   - Send debug log
 
+  - Check progress @ https://github.com/users/realityexpander/projects/2
+  - Source code: https://github.com/realityexpander/FredsRoadtripStoryteller
+
 Alpha Build 13
 - map rendering improvements
 - Added billing system for pro users
