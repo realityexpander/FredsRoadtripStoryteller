@@ -1,4 +1,4 @@
-[<img width="1024" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/a8854d30-9e9b-4d0b-a3cc-8af6f640ab0e">](https://play.google.com/store/apps/details?id=com.realityexpander.talkinghistoricalmarkers)
+[<img width="1024" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/3d0543bb-772a-42cc-925b-5e2743c8fc40">](https://play.google.com/store/apps/details?id=com.realityexpander.talkinghistoricalmarkers)
 
 # Fred's Roadtrip Storyteller
 Hear historical markers as you travel - Learn about local history as you drive.
