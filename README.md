@@ -7,7 +7,11 @@ Hear historical markers as you travel - Learn about local history as you drive.
 - Pure Kotlin App using _SHARED_ core and _SHARED_ Compose based UI, running in native Kotlin.
 
 ## YouTube series following the development of the app: 
-[<img alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/e45ea030-00c2-45d4-b214-4983a53d7d36">](https://youtu.be/kbKcwn_DuJ8)
+[<img alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/e45ea030-00c2-45d4-b214-4983a53d7d36">](https://youtu.be/kbKcwn_DuJ8?si=ep4ni528hiK0Akh1)
+
+- Wiki: [Fred's Roadtrip Storyteller Wiki](https://github.com/realityexpander/FredsRoadtripStoryteller/wiki)
+- Link to Marketing site source: https://github.com/realityexpander/FredsRoadtripStorytellerWebsite
+- Link to Marketing Site: https://realityexpander.github.io/FredsRoadtripStorytellerWebsite/index.html
 
 <!-- img width="1700" alt="image" src="https://github.com/realityexpander/GoolgeMapsUsingCocoaPodsExample/assets/5157474/7b0395d3-04e6-48df-9219-990cb10d81e1" -->
 
@@ -21,11 +25,6 @@ _note: screenshots are currently being updated with current name & latest UI cha
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/c1894ee1-6ae3-4ed0-b5c2-b225a7f571ef">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/c1894ee1-6ae3-4ed0-b5c2-b225a7f571ef)
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/265ae655-f57c-48a7-a60e-9a515d49efd3">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/265ae655-f57c-48a7-a60e-9a515d49efd3)
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/ded7dd66-399b-41c7-9f74-00d8a27531dc">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/ded7dd66-399b-41c7-9f74-00d8a27531dc)
-
-- Wiki: [Fred's Roadtrip Storyteller Wiki](https://github.com/realityexpander/FredsRoadtripStoryteller/wiki)
-
-- Link to Marketing site source: https://github.com/realityexpander/FredsRoadtripStorytellerWebsite
-- Link to Marketing Site: https://realityexpander.github.io/FredsRoadtripStorytellerWebsite/index.html
 
 ## Potential app names:
 - https://www.mightynetworks.com/app-name-generator
