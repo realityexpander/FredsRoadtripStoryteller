@@ -15,7 +15,7 @@ plugins {
     // Crashlytics
     id("com.google.firebase.crashlytics")
     // Firebase App Distribution Gradle plugin
-//    id("com.google.firebase.appdistribution")
+//    id("com.google.firebase.appdistribution") // note: must be disabled to add to play store
 
     id("com.github.gmazzo.buildconfig")
 }
@@ -27,7 +27,7 @@ kotlin {
             dependencies {
                 implementation(project(":shared"))
 
-                // Firebase feedback // todo bump version to final for release
+                // Firebase feedback // todo bump version to final for release // note: must be disabled to add to play store
 //                implementation(libs.google.firebase.appdistribution)
 //                implementation(libs.google.firebase.appdistribution.api.ktx)
             }
@@ -95,7 +95,8 @@ android {
             isJniDebuggable = true
             isDefault = true
 
-//            firebaseAppDistribution {
+
+//            firebaseAppDistribution { // note: must be disabled to add to play store
 //                artifactType = "APK"
 //                releaseNotesFile = "release-notes.txt"
 //                testersFile = "testers-debug.txt"
@@ -113,7 +114,7 @@ android {
                 "proguard-rules.pro"
             )
 
-//            firebaseAppDistribution {
+//            firebaseAppDistribution { // note: must be disabled to add to play store
 //                artifactType = "APK"
 //                releaseNotesFile = "release-notes.txt"
 //                testersFile = "testers-debug.txt" // NOTE: This is the same as debug testers
@@ -134,7 +135,7 @@ android {
         }
     }
 
-    // must set `buildConfig=true` in `buildFeatures` block above (leave for reference)
+    // note: must set `buildConfig=true` in `buildFeatures` block above (leave for reference)
     // https://developer.android.com/build/build-variants?utm_source=studio
     //flavorDimensions.add("version")
     //productFlavors {

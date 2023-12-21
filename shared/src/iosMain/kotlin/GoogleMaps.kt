@@ -176,6 +176,7 @@ actual fun GoogleMaps(
         //        return false
         //    }
 
+        // Note: this shows an error, but it compiles and runs fine(!)
         override fun mapView(
             mapView: GMSMapView,
             @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
