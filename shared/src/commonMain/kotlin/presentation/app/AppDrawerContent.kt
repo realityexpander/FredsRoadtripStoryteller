@@ -144,7 +144,6 @@ fun AppDrawerContent(
             coroutineScope.launch {
                 onShowOnboarding()
                 yield()
-//                onCloseDrawer()
             }
         },
         modifier = Modifier
@@ -177,7 +176,6 @@ fun AppDrawerContent(
             coroutineScope.launch {
                 onShowAboutBox()
                 yield()
-//                onCloseDrawer()
             }
         },
         modifier = Modifier
