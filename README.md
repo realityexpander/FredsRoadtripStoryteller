@@ -16,16 +16,19 @@ Hear historical markers as you travel - Learn about local history as you drive.
 
 <!-- img width="1700" alt="image" src="https://github.com/realityexpander/GoolgeMapsUsingCocoaPodsExample/assets/5157474/7b0395d3-04e6-48df-9219-990cb10d81e1" -->
 
-_note: screenshots are currently being updated with current name & latest UI changes_
-
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/db768efa-878e-47fe-96ac-bbdfadc5ad18">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/db768efa-878e-47fe-96ac-bbdfadc5ad18)
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/9b896fbc-9799-4f0c-a642-9875c73575a8">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/9b896fbc-9799-4f0c-a642-9875c73575a8)
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/92184386-c7fb-4ebe-8781-9d9b3e08efbd">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/92184386-c7fb-4ebe-8781-9d9b3e08efbd)
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/d4f91c80-9d33-4063-bb37-85dc0f92fa26">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/d4f91c80-9d33-4063-bb37-85dc0f92fa26)
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/784d6516-4d34-4478-a46a-35f368f1ebf0">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/784d6516-4d34-4478-a46a-35f368f1ebf0)
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/c1894ee1-6ae3-4ed0-b5c2-b225a7f571ef">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/c1894ee1-6ae3-4ed0-b5c2-b225a7f571ef)
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/265ae655-f57c-48a7-a60e-9a515d49efd3">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/265ae655-f57c-48a7-a60e-9a515d49efd3)
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/ded7dd66-399b-41c7-9f74-00d8a27531dc">](https://github.com/realityexpander/FredsHistoryMarkers/assets/5157474/ded7dd66-399b-41c7-9f74-00d8a27531dc)
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/b853d679-7dee-48e4-9172-6bae51c5775d">]()
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/b2c7e953-26d9-4ccc-8428-148baf4f89f5">]()
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/f9ab525c-c539-45cb-9ed1-dc3c6fd644a2">]()
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/f66be4ae-bcaf-4ce6-83cb-5fcf1dbee62a">]()
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/2f75762c-2f8e-4994-9995-eb84cb391b3f">]()
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/1e1c650e-bd9e-434f-96fe-d72ae757803c">]()
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/4324212b-1b0a-4925-9677-5695e24802ba">]()
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/99f27fae-355c-4d0e-9d0d-afcbd51572ff">]()
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/4accaa98-4bc6-43df-a175-7236ab69c4ab">]()
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/0b423837-f2f4-40eb-a9f7-60fee1b26097">]()
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/2f2ced36-3770-47ea-94c3-9a4b174f488a">]()
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/993e82d2-2291-4ba2-8ce6-30c42c72684f">]()
+_note: screenshots may differ slightly from current version_
 
 ## Potential app names:
 - https://www.mightynetworks.com/app-name-generator
