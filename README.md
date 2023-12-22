@@ -15,9 +15,11 @@ Hear historical markers as you travel - Learn about local history as you drive.
 - Link to Marketing Site: https://FredsRoadtripStoryteller.com
 
 <!-- img width="1700" alt="image" src="https://github.com/realityexpander/GoolgeMapsUsingCocoaPodsExample/assets/5157474/7b0395d3-04e6-48df-9219-990cb10d81e1" -->
-
+### Android Screenshots
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/2f2ced36-3770-47ea-94c3-9a4b174f488a">]()
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/b853d679-7dee-48e4-9172-6bae51c5775d">]()
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/b2c7e953-26d9-4ccc-8428-148baf4f89f5">]()
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/993e82d2-2291-4ba2-8ce6-30c42c72684f">]()
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/f9ab525c-c539-45cb-9ed1-dc3c6fd644a2">]()
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/f66be4ae-bcaf-4ce6-83cb-5fcf1dbee62a">]()
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/2f75762c-2f8e-4994-9995-eb84cb391b3f">]()
@@ -26,9 +28,10 @@ Hear historical markers as you travel - Learn about local history as you drive.
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/99f27fae-355c-4d0e-9d0d-afcbd51572ff">]()
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/4accaa98-4bc6-43df-a175-7236ab69c4ab">]()
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/0b423837-f2f4-40eb-a9f7-60fee1b26097">]()
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/2f2ced36-3770-47ea-94c3-9a4b174f488a">]()
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/993e82d2-2291-4ba2-8ce6-30c42c72684f">]()
+
 _note: screenshots may differ slightly from current version_
+
+### iOS Screenshots coming soon!
 
 ## Potential app names:
 - https://www.mightynetworks.com/app-name-generator
