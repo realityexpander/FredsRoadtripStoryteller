@@ -12,7 +12,7 @@ Hear historical markers as you travel - Learn about local history as you drive.
 
 - Wiki: [Fred's Roadtrip Storyteller Wiki](https://github.com/realityexpander/FredsRoadtripStoryteller/wiki)
 - Link to Marketing site source: https://github.com/realityexpander/FredsRoadtripStorytellerWebsite
-- Link to Marketing Site: https://realityexpander.github.io/FredsRoadtripStorytellerWebsite/index.html
+- Link to Marketing Site: https://FredsRoadtripStoryteller.com
 
 <!-- img width="1700" alt="image" src="https://github.com/realityexpander/GoolgeMapsUsingCocoaPodsExample/assets/5157474/7b0395d3-04e6-48df-9219-990cb10d81e1" -->
 
