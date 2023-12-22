@@ -1,5 +1,5 @@
 [<img width="1024" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/3d0543bb-772a-42cc-925b-5e2743c8fc40">](https://play.google.com/store/apps/details?id=com.realityexpander.talkinghistoricalmarkers)
-_note: link to play store not active yet_
+_note: link to play store not publicly active yet_
 
 # Fred's Roadtrip Storyteller
 Hear historical markers as you travel - Learn about local history as you drive.
