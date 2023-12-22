@@ -4,7 +4,7 @@ _note: link to play store not publicly active yet_
 # Fred's Roadtrip Storyteller
 Hear historical markers as you travel - Learn about local history as you drive.
 
-- Compose KMP Proof-of-concept experimental app using Google Maps for iOS and Android
+- KMP (Kotlin Multi-Platform) Compose-based Proof-of-concept experimental app using Google Maps for iOS and Android.
 - Pure Kotlin App using _SHARED_ core and _SHARED_ Compose based UI, running in native Kotlin.
 
 ## YouTube series following the development of the app: 
@@ -15,6 +15,9 @@ Hear historical markers as you travel - Learn about local history as you drive.
 - Link to Marketing Site: https://FredsRoadtripStoryteller.com
 
 <!-- img width="1700" alt="image" src="https://github.com/realityexpander/GoolgeMapsUsingCocoaPodsExample/assets/5157474/7b0395d3-04e6-48df-9219-990cb10d81e1" -->
+## Screen Shots
+_note: screenshots may differ slightly from current version_
+
 ### Android Screenshots
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/2f2ced36-3770-47ea-94c3-9a4b174f488a">]()
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/b853d679-7dee-48e4-9172-6bae51c5775d">]()
@@ -29,23 +32,21 @@ Hear historical markers as you travel - Learn about local history as you drive.
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/4accaa98-4bc6-43df-a175-7236ab69c4ab">]()
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/0b423837-f2f4-40eb-a9f7-60fee1b26097">]()
 
-_note: screenshots may differ slightly from current version_
+### iOS Screenshots
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/b339bbd0-2b22-4931-abd2-c61a70aa6474">]()
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/dce44c86-1de3-434c-a5b1-91ca0582788f">]()
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/34dac8a8-4608-4d65-906b-840202214e58">]()
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/72b42050-a43a-4069-8f11-3bd14746a851">]()
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/44cb0711-e4e0-4022-80a6-1acbba1ddbb3">]()
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/da8bf05f-be04-40f5-b290-5f1be1c0dc9f">]()
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/9c064296-a82c-4967-bf95-93d0b5fb4aed">]()
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/d303624f-71e7-4321-9ab6-71a6ead2efb0">]()
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/9aeb361c-1ac0-48a7-85b4-22fc86b4d9cc">]()
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/c977ad13-4d0e-4f6f-b2d3-fe6572efc630">]()
+[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/7d6ec8fa-de16-4732-a5ff-9ba03f7eb464">]()
 
-### iOS Screenshots coming soon!
 
-## Potential app names:
-- https://www.mightynetworks.com/app-name-generator
-
-icons: https://www.google.com/search?q=flat+icons+navigation&sca_esv=585465592&tbm=isch&sxsrf=AM9HkKkbHZOj7DIYI42VD56hpTfPgmYrYQ:1701032930698&source=lnms&sa=X&ved=2ahUKEwj_kte8yeKCAxVQIEQIHeeIDDsQ_AUoAXoECAIQAw&biw=1622&bih=1050&dpr=2#imgrc=Tx7XOXuIaxmJtM
-
-Play store badge generator: https://play.google.com/intl/en_us/badges/
-
-Privacy Policy: https://www.privacypolicygenerator.info/ 
-https://www.privacypolicygenerator.info/download.php?lang=en&token=dhslNflkEHizHHbsBssrE8zM1p5AXwnR
-
-## Developer notes
-
-Firebase console: https://console.firebase.google.com/u/0/project/talkingmarkers/overview
+# Developer notes
 
 Source: (Code snapshot taken 10/8/23)
 https://github.com/JetBrains/compose-multiplatform/tree/master/examples/cocoapods-ios-example
@@ -191,6 +192,19 @@ https://www.hackingwithswift.com/books/ios-swiftui/integrating-mapkit-with-swift
 
 ### Asset links
 
+## Potential app names:
+- https://www.mightynetworks.com/app-name-generator
+
+icons: https://www.google.com/search?q=flat+icons+navigation&sca_esv=585465592&tbm=isch&sxsrf=AM9HkKkbHZOj7DIYI42VD56hpTfPgmYrYQ:1701032930698&source=lnms&sa=X&ved=2ahUKEwj_kte8yeKCAxVQIEQIHeeIDDsQ_AUoAXoECAIQAw&biw=1622&bih=1050&dpr=2#imgrc=Tx7XOXuIaxmJtM
+
+Play store badge generator: https://play.google.com/intl/en_us/badges/
+
+Privacy Policy: https://www.privacypolicygenerator.info/ 
+https://www.privacypolicygenerator.info/download.php?lang=en&token=dhslNflkEHizHHbsBssrE8zM1p5AXwnR
+
+Firebase console: https://console.firebase.google.com/u/0/project/talkingmarkers/overview
+
+## Photo editors
 - Photoshop editor: https://www.photopea.com/
 
 - Location Markers
