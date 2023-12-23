@@ -10,6 +10,9 @@ import Speech
 import NaturalLanguage
 import Foundation
 
+
+// Listens to and sends speech state updates to the commonSpeech object
+// Uses AVSpeechSynthesizer to speak text
 class TextToSpeechManager : NSObject, AVSpeechSynthesizerDelegate {
     private var synthesis: AVSpeechSynthesizer = AVSpeechSynthesizer()
     //private var utterance: AVSpeechUtterance = AVSpeechUtterance(string: "")
