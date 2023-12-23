@@ -143,7 +143,7 @@ sealed class BottomSheetScreen {
     data object None : BottomSheetScreen()
 }
 
-// Speech for iOS // todo make this common with Android?
+// Speech for iOS
 var iosCommonSpeech: CommonSpeech = CommonSpeech()
 
 @OptIn(ExperimentalMaterialApi::class)
