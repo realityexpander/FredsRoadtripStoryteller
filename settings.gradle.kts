@@ -1,4 +1,4 @@
-enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS") // allows this: project.ext.properties["isTrialVersion"]
 
 rootProject.name = "FredsRoadtripStoryteller"
 include(":androidApp")

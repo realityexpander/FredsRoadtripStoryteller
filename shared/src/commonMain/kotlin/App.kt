@@ -124,7 +124,7 @@ var unspokenText: String? = null
 var isTemporarilyPreventPerformanceTuningActive = false // prevents premature optimization after returning from background
 val synchronizedObject = SynchronizedObject()
 
-@Suppress("ObjectPropertyName")
+@Suppress("ObjectPropertyName") // for leading underscore
 var _errorMessageFlow: MutableSharedFlow<String> = MutableSharedFlow()
 val errorMessageFlow: SharedFlow<String> = _errorMessageFlow  // read-only shared flow sent from Platform side
 
