@@ -25,7 +25,7 @@ fun parseMarkersPageHtml(rawPageHtml: String): LoadMarkersResult {
     val markerIdToRawMarkerDetailStringMap = mutableMapOf<MarkerIdStr, String>()  // Strings are the text strings, separated by newlines (maybe should use a list next time for clarity)
     val markerIdToMarker = mutableMapOf<MarkerIdStr, Marker>()
 
-    // Simple scraper that checks if a page is only a single-marker page
+    // Simple scraper that checks if a page is a single-marker page or a multi-marker page.
     // - If it has a "span" with class "sectionhead", then it's a single-marker page.
     fun checkSingleItemOnPageHandler():  KsoupHtmlHandler {
         return KsoupHtmlHandler.Builder()
