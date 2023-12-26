@@ -243,14 +243,14 @@ fun parseMarkersPageHtml(rawPageHtml: String): LoadMarkersResult {
                     isListItselfFound = true
                 }
 
-                // Found a marker
-                if(tagName == "id" && isListItselfFound) {
+                // Found a marker // LEAVE FOR REFERENCE
+                //if(tagName == "id" && isListItselfFound) {
                     //if (attributeName.startsWith("M")) {
                     //    attributeName.substring(1).toIntOrNull()?.let { markerId ->
                     //        // Log.d { "Found Marker id: $markerId")  }
                     //    }
                     //}
-                }
+                //}
             }
             .build()
     }
