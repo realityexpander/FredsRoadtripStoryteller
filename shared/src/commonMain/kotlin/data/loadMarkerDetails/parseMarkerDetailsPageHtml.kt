@@ -1,12 +1,12 @@
 package data.loadMarkerDetails
 
-import presentation.maps.Marker
 import co.touchlab.kermit.Logger
 import com.mohamedrejeb.ksoup.entities.KsoupEntities
 import com.mohamedrejeb.ksoup.html.parser.KsoupHtmlHandler
 import com.mohamedrejeb.ksoup.html.parser.KsoupHtmlParser
-import data.util.LoadingState
 import data.loadMarkers.kBaseHmdbDotOrgUrl
+import data.util.LoadingState
+import presentation.maps.Marker
 
 fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, Marker?> {
 
@@ -20,7 +20,7 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, Marker?> {
         return Pair("htmlResponse is Blank", null)
     }
 
-    fun markerInfoPageHandler(): KsoupHtmlHandler {
+    fun markerDetailsPageHandler(): KsoupHtmlHandler {
         var isCapturingText = false
         var isCapturingTitleText = false
         var isCapturingSubtitleText = false
@@ -310,7 +310,7 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, Marker?> {
             .build()
     }
 
-    val ksoupHtmlParser = KsoupHtmlParser(handler = markerInfoPageHandler())
+    val ksoupHtmlParser = KsoupHtmlParser(handler = markerDetailsPageHandler())
 
     // Parse the html
     ksoupHtmlParser.write(rawPageHtml)

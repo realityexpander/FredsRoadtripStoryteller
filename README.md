@@ -48,8 +48,9 @@ _note: screenshots may differ slightly from current version_
 
 ## External Assets for Exposing Project
 - https://medium.com/@chrisathanas/ 
-- https://www.linkedin.com/groups/14367209/ (KMP Developers group)
+- https://www.linkedin.com/groups/14367209/ (KMP Developers group on LI)
 - https://www.youtube.com/@ChrisAthanas
+- https://www.facebook.com/groups/913147236893976 (KMP Developers group on FB)
 
 # Developer notes
 

@@ -1,5 +1,7 @@
-Alpha Build 14
-- Add iOS functionality
+Alpha Build 17
+
+Alpha Build 16
+- Add iOS functionality to parity with Android
   - Open web links
   - Send emails
   - Speak text
