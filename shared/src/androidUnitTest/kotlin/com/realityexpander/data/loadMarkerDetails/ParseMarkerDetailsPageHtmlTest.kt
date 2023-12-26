@@ -6,8 +6,6 @@ import data.loadMarkerDetails.sampleData.deAnzaExpeditionM38342MarkerDetailsHtml
 import data.loadMarkerDetails.sampleData.elTepoztecoNationalParkM207314MarkerDetailsHtml
 import data.loadMarkerDetails.sampleData.firstCityCouncilOfTepoztlanM207310MarkerDetailsHtml
 import data.loadMarkerDetails.sampleData.mintBuildingM233374MarkerDetailsHtml
-import json
-import presentation.maps.Marker
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -21,6 +19,7 @@ class ParseMarkerDetailsPageHtmlTest {
         val result = parseMarkerDetailsPageHtml(markerInfoPageHtml)
         val markerDetails = result.second!!
 
+        // For debugging
         //println(json.encodeToString(maps.MapMarker.serializer(), markerDetails))
 
         // ID
@@ -102,6 +101,7 @@ class ParseMarkerDetailsPageHtmlTest {
         val result = parseMarkerDetailsPageHtml(markerInfoPageHtml)
         val markerDetails = result.second!!
 
+        // For debugging
         // println(json.encodeToString(maps.MapMarker.serializer(), markerDetails))
 
         // ID
@@ -183,7 +183,8 @@ class ParseMarkerDetailsPageHtmlTest {
         val result = parseMarkerDetailsPageHtml(markerInfoPageHtml)
         val markerDetails = result.second!!
 
-        println(json.encodeToString(Marker.serializer(), markerDetails))
+        // For debugging
+        //println(json.encodeToString(Marker.serializer(), markerDetails))
 
         // ID
         assertTrue(
@@ -288,7 +289,8 @@ class ParseMarkerDetailsPageHtmlTest {
         val result = parseMarkerDetailsPageHtml(markerInfoPageHtml)
         val markerDetails = result.second!!
 
-        println(json.encodeToString(Marker.serializer(), markerDetails))
+        // For debugging
+        //println(json.encodeToString(Marker.serializer(), markerDetails))
 
         // ID
         assertTrue(
@@ -399,7 +401,8 @@ class ParseMarkerDetailsPageHtmlTest {
         val result = parseMarkerDetailsPageHtml(markerInfoPageHtml)
         val markerDetails = result.second!!
 
-        println(json.encodeToString(Marker.serializer(), markerDetails))
+        // For debugging
+        //println(json.encodeToString(Marker.serializer(), markerDetails))
 
         // ID
         assertTrue(

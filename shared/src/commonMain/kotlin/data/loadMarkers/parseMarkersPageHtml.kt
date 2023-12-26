@@ -52,7 +52,8 @@ fun parseMarkersPageHtml(rawPageHtml: String): LoadMarkersResult {
                     foundMarkerCount++ // should be max 1
 
                     if(foundMarkerCount > 1)
-                        Log.e { "Found more than one marker on a single marker page. Found marker: $curCapturingMarkerId, count= $foundMarkerCount" }
+                        Log.e { "Found more than one marker on a single marker page. " +
+                                "Found marker: $curCapturingMarkerId, count= $foundMarkerCount" }
 
                     // initialize the marker info for this marker
                     markerIdToMarker[curCapturingMarkerId] = markerIdToMarker[curCapturingMarkerId]?.copy(
