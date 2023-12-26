@@ -8,7 +8,6 @@ import com.mohamedrejeb.ksoup.html.parser.KsoupHtmlParser
 import data.util.LoadingState
 import data.loadMarkers.kBaseHmdbDotOrgUrl
 
-
 fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, Marker?> {
 
     var markerResult = Marker()
