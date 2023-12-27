@@ -129,7 +129,7 @@ var unspokenText: String? = null // used to speak text in chunks
 // Attempt to fix database contention / race condition issue // todo remove soon
 val synchronizedObject = SynchronizedObject()
 
-// Error Messages
+// Error Messages Flow
 @Suppress("ObjectPropertyName") // for leading underscore
 var _errorMessageFlow: MutableSharedFlow<String> = MutableSharedFlow()
 val errorMessageFlow: SharedFlow<String> = _errorMessageFlow  // read-only shared flow sent from Platform side
@@ -402,10 +402,9 @@ fun App(
             //    }
         }
 
-        // Track and update isSeen for any markers within the seenRadiusMiles
+        // Track and update `isSeen` for any markers within the `seenRadiusMiles`
         var previousUserLocation by remember { mutableStateOf(userLocation) }
         LaunchedEffect(Unit, isSeenTrackingPaused) {
-
             while(!isSeenTrackingPaused) {
                 delay(1000)
 
@@ -506,6 +505,7 @@ fun App(
                     )
                 }
 
+                // Pause tracking if user is not moving
                 if(!isSeenTrackingPaused) {
                     if(userLocation == previousUserLocation) {
                         isSeenTrackingPausedPhase++
