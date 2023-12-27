@@ -51,6 +51,7 @@ _note: screenshots may differ slightly from current version_
 - https://www.linkedin.com/groups/14367209/ (KMP Developers group on LI)
 - https://www.youtube.com/@ChrisAthanas
 - https://www.facebook.com/groups/913147236893976 (KMP Developers group on FB)
+- https://twitter.com/i/communities/1739883885658607808 (KMP Developers group on Twitter)
 
 # Developer notes
 

@@ -203,7 +203,6 @@ fun App(
                 }
             }
         }
-
         // Set installation time stamp for trial period
         LaunchedEffect(Unit) {
             if(!appSettings.hasKey("installAtEpochMilli")) {
