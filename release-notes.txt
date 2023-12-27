@@ -1,4 +1,5 @@
 Alpha Build 17
+- [ ] - Fix race condition in map rendering
 
 Alpha Build 16
 - Add iOS functionality to parity with Android
