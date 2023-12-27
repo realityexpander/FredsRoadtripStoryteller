@@ -120,14 +120,21 @@ const val kMaxMarkerDetailsAgeSeconds = 60 * 60 * 24 * 30  // 30 days
 // Improve performance by restricting cluster size & updates
 var frameCount = 0
 var didFullFrameRender = false
-var unspokenText: String? = null
 var isTemporarilyPreventPerformanceTuningActive = false // prevents premature optimization after returning from background
+
+// Speech
+var iosCommonSpeech: CommonSpeech = CommonSpeech()  // Speech for iOS only
+var unspokenText: String? = null // used to speak text in chunks
+
+// Attempt to fix database contention / race condition issue // todo remove soon
 val synchronizedObject = SynchronizedObject()
 
+// Error Messages
 @Suppress("ObjectPropertyName") // for leading underscore
 var _errorMessageFlow: MutableSharedFlow<String> = MutableSharedFlow()
 val errorMessageFlow: SharedFlow<String> = _errorMessageFlow  // read-only shared flow sent from Platform side
 
+// Serialization
 val json = Json {
     prettyPrint = true
     isLenient = true
@@ -142,9 +149,6 @@ sealed class BottomSheetScreen {
     ) : BottomSheetScreen()
     data object None : BottomSheetScreen()
 }
-
-// Speech for iOS
-var iosCommonSpeech: CommonSpeech = CommonSpeech()
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -230,11 +234,6 @@ fun App(
                 }
             }
         }
-
-        // Seen Marker & Speaking UI
-        var seenRadiusMiles by remember {
-            mutableStateOf(appSettings.seenRadiusMiles)
-        }
         var isMarkerCurrentlySpeaking by remember { // reactive to text-to-speech state
             mutableStateOf(false)
         }
@@ -243,6 +242,9 @@ fun App(
         }
 
         // Google Maps UI elements
+        var userLocation: Location by remember {
+            mutableStateOf(appSettings.lastKnownUserLocation)
+        }
         var isTrackingEnabled by remember {
             mutableStateOf(appSettings.isStartBackgroundTrackingWhenAppLaunchesEnabled)
         }
@@ -252,19 +254,20 @@ fun App(
         var shouldZoomCameraToLatLongZoom by remember {
             mutableStateOf<LatLongZoom?>(null) // used to zoom to a specific location
         }
-        var userLocation: Location by remember {
-            mutableStateOf(appSettings.lastKnownUserLocation)
-        }
         var shouldAllowCacheReset by remember { mutableStateOf(false) }
 
-        // UI markers data last update-at location
+        // UI marker-data last-updated-at location
         var isMarkersLastUpdatedLocationVisible by
-            remember(appSettings.isMarkersLastUpdatedLocationVisible) {
-                mutableStateOf(appSettings.isMarkersLastUpdatedLocationVisible)
-            }
-        // Location where markers data was last updated
+        remember(appSettings.isMarkersLastUpdatedLocationVisible) {
+            mutableStateOf(appSettings.isMarkersLastUpdatedLocationVisible)
+        }
         var markersLastUpdatedLocation by remember {
             mutableStateOf(appSettings.markersLastUpdatedLocation)
+        }
+
+        // Seen Marker Radius
+        var seenRadiusMiles by remember {
+            mutableStateOf(appSettings.seenRadiusMiles)
         }
 
         // Recently Seen Markers
@@ -275,7 +278,7 @@ fun App(
             mutableStateOf(appSettings.uiRecentlySeenMarkersList.list.toMutableStateList())
         }
 
-        // Load markers based on user location, reactively.
+        // Load markers based on user location (Reactively)
         var networkLoadingState: LoadingState<String> by remember {
             mutableStateOf(LoadingState.Finished)
         }
@@ -307,14 +310,17 @@ fun App(
         //    markerIdToMarker = mutableMapOf()
         //)
 
+        // Command to Update the Map Markers (Cluster Items)
         var shouldCalcClusterItems by remember {
             mutableStateOf(true)
         }
+
+        // Command to Show Info Marker
         var shouldShowInfoMarker by remember {
             mutableStateOf<Marker?>(null)
         }
 
-        // Markers used to render on the Map
+        // Markers used to render onto the Map
         val finalMarkers = remember {
             mutableStateListOf<Marker>().apply {
                 addAll(markersRepo.markers())
@@ -343,17 +349,16 @@ fun App(
             }
         }
 
-        // Marker Details Loading State (for Bottom Sheet)
-        var markerDetailsResult by remember {
+        // Marker Details Load Result (for Bottom Sheet)
+        var markerDetailsLoadingState by remember {
             mutableStateOf<LoadingState<Marker>>(LoadingState.Loading)
         }
 
-        // Optimize energy usage by pausing seen tracking when user is not moving.
+        // Optimize energy usage by pausing "seen marker" tracking when user is not moving.
         var isSeenTrackingPaused by remember { mutableStateOf(false) }
         var isSeenTrackingPausedPhase by remember { mutableStateOf(0) }
 
         // 1) Update user GPS location
-        // 2) Check for Recently Seen Markers
         var isProcessingRecentlySeenList by remember {
             mutableStateOf(false)
         }
@@ -531,7 +536,7 @@ fun App(
             }
         }
 
-        // Update `isMarkerCurrentlySpeaking` UI flag for reactive UI
+        // Poll to update `isMarkerCurrentlySpeaking` UI flag for reactive UI
         LaunchedEffect(Unit) {
             withContext(Dispatchers.IO) {
                 while (true) {
@@ -697,16 +702,16 @@ fun App(
                             }
                         }
 
-                        markerDetailsResult = loadMarkerDetails(marker) // reactive composable
+                        markerDetailsLoadingState = loadMarkerDetails(marker) // reactive composable
 
                         // Update the `marker` with Marker details (as they are loaded)
-                        LaunchedEffect(markerDetailsResult) {
+                        LaunchedEffect(markerDetailsLoadingState) {
                             val updatedDetailsMarker =
-                                (markerDetailsResult as? LoadingState.Loaded<Marker>)?.data
+                                (markerDetailsLoadingState as? LoadingState.Loaded<Marker>)?.data
 
                             // Did fresh details get loaded?
                             if (updatedDetailsMarker != null
-                                && markerDetailsResult is LoadingState.Loaded
+                                && markerDetailsLoadingState is LoadingState.Loaded
                                 && !marker.isDetailsLoaded
                                 && updatedDetailsMarker.isDetailsLoaded
                             ) {
@@ -716,7 +721,7 @@ fun App(
 
                         MarkerDetailsScreen(
                             marker,
-                            markerDetailsResult,
+                            markerDetailsLoadingState,
                             isTextToSpeechCurrentlySpeaking = isMarkerCurrentlySpeaking,
                             onClickStartSpeakingMarker = { speakMarker ->
                                 activeSpeakingMarker = speakRecentlySeenMarker(
