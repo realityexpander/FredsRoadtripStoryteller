@@ -226,7 +226,7 @@ fun App(
         var activeSpeakingMarker: RecentlySeenMarker? by remember {
             mutableStateOf(null)
         }
-        // iOS is the only platform that uses CommonSpeech (currently)
+        // iOS is the only platform that uses CommonSpeech (currently) This is implementation #2
         LaunchedEffect(Unit) {
             iosCommonSpeech = commonSpeech
             iosCommonSpeech.speechStateCommonFlow.collectLatest { speechState ->

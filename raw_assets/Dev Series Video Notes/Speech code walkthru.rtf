@@ -13,9 +13,15 @@
 Speech walk thru\
 \
 \pard\tx220\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li720\fi-720\pardirnatural\partightenfactor0
-\ls1\ilvl0\cf0 {\listtext	\uc0\u8226 	}Commands emitted as Flow to Platform\
-{\listtext	\uc0\u8226 	}Polling for State from Platform\
-{\listtext	\uc0\u8226 	}State emitted as a Flow from Platform\
+\ls1\ilvl0\cf0 {\listtext	\uc0\u8226 	}Attempted 2 Implementations using 2 different techniques:\
+#1 - Call native code for platform from Kotlin\
+Calls Platform code directly for iOS & Android\
+#2 - Using CommonFlow as a \'93Bridge\'94 to Platform\
+Sends commands from Kotlin-shared to Platform\
+Platform sends responses back to Kotlin-shared\
+Current Speech implementation uses #1\
+Polls for Speech state \
+No flow used for Speech but was useful for creating In-App Billing\
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
 \cf0 \
 Part 8-In-App Billing Next\

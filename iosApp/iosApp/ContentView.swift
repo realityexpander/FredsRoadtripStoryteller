@@ -2,14 +2,6 @@ import GoogleMaps
 import shared
 import SwiftUI
 import UIKit
-// import MapKit
-
-//  Alternate Maps implementation - LEAVE FOR REFERENCE for now
-//struct Location: Identifiable {
-//    let id = UUID()
-//    let name: String
-//    let coordinate: CLLocationCoordinate2D
-//}
 
 struct ContentView: View {
     private var commonAppMetadata: CommonAppMetadata
@@ -22,17 +14,7 @@ struct ContentView: View {
     
     private var commonSpeech: CommonSpeech = CommonSpeech()
     private var textToSpeechManager: TextToSpeechManager
-
-    //  Alternate Maps implementation - LEAVE FOR REFERENCE for now
-    //   let cityHallLocation = CLLocationCoordinate2D(latitude: 37.779_379, longitude: -122.418_433)
-    //   @State private var mapRegion = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 51.5, longitude: -0.12), span: MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2))
-    //   let locations = [
-    //       Location(name: "Buckingham Palace", coordinate: CLLocationCoordinate2D(latitude: 51.501, longitude: -0.141)),
-    //       Location(name: "Tower of London", coordinate: CLLocationCoordinate2D(latitude: 51.508, longitude: -0.076))
-    //   ]
-    //   @State var position: MapCameraPosition = .automatic
-    //   @State var selected: Int?
-
+    
     init() {
         // Set the app meta info
         let nsObject: AnyObject? = Bundle.main.infoDictionary!["CFBundleShortVersionString"] as AnyObject
@@ -174,11 +156,24 @@ struct ComposeView: UIViewControllerRepresentable {
 
 
 
+// import MapKit
 
+//  Alternate Maps implementation - LEAVE FOR REFERENCE for now
+//struct Location: Identifiable {
+//    let id = UUID()
+//    let name: String
+//    let coordinate: CLLocationCoordinate2D
+//}
 
-
-
-
+//  Alternate Maps implementation - LEAVE FOR REFERENCE for now
+//   let cityHallLocation = CLLocationCoordinate2D(latitude: 37.779_379, longitude: -122.418_433)
+//   @State private var mapRegion = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 51.5, longitude: -0.12), span: MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2))
+//   let locations = [
+//       Location(name: "Buckingham Palace", coordinate: CLLocationCoordinate2D(latitude: 51.501, longitude: -0.141)),
+//       Location(name: "Tower of London", coordinate: CLLocationCoordinate2D(latitude: 51.508, longitude: -0.076))
+//   ]
+//   @State var position: MapCameraPosition = .automatic
+//   @State var selected: Int?
 
 //          // IOS Map experiments, LEAVE FOR REFERENCE.
 //         Map(
