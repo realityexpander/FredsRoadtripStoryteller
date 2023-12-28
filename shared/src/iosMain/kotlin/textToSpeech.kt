@@ -52,7 +52,7 @@ class TextToSpeechManager : NSObject(), AVSpeechSynthesizerDelegateProtocol {
         return isSpeaking
     }
 }
-// Implementation #1 `Actual` functions - uses TextToSpeechManager natively in Kotlin
+// Implementation #1 - uses `TextToSpeechManager` natively in Kotlin
 var textToSpeechManager: TextToSpeechManager = TextToSpeechManager()
 actual fun speakTextToSpeech(text: String) {  // gives runtime error: [catalog] Unable to list voice folder
     textToSpeechManager.speak(text) // Cant use this from Kotlin due to unresolved Build Error
@@ -64,7 +64,7 @@ actual fun isTextToSpeechSpeaking(): Boolean {
     return textToSpeechManager.isSpeaking
 }
 
-//// Implementation #2 - `Actual` functions - uses CommonSpeech as a bridge to TextToSpeechManager in Swift
+//// Implementation #2 - uses `CommonSpeech` as a bridge to `TextToSpeechManager` in Swift
 ////  Sends commands to Swift Implementation via CommonSpeech class
 //actual fun speakTextToSpeech(text: String) {
 //    iosCommonSpeech.speakText(text)

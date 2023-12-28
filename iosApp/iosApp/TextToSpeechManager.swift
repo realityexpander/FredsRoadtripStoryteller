@@ -11,6 +11,7 @@ import NaturalLanguage
 import Foundation
 
 
+// Implementation #2
 // Listens to and sends speech state updates to the commonSpeech object using CommonFlow
 // Uses AVSpeechSynthesizer to speak text
 class TextToSpeechManager : NSObject, AVSpeechSynthesizerDelegate {
