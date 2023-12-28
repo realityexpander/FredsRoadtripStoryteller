@@ -14,7 +14,6 @@ actual fun getPlatformName(): String = "Android"
     App(commonBilling, appMetadata)
 
 lateinit var appContext: Context // Android specific context
-//var textToSpeech: TextToSpeech? = null  // Android specific TextToSpeech
 
 // Android specific intent flow
 @Suppress("ObjectPropertyName")

@@ -3,6 +3,7 @@ import platform.AVFAudio.AVSpeechSynthesisVoice
 import platform.AVFAudio.AVSpeechSynthesizer
 import platform.AVFAudio.AVSpeechSynthesizerDelegateProtocol
 import platform.AVFAudio.AVSpeechUtterance
+import platform.NaturalLanguage.NLLanguageRecognizer
 import platform.darwin.NSObject
 
 // Implementation #1
@@ -19,9 +20,16 @@ class TextToSpeechManager : NSObject(), AVSpeechSynthesizerDelegateProtocol {
     fun speak(text: String) {
         isSpeaking = true
         synthesizer.delegate = this
+
         val utterance = AVSpeechUtterance.speechUtteranceWithString(text)
-        utterance.voice = AVSpeechSynthesisVoice.voiceWithLanguage("en-US")
-        println("speakTextToSpeech: $text")
+
+        // Detect language
+        val recognizer = NLLanguageRecognizer()
+        recognizer.processString(text)
+        val language = recognizer.dominantLanguage ?: "en-US"
+        utterance.voice = AVSpeechSynthesisVoice.voiceWithLanguage(language)
+
+        println("TextToSpeechManager speak: $text")
         synthesizer.speakUtterance(utterance)
     }
 

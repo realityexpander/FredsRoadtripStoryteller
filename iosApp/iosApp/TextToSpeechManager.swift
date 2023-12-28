@@ -15,7 +15,7 @@ import Foundation
 // Uses AVSpeechSynthesizer to speak text
 class TextToSpeechManager : NSObject, AVSpeechSynthesizerDelegate {
     private var synthesis: AVSpeechSynthesizer = AVSpeechSynthesizer()
-    //private var utterance: AVSpeechUtterance = AVSpeechUtterance(string: "")
+    private var utterance: AVSpeechUtterance = AVSpeechUtterance(string: "")
     var commonSpeech: CommonSpeech
 
     init(commonSpeech: CommonSpeech) {
@@ -33,7 +33,8 @@ class TextToSpeechManager : NSObject, AVSpeechSynthesizerDelegate {
             return
         }
         
-        let utterance = AVSpeechUtterance(string: text)
+        //let utterance = AVSpeechUtterance(string: text)
+        utterance = AVSpeechUtterance(string: text)
         utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
         
         // Set voice for language of the text (if possible)
