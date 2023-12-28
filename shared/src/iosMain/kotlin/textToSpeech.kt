@@ -22,12 +22,15 @@ class TextToSpeechManager : NSObject(), AVSpeechSynthesizerDelegateProtocol {
         synthesizer.delegate = this
 
         val utterance = AVSpeechUtterance.speechUtteranceWithString(text)
+        utterance.voice = AVSpeechSynthesisVoice.voiceWithLanguage("en-US") // default to english
 
         // Detect language
         val recognizer = NLLanguageRecognizer()
         recognizer.processString(text)
-        val language = recognizer.dominantLanguage ?: "en-US"
-        utterance.voice = AVSpeechSynthesisVoice.voiceWithLanguage(language)
+        val language = recognizer.dominantLanguage
+        language ?: run {
+            utterance.voice = AVSpeechSynthesisVoice.voiceWithLanguage(language)
+        }
 
         println("TextToSpeechManager speak: $text")
         synthesizer.speakUtterance(utterance)
@@ -49,7 +52,7 @@ class TextToSpeechManager : NSObject(), AVSpeechSynthesizerDelegateProtocol {
         return isSpeaking
     }
 }
-
+// Implementation #1 `Actual` functions - uses TextToSpeechManager natively in Kotlin
 //var textToSpeechManager: TextToSpeechManager = TextToSpeechManager()
 //actual fun speakTextToSpeech(text: String) {  // gives runtime error: [catalog] Unable to list voice folder
 //    textToSpeechManager.speak(text) // Cant use this from Kotlin due to unresolved Build Error
@@ -61,7 +64,7 @@ class TextToSpeechManager : NSObject(), AVSpeechSynthesizerDelegateProtocol {
 //    return textToSpeechManager.isSpeaking
 //}
 
-// Implementation #2
+// Implementation #2 - `Actual` functions - uses CommonSpeech as a bridge to TextToSpeechManager in Swift
 //  Sends commands to Swift Implementation via CommonSpeech class
 actual fun speakTextToSpeech(text: String) {
     iosCommonSpeech.speakText(text)

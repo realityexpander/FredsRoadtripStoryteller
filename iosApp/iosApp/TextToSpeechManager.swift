@@ -30,6 +30,9 @@ class TextToSpeechManager : NSObject, AVSpeechSynthesizerDelegate {
         if(text.isEmpty || synthesis.isSpeaking) {
             synthesis.stopSpeaking(at: AVSpeechBoundary.immediate)
             commonSpeech.updateSpeechState(speechState: CommonSpeech.SpeechStateNotSpeaking())
+        }
+
+        if(text.isEmpty) {
             return
         }
         
