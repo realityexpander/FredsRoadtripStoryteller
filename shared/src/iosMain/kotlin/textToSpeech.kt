@@ -5,7 +5,9 @@ import platform.AVFAudio.AVSpeechSynthesizerDelegateProtocol
 import platform.AVFAudio.AVSpeechUtterance
 import platform.darwin.NSObject
 
-//// must create an instance at runtime, cant use object here (!) https://github.com/JetBrains/kotlin-native/issues/3855
+// Implementation #1
+// Kotlin native Implementation of iOS Text to Speech
+// Developers Note: must create an instance at runtime, cant use object here (!) https://github.com/JetBrains/kotlin-native/issues/3855
 class TextToSpeechManager : NSObject(), AVSpeechSynthesizerDelegateProtocol {
     private var synthesizer: AVSpeechSynthesizer = AVSpeechSynthesizer()
     var isSpeaking = false
@@ -40,23 +42,24 @@ class TextToSpeechManager : NSObject(), AVSpeechSynthesizerDelegateProtocol {
     }
 }
 
-var ttsm: TextToSpeechManager = TextToSpeechManager()
-
-actual fun speakTextToSpeech(text: String) {  // gives runtime error: [catalog] Unable to list voice folder
-    ttsm.speak(text) // Cant use this from Kotlin due to unresolved Build Error
-}
-actual fun stopTextToSpeech() {
-    ttsm.stopSpeaking()
-}
-actual fun isTextToSpeechSpeaking(): Boolean {
-    return ttsm.isSpeaking
-}
-
-//actual fun speakTextToSpeech(text: String) {
-//    iosCommonSpeech.speakText(text)
+//var textToSpeechManager: TextToSpeechManager = TextToSpeechManager()
+//actual fun speakTextToSpeech(text: String) {  // gives runtime error: [catalog] Unable to list voice folder
+//    textToSpeechManager.speak(text) // Cant use this from Kotlin due to unresolved Build Error
 //}
-//actual fun isTextToSpeechSpeaking(): Boolean =
-//    iosCommonSpeech.isTextToSpeechSpeaking()
 //actual fun stopTextToSpeech() {
-//    iosCommonSpeech.stopTextToSpeech()
+//    textToSpeechManager.stopSpeaking()
 //}
+//actual fun isTextToSpeechSpeaking(): Boolean {
+//    return textToSpeechManager.isSpeaking
+//}
+
+// Implementation #2
+//  Sends commands to Swift Implementation via CommonSpeech class
+actual fun speakTextToSpeech(text: String) {
+    iosCommonSpeech.speakText(text)
+}
+actual fun isTextToSpeechSpeaking(): Boolean =
+    iosCommonSpeech.isTextToSpeechSpeaking()
+actual fun stopTextToSpeech() {
+    iosCommonSpeech.stopTextToSpeech()
+}

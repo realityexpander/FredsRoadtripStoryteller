@@ -1,6 +1,6 @@
+
 import android.content.Context
 import android.content.Intent
-import android.speech.tts.TextToSpeech
 import androidx.compose.runtime.Composable
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -14,7 +14,7 @@ actual fun getPlatformName(): String = "Android"
     App(commonBilling, appMetadata)
 
 lateinit var appContext: Context // Android specific context
-var textToSpeech: TextToSpeech? = null  // Android specific TextToSpeech
+//var textToSpeech: TextToSpeech? = null  // Android specific TextToSpeech
 
 // Android specific intent flow
 @Suppress("ObjectPropertyName")

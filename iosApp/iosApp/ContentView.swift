@@ -4,6 +4,7 @@ import SwiftUI
 import UIKit
 // import MapKit
 
+//  Alternate Maps implementation - LEAVE FOR REFERENCE for now
 //struct Location: Identifiable {
 //    let id = UUID()
 //    let name: String
@@ -22,7 +23,7 @@ struct ContentView: View {
     private var commonSpeech: CommonSpeech = CommonSpeech()
     private var textToSpeechManager: TextToSpeechManager
 
-    //  Leave for reference for now
+    //  Alternate Maps implementation - LEAVE FOR REFERENCE for now
     //   let cityHallLocation = CLLocationCoordinate2D(latitude: 37.779_379, longitude: -122.418_433)
     //   @State private var mapRegion = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 51.5, longitude: -0.12), span: MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2))
     //   let locations = [
@@ -89,8 +90,8 @@ struct ContentView: View {
         }
     }
     
-    func listenToCommonSpeechSpeakTextFlow() {
-        commonSpeech.speakTextCommonFlow().watch { text in
+    func listenToCommonSpeechSpeakTextCommandFlow() {
+        commonSpeech.speakTextCommandCommonFlow().watch { text in
             print("Speak: \(text ?? "") ")
             guard let text2 = text else { return }
             Task {
@@ -108,109 +109,7 @@ struct ContentView: View {
                 commonSpeech: commonSpeech
             ).ignoresSafeArea(.all, edges: .bottom) // Compose has own keyboard handler
 
-            // IOS Map experiments, leave for reference.
-//         Map(
-//            coordinateRegion: MKCoordinateRegion(
-//               center: CLLocationCoordinate2D(latitude: 37.779_379, longitude: -122.418_433),
-//               latitudinalMeters: CLLocationDistance(1000),
-//               longitudinalMeters: CLLocationDistance(1000)
-//            )
-//         )
-//       }
-
-            // iOS 15 map
-//         Map(
-//            coordinateRegion: $mapRegion,
-//            interactionModes: MapInteractionModes.all,
-//             annotationItems: locations
-//         ) { location in
-            ////            MapMarker(
-            ////               coordinate: CLLocationCoordinate2D(latitude: 37.7793, longitude: -122.416),
-            ////               tint:Color.red
-            ////            )
-            ////            MapMarker(coordinate: location.coordinate)
-            ////            MapPin(coordinate: location.coordinate)
-//
-//
-            ////            MapAnnotation(coordinate: location.coordinate) {
-            ////               NavigationLink {
-            ////                  Text(location.name)
-            ////               } label: {
-            ////                  Text(location.name)
-            ////                     .onTapGesture {
-            ////                        print("Fuck off \(location.name)")
-            ////                     }
-            ////                     .foregroundColor(Color.white)
-            ////
-            ////
-            //////                     .fontDesign(Font.system(size: 15.0))
-            //////                  Circle()
-            //////                     .stroke(.red, lineWidth: 3)
-            //////                     .frame(width: 44, height: 44)
-            ////               }
-            ////            }
-//
-//            MapAnnotation(coordinate: location.coordinate) {
-//               Text(location.name)
-//                  .foregroundColor(Color.white)
-//
-//                Circle()
-//                    .stroke(.red, lineWidth: 3)
-//                    .frame(width: 44, height: 44)
-//                    .onTapGesture {
-//                        print("Tapped on \(location.name)")
-//                    }
-//                    .onAppear {
-//                       print("OnAppear")
-//                    }
-//            }
-//
-//        }.frame(height: 300)
-
-            // iOS 17
-            // https://www.hackingwithswift.com/forums/swiftui/ios-17-mapkit-how-to-use-map-selection/22886
-            // https://medium.com/simform-engineering/mapkit-swiftui-in-ios-17-1fec82c3bf00
-            // https://www.kodeco.com/7738344-mapkit-tutorial-getting-started?page=4#toc-anchor-020
-            // https://www.kodeco.com/40607811-new-swiftui-support-for-mapkit-in-xcode-15?page=1#toc-anchor-005
-//          Map(position: $position, selection: $selected) {
-//             Marker("test", coordinate: locations[0].coordinate).tag(1)
-//             Marker("test2", coordinate: locations[1].coordinate).tag(2)
-//          }
-//          .position(CGPoint(x:200.0, y:-40.0))
-//          //.offset(CGSize(width: 0.0, height: -100.0))
-//          .frame(height: 300, alignment: .top)
-//          .safeAreaInset(edge: .bottom) {
-//             if let selected {
-//                Text("Selected: \(selected)")
-//                     .frame(height: 128)
-//                     .clipShape(RoundedRectangle(cornerRadius: 10))
-//                     .padding([.top, .horizontal])
-//             } else {
-//                VStack {
-//                   Text("Selected: no")
-//
-//                   Button(action: {
-//                      selected = 1
-//                   }) {
-//                      if(selected != nil) {
-//                         Text("Selected: \(selected!)")
-//                      } else {
-//                         Text("Selected: no")
-//                      }
-//                   }
-//                }
-//             }
-//         }
-
-//         Button(action: {
-//            selected = 1
-//         }) {
-//            if(selected != nil) {
-//               Text("Selected: \(selected!)")
-//            } else {
-//               Text("Selected: no")
-//            }
-//         }
+            // IOS Map experiments extracted from here, LEAVE FOR REFERENCE.
         }
         .preferredColorScheme(.dark)
         .task {
@@ -218,7 +117,7 @@ struct ContentView: View {
                 do {
                     try await purchaseManager.loadProducts()
                     listenToCommonBillingCommandFlow()
-                    listenToCommonSpeechSpeakTextFlow()
+                    listenToCommonSpeechSpeakTextCommandFlow()
                 } catch {
                     print(error)
                 }
@@ -260,3 +159,126 @@ struct ComposeView: UIViewControllerRepresentable {
 
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//          // IOS Map experiments, LEAVE FOR REFERENCE.
+//         Map(
+//            coordinateRegion: MKCoordinateRegion(
+//               center: CLLocationCoordinate2D(latitude: 37.779_379, longitude: -122.418_433),
+//               latitudinalMeters: CLLocationDistance(1000),
+//               longitudinalMeters: CLLocationDistance(1000)
+//            )
+//         )
+//       }
+
+//          // iOS 15 map
+//         Map(
+//            coordinateRegion: $mapRegion,
+//            interactionModes: MapInteractionModes.all,
+//             annotationItems: locations
+//         ) { location in
+//            ////            MapMarker(
+//            ////               coordinate: CLLocationCoordinate2D(latitude: 37.7793, longitude: -122.416),
+//            ////               tint:Color.red
+//            ////            )
+//            ////            MapMarker(coordinate: location.coordinate)
+//            ////            MapPin(coordinate: location.coordinate)
+//            ////            MapAnnotation(coordinate: location.coordinate) {
+//            ////               NavigationLink {
+//            ////                  Text(location.name)
+//            ////               } label: {
+//            ////                  Text(location.name)
+//            ////                     .onTapGesture {
+//            ////                        print("Fuck off \(location.name)")
+//            ////                     }
+//            ////                     .foregroundColor(Color.white)
+//            ////
+//            ////
+//            //////                     .fontDesign(Font.system(size: 15.0))
+//            //////                  Circle()
+//            //////                     .stroke(.red, lineWidth: 3)
+//            //////                     .frame(width: 44, height: 44)
+//            ////               }
+//            ////            }
+//
+//            MapAnnotation(coordinate: location.coordinate) {
+//               Text(location.name)
+//                  .foregroundColor(Color.white)
+//
+//                Circle()
+//                    .stroke(.red, lineWidth: 3)
+//                    .frame(width: 44, height: 44)
+//                    .onTapGesture {
+//                        print("Tapped on \(location.name)")
+//                    }
+//                    .onAppear {
+//                       print("OnAppear")
+//                    }
+//            }
+//
+//        }.frame(height: 300)
+
+// iOS 17
+// https://www.hackingwithswift.com/forums/swiftui/ios-17-mapkit-how-to-use-map-selection/22886
+// https://medium.com/simform-engineering/mapkit-swiftui-in-ios-17-1fec82c3bf00
+// https://www.kodeco.com/7738344-mapkit-tutorial-getting-started?page=4#toc-anchor-020
+// https://www.kodeco.com/40607811-new-swiftui-support-for-mapkit-in-xcode-15?page=1#toc-anchor-005
+//          Map(position: $position, selection: $selected) {
+//             Marker("test", coordinate: locations[0].coordinate).tag(1)
+//             Marker("test2", coordinate: locations[1].coordinate).tag(2)
+//          }
+//          .position(CGPoint(x:200.0, y:-40.0))
+//          //.offset(CGSize(width: 0.0, height: -100.0))
+//          .frame(height: 300, alignment: .top)
+//          .safeAreaInset(edge: .bottom) {
+//             if let selected {
+//                Text("Selected: \(selected)")
+//                     .frame(height: 128)
+//                     .clipShape(RoundedRectangle(cornerRadius: 10))
+//                     .padding([.top, .horizontal])
+//             } else {
+//                VStack {
+//                   Text("Selected: no")
+//
+//                   Button(action: {
+//                      selected = 1
+//                   }) {
+//                      if(selected != nil) {
+//                         Text("Selected: \(selected!)")
+//                      } else {
+//                         Text("Selected: no")
+//                      }
+//                   }
+//                }
+//             }
+//         }
+//
+//         Button(action: {
+//            selected = 1
+//         }) {
+//            if(selected != nil) {
+//               Text("Selected: \(selected!)")
+//            } else {
+//               Text("Selected: no")
+//            }
+//         }
+

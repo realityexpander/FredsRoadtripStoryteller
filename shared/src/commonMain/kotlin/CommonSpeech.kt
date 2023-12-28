@@ -29,10 +29,10 @@ import util.asCommonFlow
 
 open class CommonSpeech {
 
-    private val _speakTextFlow: MutableStateFlow<String> =
+    private val _speakTextCommandFlow: MutableStateFlow<String> =
         MutableStateFlow("")
-    val speakTextFlow: StateFlow<String> =
-        _speakTextFlow.asStateFlow()
+    val speakTextCommandFlow: StateFlow<String> =
+        _speakTextCommandFlow.asStateFlow()
 
     private val _speechStateFlow: MutableStateFlow<SpeechState> =
         MutableStateFlow(SpeechState.NotSpeaking)
@@ -50,7 +50,8 @@ open class CommonSpeech {
 
     fun speakText(text: String) {
         coroutineScope.launch {
-            _speakTextFlow.emit(text)
+            _speakTextCommandFlow.emit("") // stops & clears any previous/current text
+            _speakTextCommandFlow.emit(text)
         }
     }
 
@@ -61,18 +62,23 @@ open class CommonSpeech {
     fun updateSpeechState(speechState: SpeechState) {
         coroutineScope.launch {
             _speechStateFlow.emit(speechState)
+
+            if(speechState is SpeechState.NotSpeaking) {
+                // todo needed?
+            }
         }
     }
 
     fun stopTextToSpeech() {
         coroutineScope.launch {
-            _speakTextFlow.emit("")
+            _speakTextCommandFlow.emit("")
+            // _speechStateFlow.emit(SpeechState.NotSpeaking) // todo needed?
         }
     }
 
     // Listen for speak text commands from the platform specific code
-    fun speakTextCommonFlow(): CommonFlow<String> {
-        return _speakTextFlow.asCommonFlow()
+    fun speakTextCommandCommonFlow(): CommonFlow<String> {
+        return _speakTextCommandFlow.asCommonFlow()
     }
 
 }

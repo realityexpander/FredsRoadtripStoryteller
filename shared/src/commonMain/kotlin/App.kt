@@ -123,7 +123,7 @@ var didFullFrameRender = false
 var isTemporarilyPreventPerformanceTuningActive = false // prevents premature optimization after returning from background
 
 // Speech
-var iosCommonSpeech: CommonSpeech = CommonSpeech()  // Speech for iOS only
+//var iosCommonSpeech: CommonSpeech = CommonSpeech()  // Speech for iOS only
 var unspokenText: String? = null // used to speak text in chunks
 
 // Attempt to fix database contention / race condition issue // todo remove soon
@@ -219,25 +219,29 @@ fun App(
             // todo Launch onboarding dialog if first time? // todo
         }
 
-        // Setup CommonSpeech // used for iOS only for now
-        LaunchedEffect(Unit) {
-            iosCommonSpeech = commonSpeech
-            iosCommonSpeech.speechStateCommonFlow.collectLatest { speechState ->
-                when(speechState) {
-                    is SpeechState.Speaking -> {
-                        Log.d("CommonSpeech.SpeechState.Speaking")
-                    }
-                    is SpeechState.NotSpeaking -> {
-                        Log.d("CommonSpeech.SpeechState.NotSpeaking")
-                    }
-                }
-            }
-        }
+        // Speech State
         var isMarkerCurrentlySpeaking by remember { // reactive to text-to-speech state
             mutableStateOf(false)
         }
         var activeSpeakingMarker: RecentlySeenMarker? by remember {
             mutableStateOf(null)
+        }
+        // iOS is the only platform that uses CommonSpeech (currently)
+        LaunchedEffect(Unit) {
+            iosCommonSpeech = commonSpeech
+            iosCommonSpeech.speechStateCommonFlow.collectLatest { speechState ->
+                isMarkerCurrentlySpeaking = when(speechState) {
+                    is SpeechState.Speaking -> {
+                        Log.d("CommonSpeech.SpeechState.Speaking")
+                        true
+                    }
+
+                    is SpeechState.NotSpeaking -> {
+                        Log.d("CommonSpeech.SpeechState.NotSpeaking")
+                        false
+                    }
+                }
+            }
         }
 
         // Google Maps UI elements

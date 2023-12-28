@@ -197,6 +197,7 @@ class MainActivity : AppCompatActivity(),
                             _errorMessageFlow.emit("PurchasePro: productDetails not initialized")
                             return@collect
                         }
+
                         purchaseManager.makePurchase()
                     }
                     is BillingCommand.Consume -> {
@@ -205,6 +206,7 @@ class MainActivity : AppCompatActivity(),
                             _errorMessageFlow.emit("ConsumePro: productDetails not initialized")
                             return@collect
                         }
+
                         purchaseManager.consumeProduct()
                     }
                 }
