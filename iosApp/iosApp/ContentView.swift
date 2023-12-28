@@ -35,6 +35,7 @@ struct ContentView: View {
             platformId: "iOS"
         )
 
+        // Implementation #2
         // Setup speech
         textToSpeechManager = TextToSpeechManager(commonSpeech: commonSpeech)
 
@@ -71,7 +72,8 @@ struct ContentView: View {
             }
         }
     }
-    
+
+    // Implementation #2
     func listenToCommonSpeechSpeakTextCommandFlow() {
         commonSpeech.speakTextCommandCommonFlow().watch { text in
             print("Speak: \(text ?? "") ")

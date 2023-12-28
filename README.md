@@ -64,6 +64,46 @@ https://github.com/JetBrains/compose-multiplatform/tree/master/examples/cocoapod
 - Can get google-services.json from Google Cloud Console
 - must do "pod install" from the iosApp folder
 
+- Note: There are many spurious warning messages and pop-up warnings. It seems these can be safely ignored.
+
+- Latest commit Built with:
+- Android Studio Hedgehog | 2023.1.1
+  Build #AI-231.9392.1.2311.11076708, built on November 9, 2023
+  Runtime version: 17.0.7+0-17.0.7b1000.6-10550314 aarch64
+  VM: OpenJDK 64-Bit Server VM by JetBrains s.r.o.
+  macOS 13.6.2
+  GC: G1 Young Generation, G1 Old Generation
+  Memory: 4096M
+  Cores: 10
+  Metal Rendering is ON
+  Registry:
+  analyze.exceptions.on.the.fly=true
+  external.system.auto.import.disabled=true
+  debugger.new.tool.window.layout=true
+  ide.text.editor.with.preview.show.floating.toolbar=false
+  ide.tooltip.initialDelay=812
+  ide.experimental.ui=true
+  ide.browser.jcef.gpu.disable=true
+
+Non-Bundled Plugins:
+com.c5inco.modifiers (1.0.14)
+com.github.copilot (1.4.5.4049)
+wu.seal.tool.jsontokotlin (3.7.4)
+org.jetbrains.kotlin (231-1.9.20-RC2-release-495-AS8109.175)
+idea.plugin.protoeditor (231.9225.5)
+com.wakatime.intellij.plugin (14.3.7)
+com.github.airsaid.androidlocalize (3.0.0)
+DBN (3.4.2455.0)
+net.seesharpsoft.intellij.plugins.csv (3.2.3-231)
+com.jetbrains.kmm (0.8.1(231)-23)
+com.squareup.sqldelight (2.0.1)
+com.developerphil.adbidea (1.6.11)
+org.jetbrains.compose.desktop.ide (1.5.11)
+by.overpass.svg-to-compose-intellij (0.12)
+mobi.hsz.idea.gitignore (4.5.2)
+com.abeade.plugin.figma.import (1.3.0)
+
+
 ### Code style
   - https://github.com/realityexpander/FredsRoadtripStoryteller/blob/main/raw_assets/CodeStyle.md
 

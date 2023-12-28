@@ -27,6 +27,7 @@ import util.asCommonFlow
  * ```
  */
 
+// Implementation #2 - uses `CommonSpeech` as a bridge to `TextToSpeechManager` in Swift
 open class CommonSpeech {
 
     private val _speakTextCommandFlow: MutableStateFlow<String> =
