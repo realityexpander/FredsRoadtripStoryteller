@@ -46,12 +46,14 @@ _note: screenshots may differ slightly from current version_
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/c977ad13-4d0e-4f6f-b2d3-fe6572efc630">]()
 [<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/7d6ec8fa-de16-4732-a5ff-9ba03f7eb464">]()
 
-## External Assets for Exposing Project
-- https://medium.com/@chrisathanas/ 
-- https://www.linkedin.com/groups/14367209/ (KMP Developers group on LI)
+## External Locations for Promoting Project
+- https://medium.com/@chrisathanas/
 - https://www.youtube.com/@ChrisAthanas
-- https://www.facebook.com/groups/913147236893976 (KMP Developers group on FB)
-- https://twitter.com/i/communities/1739883885658607808 (KMP Developers group on Twitter)
+
+- Join the KMP Developers Group:
+  - FaceBook: https://www.facebook.com/groups/913147236893976
+  - LinkedIn: https://www.linkedin.com/groups/14367209
+  - Twitter/X: https://twitter.com/i/communities/1739883885658607808
 
 # Developer notes
 

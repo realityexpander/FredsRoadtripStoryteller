@@ -257,7 +257,7 @@ fun App(
 
         // UI marker-data last-updated-at location
         var isMarkersLastUpdatedLocationVisible by
-        remember(appSettings.isMarkersLastUpdatedLocationVisible) {
+            remember(appSettings.isMarkersLastUpdatedLocationVisible) {
             mutableStateOf(appSettings.isMarkersLastUpdatedLocationVisible)
         }
         var markersLastUpdatedLocation by remember {
