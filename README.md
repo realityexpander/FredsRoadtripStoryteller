@@ -66,7 +66,7 @@ https://github.com/JetBrains/compose-multiplatform/tree/master/examples/cocoapod
 
 - Note: There are many spurious warning messages and pop-up warnings. It seems these can be safely ignored.
 
-- Latest commit Built with:
+## Latest commit Built with:
 - Android Studio Hedgehog | 2023.1.1
   Build #AI-231.9392.1.2311.11076708, built on November 9, 2023
   Runtime version: 17.0.7+0-17.0.7b1000.6-10550314 aarch64
