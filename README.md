@@ -60,9 +60,9 @@ _note: screenshots may differ slightly from current version_
 Source: (Code snapshot taken 10/8/23)
 https://github.com/JetBrains/compose-multiplatform/tree/master/examples/cocoapods-ios-example
 
-- Must create AppSecrets.plist from within Xcode - in password vault
-- Can get google-services.json from Google Cloud Console
-- must do "pod install" from the iosApp folder
+- Must create `AppSecrets.plist` from within Xcode - in password vault
+- Can get `google-services.json` from Google Cloud Console
+- must do `pod install` from the `iosApp` folder
 
 - Note: There are many spurious warning messages and pop-up warnings. It seems these can be safely ignored.
 
