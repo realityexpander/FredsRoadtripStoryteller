@@ -216,7 +216,7 @@ fun App(
                 )
             }
 
-            // todo Launch onboarding dialog if first time? // todo
+            // todo Launch onboarding dialog if first time or Pro-offer if expired? // todo
         }
 
         // Speech State

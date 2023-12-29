@@ -28,6 +28,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import co.touchlab.kermit.Logger as Log
 
 private const val SLOW_PENDING_TRANSACTION = 4  // Billing hidden type for slow pending transactions
+
 /**
  * ## PurchaseManager - Android
  *
@@ -60,8 +61,8 @@ data class PurchaseManager(
     private lateinit var purchase: Purchase
 
     // Check if a new purchase is being made & if it has been attempted to check for cancellations/timeout
-    private var isNewPurchaseGate1 = false // checks if a new purchase is being made, for polling purchase progress.
-    private var isNewPurchaseGate2 = false // checks if a new purchase timed out.
+    private var isNewPurchasePhase1 = false // checks if a new purchase is being made, for polling purchase progress.
+    private var isNewPurchasePhase2 = false // checks if a new purchase timed out.
 
     // Stores the product name/id
     private val _productName = MutableStateFlow(null as String?)
@@ -197,8 +198,8 @@ data class PurchaseManager(
                 .build()
 
         commonBilling.updateState(BillingState.Pending)
-        isNewPurchaseGate1 = true
-        isNewPurchaseGate2 = true
+        isNewPurchasePhase1 = true
+        isNewPurchasePhase2 = true
         coroutineScope.launch {
             //billing.updateMessage( "Attempting Purchase")
             logd("Attempting Purchase, ${productDetails.name}")
@@ -282,7 +283,7 @@ data class PurchaseManager(
         PurchasesResponseListener { billingResult, purchases ->
             logd("PurchasesResponseListener, Response Code: ${billingResult.responseCode}, purchases: $purchases")
             if (purchases.isNotEmpty()) {
-                isNewPurchaseGate1 = false
+                isNewPurchasePhase1 = false
                 purchase = purchases.first() // Only supports one product for now
                 logd("Purchase(s) Found, purchaseState: $purchase")
 
@@ -371,9 +372,9 @@ data class PurchaseManager(
             }
 
             // When creating a new purchase, start polling for it, to check for cancellations/timeout & to update UI.
-            if(!isNewPurchaseGate1) {
-                if(isNewPurchaseGate2) {
-                    isNewPurchaseGate2 = false
+            if(!isNewPurchasePhase1) {
+                if(isNewPurchasePhase2) {
+                    isNewPurchasePhase2 = false
                     coroutineScope.launch {
                         //billing.updateMessage("Card processing timed out. Please try again.")
                         logd("Card processing timed out. Please try again.")
