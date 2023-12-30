@@ -157,7 +157,7 @@ fun App(
     commonAppMetadata: CommonAppMetadata,
     commonSpeech: CommonSpeech = CommonSpeech(), // only for iOS
     markersRepo: MarkersRepo = MarkersRepo(appSettings),
-    gpsLocationService: GPSLocationService = GPSLocationService()
+    commonGpsLocationService: CommonGPSLocationService = CommonGPSLocationService()
 ) {
     AppTheme {
         val coroutineScope = rememberCoroutineScope()
@@ -367,7 +367,7 @@ fun App(
         }
         LaunchedEffect(Unit, seenRadiusMiles) { //, shouldCalculateMapMarkers) {
             // Set the last known location to the current location in settings
-            gpsLocationService.onUpdatedGPSLocation(
+            commonGpsLocationService.onUpdatedGPSLocation(
                 errorCallback = { errorMessage ->
                     Log.w("Error: $errorMessage")
                     errorMessageStr = errorMessage
@@ -526,11 +526,11 @@ fun App(
 
         fun startTracking() {
             isTrackingEnabled = true
-            gpsLocationService.allowBackgroundLocationUpdates()
+            commonGpsLocationService.allowBackgroundLocationUpdates()
         }
         fun stopTracking() {
             isTrackingEnabled = false
-            gpsLocationService.preventBackgroundLocationUpdates()
+            commonGpsLocationService.preventBackgroundLocationUpdates()
         }
         // Turn on tracking automatically?
         LaunchedEffect(Unit) {

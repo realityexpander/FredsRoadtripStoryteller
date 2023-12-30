@@ -44,7 +44,9 @@ import cocoapods.GoogleMaps.animateWithCameraUpdate
 import cocoapods.GoogleMaps.kGMSTypeNormal
 import cocoapods.GoogleMaps.kGMSTypeSatellite
 import data.loadMarkers.milesToMeters
+import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
+import platform.CoreLocation.CLLocationCoordinate2D
 import platform.CoreLocation.CLLocationCoordinate2DMake
 import platform.MapKit.MKMapView
 import platform.UIKit.UIColor
@@ -162,6 +164,7 @@ actual fun GoogleMaps(
     val delegate = remember { object : NSObject(), GMSMapViewDelegateProtocol {
         //    override fun mapView(
         //        mapView: GMSMapView,
+        //        @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
         //        didTapAtCoordinate: CValue<CLLocationCoordinate2D>
         //    ) {
         //        showSomething = !showSomething
@@ -169,6 +172,7 @@ actual fun GoogleMaps(
 
         //    override fun mapView(
         //        mapView: GMSMapView,
+        //        @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
         //        didTapMarker: GMSMarker
         //    ): Boolean {
         //        val userData = didTapMarker.userData()
@@ -179,7 +183,7 @@ actual fun GoogleMaps(
         // Note: this shows an error, but it compiles and runs fine(!)
         override fun mapView(
             mapView: GMSMapView,
-            @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
+            @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")  // found this hacky fix was found on jetbrains site
             didTapInfoWindowOfMarker: GMSMarker
         ) {
             val userData = didTapInfoWindowOfMarker.userData()

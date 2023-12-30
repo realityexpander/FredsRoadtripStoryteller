@@ -3,7 +3,7 @@ package com.realityexpander
 import CommonAppMetadata
 import CommonBilling
 import CommonBilling.BillingCommand
-import GPSLocationService
+import CommonGPSLocationService
 import MainView
 import _errorMessageFlow
 import android.Manifest
@@ -159,10 +159,10 @@ class MainActivity : AppCompatActivity(),
         scope.launch {
             intentFlow.collect { intent ->
                 when (intent.action) {
-                    GPSLocationService.ACTION_STOP_BACKGROUND_UPDATES -> {
+                    CommonGPSLocationService.ACTION_STOP_BACKGROUND_UPDATES -> {
                         stopBackgroundUpdates()
                     }
-                    GPSLocationService.ACTION_START_BACKGROUND_UPDATES -> {
+                    CommonGPSLocationService.ACTION_START_BACKGROUND_UPDATES -> {
                         startBackgroundUpdates()
                     }
                     Intent.ACTION_VIEW -> { // open a web link
@@ -207,6 +207,8 @@ class MainActivity : AppCompatActivity(),
                             return@collect
                         }
 
+                        // For testing, we can consume the product to test the purchase flow.
+                        // This is not needed for production in this app.
                         purchaseManager.consumeProduct()
                     }
                 }

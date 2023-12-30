@@ -1,6 +1,7 @@
 package com.realityexpander.gpsForegroundNotificationService
 
-import GPSLocationService
+//import com.realityexpander.common.R  // uses the shared module R file
+import CommonGPSLocationService
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.PendingIntent.FLAG_IMMUTABLE
@@ -12,13 +13,11 @@ import android.content.Intent
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.realityexpander.MainActivity
-import com.realityexpander.util.getBitmapFromVectorDrawable
 import com.realityexpander.gpsForegroundNotificationService.NotificationActionBroadcastReceiver.Companion.GPS_FOREGROUND_SERVICE_NOTIFICATION_MuteAllTextToSpeech_ACTION
 import com.realityexpander.gpsForegroundNotificationService.NotificationActionBroadcastReceiver.Companion.GPS_FOREGROUND_SERVICE_NOTIFICATION_StopSpeakingTextToSpeech_ACTION
 import com.realityexpander.gpsForegroundNotificationService.NotificationActionBroadcastReceiver.Companion.kNotificationActionRequestCode
+import com.realityexpander.util.getBitmapFromVectorDrawable
 import data.appSettings
-//import com.realityexpander.common.R  // uses the shared module R file
-import com.realityexpander.R as AppR  // uses the AndroidMain module R file
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -28,6 +27,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import presentation.maps.Location
 import co.touchlab.kermit.Logger as Log
+import com.realityexpander.R as AppR
 
 
 // Used solely to update the notification (required for Android 8.0+)
@@ -35,7 +35,7 @@ import co.touchlab.kermit.Logger as Log
 class GPSForegroundNotificationService: Service() {
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private lateinit var gpsLocationService: GPSLocationService
+    private lateinit var commonGpsLocationService: CommonGPSLocationService
     private var lastLocation: Location? = null
 
     override fun onBind(p0: Intent?): IBinder? {
@@ -44,7 +44,7 @@ class GPSForegroundNotificationService: Service() {
 
     override fun onCreate() {
         super.onCreate()
-        gpsLocationService = GPSLocationService()
+        commonGpsLocationService = CommonGPSLocationService()
 
         // for flow - leave for reference
         //    locationClient = LocationClientImpl(
@@ -103,7 +103,7 @@ class GPSForegroundNotificationService: Service() {
 
         // Update the notification when the location changes
         serviceScope.launch {
-            gpsLocationService.onUpdatedGPSLocation( // Uses a callback to update the notification
+            commonGpsLocationService.onUpdatedGPSLocation( // Uses a callback to update the notification
                 errorCallback = { error ->
                     Log.w("com.realityexpander.LocationForegroundService, Error: $error" )
 
