@@ -162,13 +162,13 @@ actual fun GoogleMaps(
     val mapMarkers = remember(markers) { mutableStateMapOf<String,GMSMarker>() }
     var selectedMarker by remember(googleMapView.selectedMarker) { mutableStateOf(googleMapView.selectedMarker) }
     val delegate = remember { object : NSObject(), GMSMapViewDelegateProtocol {
-        //    override fun mapView(
-        //        mapView: GMSMapView,
-        //        @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
-        //        didTapAtCoordinate: CValue<CLLocationCoordinate2D>
-        //    ) {
-        //        showSomething = !showSomething
-        //    }
+//        override fun mapView(
+//            mapView: GMSMapView,
+//            @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
+//            didTapAtCoordinate: CValue<CLLocationCoordinate2D>
+//        ) {
+//            showSomething = !showSomething
+//        }
 
         //    override fun mapView(
         //        mapView: GMSMapView,

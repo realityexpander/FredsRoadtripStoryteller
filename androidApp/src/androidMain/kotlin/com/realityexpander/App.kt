@@ -63,7 +63,5 @@ class App: Application() {
         }
 
         appContext = applicationContext
-
     }
-
 }
