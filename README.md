@@ -8,7 +8,9 @@ Hear historical markers as you travel - Learn about local history as you drive.
 - Pure Kotlin App using _SHARED_ core and _SHARED_ Compose based UI, running in native Kotlin.
 
 ### YouTube series following the development of the app: 
-[<img alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/e45ea030-00c2-45d4-b214-4983a53d7d36">](https://youtube.com/playlist?list=PLzUxWOrVXB4QmB3xvfjqkOMDZpwZnFb2x&si=e9IBn124BJKA57Ah)
+
+[<img alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/451b11ae-5dd8-4dd1-ae93-6739a76df4b7" width="300">](https://youtube.com/playlist?list=PLzUxWOrVXB4QmB3xvfjqkOMDZpwZnFb2x&si=e9IBn124BJKA57Ah)
+
 
 ### Assets
 - Wiki: [Fred's Roadtrip Storyteller Wiki](https://github.com/realityexpander/FredsRoadtripStoryteller/wiki)
