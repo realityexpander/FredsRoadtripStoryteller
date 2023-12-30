@@ -139,7 +139,6 @@ class MainActivity : AppCompatActivity(),
                 }
             }
         }
-
         // Get permissions to access location (opens dialog)
         permissionLauncher.launch(arrayOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
