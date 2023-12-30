@@ -14,6 +14,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
+import androidTextToSpeech
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -43,7 +44,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import presentation.SplashScreenForPermissions
 import presentation.uiComponents.AppTheme
-import textToSpeech
 import java.util.Locale
 import co.touchlab.kermit.Logger as Log
 
@@ -81,7 +81,7 @@ class MainActivity : AppCompatActivity(),
         )
 
         val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
-        textToSpeech = TextToSpeech(this, this)
+        androidTextToSpeech = TextToSpeech(this, this)
 
         // https://proandroiddev.com/implementing-core-splashscreen-api-e62f0e690f74
         installSplashScreen().apply {
@@ -242,11 +242,11 @@ class MainActivity : AppCompatActivity(),
     // TextToSpeech.OnInitListener
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
-            val result = textToSpeech!!.setLanguage(Locale.US)
+            val result = androidTextToSpeech!!.setLanguage(Locale.US)
 
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 Log.e("TTS: The Language not supported!, result= $result")
-                textToSpeech = null
+                androidTextToSpeech = null
             } else {
                 Log.d("TTS: Initialization success!")
             }
@@ -254,9 +254,9 @@ class MainActivity : AppCompatActivity(),
     }
 
     override fun onDestroy() {
-        if (textToSpeech != null) {
-            textToSpeech!!.stop()
-            textToSpeech!!.shutdown()
+        if (androidTextToSpeech != null) {
+            androidTextToSpeech!!.stop()
+            androidTextToSpeech!!.shutdown()
         }
         stopBackgroundUpdates()
 
