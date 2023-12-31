@@ -1,8 +1,8 @@
 package com.realityexpander
 
 import CommonAppMetadata
-import CommonBilling
-import CommonBilling.BillingCommand
+import data.billing.CommonBilling
+import data.billing.CommonBilling.BillingCommand
 import CommonGPSLocationService
 import MainView
 import _errorMessageFlow

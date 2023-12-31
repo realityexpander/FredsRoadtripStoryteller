@@ -64,8 +64,8 @@ actual fun isTextToSpeechSpeaking(): Boolean {
     return textToSpeechManager.isSpeaking
 }
 
-//// Implementation #2 - uses `CommonSpeech` as a bridge to `TextToSpeechManager` in Swift
-////  Sends commands to Swift Implementation via CommonSpeech class
+//// Implementation #2 - uses `presentation.speech.CommonSpeech` as a bridge to `TextToSpeechManager` in Swift
+////  Sends commands to Swift Implementation via presentation.speech.CommonSpeech class
 //actual fun speakTextToSpeech(text: String) {
 //    iosCommonSpeech.speakText(text)
 //}

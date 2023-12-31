@@ -1,6 +1,6 @@
 
-import CommonBilling.BillingState
-import CommonSpeech.SpeechState
+import data.billing.CommonBilling.BillingState
+import presentation.speech.CommonSpeech.SpeechState
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import data.MarkersRepo
 import data.appSettings
+import data.billing.CommonBilling
 import data.configPropertyFloat
 import data.configPropertyString
 import data.loadMarkerDetails.loadMarkerDetails
@@ -93,6 +94,7 @@ import presentation.maps.MarkerIdStr
 import presentation.maps.RecentlySeenMarker
 import presentation.maps.RecentlySeenMarkersList
 import presentation.maps.toLocation
+import presentation.speech.CommonSpeech
 import presentation.speech.speakRecentlySeenMarker
 import presentation.uiComponents.AppTheme
 import kotlin.random.Random
@@ -123,7 +125,7 @@ var didFullFrameRender = false
 var isTemporarilyPreventPerformanceTuningActive = false // prevents premature optimization after returning from background
 
 // Speech
-//var iosCommonSpeech: CommonSpeech = CommonSpeech()  // Speech for iOS only
+//var iosCommonSpeech: presentation.speech.CommonSpeech = presentation.speech.CommonSpeech()  // Speech for iOS only
 var unspokenText: String? = null // used to speak text in chunks
 
 // Attempt to fix database contention / race condition issue // todo remove soon
@@ -226,18 +228,18 @@ fun App(
         var activeSpeakingMarker: RecentlySeenMarker? by remember {
             mutableStateOf(null)
         }
-        // iOS is the only platform that uses CommonSpeech (currently) This is implementation #2
+        // iOS is the only platform that uses presentation.speech.CommonSpeech (currently) This is implementation #2
         LaunchedEffect(Unit) {
             iosCommonSpeech = commonSpeech
             iosCommonSpeech.speechStateCommonFlow.collectLatest { speechState ->
                 isMarkerCurrentlySpeaking = when(speechState) {
                     is SpeechState.Speaking -> {
-                        Log.d("CommonSpeech.SpeechState.Speaking")
+                        Log.d("presentation.speech.CommonSpeech.SpeechState.Speaking")
                         true
                     }
 
                     is SpeechState.NotSpeaking -> {
-                        Log.d("CommonSpeech.SpeechState.NotSpeaking")
+                        Log.d("presentation.speech.CommonSpeech.SpeechState.NotSpeaking")
                         false
                     }
                 }

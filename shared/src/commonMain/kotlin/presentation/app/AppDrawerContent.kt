@@ -1,8 +1,8 @@
 package presentation.app
 
 import BottomSheetScreen
-import CommonBilling
-import CommonBilling.BillingState
+import data.billing.CommonBilling
+import data.billing.CommonBilling.BillingState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background

@@ -1,3 +1,5 @@
+import data.billing.CommonBilling
+
 actual fun purchaseProductAction(commonBilling: CommonBilling) {
     commonBilling.purchaseProCommand()
 }

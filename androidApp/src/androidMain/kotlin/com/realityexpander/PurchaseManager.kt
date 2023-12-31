@@ -2,9 +2,9 @@
 
 package com.realityexpander
 
-import CommonBilling
-import CommonBilling.BillingState
-import CommonBilling.Companion.kProProductId
+import data.billing.CommonBilling
+import data.billing.CommonBilling.BillingState
+import data.billing.CommonBilling.Companion.kProProductId
 import android.app.Activity
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient

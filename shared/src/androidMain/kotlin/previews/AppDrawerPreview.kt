@@ -1,7 +1,7 @@
 package previews
 
-import CommonBilling
-import CommonBilling.BillingState
+import data.billing.CommonBilling
+import data.billing.CommonBilling.BillingState
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

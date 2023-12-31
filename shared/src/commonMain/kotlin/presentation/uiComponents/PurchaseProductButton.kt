@@ -1,7 +1,7 @@
 package presentation.uiComponents
 
-import CommonBilling
-import CommonBilling.BillingState
+import data.billing.CommonBilling
+import data.billing.CommonBilling.BillingState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -22,7 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import appMetadata
-import calcTrialTimeRemainingString
+import data.billing.calcTrialTimeRemainingString
 import consumeProductAction
 import data.appSettings
 import kotlinx.coroutines.CoroutineScope

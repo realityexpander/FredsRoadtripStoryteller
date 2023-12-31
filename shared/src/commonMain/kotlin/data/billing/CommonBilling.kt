@@ -1,5 +1,5 @@
-
-import CommonBilling.Companion.kMaxTrialTime
+package data.billing
+import data.billing.CommonBilling.Companion.kMaxTrialTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
