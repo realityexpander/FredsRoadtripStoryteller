@@ -2,7 +2,7 @@
 _note: link to play store not publicly active yet_
 
 # Fred's Roadtrip Storyteller
-Hear historical markers as you travel - Learn about local history as you drive.
+Listen to historical markers as you travel - Learn about local history as you drive.
 
 - KMP (Kotlin Multi-Platform) Compose-based Proof-of-concept experimental app using Google Maps for iOS and Android.
 - Pure Kotlin App using _SHARED_ core and _SHARED_ Compose based UI, running in native Kotlin.
