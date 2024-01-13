@@ -76,9 +76,10 @@ class PurchaseManager: NSObject, ObservableObject {
         case let .success(.verified(transaction)):
             // Successful purchase
             await transaction.finish() // Required to complete transaction
-           commonBilling.updateState(billingState: CommonBilling.BillingStatePurchased())
+            commonBilling.updateState(billingState: CommonBilling.BillingStatePurchased())
             commonBilling.updateMessage(message: "Purchase successful")
             await updatePurchasedProducts()
+            break
         case let .success(.unverified(_, error)):
             // Successful purchase but transaction/receipt can't be verified
             // Could be a jail-broken phone
