@@ -86,7 +86,9 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            Color.blue.ignoresSafeArea(.all) // status bar color
+            // status bar color
+            Color.blue.ignoresSafeArea(.all)
+
             ComposeView(
                 commonAppMetadata: commonAppMetadata,
                 commonBilling: commonBilling,
