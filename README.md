@@ -53,9 +53,9 @@ _note: screenshots may differ slightly from current version_
 - https://www.youtube.com/@ChrisAthanas
 
 - Join the KMP Developers Group:
-  - FaceBook: https://www.facebook.com/groups/913147236893976
-  - LinkedIn: https://www.linkedin.com/groups/14367209
   - Twitter/X: https://twitter.com/i/communities/1739883885658607808
+  - LinkedIn: https://www.linkedin.com/groups/14367209
+  - FaceBook: https://www.facebook.com/groups/913147236893976
 
 # Developer notes
 
