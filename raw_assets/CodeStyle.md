@@ -301,10 +301,13 @@ advantages and disadvantages.
 ### No `Void` Methods
 
   - All methods return something, even if it's just a `Boolean` or `Result` object.
+  - Exception: In UI layer, nullable values for error display are acceptable.
 
 ### No `Null` Checks
 
   - Avoid if any way possible any `null` checks in code
+  - Avoid `!` as this will cause a crash if the value is `null` at runtime.
+  - Exception: In UI layer, nullable values for error display are acceptable.
 
 ### Synchronous Code
 
@@ -319,7 +322,7 @@ advantages and disadvantages.
   - `is{something}`
   - `has{something}`
   - `should{something}` - use sparingly for parameters, consider using `enum` instead.
-  - Attempt to avoid using `!` operator
+  - Avoid using `!` (boolean NOT) operator, if possible.
     - OK to use `isNot{something}` over the `!` operator if it makes the code more readable.
     - Avoid blindly creating `isNot{something}` or `hasNot{something}` just to oppose each positive 
       case, only create a "negative case" method when it is needed, not just automatically.
