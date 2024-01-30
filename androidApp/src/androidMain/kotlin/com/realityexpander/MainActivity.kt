@@ -1,8 +1,6 @@
 package com.realityexpander
 
 import CommonAppMetadata
-import data.billing.CommonBilling
-import data.billing.CommonBilling.BillingCommand
 import CommonGPSLocationService
 import MainView
 import _errorMessageFlow
@@ -35,6 +33,8 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.realityexpander.gpsForegroundNotificationService.GPSForegroundNotificationService
 import data.appSettings
+import data.billing.CommonBilling
+import data.billing.CommonBilling.BillingCommand
 import intentFlow
 import isTemporarilyPreventPerformanceTuningActive
 import kotlinx.coroutines.CoroutineScope
@@ -68,13 +68,17 @@ class MainActivity : AppCompatActivity(),
         val packageName = applicationContext.packageName
         appMetadata.platformId = "android"
         appMetadata.isDebuggable = 0 != applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE
-        appMetadata.versionStr = packageManager.getPackageInfo(packageName, 0).versionName
-        appMetadata.installAtEpochMilli = packageManager.getPackageInfo(packageName, 0).firstInstallTime
+        appMetadata.versionStr =
+            packageManager.getPackageInfo(packageName, 0).versionName
+        appMetadata.installAtEpochMilli =
+            packageManager.getPackageInfo(packageName, 0).firstInstallTime
         if(Build.VERSION_CODES.P <= Build.VERSION.SDK_INT) {
-            appMetadata.androidBuildNumberStr = packageManager.getPackageInfo(packageName, 0).longVersionCode.toString()
+            appMetadata.androidBuildNumberStr =
+                packageManager.getPackageInfo(packageName, 0).longVersionCode.toString()
         } else {
             @Suppress("DEPRECATION") // we are handling the deprecated version here
-            appMetadata.androidBuildNumberStr = packageManager.getPackageInfo(packageName, 0).versionCode.toString()
+            appMetadata.androidBuildNumberStr =
+                packageManager.getPackageInfo(packageName, 0).versionCode.toString()
         }
         Logger.d("App.onCreate(): Starting app, " +
                 appMetadata
