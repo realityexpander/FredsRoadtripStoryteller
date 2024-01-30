@@ -32,8 +32,7 @@ import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.VolumeMute
 import androidx.compose.material.icons.filled.VolumeUp
-import androidx.compose.material.icons.outlined.Sync
-import androidx.compose.material.icons.outlined.SyncDisabled
+import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -68,6 +67,7 @@ fun RecentlySeenMarkers(
     onClickRecentlySeenMarkerItem: (MarkerIdStr) -> Unit = {},
     onClickStartSpeakingMarker: (RecentlySeenMarker, shouldSpeakDetails: Boolean) -> Unit =
         { _, _ -> Unit },
+    onClickPauseSpeakingMarker: () -> Unit = {},
     onClickStopSpeakingMarker: () -> Unit = {},
     onClickPauseSpeakingAllMarkers: () -> Unit = {},
     onClickResumeSpeakingAllMarkers: () -> Unit = {},
@@ -166,7 +166,7 @@ fun RecentlySeenMarkers(
                     }
                     Spacer(modifier = Modifier.width(4.dp))
 
-                    // Speak Marker Button
+                    // Speak/Pause Marker Button
                     Column(
                         modifier = Modifier
                             .weight(.5f)
@@ -180,15 +180,16 @@ fun RecentlySeenMarkers(
                         if (isTextToSpeechCurrentlySpeaking) {
                             IconButton(
                                 onClick = {
-                                    onClickStopSpeakingMarker()
+                                    onClickPauseSpeakingMarker()
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .heightIn(min = 48.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Stop,
+                                    imageVector = Icons.Outlined.Pause,
                                     contentDescription = "Stop Speaking Marker",
+                                    tint = MaterialTheme.colors.onBackground
                                 )
                             }
                         } else {
@@ -280,11 +281,8 @@ fun RecentlySeenMarkers(
                             ) {
                                 Column {
                                     Icon(
-//                                        imageVector = Icons.Default.Pause,
-//                                        imageVector = Icons.Outlined.Pause,
-                                        imageVector = Icons.Outlined.Sync,
+                                        imageVector = Icons.Outlined.Pause,
                                         contentDescription = "Pause Speaking All Markers",
-//                                        tint = MaterialTheme.colors.onSurface
                                         tint = MaterialTheme.colors.onBackground
                                     )
                                     Text(
@@ -310,14 +308,8 @@ fun RecentlySeenMarkers(
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     Icon(
-//                                        imageVector = Icons.Filled.PlayArrow,
-//                                        imageVector = Icons.Outlined.Cached,
-//                                        imageVector = Icons.Outlined.UpdateDisabled,
-//                                        imageVector = Icons.Outlined.SyncDisabled,
-//                                        imageVector = Icons.Outlined.AutoMode,
-                                        imageVector = Icons.Outlined.SyncDisabled,
+                                        imageVector = Icons.Filled.VolumeUp,
                                         contentDescription = "Start Speaking All Markers",
-//                                        tint = MaterialTheme.colors.onSurface
                                         tint = MaterialTheme.colors.onBackground
                                     )
                                     Text(
@@ -372,7 +364,7 @@ fun RecentlySeenMarkers(
                         textAlign = TextAlign.Center,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(start = 4.dp, bottom = 4.dp)
+                            .padding(start = 0.dp, bottom = 0.dp)
                     )
                 }
             }
@@ -387,7 +379,7 @@ fun RecentlySeenMarkers(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp, 4.dp, 8.dp, 8.dp)
+                        .padding(8.dp, 4.dp, 8.dp, 4.dp)
                         .background(
                             color = MaterialTheme.colors.primary,
                             shape = RoundedCornerShape(8.dp)
@@ -427,7 +419,7 @@ fun RecentlySeenMarkers(
                         )
                     }
 
-                    //Column( // LEAVE FOR POSSIBLE FUTURE USE
+                    //Column( // LEAVE FOR POSSIBLE FUTURE USE - NAVIGATE TO MARKER
                     //    modifier = Modifier
                     //        .fillMaxWidth()
                     //        .weight(.5f)

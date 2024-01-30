@@ -12,12 +12,18 @@ import platform.darwin.NSObject
 class TextToSpeechManager : NSObject(), AVSpeechSynthesizerDelegateProtocol {
     private var synthesizer: AVSpeechSynthesizer = AVSpeechSynthesizer()
     var isSpeaking = false
+    var isPaused = false
 
     init {
         synthesizer.delegate = this
     }
 
     fun speak(text: String) {
+        // Resume speaking if there is unspoken text
+        if(isSpeaking && isPaused) {
+            continueSpeaking()
+        }
+
         isSpeaking = true
         synthesizer.delegate = this
 
@@ -33,6 +39,7 @@ class TextToSpeechManager : NSObject(), AVSpeechSynthesizerDelegateProtocol {
         }
 
         println("TextToSpeechManager speak: $text")
+        isPaused = false
         synthesizer.speakUtterance(utterance)
     }
 
@@ -44,8 +51,20 @@ class TextToSpeechManager : NSObject(), AVSpeechSynthesizerDelegateProtocol {
         isSpeaking = false
     }
 
+    // Stop speaking
     fun stopSpeaking() {
         synthesizer.stopSpeakingAtBoundary(AVSpeechBoundary.AVSpeechBoundaryImmediate)
+        isSpeaking = false
+        isPaused = false
+    }
+
+    fun pauseSpeaking() {
+        synthesizer.pauseSpeakingAtBoundary(AVSpeechBoundary.AVSpeechBoundaryImmediate)
+        isPaused = true
+    }
+    fun continueSpeaking() {
+        synthesizer.continueSpeaking()
+        isPaused = false
     }
 
     fun isSpeaking(): Boolean {
@@ -59,9 +78,13 @@ actual fun speakTextToSpeech(text: String) {  // gives runtime error: [catalog] 
 }
 actual fun stopTextToSpeech() {
     textToSpeechManager.stopSpeaking()
+    unspokenText = ""
 }
 actual fun isTextToSpeechSpeaking(): Boolean {
     return textToSpeechManager.isSpeaking
+}
+actual fun pauseTextToSpeech() {
+    textToSpeechManager.pauseSpeaking()
 }
 
 //// Implementation #2 - uses `presentation.speech.CommonSpeech` as a bridge to `TextToSpeechManager` in Swift

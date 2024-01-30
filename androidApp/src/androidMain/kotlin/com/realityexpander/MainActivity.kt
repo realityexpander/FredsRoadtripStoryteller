@@ -1,5 +1,6 @@
 package com.realityexpander
 
+import AndroidTextToSpeechService
 import CommonAppMetadata
 import CommonGPSLocationService
 import MainView
@@ -12,7 +13,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
-import androidTextToSpeech
+import androidTextToSpeechService
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -85,7 +86,9 @@ class MainActivity : AppCompatActivity(),
         )
 
         val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
-        androidTextToSpeech = TextToSpeech(this, this)
+
+        //        androidTextToSpeech = TextToSpeech(this, this)
+        androidTextToSpeechService = AndroidTextToSpeechService(TextToSpeech(this, this))
 
         // https://proandroiddev.com/implementing-core-splashscreen-api-e62f0e690f74
         installSplashScreen().apply {
@@ -247,25 +250,17 @@ class MainActivity : AppCompatActivity(),
     // TextToSpeech.OnInitListener
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
-            val result = androidTextToSpeech!!.setLanguage(Locale.US)
+//            val result = androidTextToSpeech!!.setLanguage(Locale.US)
+            val result = androidTextToSpeechService?.setLanguage(Locale.US)
 
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 Log.e("TTS: The Language not supported!, result= $result")
-                androidTextToSpeech = null
+//                androidTextToSpeech = null
+                androidTextToSpeechService = null
             } else {
                 Log.d("TTS: Initialization success!")
             }
         }
-    }
-
-    override fun onDestroy() {
-        if (androidTextToSpeech != null) {
-            androidTextToSpeech!!.stop()
-            androidTextToSpeech!!.shutdown()
-        }
-        stopBackgroundUpdates()
-
-        super.onDestroy()
     }
 
     // Turn off the notification service for the GPS service, which prevents background location updates
@@ -274,6 +269,20 @@ class MainActivity : AppCompatActivity(),
             action = GPSForegroundNotificationService.ACTION_STOP_NOTIFICATION_SERVICE
             appContext.startService(this) // sends command to stop service
         }
+    }
+
+    override fun onDestroy() {
+//        if (androidTextToSpeech != null) {
+//            androidTextToSpeech!!.stop()
+//            androidTextToSpeech!!.shutdown()
+//        }
+        androidTextToSpeechService?.run {
+            stopSpeaking()
+            shutdown()
+        }
+
+        stopBackgroundUpdates()
+        super.onDestroy()
     }
 
     // Turn on the notification service for the GPS service, which allows background location updates

@@ -50,7 +50,7 @@ fun RecentlySeenMarkersPreview() {
                     title = "Plans to fight the Ordinance",
                     insertedAtEpochMilliseconds = 0,
                 ),
-                isTextToSpeechCurrentlySpeaking = false,
+                isTextToSpeechCurrentlySpeaking = true,
                 isSpeakWhenUnseenMarkerFoundEnabled = false,
                 markersRepo = MarkersRepo(
                     appSettings = AppSettings.use(settings = FakeSettings()),
@@ -58,6 +58,7 @@ fun RecentlySeenMarkersPreview() {
                 onClickRecentlySeenMarkerItem = {},
                 onClickStartSpeakingMarker = { _, _ -> Unit },
                 onClickStopSpeakingMarker = {},
+                onClickPauseSpeakingMarker = {},
                 onClickPauseSpeakingAllMarkers = {},
             ) {}
         }

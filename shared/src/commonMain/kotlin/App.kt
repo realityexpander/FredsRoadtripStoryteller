@@ -1,6 +1,4 @@
 
-import data.billing.CommonBilling.BillingState
-import presentation.speech.CommonSpeech.SpeechState
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -59,6 +57,7 @@ import androidx.compose.ui.unit.sp
 import data.MarkersRepo
 import data.appSettings
 import data.billing.CommonBilling
+import data.billing.CommonBilling.BillingState
 import data.configPropertyFloat
 import data.configPropertyString
 import data.loadMarkerDetails.loadMarkerDetails
@@ -95,6 +94,7 @@ import presentation.maps.RecentlySeenMarker
 import presentation.maps.RecentlySeenMarkersList
 import presentation.maps.toLocation
 import presentation.speech.CommonSpeech
+import presentation.speech.CommonSpeech.SpeechState
 import presentation.speech.speakRecentlySeenMarker
 import presentation.uiComponents.AppTheme
 import kotlin.random.Random
@@ -126,7 +126,7 @@ var isTemporarilyPreventPerformanceTuningActive = false // prevents premature op
 
 // Speech
 //var iosCommonSpeech: presentation.speech.CommonSpeech = presentation.speech.CommonSpeech()  // Speech for iOS only
-var unspokenText: String? = null // used to speak text in chunks
+var unspokenText: String? = null // used to speak text in chunks // todo: move to speech?
 
 // Attempt to fix database contention / race condition issue // todo remove soon
 val synchronizedObject = SynchronizedObject()
@@ -541,34 +541,57 @@ fun App(
             }
         }
 
-        // Poll to update `isMarkerCurrentlySpeaking` UI flag for reactive UI
+        // Poll to update `isMarkerCurrentlySpeaking` flag for reactive UI
         LaunchedEffect(Unit) {
             withContext(Dispatchers.IO) {
                 while (true) {
                     delay(150)
                     isMarkerCurrentlySpeaking = isTextToSpeechSpeaking()
 
-                    // Speak the next chunk of unspoken text (in any)
-                    if(!isMarkerCurrentlySpeaking) {
+//                    if(!isMarkerCurrentlySpeaking) {
+//                        if(unspokenText?.isNotBlank() == true) {
+//                            speakTextToSpeech(unspokenText ?: "")
+//                            unspokenText = "" // reset
+//                        }
+//                    }
 
-                        unspokenText?.let { text ->
-                            // If more than 4000, Take the next 4000 characters.
-                            if(text.length >= 4000) {
-                                val lastWordBoundaryIndex =
-                                    text.substring(0, 4000).lastIndexOf(" ")
-                                val nextTextToSpeak =
-                                    text.substring(0, lastWordBoundaryIndex)
-                                val restOfUnspokenText =
-                                    text.substring(lastWordBoundaryIndex)
-                                unspokenText = restOfUnspokenText
+//                    // Speak the next chunk of unspoken text (in any)
+//                    if(!isMarkerCurrentlySpeaking) {
+//                        unspokenText?.let { text ->
+//                            // If more than 4000, Take the next 4000 characters.
+//                            if(text.length >= 4000) {
+//                                val lastWordBoundaryIndex =
+//                                    text.substring(0, 4000).lastIndexOf(" ")
+//                                val nextTextToSpeak =
+//                                    text.substring(0, lastWordBoundaryIndex)
+//                                val restOfUnspokenText =
+//                                    text.substring(lastWordBoundaryIndex)
+//                                unspokenText = restOfUnspokenText
+//
+//                                speakTextToSpeech(nextTextToSpeak)
+//                                return@let
+//                            }
+//                            if(text.isNotBlank()) {
+//                                speakTextToSpeech(text)
+//                            }
 
-                                speakTextToSpeech(nextTextToSpeak)
-                                return@let
-                            }
-
-                            speakTextToSpeech(text)
-                        }
-                    }
+//                            // Take next unspoken word
+//                            val nextWordBoundaryIndex =
+//                                text.substring(0, text.length).indexOf(" ")
+//                            val nextWordToSpeak =
+//                                text.substring(0, nextWordBoundaryIndex)
+//
+//                            if(nextWordToSpeak.isNotBlank()) {
+//                                speakTextToSpeech(nextWordToSpeak)
+//
+//                                val restOfUnspokenText =
+//                                    text.substring(nextWordBoundaryIndex)
+//                                unspokenText = restOfUnspokenText
+//                            } else {
+//                                unspokenText = ""
+//                            }
+//                        }
+//                    }
                 }
             }
         }
@@ -1134,20 +1157,25 @@ fun App(
                                     }
                             }
                         },
+                        onClickPauseSpeakingMarker = {
+                            isTemporarilyPreventPerformanceTuningActive=true // prevents using emojis for markers
+//                            stopTextToSpeech()
+                            pauseTextToSpeech()
+                        },
                         onClickStopSpeakingMarker = {
-                            isTemporarilyPreventPerformanceTuningActive=true // prevents using emojis
+                            isTemporarilyPreventPerformanceTuningActive=true // prevents using emojis for markers
                             stopTextToSpeech()
                         },
                         onClickPauseSpeakingAllMarkers = {
                             appSettings.isSpeakWhenUnseenMarkerFoundEnabled = false
                             appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState = false
-                            isTemporarilyPreventPerformanceTuningActive=true // prevents using emojis
+                            isTemporarilyPreventPerformanceTuningActive=true // prevents using emojis for markers
                             stopTextToSpeech()
                         },
                         onClickResumeSpeakingAllMarkers = {
                             appSettings.isSpeakWhenUnseenMarkerFoundEnabled = true
                             appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState = true
-                            isTemporarilyPreventPerformanceTuningActive=true // prevents using emojis
+                            isTemporarilyPreventPerformanceTuningActive=true // prevents using emojis for markers
                         },
                     )
                     Log.d("✏️✏️🛑  END recently seen markers rendering, " +
