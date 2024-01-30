@@ -1,5 +1,6 @@
 
 import android.media.AudioAttributes
+import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
@@ -46,11 +47,15 @@ class AndroidTextToSpeechService(
             spokenWords.subList(currentSpokenWordIndex, currentSpokenWordIndex + kNumWordsToSpeakPerChunk)
         currentSpokenWordIndex += nextWordsToSpeak.size
 
+        val map = Bundle()
+        map.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "freds_markers$currentSpokenWordIndex")
+        map.putString(TextToSpeech.Engine.KEY_PARAM_STREAM, "Map Marker Description Audio")
+
         androidTextToSpeech.speak(
             nextWordsToSpeak.joinToString(" "),
             TextToSpeech.QUEUE_ADD,
-            null,
-            "freds_markers" + currentSpokenWordIndex
+            map,
+            "freds_markers"
         )
     }
 
