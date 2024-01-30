@@ -548,6 +548,7 @@ fun App(
                     delay(150)
                     isMarkerCurrentlySpeaking = isTextToSpeechSpeaking()
 
+                    // todo: Update for iOS
 //                    if(!isMarkerCurrentlySpeaking) {
 //                        if(unspokenText?.isNotBlank() == true) {
 //                            speakTextToSpeech(unspokenText ?: "")
@@ -1176,6 +1177,33 @@ fun App(
                             appSettings.isSpeakWhenUnseenMarkerFoundEnabled = true
                             appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState = true
                             isTemporarilyPreventPerformanceTuningActive=true // prevents using emojis for markers
+                        },
+                        onClickSkipToNextMarker = {
+                            isTemporarilyPreventPerformanceTuningActive=true // prevents using emojis for markers
+                            if(isTextToSpeechSpeaking()) stopTextToSpeech()
+                            if(isMarkerCurrentlySpeaking) stopTextToSpeech()
+                            if(uiRecentlySeenMarkersList.isNotEmpty()) {
+                                val nextUnspokenMarker =
+                                    uiRecentlySeenMarkersList.firstOrNull { marker ->
+                                        !(markersRepo.marker(marker.id)?.isSpoken
+                                            ?: false) // default not spoken yet
+                                    }
+                                nextUnspokenMarker?.let { speakMarker ->
+                                    activeSpeakingMarker =
+                                        speakRecentlySeenMarker(
+                                            speakMarker,
+                                            appSettings.isSpeakDetailsWhenUnseenMarkerFoundEnabled,
+                                            markersRepo = markersRepo,
+                                            coroutineScope,
+                                            onUpdateLoadingState = { loadingState ->
+                                                loadingStateIcon = calcLoadingStateIcon(loadingState)
+                                            }
+                                        ) { errorMessage ->
+                                            Log.w(errorMessage)
+                                            errorMessageStr = errorMessage
+                                        }
+                                }
+                            }
                         },
                     )
                     Log.d("✏️✏️🛑  END recently seen markers rendering, " +

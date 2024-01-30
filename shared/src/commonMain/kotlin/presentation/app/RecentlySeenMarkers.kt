@@ -71,6 +71,7 @@ fun RecentlySeenMarkers(
     onClickStopSpeakingMarker: () -> Unit = {},
     onClickPauseSpeakingAllMarkers: () -> Unit = {},
     onClickResumeSpeakingAllMarkers: () -> Unit = {},
+    onClickSkipToNextMarker: () -> Unit = {},
 ) {
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberLazyListState()
@@ -233,9 +234,7 @@ fun RecentlySeenMarkers(
                     ) {
                         IconButton(
                             onClick = {
-//                                onClickRecentlySeenMarkerItem(
-//                                    speakingMarker?.id ?: return@IconButton
-//                                )
+                                onClickSkipToNextMarker()
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
