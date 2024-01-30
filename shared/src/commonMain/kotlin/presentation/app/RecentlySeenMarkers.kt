@@ -28,11 +28,12 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.VolumeMute
 import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material.icons.outlined.Sync
+import androidx.compose.material.icons.outlined.SyncDisabled
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -55,7 +56,6 @@ import kotlinx.coroutines.launch
 import presentation.maps.MarkerIdStr
 import presentation.maps.RecentlySeenMarker
 import presentation.uiComponents.darkenBy
-import presentation.uiComponents.lightenBy
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -164,7 +164,6 @@ fun RecentlySeenMarkers(
                             fontWeight = FontWeight.Medium,
                         )
                     }
-
                     Spacer(modifier = Modifier.width(4.dp))
 
                     // Speak Marker Button
@@ -218,6 +217,37 @@ fun RecentlySeenMarkers(
                             }
                         }
                     }
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    // Skip to Next Marker Button
+                    Column(
+                        modifier = Modifier
+                            .weight(.5f)
+                            .background(
+                                color = MaterialTheme.colors.primary.darkenBy(.2f)
+                                    .copy(alpha = 0.75f),
+                                shape = RoundedCornerShape(8.dp)
+                            ),
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        IconButton(
+                            onClick = {
+//                                onClickRecentlySeenMarkerItem(
+//                                    speakingMarker?.id ?: return@IconButton
+//                                )
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = 48.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.SkipNext,
+                                contentDescription = "Skip to Next Marker",
+                                tint = MaterialTheme.colors.onBackground
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(4.dp))
 
                     //NavigationButton( // LEAVE FOR FUTURE USE
                     //    modifier = Modifier
@@ -232,6 +262,11 @@ fun RecentlySeenMarkers(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(.5f)
+                            .background(
+                                color = MaterialTheme.colors.primary.darkenBy(.2f)
+                                    .copy(alpha = 0.75f),
+                                shape = RoundedCornerShape(8.dp)
+                            ),
                     ) {
                         if (isSpeakWhenUnseenMarkerFoundEnabled) {
                             // Pause Speaking All Markers Button
@@ -245,16 +280,19 @@ fun RecentlySeenMarkers(
                             ) {
                                 Column {
                                     Icon(
-                                        imageVector = Icons.Default.Pause,
+//                                        imageVector = Icons.Default.Pause,
+//                                        imageVector = Icons.Outlined.Pause,
+                                        imageVector = Icons.Outlined.Sync,
                                         contentDescription = "Pause Speaking All Markers",
-                                        tint = MaterialTheme.colors.onSurface
+//                                        tint = MaterialTheme.colors.onSurface
+                                        tint = MaterialTheme.colors.onBackground
                                     )
                                     Text(
                                         "ALL",
                                         fontSize = MaterialTheme.typography.body2.fontSize.times(
                                             .75f
                                         ),
-                                        color = MaterialTheme.colors.onSurface.copy(alpha =.75f)
+                                        color = MaterialTheme.colors.onBackground.copy(alpha =.75f)
                                     )
                                 }
                             }
@@ -272,16 +310,22 @@ fun RecentlySeenMarkers(
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Filled.PlayArrow,
+//                                        imageVector = Icons.Filled.PlayArrow,
+//                                        imageVector = Icons.Outlined.Cached,
+//                                        imageVector = Icons.Outlined.UpdateDisabled,
+//                                        imageVector = Icons.Outlined.SyncDisabled,
+//                                        imageVector = Icons.Outlined.AutoMode,
+                                        imageVector = Icons.Outlined.SyncDisabled,
                                         contentDescription = "Start Speaking All Markers",
-                                        tint = MaterialTheme.colors.onSurface
+//                                        tint = MaterialTheme.colors.onSurface
+                                        tint = MaterialTheme.colors.onBackground
                                     )
                                     Text(
                                         "ALL",
                                         fontSize = MaterialTheme.typography.body2.fontSize.times(
                                             .75f
                                         ),
-                                        color = MaterialTheme.colors.onSurface.copy(alpha =.75f)
+                                        color = MaterialTheme.colors.onBackground.copy(alpha =.75f)
                                     )
                                 }
                             }

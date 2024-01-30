@@ -8,9 +8,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import data.AppSettings
 import data.FakeSettings
 import data.MarkersRepo
-import presentation.uiComponents.AppTheme
 import presentation.app.RecentlySeenMarkers
 import presentation.maps.RecentlySeenMarker
+import presentation.uiComponents.AppTheme
 
 @Preview(
     name = "Recently Seen Markers (night)",
@@ -51,7 +51,7 @@ fun RecentlySeenMarkersPreview() {
                     insertedAtEpochMilliseconds = 0,
                 ),
                 isTextToSpeechCurrentlySpeaking = false,
-                isSpeakWhenUnseenMarkerFoundEnabled = true,
+                isSpeakWhenUnseenMarkerFoundEnabled = false,
                 markersRepo = MarkersRepo(
                     appSettings = AppSettings.use(settings = FakeSettings()),
                 ),
