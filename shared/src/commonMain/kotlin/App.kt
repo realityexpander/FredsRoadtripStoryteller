@@ -558,6 +558,7 @@ fun App(
                             // unspoken text is blank, so reset.
                             if(unspoken.isBlank()) {
                                 unspokenText = null // reset
+                                stopTextToSpeech()
                                 return@let
                             }
 
@@ -784,7 +785,7 @@ fun App(
                             }
                         )
                     }
-                    else -> {
+                    is BottomSheetScreen.None -> {
                         if(bottomSheetScaffoldState.bottomSheetState.isExpanded) {
                             coroutineScope.launch {
                                 bottomSheetScaffoldState.bottomSheetState.collapse()

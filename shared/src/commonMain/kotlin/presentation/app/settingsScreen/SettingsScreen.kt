@@ -104,10 +104,7 @@ fun SettingsScreen(
                 modifier = Modifier
                     .offset(16.dp, (-16).dp),
                 onClick = {
-                    coroutineScope.launch {
-                        bottomSheetScaffoldState.bottomSheetState.collapse()
-                        onDismiss()
-                    }
+                    onDismiss()
                 }) {
                 Icon(
                     imageVector = Icons.Default.Close,
