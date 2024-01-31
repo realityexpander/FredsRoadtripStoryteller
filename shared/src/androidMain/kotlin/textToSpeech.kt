@@ -81,7 +81,8 @@ class AndroidTextToSpeechService(
     override fun onStart(utteranceId: String?) {
         Log.d("tts", "onStart: $utteranceId")
 
-        // Yes, this queues up the next words to speak RIGHT AFTER the current word has started speaking
+        // Yes, this queues up the next words to speak RIGHT AFTER the current word has started speaking.
+        // The issue is that the time between words is too long, so we need to queue up as fast as possible.
         if(spokenWords.isNotEmpty() && currentSpokenWordIndex < spokenWords.size) {
             speakNextWords()
         }
