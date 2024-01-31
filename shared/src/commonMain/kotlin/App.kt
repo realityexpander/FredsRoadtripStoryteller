@@ -110,7 +110,7 @@ data class CommonAppMetadata(
     var androidBuildNumberStr: String = "n/a",   // Android only
     var iOSBundleVersionStr: String = "n/a", // iOS only
     var installAtEpochMilli: Long = 0L,
-    var platformId: String = "unknown"
+    var platformId: String = "unknown" // "android" or "iOS"
 )
 var appMetadata = CommonAppMetadata()
 var debugLog = mutableListOf("Debug log: start time:" + Clock.System.now())
@@ -542,57 +542,54 @@ fun App(
         }
 
         // Poll to update `isMarkerCurrentlySpeaking` flag for reactive UI
+        // Collect next unspoken marker words for iOS (for now)
         LaunchedEffect(Unit) {
-            withContext(Dispatchers.IO) {
-                while (true) {
-                    delay(150)
-                    isMarkerCurrentlySpeaking = isTextToSpeechSpeaking()
+            while (true) {
+                delay(150)
+                isMarkerCurrentlySpeaking = isTextToSpeechSpeaking()
 
-                    // todo: Update for iOS
-//                    if(!isMarkerCurrentlySpeaking) {
-//                        if(unspokenText?.isNotBlank() == true) {
-//                            speakTextToSpeech(unspokenText ?: "")
-//                            unspokenText = "" // reset
-//                        }
-//                    }
+                // iOS only - collect next unspoken marker words (kMaxSpokenTextCharLength characters max at a time)
+                val kMaxSpokenTextCharLength = 4000
+                if(appMetadata.platformId=="iOS") {
 
-//                    // Speak the next chunk of unspoken text (in any)
-//                    if(!isMarkerCurrentlySpeaking) {
-//                        unspokenText?.let { text ->
-//                            // If more than 4000, Take the next 4000 characters.
-//                            if(text.length >= 4000) {
-//                                val lastWordBoundaryIndex =
-//                                    text.substring(0, 4000).lastIndexOf(" ")
-//                                val nextTextToSpeak =
-//                                    text.substring(0, lastWordBoundaryIndex)
-//                                val restOfUnspokenText =
-//                                    text.substring(lastWordBoundaryIndex)
-//                                unspokenText = restOfUnspokenText
-//
-//                                speakTextToSpeech(nextTextToSpeak)
-//                                return@let
-//                            }
-//                            if(text.isNotBlank()) {
-//                                speakTextToSpeech(text)
-//                            }
+                    // Continue speaking if there is unspoken text (if any)
+                    if (!isMarkerCurrentlySpeaking) {
+                        unspokenText?.let { unspoken ->
+                            // unspoken text is blank, so reset.
+                            if(unspoken.isBlank()) {
+                                unspokenText = null // reset
+                                return@let
+                            }
 
-//                            // Take next unspoken word
-//                            val nextWordBoundaryIndex =
-//                                text.substring(0, text.length).indexOf(" ")
-//                            val nextWordToSpeak =
-//                                text.substring(0, nextWordBoundaryIndex)
-//
-//                            if(nextWordToSpeak.isNotBlank()) {
-//                                speakTextToSpeech(nextWordToSpeak)
-//
-//                                val restOfUnspokenText =
-//                                    text.substring(nextWordBoundaryIndex)
-//                                unspokenText = restOfUnspokenText
-//                            } else {
-//                                unspokenText = ""
-//                            }
-//                        }
-//                    }
+                            // unspoken text is less than kMaxSpokenTextCharLength characters
+                            if (unspoken.isNotBlank() && unspoken.length < kMaxSpokenTextCharLength) {
+                                speakTextToSpeech(unspoken)
+                                unspokenText = null // reset
+                                return@let
+                            }
+
+                            // Extract up to the first kMaxSpokenTextCharLength characters of the unspoken text before a word boundary
+                            val unspokenTextChunk = unspoken.substring(0, kMaxSpokenTextCharLength)
+                            val lastWordBoundaryIndex =
+                                unspokenTextChunk.lastIndexOf(" ")
+                            if(lastWordBoundaryIndex == -1) {
+                                // No word boundary found, so just speak whatever is left.
+                                speakTextToSpeech(unspokenTextChunk)
+                                unspokenText = null // reset
+                                return@let
+                            }
+
+                            // Speak up to the first kMaxSpokenTextCharLength characters of the unspoken text before a word boundary
+                            val nextTextChunkToSpeak =
+                                unspokenTextChunk.substring(0, lastWordBoundaryIndex)
+                            val restOfUnspokenText =
+                                unspokenTextChunk.substring(lastWordBoundaryIndex)
+                            if (nextTextChunkToSpeak.isNotBlank()) {
+                                speakTextToSpeech(nextTextChunkToSpeak)
+                            }
+                            unspokenText = restOfUnspokenText
+                        }
+                    }
                 }
             }
         }
@@ -611,8 +608,8 @@ fun App(
                             // look for next unspoken marker
                             val nextUnspokenMarker =
                                 uiRecentlySeenMarkersList.firstOrNull { marker ->
-                                    !(markersRepo.marker(marker.id)?.isSpoken
-                                        ?: false) // default not spoken yet
+                                    !(markersRepo.marker(marker.id)?.isSpoken // not spoken?
+                                        ?: false) // default not spoken.
                                 }
                             nextUnspokenMarker?.let { speakMarker ->
                                 isMarkerCurrentlySpeaking = true
@@ -1164,7 +1161,7 @@ fun App(
                             pauseTextToSpeech()
                         },
                         onClickStopSpeakingMarker = {
-                            isTemporarilyPreventPerformanceTuningActive=true // prevents using emojis for markers
+                            isTemporarilyPreventPerformanceTuningActive = true // prevents using emojis for markers
                             stopTextToSpeech()
                         },
                         onClickPauseSpeakingAllMarkers = {
@@ -1179,7 +1176,7 @@ fun App(
                             isTemporarilyPreventPerformanceTuningActive=true // prevents using emojis for markers
                         },
                         onClickSkipToNextMarker = {
-                            isTemporarilyPreventPerformanceTuningActive=true // prevents using emojis for markers
+                            isTemporarilyPreventPerformanceTuningActive = true // prevents using emojis for markers
                             if(isTextToSpeechSpeaking()) stopTextToSpeech()
                             if(isMarkerCurrentlySpeaking) stopTextToSpeech()
                             if(uiRecentlySeenMarkersList.isNotEmpty()) {

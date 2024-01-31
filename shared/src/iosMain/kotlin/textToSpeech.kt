@@ -20,12 +20,9 @@ class TextToSpeechManager : NSObject(), AVSpeechSynthesizerDelegateProtocol {
 
     fun speak(text: String) {
         // Resume speaking if there is unspoken text
-        if(isSpeaking && isPaused) {
+        if(!isSpeaking && isPaused) {
             continueSpeaking()
         }
-
-        isSpeaking = true
-        synthesizer.delegate = this
 
         val utterance = AVSpeechUtterance.speechUtteranceWithString(text)
         utterance.voice = AVSpeechSynthesisVoice.voiceWithLanguage("en-US") // default to english
@@ -40,6 +37,7 @@ class TextToSpeechManager : NSObject(), AVSpeechSynthesizerDelegateProtocol {
 
         println("TextToSpeechManager speak: $text")
         isPaused = false
+        isSpeaking = true
         synthesizer.speakUtterance(utterance)
     }
 
@@ -61,20 +59,23 @@ class TextToSpeechManager : NSObject(), AVSpeechSynthesizerDelegateProtocol {
     fun pauseSpeaking() {
         synthesizer.pauseSpeakingAtBoundary(AVSpeechBoundary.AVSpeechBoundaryImmediate)
         isPaused = true
+        isSpeaking = false
     }
     fun continueSpeaking() {
         synthesizer.continueSpeaking()
         isPaused = false
+        isSpeaking = true
     }
 
     fun isSpeaking(): Boolean {
         return isSpeaking
     }
 }
+
 // Implementation #1 - uses `TextToSpeechManager` natively in Kotlin
 var textToSpeechManager: TextToSpeechManager = TextToSpeechManager()
 actual fun speakTextToSpeech(text: String) {  // gives runtime error: [catalog] Unable to list voice folder
-    textToSpeechManager.speak(text) // Cant use this from Kotlin due to unresolved Build Error
+    textToSpeechManager.speak(text)
 }
 actual fun stopTextToSpeech() {
     textToSpeechManager.stopSpeaking()

@@ -6,7 +6,6 @@ import android.speech.tts.UtteranceProgressListener
 import android.util.Log
 import java.util.Locale
 
-
 var androidTextToSpeechService: AndroidTextToSpeechService? = null
 class AndroidTextToSpeechService(
     private val androidTextToSpeech: TextToSpeech,
@@ -111,11 +110,11 @@ class AndroidTextToSpeechService(
 actual fun speakTextToSpeech(text: String) {
     androidTextToSpeechService?.speak(text)
 }
-actual fun isTextToSpeechSpeaking(): Boolean {
-    return androidTextToSpeechService?.isSpeaking() == true
-}
 actual fun stopTextToSpeech() {
     androidTextToSpeechService?.stopSpeaking()
+}
+actual fun isTextToSpeechSpeaking(): Boolean {
+    return androidTextToSpeechService?.isSpeaking() == true
 }
 actual fun pauseTextToSpeech() {
     androidTextToSpeechService?.pauseSpeaking()
