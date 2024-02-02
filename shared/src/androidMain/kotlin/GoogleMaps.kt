@@ -416,7 +416,7 @@ actual fun GoogleMaps(
         //Log.d("💿 ⚝⚝⚝ 🔧 LaunchedEffect(shouldCalculateClusterItemList): START calculating new cluster items...")
         isCalculatingClusterItems = true
         val startTime = Clock.System.now()
-        kotlinx.atomicfu.locks.synchronized(synchronizedObject) {
+//        kotlinx.atomicfu.locks.synchronized(synchronizedObject) { // todo remove soon
             coroutineScope.launch {
                 val localCachedClusterItemList =
                     mutableListOf<SeeableClusterItem>()
@@ -523,7 +523,7 @@ actual fun GoogleMaps(
 
                 didUpdateClusterItems = true
                 onDidCalculateClusterItemList()
-            }
+//            } // todo remove soon - kotlinx.atomicfu.locks.synchronized(synchronizedObject)
         }
     }
 

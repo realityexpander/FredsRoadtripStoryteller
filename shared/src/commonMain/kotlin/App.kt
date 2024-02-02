@@ -62,7 +62,6 @@ import data.loadMarkers.distanceBetweenInMiles
 import data.loadMarkers.loadMarkers
 import data.loadMarkers.sampleData.kUseRealNetwork
 import data.util.LoadingState
-import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -124,7 +123,7 @@ var isTemporarilyPreventPerformanceTuningActive = false // prevents premature op
 var unspokenText: String? = null // used to speak text in chunks // todo: move to speech?
 
 // Attempt to fix database contention / race condition issue // todo remove soon
-val synchronizedObject = SynchronizedObject()
+//val synchronizedObject = SynchronizedObject()
 
 // Error Messages Flow
 @Suppress("ObjectPropertyName") // for leading underscore
@@ -404,7 +403,6 @@ fun App(
             shouldCalcClusterItems
         ) {
             while(!isSeenTrackingPaused) {
-                delay(500)
 
                 Log.d("👁️ 2.START - Collecting recently seen markers after location update..., finalMarkers.size=${finalMarkers.value.size}")
                 addSeenMarkersToRecentlySeenList(
@@ -476,6 +474,7 @@ fun App(
                 }
 
                 previousUserLocation = userLocation
+                delay(500)
             }
         }
 
