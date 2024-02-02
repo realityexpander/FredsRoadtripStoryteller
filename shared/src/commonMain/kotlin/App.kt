@@ -62,6 +62,7 @@ import data.loadMarkers.distanceBetweenInMiles
 import data.loadMarkers.loadMarkers
 import data.loadMarkers.sampleData.kUseRealNetwork
 import data.util.LoadingState
+import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -119,7 +120,7 @@ var didFullFrameRender = false
 var isTemporarilyPreventPerformanceTuningActive = false // prevents premature optimization after returning from background
 
 // Attempt to fix database contention / race condition issue // todo remove soon
-//val synchronizedObject = SynchronizedObject()
+val synchronizedObject = SynchronizedObject()
 
 // Error Messages Flow
 @Suppress("ObjectPropertyName") // for leading underscore
