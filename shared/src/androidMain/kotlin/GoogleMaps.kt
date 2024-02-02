@@ -587,42 +587,37 @@ actual fun GoogleMaps(
 
                 TileOverlay(
                     tileProvider =
-                        if (didUpdateClusterItems) {
+                        if (didUpdateClusterItems
+                            && markers.size == cachedMarkerIdToSeeableClusterItemMap.size
+                        ) {
                             // Log.d { "💿 Using cached heatmap items, cachedHeatmap = $cachedTileProvider" }
                             heatmapTileProvider
                         } else {
-                            // check if the localMarkers are different than the cached localMarkers
-                            if (markers.size == cachedMarkerIdToSeeableClusterItemMap.size) {
-                                // Log.d("💿 Using cached heatmap items because list of localMarkers has not changed, cachedHeatmap = $cachedTileProvider")
-                                heatmapTileProvider
-                            } else {
-                                // Calculate the heatmap
-                                val result = HeatmapTileProvider.Builder()
-                                    .weightedData(
-                                        if (markers.isNotEmpty()) {
-                                            markers.map { marker ->
-                                                WeightedLatLng(
-                                                    LatLng(
-                                                        marker.position.latitude,
-                                                        marker.position.longitude
-                                                    ),
-                                                    2.0
-                                                )
-                                            }
-                                        } else {
-                                            listOf( // default cache value (heatmap must have at least 1 item, and this wont be visible)
-                                                WeightedLatLng(
-                                                    LatLng(0.0, 0.0), 0.0
-                                                )
+                            val result = HeatmapTileProvider.Builder()
+                                .weightedData(
+                                    if (markers.isNotEmpty()) {
+                                        markers.map { marker ->
+                                            WeightedLatLng(
+                                                LatLng(
+                                                    marker.position.latitude,
+                                                    marker.position.longitude
+                                                ),
+                                                2.0
                                             )
-                                        })
-                                    .radius(25) // convolution filter size in pixels
-                                    .build()
-                                // Log.d("💿 Recalculating heatmap items, localMarkers.size= ${markers.size}, HeatmapTileProvider= $result")
+                                        }
+                                    } else {
+                                        listOf( // default cache value (heatmap must have at least 1 item, and this wont be visible)
+                                            WeightedLatLng(
+                                                LatLng(0.0, 0.0), 0.0
+                                            )
+                                        )
+                                    })
+                                .radius(25) // convolution filter size in pixels
+                                .build()
+                            // Log.d("💿 Recalculating heatmap items, localMarkers.size= ${markers.size}, HeatmapTileProvider= $result")
 
-                                heatmapTileProvider = result
-                                result
-                            }
+                            heatmapTileProvider = result
+                            result
                         },
                     state = rememberTileOverlayState(),
                     visible = isHeatMapEnabled,
