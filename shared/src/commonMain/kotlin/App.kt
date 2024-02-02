@@ -244,6 +244,7 @@ fun App(
         var isTrackingEnabled by remember {
             mutableStateOf(appSettings.isStartBackgroundTrackingWhenAppLaunchesEnabled)
         }
+        // Map Commands (should...)
         var shouldCenterCameraOnLocation by remember {
             mutableStateOf<Location?>(null) // used to center map on user location
         }

@@ -1,3 +1,12 @@
+Alpha Build 20
+
+Alpha Build 19
+- code - fix broken tests, if any
+- bug - high-density warning too quickly closing
+- code - fix heatmap on Android
+- Code - Fix iOS Speak Markers to add Pause/Resume
+- Code - Fix Race condition by using flow instead of snapshots
+
 Alpha Build 18
 - Code - fix Android speaking markers functionality
 
