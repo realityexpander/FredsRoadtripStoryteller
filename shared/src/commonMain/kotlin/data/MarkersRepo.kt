@@ -103,7 +103,7 @@ open class MarkersRepo(
     }
 
     fun updateMarkerIsSeen(markerToUpdate: Marker, isSeen: Boolean) {
-        // Log.i("MarkerRepo: updateMarkerIsSeen: markerToUpdate.id=${markerToUpdate.id}, isSeen=$isSeen")
+        Log.i("MarkerRepo: updateMarkerIsSeen: markerToUpdate.id=${markerToUpdate.id}, isSeen=$isSeen")
         this.marker(markerToUpdate.id)?.let { originalMarker ->
             if(originalMarker.isSeen == isSeen) return@let // no change
 

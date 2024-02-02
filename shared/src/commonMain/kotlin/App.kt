@@ -397,10 +397,11 @@ fun App(
             userLocation,
             seenRadiusMiles,
             markersRepo,
-            shouldCalcClusterItems
+            shouldCalcClusterItems,
+            isSeenTrackingPaused
         ) {
+            println("isSeenTrackingPaused = $isSeenTrackingPaused")
             while(!isSeenTrackingPaused) {
-
                 Log.d("👁️ 2.START - Collecting recently seen markers after location update..., finalMarkers.size=${finalMarkers.value.size}")
                 addSeenMarkersToRecentlySeenList(
                     finalMarkers.value, // SSoT is finalMarkers
@@ -429,21 +430,25 @@ fun App(
                             RecentlySeenMarkersList(_uiRecentlySeenMarkersFlow.value.toList())
 
                         // Update `isSeen` in the markers repo (will trigger a redraw of the map & markers)
-                        updatedIsSeenMarkers.forEach { updatedMarker ->
-                            markersRepo.updateMarkerIsSeen(
-                                updatedMarker,
-                                isSeen = true
-                            )
-                        }
+                        coroutineScope.launch {
+                            updatedIsSeenMarkers.forEach { updatedMarker ->
+                                markersRepo.updateMarkerIsSeen(
+                                    updatedMarker,
+                                    isSeen = true
+                                )
+                            }
+                            delay(500) // allow time for repo to update
 
-                        // Update the UI with the updated markers
-                        shouldCalcClusterItems = true
-                        shouldAllowCacheReset = true
+                            // Update the UI with the updated markers
+                            shouldCalcClusterItems = true
+                            shouldAllowCacheReset = true
+                        }
                         Log.d("👁️ 2.1-END, processing time = ${(Clock.System.now() - startTime)}")
 
                         // If more than 5 markers "seen", then show the "Dense Marker Area" warning
-                        if (_uiRecentlySeenMarkersFlow.value.size >= 5) {
-                            launch {
+                        println("updatedIsSeenMarkers.size = ${updatedIsSeenMarkers.size}")
+                        if (updatedIsSeenMarkers.size >= 5) {
+                            coroutineScope.launch {
                                 scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
                                 scaffoldState.snackbarHostState
                                     .showSnackbar(
@@ -466,7 +471,10 @@ fun App(
 
                         if (isSeenTrackingPausedPhase >= 3) {
                             isSeenTrackingPaused = true
+                            isSeenTrackingPausedPhase = 0
                         }
+                    } else {
+                        isSeenTrackingPausedPhase = 0
                     }
                 }
 
@@ -658,6 +666,7 @@ fun App(
                                         _uiRecentlySeenMarkersFlow,
                                         markersRepo
                                     )
+                                    isSeenTrackingPaused = false // turn off optimization
                                     activeSpeakingMarker = null
                                     delay(1000) // wait for reset
                                     shouldCalcClusterItems = true
