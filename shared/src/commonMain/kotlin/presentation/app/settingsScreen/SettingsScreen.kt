@@ -53,6 +53,7 @@ fun SettingsScreen(
     bottomSheetScaffoldState: BottomSheetScaffoldState,
     seenRadiusMiles: Double,
     appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState: Boolean = false,
+    onIsSpeakWhenUnseenMarkerFoundEnabledChange: (Boolean) -> Unit = {},
     onSeenRadiusChange: (Double) -> Unit = {},
     onIsCachedMarkersLastUpdatedLocationVisibleChange: (Boolean) -> Unit = {},
     onResetMarkerSettings: () -> Unit = {},
@@ -126,6 +127,7 @@ fun SettingsScreen(
                 onUpdateChecked = {
                     appSettings?.isSpeakWhenUnseenMarkerFoundEnabled = it
                     isSpeakWhenUnseenMarkerFoundEnabled = it
+                    onIsSpeakWhenUnseenMarkerFoundEnabledChange(it)
                 }
             )
 

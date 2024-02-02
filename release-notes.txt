@@ -1,5 +1,9 @@
+Alpha Build 18
+- Code - fix Android speaking markers functionality
+
 Alpha Build 17
-- [ ] - Fix race condition in map rendering
+- Added Code/ UI - Add Play/Pause This Marker, Skip to Next Marker, Play/Pause All Markers
+- Added Asset - Video - Code walkthrus
 
 Alpha Build 16
 - Add iOS functionality to parity with Android

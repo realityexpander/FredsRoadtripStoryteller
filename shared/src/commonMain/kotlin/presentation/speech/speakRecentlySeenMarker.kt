@@ -39,8 +39,13 @@ fun speakRecentlySeenMarker(
         ?: return appSettings.lastSpokenRecentlySeenMarker // if marker is null, default to the last spoken marker.
     appSettings.lastSpokenRecentlySeenMarker = speakMarker
 
-    // Update the 'isSpoken' flag
-    markersRepo.updateMarkerIsSpoken(marker, isSpoken = true)
+    // Update the 'isSpoken' or 'isAnnounced' flag
+    if(isSpeakDetailsEnabled) {
+        markersRepo.updateMarkerIsSpoken(marker, isSpoken = true)
+        markersRepo.updateMarkerIsAnnounced(marker, isAnnounced = true)
+    } else {
+        markersRepo.updateMarkerIsAnnounced(marker, isAnnounced = true)
+    }
 
     if (isSpeakDetailsEnabled) {
         if (!marker.isDetailsLoaded) {

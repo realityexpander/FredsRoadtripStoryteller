@@ -37,7 +37,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -66,16 +65,14 @@ import data.loadMarkers.loadMarkers
 import data.loadMarkers.sampleData.kUseRealNetwork
 import data.util.LoadingState
 import kotlinx.atomicfu.locks.SynchronizedObject
-import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -112,10 +109,10 @@ data class CommonAppMetadata(
     var installAtEpochMilli: Long = 0L,
     var platformId: String = "unknown" // "android" or "iOS"
 )
+var appNameStr = configPropertyString("app.name", "app.name string not found")
 var appMetadata = CommonAppMetadata()
 var debugLog = mutableListOf("Debug log: start time:" + Clock.System.now())
 
-var appNameStr = configPropertyString("app.name", "app.name string not found")
 val kMaxReloadRadiusMiles = configPropertyFloat("app.maxReloadRadiusMiles", 2.0f).toDouble()
 const val kMaxMarkerDetailsAgeSeconds = 60 * 60 * 24 * 30  // 30 days
 
@@ -228,7 +225,7 @@ fun App(
         var activeSpeakingMarker: RecentlySeenMarker? by remember {
             mutableStateOf(null)
         }
-        // iOS is the only platform that uses presentation.speech.CommonSpeech (currently) This is implementation #2
+        // iOS is the only platform that uses presentation.speech.CommonSpeech (currently), This is implementation #2
         LaunchedEffect(Unit) {
             iosCommonSpeech = commonSpeech
             iosCommonSpeech.speechStateCommonFlow.collectLatest { speechState ->
@@ -275,13 +272,12 @@ fun App(
             mutableStateOf(appSettings.seenRadiusMiles)
         }
 
-        // Recently Seen Markers
-        val recentlySeenMarkersSet by remember {
-            mutableStateOf(appSettings.recentlySeenMarkersSet.list.toMutableSet())
-        }
-        val uiRecentlySeenMarkersList by remember {
-            mutableStateOf(appSettings.uiRecentlySeenMarkersList.list.toMutableStateList())
-        }
+        // Recently Seen Markers (Set)
+        val _recentlySeenMarkersSet =
+            MutableStateFlow(appSettings.recentlySeenMarkersSet.list.toSet())
+        @Suppress("LocalVariableName")  // for underscore prefix
+        val _uiRecentlySeenMarkersFlow =
+            MutableStateFlow(appSettings.uiRecentlySeenMarkersList.list)
 
         // Load markers based on user location (Reactively)
         var networkLoadingState: LoadingState<String> by remember {
@@ -309,7 +305,8 @@ fun App(
             //    kSingleItemPageFakeDataset,
             useFakeDataSetId = kUseRealNetwork,
         )
-        //val loadMarkersResult: LoadMarkersResult = LoadMarkersResult( // empty set markers // LEAVE for testing
+        // LEAVE for testing
+        //val loadMarkersResult: LoadMarkersResult = LoadMarkersResult( // empty set markers
         //    loadingState = LoadingState.Finished,
         //    isParseMarkersPageFinished = true,
         //    markerIdToMarker = mutableMapOf()
@@ -325,31 +322,21 @@ fun App(
             mutableStateOf<Marker?>(null)
         }
 
-        // Markers used to render onto the Map
-        val finalMarkers = remember {
-            mutableStateListOf<Marker>().apply {
-                addAll(markersRepo.markers())
-            }
-        }
+        val finalMarkers =
+            MutableStateFlow(markersRepo.markers())
+
         // Set finalMarkers after any update to the MarkersRepo
-        LaunchedEffect(markersRepo.updateLoadMarkersResultFlow) {
-            markersRepo.updateLoadMarkersResultFlow.collectLatest { loadMarkersResult ->
-                coroutineScope.launch(Dispatchers.IO) {
-                    val startTime = Clock.System.now()
-
-                    // Update the final markers list with the updated marker data
-                    synchronized(synchronizedObject) {
-                        finalMarkers.clear()
-                        finalMarkers.addAll(loadMarkersResult.markerIdToMarkerMap.values)
-                    }
-
-                    Log.d(
-                        "🍉 END - markersRepo.updateMarkersResultFlow.collectLatest:\n" +
-                                "    ⎣ finalMarkers.size = ${finalMarkers.size}\n" +
-                                "    ⎣ time to update all markers = ${(Clock.System.now() - startTime)}\n"
-                    )
-
+        LaunchedEffect(Unit, markersRepo) {
+            markersRepo.markersResultFlow.collect { loadMarkersResult ->
+                val startTime = Clock.System.now()
+                finalMarkers.update {
                     shouldCalcClusterItems = true
+                    loadMarkersResult.markerIdToMarkerMap.values.toList().also {
+                        Log.d("🍉 END - markersRepo.updateMarkersResultFlow.collectLatest:\n" +
+                                "    ⎣ finalMarkers.size = ${it.size}\n" +
+                                "    ⎣ time to update all markers = ${(Clock.System.now() - startTime)}\n"
+                        )
+                    }
                 }
             }
         }
@@ -410,41 +397,38 @@ fun App(
 
         // Track and update `isSeen` for any markers within the `seenRadiusMiles`
         var previousUserLocation by remember { mutableStateOf(userLocation) }
-        LaunchedEffect(Unit, isSeenTrackingPaused) {
+        LaunchedEffect(Unit, isSeenTrackingPaused, finalMarkers.value, userLocation, seenRadiusMiles) {
             while(!isSeenTrackingPaused) {
                 delay(1000)
 
                 //Log.d("👁️ 0.CHECK - isProcessingRecentlySeenList=$isProcessingRecentlySeenList")
-                if(!isProcessingRecentlySeenList) { // guard against re-enter while processing the list
-                    isProcessingRecentlySeenList = true
 
-                    Log.d("👁️ 2.START - Collecting recently seen markers after location update..., finalMarkers.size=${finalMarkers.size}")
+                    Log.d("👁️ 2.START - Collecting recently seen markers after location update..., finalMarkers.size=${finalMarkers.value.size}")
                     addSeenMarkersToRecentlySeenList(
-                        finalMarkers, // SSoT is finalMarkers
+                        finalMarkers.value, // SSoT is finalMarkers
                         userLocation,
                         seenRadiusMiles,
-                        recentlySeenMarkersSet,
-                        uiRecentlySeenMarkersList,
+                        _recentlySeenMarkersSet,
+                        _uiRecentlySeenMarkersFlow.value,
                         onUpdateIsSeenMarkers = { updatedIsSeenMarkers,
                                                   updatedRecentlySeenMarkers,
                                                   updatedUiRecentlySeenMarkers ->
-                            // Update the UI with the updated markers
-                        coroutineScope.launch {
                             val startTime = Clock.System.now()
                             Log.d("👁️ 2.1-START, onUpdatedIsSeenMarkers")
 
-                            recentlySeenMarkersSet.addAll(updatedRecentlySeenMarkers)
-                            uiRecentlySeenMarkersList.clear()
-                            uiRecentlySeenMarkersList.addAll(
-                                updatedUiRecentlySeenMarkers
-                            )
+                            // Update the UI with the updated markers
+                            _recentlySeenMarkersSet.update {
+                                updatedRecentlySeenMarkers.toSet()
+                            }
+                            _uiRecentlySeenMarkersFlow.update {
+                                updatedUiRecentlySeenMarkers.toList()
+                            }
 
                             // Update the settings
                             appSettings.recentlySeenMarkersSet =
-                                RecentlySeenMarkersList(recentlySeenMarkersSet.toList())
+                                RecentlySeenMarkersList(_recentlySeenMarkersSet.value.toList())
                             appSettings.uiRecentlySeenMarkersList =
-                                RecentlySeenMarkersList(uiRecentlySeenMarkersList)
-                            yield()
+                                RecentlySeenMarkersList(_uiRecentlySeenMarkersFlow.value.toList())
 
                             // Update `isSeen` in the markers repo (will trigger a redraw of the map & markers)
                             updatedIsSeenMarkers.forEach { updatedMarker ->
@@ -454,44 +438,13 @@ fun App(
                                 )
                             }
 
-                            // Speak the next unspoken marker
-                            if (!isTextToSpeechSpeaking()) { // Don't interrupt current speech
-                                if (appSettings.isSpeakWhenUnseenMarkerFoundEnabled
-                                    && appSettings.uiRecentlySeenMarkersList.list.isNotEmpty()
-                                ) {
-                                    val nextUnspokenMarker =
-                                        appSettings.uiRecentlySeenMarkersList.list.first()
-                                    activeSpeakingMarker =
-                                        speakRecentlySeenMarker(
-                                            nextUnspokenMarker,
-                                            appSettings.isSpeakDetailsWhenUnseenMarkerFoundEnabled,
-                                            markersRepo = markersRepo,
-                                            coroutineScope,
-                                            onUpdateLoadingState = { loadingState ->
-                                                loadingStateIcon =
-                                                    calcLoadingStateIcon(
-                                                        loadingState
-                                                    )
-                                            },
-                                            onSetUnspokenText = { nextTextChunk ->
-                                                unspokenText = nextTextChunk
-                                            },
-                                            onError = { errorMessage ->
-                                                Log.w(errorMessage)
-                                                errorMessageStr = errorMessage
-                                            }
-                                        )
-                                }
-                            }
-
                             // Update the UI with the updated markers
                             shouldCalcClusterItems = true
                             shouldAllowCacheReset = true
-                            isProcessingRecentlySeenList = false
                             Log.d("👁️ 2.1-END, processing time = ${(Clock.System.now() - startTime)}")
 
                             // If more than 5 markers "seen", then show the "Dense Marker Area" warning
-                            if (uiRecentlySeenMarkersList.size >= 5) {
+                            if (_uiRecentlySeenMarkersFlow.value.size >= 5) {
                                 launch {
                                     scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
                                     scaffoldState.snackbarHostState
@@ -500,18 +453,15 @@ fun App(
                                                     "Some recently seen markers are not listed.",
                                             duration = SnackbarDuration.Short
                                         )
+                                    }
                                 }
                             }
-                            }
-                        },
-                        onFinishedProcessRecentlySeenList = { startTime ->
-                            Log.d("👁️ 5.END With NO-CHANGES - onFinishedProcessRecentlySeenList, processing time = ${(Clock.System.now() - startTime)}")
-                            isProcessingRecentlySeenList = false
-                        }
-                    )
-                }
+                    ) { startTime ->
+                        Log.d("👁️ 5.END With NO-CHANGES - onFinishedProcessRecentlySeenList, processing time = ${(Clock.System.now() - startTime)}")
+                        isProcessingRecentlySeenList = false
+                    }
 
-                // Pause tracking if user is not moving
+                // Pause tracking if user is not moving (to save battery)
                 if(!isSeenTrackingPaused) {
                     if(userLocation == previousUserLocation) {
                         isSeenTrackingPausedPhase++
@@ -543,10 +493,10 @@ fun App(
 
         // Poll to update `isMarkerCurrentlySpeaking` flag for reactive UI
         // Collect next unspoken marker words for iOS (for now)
-        LaunchedEffect(Unit) {
+        LaunchedEffect(Unit, unspokenText, isMarkerCurrentlySpeaking) {
             while (true) {
                 delay(150)
-                isMarkerCurrentlySpeaking = isTextToSpeechSpeaking()
+                isMarkerCurrentlySpeaking = isTextToSpeechSpeaking() // polling sets reactive boolean
 
                 // iOS only - collect next unspoken marker words (kMaxSpokenTextCharLength characters max at a time)
                 val kMaxSpokenTextCharLength = 4000
@@ -595,41 +545,70 @@ fun App(
             }
         }
 
-        // Poll for next unspoken marker
-        LaunchedEffect(Unit) {
-            withContext(Dispatchers.IO) {
-                while (true) {
-                    delay(1000)  // allow time for last text-to-speech to end
+        // Poll for next unspoken/unannounced marker
+        LaunchedEffect(Unit, _uiRecentlySeenMarkersFlow.value, isMarkerCurrentlySpeaking) {
+            while (true) {
+                yield()
+                println(_uiRecentlySeenMarkersFlow.value.map {
+                    "markersRepo.marker(${it.id+":"+it.title})?.isAnnounced = ${markersRepo.marker(it.id)?.isAnnounced}"
+                })
+                delay(1000)  // allow time for last text-to-speech to end
 
-                    if (appSettings.isSpeakWhenUnseenMarkerFoundEnabled
-                        && uiRecentlySeenMarkersList.isNotEmpty()
-                    ) {
-                        if (!isTextToSpeechSpeaking() && !isMarkerCurrentlySpeaking) {
+                if (appSettings.isSpeakWhenUnseenMarkerFoundEnabled
+                    && _uiRecentlySeenMarkersFlow.value.isNotEmpty()
+                    && !isTextToSpeechSpeaking()
+                    && !isMarkerCurrentlySpeaking
+                ) {
+                    println("uiRecentlySeenMarkersList = ${_uiRecentlySeenMarkersFlow.value.map { 
+                        it.title +": " +
+                        "ann=" + markersRepo.marker(it.id)?.isAnnounced +", " + 
+                        "spk=" + markersRepo.marker(it.id)?.isSpoken        
+                    }}")
 
-                            // look for next unspoken marker
-                            val nextUnspokenMarker =
-                                uiRecentlySeenMarkersList.firstOrNull { marker ->
-                                    !(markersRepo.marker(marker.id)?.isSpoken // not spoken?
-                                        ?: false) // default not spoken.
-                                }
-                            nextUnspokenMarker?.let { speakMarker ->
-                                isMarkerCurrentlySpeaking = true
-                                yield() // allow UI to update
-
-                                activeSpeakingMarker = speakRecentlySeenMarker(
-                                    speakMarker,
-                                    appSettings.isSpeakDetailsWhenUnseenMarkerFoundEnabled,
-                                    markersRepo = markersRepo,
-                                    coroutineScope,
-                                    onUpdateLoadingState = { loadingState ->
-                                        loadingStateIcon = calcLoadingStateIcon(loadingState)
-                                    }
-                                ) { errorMessage ->
-                                    Log.w(errorMessage)
-                                    errorMessageStr = errorMessage
-                                }
+                    // Speak Marker: Announcing or Speaking?
+                    val nextMarkerToSpeak =
+                        if(appSettings.isSpeakDetailsWhenUnseenMarkerFoundEnabled) {
+                            // Speak the next unspoken marker
+                            _uiRecentlySeenMarkersFlow.value.firstOrNull { marker ->
+                                @Suppress("SimplifyBooleanWithConstants")
+                                (markersRepo.marker(marker.id)?.isSpoken ?: false) == false // find "unspoken" marker
+                            }
+                        } else {
+                            // Announce the next unspoken marker
+                            _uiRecentlySeenMarkersFlow.value.firstOrNull { marker ->
+                                @Suppress("SimplifyBooleanWithConstants")
+                                (markersRepo.marker(marker.id)?.isAnnounced ?: false) == false // find "unannounced" marker
                             }
                         }
+
+                    if(nextMarkerToSpeak == null) {
+                        println("nextMarkerToSpeak is null")
+                    } else {
+                        println("nextMarkerToSpeak = ${nextMarkerToSpeak.title}")
+                    }
+                    nextMarkerToSpeak?.let { speakMarker ->
+                        isMarkerCurrentlySpeaking = true
+                        yield() // allow UI to update
+
+                        println("nextUnspokenMarker = ${nextMarkerToSpeak.title}")
+
+                        // Speak the next unspoken marker and Set as Active Speaking Marker
+                        activeSpeakingMarker = speakRecentlySeenMarker(
+                            speakMarker,
+                            appSettings.isSpeakDetailsWhenUnseenMarkerFoundEnabled,
+                            markersRepo = markersRepo,
+                            coroutineScope,
+                            onUpdateLoadingState = { loadingState ->
+                                loadingStateIcon = calcLoadingStateIcon(loadingState)
+                            },
+                            onSetUnspokenText = { nextTextChunk ->
+                                unspokenText = nextTextChunk
+                            },
+                            onError = { errorMessage ->
+                                Log.w(errorMessage)
+                                errorMessageStr = errorMessage
+                            }
+                        )
                     }
                 }
             }
@@ -662,6 +641,9 @@ fun App(
                             bottomSheetScaffoldState,
                             seenRadiusMiles,
                             appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState,
+                            onIsSpeakWhenUnseenMarkerFoundEnabledChange = { isEnabled ->
+                                appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState = isEnabled
+                            },
                             onSeenRadiusChange = { updatedRadiusMiles ->
                                 seenRadiusMiles = updatedRadiusMiles
                             },
@@ -673,8 +655,8 @@ fun App(
                                     resetMarkerCacheSettings(
                                         appSettings,
                                         finalMarkers,
-                                        recentlySeenMarkersSet,
-                                        uiRecentlySeenMarkersList,
+                                        _recentlySeenMarkersSet,
+                                        _uiRecentlySeenMarkersFlow,
                                         markersRepo
                                     )
                                     activeSpeakingMarker = null
@@ -800,7 +782,7 @@ fun App(
             drawerContent = {
                 if(bottomSheetScaffoldState.drawerState.isOpen) {
                     AppDrawerContent(
-                        finalMarkers, // SSoT is the finalMarkers
+                        finalMarkers.value, // SSoT is the finalMarkers
                         onSetBottomSheetActiveScreen = { screen ->
                             bottomSheetActiveScreen = screen
                         },
@@ -1054,7 +1036,7 @@ fun App(
                             initialUserLocation =
                                 appSettings.lastKnownUserLocation,
                             userLocation = userLocation,
-                            markers = finalMarkers,
+                            markers = finalMarkers.value,
                             mapBounds = null,  // leave for future use
                             shouldCalcClusterItems = shouldCalcClusterItems, // calculate the markers clusters/heatmaps
                             onDidCalcClusterItems = { // map & markers have been redrawn
@@ -1120,7 +1102,7 @@ fun App(
 
                     //Log.d("✏️✏️⬇️  START recently seen markers rendering")
                     RecentlySeenMarkers(
-                        uiRecentlySeenMarkersList,
+                        _uiRecentlySeenMarkersFlow.value,
                         activeSpeakingMarker = activeSpeakingMarker,
                         isTextToSpeechCurrentlySpeaking = isMarkerCurrentlySpeaking,
                         appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState, // reactive to settings
@@ -1158,7 +1140,6 @@ fun App(
                         },
                         onClickPauseSpeakingMarker = {
                             isTemporarilyPreventPerformanceTuningActive=true // prevents using emojis for markers
-//                            stopTextToSpeech()
                             pauseTextToSpeech()
                         },
                         onClickStopSpeakingMarker = {
@@ -1174,15 +1155,16 @@ fun App(
                         onClickResumeSpeakingAllMarkers = {
                             appSettings.isSpeakWhenUnseenMarkerFoundEnabled = true
                             appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState = true
-                            isTemporarilyPreventPerformanceTuningActive=true // prevents using emojis for markers
+                            isTemporarilyPreventPerformanceTuningActive=true // prevents using emojis for markers // todo remove? needed>?
                         },
-                        onClickSkipToNextMarker = {
-                            isTemporarilyPreventPerformanceTuningActive = true // prevents using emojis for markers
-                            if(isTextToSpeechSpeaking()) stopTextToSpeech()
-                            if(isMarkerCurrentlySpeaking) stopTextToSpeech()
-                            if(uiRecentlySeenMarkersList.isNotEmpty()) {
+                        onClickSkipSpeakingToNextMarker = {
+                            isTemporarilyPreventPerformanceTuningActive = true // prevents using emojis for markers // todo needed?
+                            if (isTextToSpeechSpeaking()) stopTextToSpeech()
+                            if (isMarkerCurrentlySpeaking) stopTextToSpeech()
+
+                            if (_uiRecentlySeenMarkersFlow.value.isNotEmpty()) {
                                 val nextUnspokenMarker =
-                                    uiRecentlySeenMarkersList.firstOrNull { marker ->
+                                    _uiRecentlySeenMarkersFlow.value.firstOrNull { marker ->
                                         !(markersRepo.marker(marker.id)?.isSpoken
                                             ?: false) // default not spoken yet
                                     }
@@ -1202,10 +1184,10 @@ fun App(
                                         }
                                 }
                             }
-                        },
+                        }
                     )
                     Log.d("✏️✏️🛑  END recently seen markers rendering, " +
-                            "finalMarkers.size = ${finalMarkers.size}, " +
+                            "finalMarkers.size = ${finalMarkers.value.size}, " +
                             "time to render = ${(Clock.System.now() - startTime)}")
                 }
             }
@@ -1278,8 +1260,8 @@ private fun addSeenMarkersToRecentlySeenList(
     markers: List<Marker>,
     userLocation: Location,
     seenRadiusMiles: Double,
-    recentlySeenMarkersSet: MutableSet<RecentlySeenMarker>,
-    uiRecentlySeenMarkersList: SnapshotStateList<RecentlySeenMarker>,
+    recentlySeenMarkersSet: MutableStateFlow<Set<RecentlySeenMarker>>,
+    uiRecentlySeenMarkersList: List<RecentlySeenMarker>,
     onUpdateIsSeenMarkers: (
             isSeenMarkers: SnapshotStateList<Marker>,
             recentlySeenMarkersSet: MutableSet<RecentlySeenMarker>,
@@ -1290,7 +1272,7 @@ private fun addSeenMarkersToRecentlySeenList(
     val updatedIsSeenMarkers: SnapshotStateList<Marker> =
         listOf<Marker>().toMutableStateList() // start with empty list
     var didUpdateMarkers = false
-    val localRecentlySeenMarkersSet = recentlySeenMarkersSet.toMutableSet()
+    val localRecentlySeenMarkersSet = recentlySeenMarkersSet.value.toMutableSet()
     val localUiRecentlySeenMarkersList = uiRecentlySeenMarkersList.toMutableList()
 
         if (markers.isEmpty()) {

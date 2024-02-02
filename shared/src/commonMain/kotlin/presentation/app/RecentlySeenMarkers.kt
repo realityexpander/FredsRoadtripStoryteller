@@ -40,7 +40,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontStyle
@@ -59,7 +58,7 @@ import presentation.uiComponents.darkenBy
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun RecentlySeenMarkers(
-    recentlySeenMarkersForUiList: SnapshotStateList<RecentlySeenMarker>,
+    recentlySeenMarkersForUiList: List<RecentlySeenMarker>,
     activeSpeakingMarker: RecentlySeenMarker? = null,
     isTextToSpeechCurrentlySpeaking: Boolean = false,
     isSpeakWhenUnseenMarkerFoundEnabled: Boolean = appSettings.isSpeakWhenUnseenMarkerFoundEnabled,
@@ -71,7 +70,7 @@ fun RecentlySeenMarkers(
     onClickStopSpeakingMarker: () -> Unit = {},
     onClickPauseSpeakingAllMarkers: () -> Unit = {},
     onClickResumeSpeakingAllMarkers: () -> Unit = {},
-    onClickSkipToNextMarker: () -> Unit = {},
+    onClickSkipSpeakingToNextMarker: () -> Unit = {},
 ) {
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberLazyListState()
@@ -234,7 +233,7 @@ fun RecentlySeenMarkers(
                     ) {
                         IconButton(
                             onClick = {
-                                onClickSkipToNextMarker()
+                                onClickSkipSpeakingToNextMarker()
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -257,7 +256,7 @@ fun RecentlySeenMarkers(
                     //    speakingMarker
                     //)
 
-                    // Pause Speaking All Markers Button
+                    // Pause/Resume Speaking ALL Markers Button
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()

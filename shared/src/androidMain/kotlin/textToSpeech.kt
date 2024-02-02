@@ -5,6 +5,7 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
 import java.util.Locale
+import kotlin.math.min
 
 var androidTextToSpeechService: AndroidTextToSpeechService? = null
 class AndroidTextToSpeechService(
@@ -43,7 +44,7 @@ class AndroidTextToSpeechService(
     private fun speakNextWords() {
         previousSpokenWordIndex = currentSpokenWordIndex // Save this in case we need to resume speaking
         val nextWordsToSpeak =
-            spokenWords.subList(currentSpokenWordIndex, currentSpokenWordIndex + kNumWordsToSpeakPerChunk)
+            spokenWords.subList(currentSpokenWordIndex, currentSpokenWordIndex + min(kNumWordsToSpeakPerChunk, spokenWords.size - currentSpokenWordIndex))
         currentSpokenWordIndex += nextWordsToSpeak.size
 
         val map = Bundle()
