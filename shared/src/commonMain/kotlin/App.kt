@@ -42,8 +42,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -273,6 +271,7 @@ fun App(
         }
 
         // Recently Seen Markers (Set)
+        @Suppress("LocalVariableName")  // for underscore prefix
         val _recentlySeenMarkersSet =
             MutableStateFlow(appSettings.recentlySeenMarkersSet.list.toSet())
         @Suppress("LocalVariableName")  // for underscore prefix
@@ -330,13 +329,14 @@ fun App(
             markersRepo.markersResultFlow.collect { loadMarkersResult ->
                 val startTime = Clock.System.now()
                 finalMarkers.update {
-                    shouldCalcClusterItems = true
-                    loadMarkersResult.markerIdToMarkerMap.values.toList().also {
-                        Log.d("🍉 END - markersRepo.updateMarkersResultFlow.collectLatest:\n" +
-                                "    ⎣ finalMarkers.size = ${it.size}\n" +
-                                "    ⎣ time to update all markers = ${(Clock.System.now() - startTime)}\n"
-                        )
-                    }
+                    loadMarkersResult.markerIdToMarkerMap.values.toList()
+                        .also {
+                            shouldCalcClusterItems = true
+                            Log.d("🍉 END - markersRepo.updateMarkersResultFlow.collectLatest:\n" +
+                                    "    ⎣ finalMarkers.size = ${it.size}\n" +
+                                    "    ⎣ time to update all markers = ${(Clock.System.now() - startTime)}\n"
+                            )
+                        }
                 }
             }
         }
@@ -351,9 +351,6 @@ fun App(
         var isSeenTrackingPausedPhase by remember { mutableStateOf(0) }
 
         // 1) Update user GPS location
-        var isProcessingRecentlySeenList by remember {
-            mutableStateOf(false)
-        }
         LaunchedEffect(Unit, seenRadiusMiles) { //, shouldCalculateMapMarkers) {
             // Set the last known location to the current location in settings
             commonGpsLocationService.onUpdatedGPSLocation(
@@ -383,7 +380,7 @@ fun App(
                     // 1. Save the last known location to settings
                     appSettings.lastKnownUserLocation = location
                     yield() // allows UI to update the location
-                    isSeenTrackingPaused = false
+                    isSeenTrackingPaused = false // unpause tracking
                 }
 
             // LEAVE FOR REFERENCE
@@ -397,69 +394,75 @@ fun App(
 
         // Track and update `isSeen` for any markers within the `seenRadiusMiles`
         var previousUserLocation by remember { mutableStateOf(userLocation) }
-        LaunchedEffect(Unit, isSeenTrackingPaused, finalMarkers.value, userLocation, seenRadiusMiles) {
+        LaunchedEffect(
+            Unit,
+            isSeenTrackingPaused,
+            finalMarkers.value,
+            userLocation,
+            seenRadiusMiles,
+            markersRepo,
+            shouldCalcClusterItems
+        ) {
             while(!isSeenTrackingPaused) {
-                delay(1000)
+                delay(500)
 
-                //Log.d("👁️ 0.CHECK - isProcessingRecentlySeenList=$isProcessingRecentlySeenList")
+                Log.d("👁️ 2.START - Collecting recently seen markers after location update..., finalMarkers.size=${finalMarkers.value.size}")
+                addSeenMarkersToRecentlySeenList(
+                    finalMarkers.value, // SSoT is finalMarkers
+                    userLocation,
+                    seenRadiusMiles,
+                    _recentlySeenMarkersSet,
+                    _uiRecentlySeenMarkersFlow.value,
+                    onUpdateIsSeenMarkers = { updatedIsSeenMarkers,
+                                              updatedRecentlySeenMarkers,
+                                              updatedUiRecentlySeenMarkers ->
+                        val startTime = Clock.System.now()
+                        Log.d("👁️ 2.1-START, onUpdatedIsSeenMarkers")
 
-                    Log.d("👁️ 2.START - Collecting recently seen markers after location update..., finalMarkers.size=${finalMarkers.value.size}")
-                    addSeenMarkersToRecentlySeenList(
-                        finalMarkers.value, // SSoT is finalMarkers
-                        userLocation,
-                        seenRadiusMiles,
-                        _recentlySeenMarkersSet,
-                        _uiRecentlySeenMarkersFlow.value,
-                        onUpdateIsSeenMarkers = { updatedIsSeenMarkers,
-                                                  updatedRecentlySeenMarkers,
-                                                  updatedUiRecentlySeenMarkers ->
-                            val startTime = Clock.System.now()
-                            Log.d("👁️ 2.1-START, onUpdatedIsSeenMarkers")
+                        // Update the UI with the updated markers
+                        _recentlySeenMarkersSet.update {
+                            updatedRecentlySeenMarkers.toSet()
+                        }
+                        _uiRecentlySeenMarkersFlow.update {
+                            updatedUiRecentlySeenMarkers.toList()
+                        }
 
-                            // Update the UI with the updated markers
-                            _recentlySeenMarkersSet.update {
-                                updatedRecentlySeenMarkers.toSet()
-                            }
-                            _uiRecentlySeenMarkersFlow.update {
-                                updatedUiRecentlySeenMarkers.toList()
-                            }
+                        // Update the settings
+                        appSettings.recentlySeenMarkersSet =
+                            RecentlySeenMarkersList(_recentlySeenMarkersSet.value.toList())
+                        appSettings.uiRecentlySeenMarkersList =
+                            RecentlySeenMarkersList(_uiRecentlySeenMarkersFlow.value.toList())
 
-                            // Update the settings
-                            appSettings.recentlySeenMarkersSet =
-                                RecentlySeenMarkersList(_recentlySeenMarkersSet.value.toList())
-                            appSettings.uiRecentlySeenMarkersList =
-                                RecentlySeenMarkersList(_uiRecentlySeenMarkersFlow.value.toList())
+                        // Update `isSeen` in the markers repo (will trigger a redraw of the map & markers)
+                        updatedIsSeenMarkers.forEach { updatedMarker ->
+                            markersRepo.updateMarkerIsSeen(
+                                updatedMarker,
+                                isSeen = true
+                            )
+                        }
 
-                            // Update `isSeen` in the markers repo (will trigger a redraw of the map & markers)
-                            updatedIsSeenMarkers.forEach { updatedMarker ->
-                                markersRepo.updateMarkerIsSeen(
-                                    updatedMarker,
-                                    isSeen = true
-                                )
-                            }
+                        // Update the UI with the updated markers
+                        shouldCalcClusterItems = true
+                        shouldAllowCacheReset = true
+                        Log.d("👁️ 2.1-END, processing time = ${(Clock.System.now() - startTime)}")
 
-                            // Update the UI with the updated markers
-                            shouldCalcClusterItems = true
-                            shouldAllowCacheReset = true
-                            Log.d("👁️ 2.1-END, processing time = ${(Clock.System.now() - startTime)}")
-
-                            // If more than 5 markers "seen", then show the "Dense Marker Area" warning
-                            if (_uiRecentlySeenMarkersFlow.value.size >= 5) {
-                                launch {
-                                    scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
-                                    scaffoldState.snackbarHostState
-                                        .showSnackbar(
-                                            "Warning: Marker-dense Area\n" +
-                                                    "Some recently seen markers are not listed.",
-                                            duration = SnackbarDuration.Short
-                                        )
-                                    }
+                        // If more than 5 markers "seen", then show the "Dense Marker Area" warning
+                        if (_uiRecentlySeenMarkersFlow.value.size >= 5) {
+                            launch {
+                                scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                                scaffoldState.snackbarHostState
+                                    .showSnackbar(
+                                        "Warning: Marker-dense Area\n" +
+                                                "Some recently seen markers are not listed.",
+                                        duration = SnackbarDuration.Short
+                                    )
                                 }
                             }
-                    ) { startTime ->
+                    },
+                    onFinishedProcessRecentlySeenList= { startTime ->
                         Log.d("👁️ 5.END With NO-CHANGES - onFinishedProcessRecentlySeenList, processing time = ${(Clock.System.now() - startTime)}")
-                        isProcessingRecentlySeenList = false
                     }
+                )
 
                 // Pause tracking if user is not moving (to save battery)
                 if(!isSeenTrackingPaused) {
@@ -1263,14 +1266,13 @@ private fun addSeenMarkersToRecentlySeenList(
     recentlySeenMarkersSet: MutableStateFlow<Set<RecentlySeenMarker>>,
     uiRecentlySeenMarkersList: List<RecentlySeenMarker>,
     onUpdateIsSeenMarkers: (
-            isSeenMarkers: SnapshotStateList<Marker>,
-            recentlySeenMarkersSet: MutableSet<RecentlySeenMarker>,
-            uiRecentlySeenMarkersList: SnapshotStateList<RecentlySeenMarker>,
+            isSeenMarkers: List<Marker>,
+            recentlySeenMarkersSet: Set<RecentlySeenMarker>,
+            uiRecentlySeenMarkersList: List<RecentlySeenMarker>,
         ) -> Unit = { _, _, _ -> },
     onFinishedProcessRecentlySeenList: (Instant) -> Unit = {},
 ) {
-    val updatedIsSeenMarkers: SnapshotStateList<Marker> =
-        listOf<Marker>().toMutableStateList() // start with empty list
+    val updatedIsSeenMarkers = mutableListOf<Marker>()
     var didUpdateMarkers = false
     val localRecentlySeenMarkersSet = recentlySeenMarkersSet.value.toMutableSet()
     val localUiRecentlySeenMarkersList = uiRecentlySeenMarkersList.toMutableList()
@@ -1284,7 +1286,6 @@ private fun addSeenMarkersToRecentlySeenList(
         val startTime = Clock.System.now()
         //Log.d("👁️⬇️ START update isSeen: markers.size=${markers.size}, recentlySeenMarkersSet.size=${recentlySeenMarkersSet.size}, uiRecentlySeenMarkersList.size=${uiRecentlySeenMarkersList.size}\n")
         markers.forEach { marker ->
-
             if(!marker.isSeen) {
                 // if unseen marker is within talk radius, then add to recently seen list.
                 val markerLat = marker.position.latitude
@@ -1305,11 +1306,12 @@ private fun addSeenMarkersToRecentlySeenList(
                         }
                     }
 
+                    // Add to the `isSeen` markers list
                     updatedIsSeenMarkers.add(marker.copy(isSeen = true))
 
-                    // Not already in the `recently seen` set of all `recently seen` markers?
+                    // Check if already in the `recently seen` set of all `recently seen` markers
                     if (!localRecentlySeenMarkersSet.containsMarker(marker)) {
-                        // Add to the `seen` set
+                        // Add to the `recently seen` set
                         val newlySeenMarker = RecentlySeenMarker(
                             marker.id,
                             marker.title,
@@ -1350,19 +1352,14 @@ private fun addSeenMarkersToRecentlySeenList(
         // Update the "isSeen" marker colors for the Map
         // & save the updated markers list to settings.
         if (didUpdateMarkers) {
-            // Update the UI list of recently seen markers (& reverse sort by insert-time)
-            val oldList = localUiRecentlySeenMarkersList.toList()
-            localUiRecentlySeenMarkersList.clear()
-            localUiRecentlySeenMarkersList.addAll(
-                oldList.sortedByDescending { recentMarker ->
-                    recentMarker.insertedAtEpochMilliseconds
-                }.toMutableStateList()
-            )
-
             onUpdateIsSeenMarkers(
-                updatedIsSeenMarkers,
-                localRecentlySeenMarkersSet,
-                localUiRecentlySeenMarkersList.toList().toMutableStateList(),
+                updatedIsSeenMarkers.toList(),
+                localRecentlySeenMarkersSet.toSet(),
+                localUiRecentlySeenMarkersList
+                    .sortedByDescending { recentMarker ->
+                        recentMarker.insertedAtEpochMilliseconds
+                    }
+                    .toList(),
             )
 
             Log.d("👁️⬆️ END update isSeen: processing time = ${Clock.System.now() - startTime}\n")

@@ -1,9 +1,14 @@
 package data
 
 import data.loadMarkers.LoadMarkersResult
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import presentation.maps.Marker
 import presentation.maps.MarkerIdStr
 import co.touchlab.kermit.Logger as Log
@@ -16,6 +21,8 @@ open class MarkersRepo(
     val markersResultFlow =
         _markersResult2Flow.asStateFlow()
 
+    private val coroutineScope = CoroutineScope(Dispatchers.IO)
+
     init {
        Log.d { "MarkersRepo: init, instance=$this" }
        updateLoadMarkersResult(appSettings.loadMarkersResult)
@@ -24,8 +31,12 @@ open class MarkersRepo(
     // Completely replaces the current MarkersResult with a new value
     private fun updateLoadMarkersResult(newLoadMarkersResult: LoadMarkersResult) {
         _markersResult2Flow.update {
-            appSettings.loadMarkersResult = newLoadMarkersResult // save to persistent storage
             newLoadMarkersResult
+        }.also {
+            coroutineScope.launch {
+                delay(100)
+                appSettings.loadMarkersResult = newLoadMarkersResult
+            }
         }
     }
 
