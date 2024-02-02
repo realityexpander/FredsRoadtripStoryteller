@@ -118,10 +118,6 @@ var frameCount = 0
 var didFullFrameRender = false
 var isTemporarilyPreventPerformanceTuningActive = false // prevents premature optimization after returning from background
 
-// Speech
-//var iosCommonSpeech: presentation.speech.CommonSpeech = presentation.speech.CommonSpeech()  // Speech for iOS only
-var unspokenText: String? = null // used to speak text in chunks // todo: move to speech?
-
 // Attempt to fix database contention / race condition issue // todo remove soon
 //val synchronizedObject = SynchronizedObject()
 

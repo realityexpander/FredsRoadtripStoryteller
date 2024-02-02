@@ -7,6 +7,19 @@ import android.util.Log
 import java.util.Locale
 import kotlin.math.min
 
+actual fun speakTextToSpeech(text: String) {
+    androidTextToSpeechService?.speak(text)
+}
+actual fun stopTextToSpeech() {
+    androidTextToSpeechService?.stopSpeaking()
+}
+actual fun isTextToSpeechSpeaking(): Boolean {
+    return androidTextToSpeechService?.isSpeaking() == true
+}
+actual fun pauseTextToSpeech() {
+    androidTextToSpeechService?.pauseSpeaking()
+}
+
 var androidTextToSpeechService: AndroidTextToSpeechService? = null
 class AndroidTextToSpeechService(
     private val androidTextToSpeech: TextToSpeech,
@@ -107,17 +120,4 @@ class AndroidTextToSpeechService(
     fun shutdown() {
         androidTextToSpeech.shutdown()
     }
-}
-
-actual fun speakTextToSpeech(text: String) {
-    androidTextToSpeechService?.speak(text)
-}
-actual fun stopTextToSpeech() {
-    androidTextToSpeechService?.stopSpeaking()
-}
-actual fun isTextToSpeechSpeaking(): Boolean {
-    return androidTextToSpeechService?.isSpeaking() == true
-}
-actual fun pauseTextToSpeech() {
-    androidTextToSpeechService?.pauseSpeaking()
 }

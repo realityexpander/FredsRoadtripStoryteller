@@ -6,6 +6,22 @@ import platform.AVFAudio.AVSpeechUtterance
 import platform.NaturalLanguage.NLLanguageRecognizer
 import platform.darwin.NSObject
 
+// Implementation #1 - uses `TextToSpeechManager` natively in Kotlin
+var textToSpeechManager: TextToSpeechManager = TextToSpeechManager()
+actual fun speakTextToSpeech(text: String) {  // gives runtime error: [catalog] Unable to list voice folder
+    textToSpeechManager.speak(text)
+}
+actual fun stopTextToSpeech() {
+    textToSpeechManager.stopSpeaking()
+    unspokenText = ""
+}
+actual fun isTextToSpeechSpeaking(): Boolean {
+    return textToSpeechManager.isSpeaking
+}
+actual fun pauseTextToSpeech() {
+    textToSpeechManager.pauseSpeaking()
+}
+
 // Implementation #1
 // Kotlin-native Implementation of iOS Text-to-Speech
 // Developers Note: must create an instance at runtime, cant use object here (!) https://github.com/JetBrains/kotlin-native/issues/3855
@@ -70,22 +86,6 @@ class TextToSpeechManager : NSObject(), AVSpeechSynthesizerDelegateProtocol {
     fun isSpeaking(): Boolean {
         return isSpeaking
     }
-}
-
-// Implementation #1 - uses `TextToSpeechManager` natively in Kotlin
-var textToSpeechManager: TextToSpeechManager = TextToSpeechManager()
-actual fun speakTextToSpeech(text: String) {  // gives runtime error: [catalog] Unable to list voice folder
-    textToSpeechManager.speak(text)
-}
-actual fun stopTextToSpeech() {
-    textToSpeechManager.stopSpeaking()
-    unspokenText = ""
-}
-actual fun isTextToSpeechSpeaking(): Boolean {
-    return textToSpeechManager.isSpeaking
-}
-actual fun pauseTextToSpeech() {
-    textToSpeechManager.pauseSpeaking()
 }
 
 //// Implementation #2 - uses `presentation.speech.CommonSpeech` as a bridge to `TextToSpeechManager` in Swift
