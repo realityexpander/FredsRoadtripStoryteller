@@ -16,10 +16,10 @@ import co.touchlab.kermit.Logger as Log
 open class MarkersRepo(
     private val appSettings: AppSettings,
 ) {
-    private val _markersResult2Flow: MutableStateFlow<LoadMarkersResult> =
+    private val _markersResultFlow: MutableStateFlow<LoadMarkersResult> =
         MutableStateFlow(appSettings.loadMarkersResult)
     val markersResultFlow =
-        _markersResult2Flow.asStateFlow()
+        _markersResultFlow.asStateFlow()
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
@@ -30,7 +30,7 @@ open class MarkersRepo(
 
     // Completely replaces the current MarkersResult with a new value & saves to persistent storage
     private fun updateLoadMarkersResult(newLoadMarkersResult: LoadMarkersResult) {
-        _markersResult2Flow.update {
+        _markersResultFlow.update {
             newLoadMarkersResult
         }.also {
             coroutineScope.launch {
