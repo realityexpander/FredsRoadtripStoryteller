@@ -343,6 +343,40 @@ class MarkersRepoTest {
     }
 
     @Test
+    fun `MarkerRepo should be able to update a marker's isAnnounced and retain all other info`() {
+        // Arrange
+        val marker = Marker(
+            id = "M1",
+            position = LatLong(1.0, 2.0),
+            title = "title",
+            subtitle = "subtitle",
+            alpha = 0.5f,
+            isSeen = false,
+            isAnnounced = false,
+            isDetailsLoaded = true,
+            markerDetailsPageUrl = "markerDetailsPageUrl",
+            mainPhotoUrl = "mainPhotoUrl",
+            markerPhotos = listOf("markerPhotos"),
+            photoCaptions = listOf("photoCaptions"),
+            photoAttributions = listOf("photoAttributions"),
+            inscription = "inscription",
+            englishInscription = "englishInscription",
+            spanishInscription = "spanishInscription",
+        )
+        markerRepo.addMarker(marker)
+        val updatedMarker = marker.copy(
+            isAnnounced = true
+        )
+
+        // Act
+        markerRepo.updateMarkerIsAnnounced(marker, true)
+
+        // Assert
+        assertEquals(markerRepo.marker(marker.id), updatedMarker)
+        assertEquals(markerRepo.markersResult().markerIdToMarkerMap[marker.id], updatedMarker)
+    }
+
+    @Test
     fun `MarkerRepo should be able to update a marker's isSpoken and retain all other info`() {
         // Arrange
         val marker = Marker(
