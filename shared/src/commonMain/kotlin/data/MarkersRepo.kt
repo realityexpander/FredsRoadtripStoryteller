@@ -25,7 +25,6 @@ open class MarkersRepo(
 
     init {
        Log.d { "MarkersRepo: init, instance=$this" }
-       updateLoadMarkersResult(appSettings.loadMarkersResult)
     }
 
     // Completely replaces the current MarkersResult with a new value & saves to persistent storage
