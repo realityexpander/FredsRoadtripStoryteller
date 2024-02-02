@@ -28,7 +28,7 @@ open class MarkersRepo(
        updateLoadMarkersResult(appSettings.loadMarkersResult)
     }
 
-    // Completely replaces the current MarkersResult with a new value
+    // Completely replaces the current MarkersResult with a new value & saves to persistent storage
     private fun updateLoadMarkersResult(newLoadMarkersResult: LoadMarkersResult) {
         _markersResult2Flow.update {
             newLoadMarkersResult
