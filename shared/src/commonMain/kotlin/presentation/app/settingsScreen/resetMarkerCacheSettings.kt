@@ -13,18 +13,13 @@ import presentation.maps.RecentlySeenMarker
 
 fun resetMarkerCacheSettings(
     settings: AppSettings,
-//    finalMarkers: SnapshotStateList<Marker>,
     finalMarkers: MutableStateFlow<List<Marker>>,
-//    recentlySeenMarkersSet: MutableSet<RecentlySeenMarker>,
     recentlySeenMarkersSet: MutableStateFlow<Set<RecentlySeenMarker>>,
-//    uiRecentlySeenMarkersList: List<RecentlySeenMarker>,
     uiRecentlySeenMarkersFlow: MutableStateFlow<List<RecentlySeenMarker>>,
     markersRepo: MarkersRepo,
 ) {
     // Reset the `seen markers` list, UI elements
-//    finalMarkers.clear()
     finalMarkers.update { emptyList() }
-//    recentlySeenMarkersSet.clear()
     recentlySeenMarkersSet.update { emptySet() }
     uiRecentlySeenMarkersFlow.update { emptyList() }
 
