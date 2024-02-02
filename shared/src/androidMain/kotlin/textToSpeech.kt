@@ -31,7 +31,7 @@ class AndroidTextToSpeechService(
 
     init {
         androidTextToSpeech.setOnUtteranceProgressListener(this)
-        androidTextToSpeech.setSpeechRate(1.25f)
+        androidTextToSpeech.setSpeechRate(1.15f)
         androidTextToSpeech.setAudioAttributes(
             AudioAttributes.Builder()
                 .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)

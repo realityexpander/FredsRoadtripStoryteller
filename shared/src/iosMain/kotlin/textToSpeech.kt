@@ -51,7 +51,6 @@ class TextToSpeechManager : NSObject(), AVSpeechSynthesizerDelegateProtocol {
             utterance.voice = AVSpeechSynthesisVoice.voiceWithLanguage(language)
         }
 
-        println("TextToSpeechManager speak: $text")
         isPaused = false
         isSpeaking = true
         synthesizer.speakUtterance(utterance)
