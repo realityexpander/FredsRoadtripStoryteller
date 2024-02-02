@@ -17,7 +17,7 @@ plugins {
     // Firebase App Distribution Gradle plugin
 //    id("com.google.firebase.appdistribution") // note: must be disabled to add to play store
 
-    id("com.github.gmazzo.buildconfig")
+    id("com.github.gmazzo.buildconfig")  // for buildConfigField
 }
 
 kotlin {
@@ -27,7 +27,7 @@ kotlin {
             dependencies {
                 implementation(project(":shared"))
 
-                // Firebase feedback // todo bump version to final for release // note: must be disabled to add to play store
+                // Firebase feedback // todo bump version to final for release // note: must be disabled to add to play store - shrug?
 //                implementation(libs.google.firebase.appdistribution)
 //                implementation(libs.google.firebase.appdistribution.api.ktx)
             }
@@ -79,7 +79,7 @@ android {
 
     buildFeatures {
         compose = true
-        // buildConfig = true // creates a java-only class for Android
+        // buildConfig = true // generates a java-only class for Android
     }
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
@@ -94,7 +94,6 @@ android {
             isMinifyEnabled = false
             isJniDebuggable = true
             isDefault = true
-
 
 //            firebaseAppDistribution { // note: must be disabled to add to play store
 //                artifactType = "APK"
@@ -114,7 +113,7 @@ android {
                 "proguard-rules.pro"
             )
 
-//            firebaseAppDistribution { // note: must be disabled to add to play store
+//            firebaseAppDistribution { // note: must be disabled to add to play store - shrug?
 //                artifactType = "APK"
 //                releaseNotesFile = "release-notes.txt"
 //                testersFile = "testers-debug.txt" // NOTE: This is the same as debug testers
