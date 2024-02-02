@@ -2,9 +2,6 @@
 
 package com.realityexpander
 
-import data.billing.CommonBilling
-import data.billing.CommonBilling.BillingState
-import data.billing.CommonBilling.Companion.kProProductId
 import android.app.Activity
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
@@ -18,6 +15,9 @@ import com.android.billingclient.api.PurchasesResponseListener
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
+import data.billing.CommonBilling
+import data.billing.CommonBilling.BillingState
+import data.billing.CommonBilling.Companion.kProProductId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -38,6 +38,10 @@ private const val SLOW_PENDING_TRANSACTION = 4  // Billing hidden type for slow 
  * Emits messages & state to the UI via CommonBilling class.
  *
  * A purchase is considered complete when it is acknowledged.
+ * A purchase is considered pending when it is not acknowledged.
+ * A purchase is considered not purchased when it is not acknowledged and not pending.
+ *
+ * Note: The naming of this class is meant to keep parity with the iOS naming. (PurchaseManager)
  * ####
  *
  * ### **Purchase States:**

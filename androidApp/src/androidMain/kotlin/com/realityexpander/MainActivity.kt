@@ -81,9 +81,7 @@ class MainActivity : AppCompatActivity(),
             appMetadata.androidBuildNumberStr =
                 packageManager.getPackageInfo(packageName, 0).versionCode.toString()
         }
-        Logger.d("App.onCreate(): Starting app, " +
-                appMetadata
-        )
+        Logger.d("App.onCreate(): Starting app, " + appMetadata)
 
         // Setup Firebase Analytics
         val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
@@ -240,7 +238,7 @@ class MainActivity : AppCompatActivity(),
             }
         }
 
-        // Setup the in-app purchase helper
+        // Setup the in-app purchase manager for iOS
         purchaseManager = PurchaseManager(
             this,
             commonBilling
