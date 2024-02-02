@@ -34,14 +34,14 @@ open class MarkersRepo(
             newLoadMarkersResult
         }.also {
             coroutineScope.launch {
-                delay(100)
+                delay(100) // debounce the save to persistent storage
                 appSettings.loadMarkersResult = newLoadMarkersResult
             }
         }
     }
 
-    fun markersResult() = markersResultFlow.value
     fun markersResultFlow() = markersResultFlow
+    fun markersResult() = markersResultFlow.value
 
     fun marker(id: MarkerIdStr): Marker? {
         return markersResultFlow.value.markerIdToMarkerMap[id]
