@@ -700,7 +700,6 @@ fun PanZoomImageDialog(
 ) {
     val kMaxZoomInFactor = 5f
 
-    val coroutineScope = rememberCoroutineScope()
     val painterResource: Resource<Painter> =
         asyncPainterResource(
             data = imageUrl,

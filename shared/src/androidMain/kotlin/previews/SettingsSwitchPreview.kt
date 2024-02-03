@@ -13,6 +13,8 @@ import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewFontScale
+import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.tooling.preview.Wallpapers
 import data.AppSettings
 import data.FakeSettings
@@ -21,12 +23,8 @@ import presentation.uiComponents.AppTheme
 import presentation.uiComponents.SettingsSlider
 import presentation.uiComponents.SettingsSwitch
 
-@Preview(
-    name = "switches",
-    group = "Switches Sliders"
-)
 @Composable
-fun SettingsSwitchPreviews() {
+fun SettingsSwitchPreview() {
     AppTheme {
         Surface {
             Column {
@@ -55,15 +53,61 @@ fun SettingsSwitchPreviews() {
         }
     }
 }
+
 @Preview(
-    name = "switches (night)",
+    name = "Switches (light)",
+    group = "Switches Sliders"
+)
+@Composable
+fun SettingsSwitchPreviewLight() {
+    AppTheme {
+        SettingsSwitchPreview()
+    }
+}
+
+@Preview(
+    name = "Switches (dark)",
     group = "Switches Sliders",
     uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL
 )
 @Composable
 fun SettingsSwitchPreviewsDark() {
-    SettingsSwitchPreviews()
+    AppTheme(darkTheme = true) {
+        SettingsSwitchPreview()
+    }
 }
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun SettingsPanelPreview() {
+    val settings = AppSettings.use(FakeSettings())
+    settings.isStartBackgroundTrackingWhenAppLaunchesEnabled = true
+    settings.isSpeakWhenUnseenMarkerFoundEnabled = false
+
+    Surface {
+        SettingsScreen(
+            appSettings = settings,
+            bottomSheetScaffoldState = BottomSheetScaffoldState(
+                bottomSheetState = BottomSheetState(
+                    initialValue = BottomSheetValue.Collapsed,
+                    density = LocalDensity.current,
+                    confirmValueChange = {
+                        false
+                    },
+                ),
+                drawerState = DrawerState(
+                    initialValue = DrawerValue.Closed,
+                    confirmStateChange = {
+                        true
+                    }
+                ),
+                snackbarHostState = SnackbarHostState()
+            ),
+            seenRadiusMiles = .5
+        )
+    }
+}
+
 @OptIn(ExperimentalMaterialApi::class)
 @Preview(
     name = "Settings (light)",
@@ -74,43 +118,85 @@ fun SettingsSwitchPreviewsDark() {
     uiMode = Configuration.UI_MODE_NIGHT_NO or Configuration.UI_MODE_TYPE_NORMAL,
 )
 @Composable
-fun SettingsPreview() {
+fun SettingsPanelPreviewLight() {
     val settings = AppSettings.use(FakeSettings())
     settings.isStartBackgroundTrackingWhenAppLaunchesEnabled = true
     settings.isSpeakWhenUnseenMarkerFoundEnabled = false
 
     AppTheme {
-        Surface {
-            SettingsScreen(
-                appSettings = settings,
-                bottomSheetScaffoldState = BottomSheetScaffoldState(
-                    bottomSheetState = BottomSheetState(
-                        initialValue = BottomSheetValue.Collapsed,
-                        density = LocalDensity.current,
-                        confirmValueChange = {
-                            false
-                        },
-                    ),
-                    drawerState = DrawerState(
-                        initialValue = DrawerValue.Closed,
-                        confirmStateChange = {
-                            true
-                        }
-                    ),
-                    snackbarHostState = SnackbarHostState()
-                ),
-                seenRadiusMiles = .5
-            )
-        }
+        SettingsPanelPreview()
     }
 }
+
 @Preview(
     name = "Settings (dark)",
     group = "Settings Panel",
-    wallpaper = Wallpapers.NONE,
     uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL
 )
 @Composable
-fun SettingsDark() {
-    SettingsPreview()
+fun SettingsPanelPreviewDark() {
+    AppTheme {
+        SettingsPanelPreview()
+    }
 }
+
+//////////////////////// FONT SIZES & SCREEN SIZES ///////////////////////////////////////////////////
+
+
+@PreviewFontScale
+@Preview(
+    name = "Settings (fonts / dark)",
+    group = "Settings Fonts",
+    wallpaper = Wallpapers.NONE,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+fun SettingsFontsDark() {
+    AppTheme(darkTheme = true) {
+        SettingsPanelPreview()
+    }
+}
+
+@PreviewFontScale
+@Preview(
+    name = "Settings (fonts / light)",
+    group = "Settings Fonts",
+    wallpaper = Wallpapers.NONE,
+//    uiMode = Configuration.UI_MODE_NIGHT_NO
+)
+@Composable
+fun SettingsFontsLight() {
+    AppTheme(darkTheme = false) {
+        SettingsPanelPreview()
+    }
+}
+
+@PreviewScreenSizes
+@Preview(
+    name = "Settings (screen sizes / dark)",
+    group = "Settings Screen Sizes",
+    wallpaper = Wallpapers.NONE,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+fun SettingsScreenSizesDark() {
+    AppTheme(darkTheme = true) {
+        SettingsPanelPreview()
+    }
+}
+
+@PreviewScreenSizes
+@Preview(
+    name = "Settings (screen sizes / light)",
+    group = "Settings Screen Sizes",
+    wallpaper = Wallpapers.NONE,
+    uiMode = Configuration.UI_MODE_NIGHT_NO
+)
+@Composable
+fun SettingsScreenSizesLight() {
+    AppTheme(darkTheme = false) {
+        SettingsPanelPreview()
+    }
+}
+
+

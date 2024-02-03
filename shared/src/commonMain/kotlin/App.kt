@@ -79,6 +79,7 @@ import presentation.app.AppDrawerContent
 import presentation.app.MarkerDetailsScreen
 import presentation.app.RecentlySeenMarkers
 import presentation.app.onboarding.AboutBoxDialog
+import presentation.app.onboarding.OnboardingDialog
 import presentation.app.settingsScreen.SettingsScreen
 import presentation.app.settingsScreen.resetMarkerCacheSettings
 import presentation.maps.Location

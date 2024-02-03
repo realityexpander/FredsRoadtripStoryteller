@@ -8,7 +8,7 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
         mavenCentral()
-        // maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")  // for Compose dev builds
+        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")  // for Compose dev builds
         google()
     }
 
@@ -16,7 +16,7 @@ pluginManagement {
         // From `gradle.properties`
         val kotlinVersion = extra["kotlin.version"] as String
         val agpVersion = extra["agp.version"] as String
-        val composeVersion = extra["compose.version"] as String
+        val composeGradlePluginVersion = extra["compose.gradleplugin.version"] as String
         val googleMapsSecretsPluginVersion = extra["google.maps.secrets-gradle-plugin.version"] as String
         val googleServicesVersion = extra["google.services.version"] as String
         val googleFirebaseCrashlyticsVersion = extra["google.firebase.crashlytics.version"] as String
@@ -30,7 +30,7 @@ pluginManagement {
 
         id("com.android.application").version(agpVersion)
         id("com.android.library").version(agpVersion)
-        id("org.jetbrains.compose").version(composeVersion)
+        id("org.jetbrains.compose").version(composeGradlePluginVersion)
 
          //For Kotlinx Serialization
         id("org.jetbrains.kotlin.plugin.serialization").version(kotlinVersion)
@@ -63,6 +63,6 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        // maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")  // for Compose dev builds
+        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")  // for Compose dev builds
     }
 }

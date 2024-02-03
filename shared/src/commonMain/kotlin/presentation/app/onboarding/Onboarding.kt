@@ -1,9 +1,9 @@
+package presentation.app.onboarding
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -95,9 +95,9 @@ fun OnboardingDialog(
                     pageSize = PageSize.Fill,
                     flingBehavior = PagerDefaults.flingBehavior(state = pagerState),
                     key = { pages[it] },
-                    pageNestedScrollConnection = PagerDefaults.pageNestedScrollConnection(
-                        Orientation.Horizontal
-                    ),
+//                    pageNestedScrollConnection = PagerDefaults.pageNestedScrollConnection(
+//                        orientation = Orientation.Horizontal
+//                    ),
                     pageContent = { index ->
                         Image(
                             painter = painterResource(res = pages[index]),

@@ -11,7 +11,8 @@ plugins {
 
 kotlin {
     @Suppress("OPT_IN_USAGE")
-    targetHierarchy.default()
+//    targetHierarchy.default()
+    kotlin.applyDefaultHierarchyTemplate()
 
     androidTarget()
     iosX64()
@@ -33,6 +34,7 @@ kotlin {
         pod("GoogleMaps") {
             version = libs.versions.pods.google.maps.get()
             //    version = "7.4.0" // for GoogleMapsUtils 4.2.2 (doesn't build for some c-interop reason, waiting for 5.0.0)
+            extraOpts += listOf("-compiler-option", "-fmodules")
         }
 
         //    pod("Google-Maps-iOS-Utils") {
@@ -177,3 +179,8 @@ buildscript {
 }
 
 apply(plugin = "kotlinx-atomicfu") // Needs to be applied after the buildscript block
+
+dependencies {
+    // For Compose previews
+    debugImplementation(libs.androidx.ui.tooling.preview.v160)
+}

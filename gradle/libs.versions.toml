@@ -1,26 +1,28 @@
 [versions]
-agp = "8.1.2"
+agp = "8.2.2"
 android-billingclient-billing = "6.1.0"
-androidx-activityCompose = "1.8.0"
+androidx-activityCompose = "1.8.2"
 androidx-coreSplashscreen = "1.0.1"
 androidx-appcompat = "1.6.1"
 androidx-core = "1.12.0"
 compose = "1.5.3"
-compose-preview = "1.5.3"
-compose-compiler = "1.5.3"  # usually the same as `compose`
-compose-material3 = "1.5.10-rc01" # usually the same as compose
+compose-preview = "1.5.3"    # usually the same as compose
+compose-compiler = "1.5.3"   # sometimes the same as compose
+compose-material = "1.5.3"   # usually the same as compose
+compose-material3 = "1.1.2"  # not the same as compose
+compose-uiToolingPreview = "1.6.0"
 google-MapsAndroidComposeVersion = "3.1.0"
-google-PlayServicesAndroidLocation = "21.0.1"
-google-PlayServicesAndroidMaps = "18.1.0"
-google-FirebaseBom = "32.5.0"
-google-FirebaseAppdistribution = "16.0.0-beta10"
+google-PlayServicesAndroidLocation = "21.1.0"
+google-PlayServicesAndroidMaps = "18.2.0"
+google-FirebaseBom = "32.7.1"
+google-FirebaseAppdistribution = "16.0.0-beta11"
 logger-kermit = "2.0.1"
 kamelImage = "0.5.1"
 kMutliplatformSettingsVersion = "1.1.0"
-kotlin = "1.9.10"
+kotlin = "1.9.22" # Must also be updated in gradle.properties
 kotlinx-CoroutinesCore = "1.7.3"
 kotlinx-Datetime = "0.4.1"
-kotlinx-SerializationJson = "1.6.0"
+kotlinx-SerializationJson = "1.6.1"
 kotlinx-atomicfu = "0.23.1"
 ksoupVersion = "0.2.1"
 ktor-ClientCore = "2.3.5"
@@ -40,18 +42,19 @@ androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", versi
 androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose-preview" }
 androidx-compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "compose" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "compose-material3" }
-androidx-compose-material = { module = "androidx.compose.material:material", version.ref = "compose" }
+androidx-compose-material = { module = "androidx.compose.material:material", version.ref = "compose-material" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "androidx-coreSplashscreen" }
+androidx-ui-tooling-preview-v160 = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose-uiToolingPreview" }
 atomicfu-gradle-plugin = { module = "org.jetbrains.kotlinx:atomicfu-gradle-plugin", version.ref = "kotlinx-atomicfu" }
 compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose" }
 compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose" }
 compose-material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "compose" }
-compose-material = { module = "org.jetbrains.compose.material:material", version.ref = "compose" }
+compose-material = { module = "org.jetbrains.compose.material:material", version.ref = "compose-material" }
 compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "compose-material3" }
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose" }
 compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
 compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose" }
-compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose" }
+compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose-preview" }
 google-firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "google-FirebaseBom" }
 google-firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "" } # no version needed
 google-firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics", version = "" } # no version needed
