@@ -95,9 +95,6 @@ fun OnboardingDialog(
                     pageSize = PageSize.Fill,
                     flingBehavior = PagerDefaults.flingBehavior(state = pagerState),
                     key = { pages[it] },
-//                    pageNestedScrollConnection = PagerDefaults.pageNestedScrollConnection(
-//                        orientation = Orientation.Horizontal
-//                    ),
                     pageContent = { index ->
                         Image(
                             painter = painterResource(res = pages[index]),
