@@ -16,7 +16,7 @@ actual fun sendEmailAction(
     // "&body=" + json.encodeToString(debugLog.joinToString(separator = "\n")))
 
     CoroutineScope(Dispatchers.Main).launch {
-        _intentFlow.emit(
+        _androidIntentFlow.emit(
             Intent(Intent.ACTION_SEND).apply {
                 type = "message/rfc822"
                 putExtra(Intent.EXTRA_EMAIL, arrayOf(to))

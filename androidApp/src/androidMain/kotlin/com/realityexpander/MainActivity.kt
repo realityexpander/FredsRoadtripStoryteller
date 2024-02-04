@@ -13,6 +13,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
+import androidIntentFlow
 import androidTextToSpeechService
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
@@ -36,7 +37,6 @@ import com.realityexpander.gpsForegroundNotificationService.GPSForegroundNotific
 import data.appSettings
 import data.billing.CommonBilling
 import data.billing.CommonBilling.BillingCommand
-import intentFlow
 import isTemporarilyPreventPerformanceTuningActive
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -169,7 +169,7 @@ class MainActivity : AppCompatActivity(),
         //       flow from the Android-specific code, and then emit the intent from this MainActivity. __/shrug\__
         val scope = CoroutineScope(Dispatchers.Main)
         scope.launch {
-            intentFlow.collect { intent ->
+            androidIntentFlow.collect { intent ->
                 when (intent.action) {
                     CommonGPSLocationService.ACTION_STOP_BACKGROUND_UPDATES -> {
                         stopBackgroundUpdates()

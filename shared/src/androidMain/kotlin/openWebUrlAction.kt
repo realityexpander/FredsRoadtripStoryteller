@@ -7,7 +7,7 @@ import kotlinx.coroutines.launch
 // Android
 actual fun openWebUrlAction(urlStr: String) {
     CoroutineScope(Dispatchers.Main).launch {
-        _intentFlow.emit(
+        _androidIntentFlow.emit(
             Intent(Intent.ACTION_VIEW, Uri.parse(urlStr))
         )
     }

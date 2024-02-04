@@ -18,5 +18,5 @@ lateinit var appContext: Context // Android specific context
 
 // Android specific intent flow
 @Suppress("ObjectPropertyName")
-var _intentFlow: MutableSharedFlow<Intent> = MutableSharedFlow()
-val intentFlow: SharedFlow<Intent> = _intentFlow  // read-only shared flow received on Android side
+var _androidIntentFlow: MutableSharedFlow<Intent> = MutableSharedFlow()
+val androidIntentFlow: SharedFlow<Intent> = _androidIntentFlow  // read-only shared flow received on Android side

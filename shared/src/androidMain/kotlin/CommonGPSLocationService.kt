@@ -160,12 +160,12 @@ actual class CommonGPSLocationService  {
 
     actual fun allowBackgroundLocationUpdates() {
         CoroutineScope(Dispatchers.Main).launch {
-            _intentFlow.emit(Intent(CommonGPSLocationService.ACTION_START_BACKGROUND_UPDATES))
+            _androidIntentFlow.emit(Intent(CommonGPSLocationService.ACTION_START_BACKGROUND_UPDATES))
         }
     }
     actual fun preventBackgroundLocationUpdates() {
         CoroutineScope(Dispatchers.Main).launch {
-            _intentFlow.emit(Intent(CommonGPSLocationService.ACTION_STOP_BACKGROUND_UPDATES))
+            _androidIntentFlow.emit(Intent(CommonGPSLocationService.ACTION_STOP_BACKGROUND_UPDATES))
         }
     }
 
