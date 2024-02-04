@@ -89,6 +89,13 @@ class MainActivity : AppCompatActivity(),
         // Setup TextToSpeech
         androidTextToSpeechService = AndroidTextToSpeechService(TextToSpeech(this, this))
 
+        // Setup the in-app purchase manager
+        purchaseManager = PurchaseManager(
+            this,
+            commonBilling
+        )
+        purchaseManager.billingSetup()
+
         // https://proandroiddev.com/implementing-core-splashscreen-api-e62f0e690f74
         installSplashScreen().apply {
             setKeepOnScreenCondition {
@@ -232,18 +239,11 @@ class MainActivity : AppCompatActivity(),
                 }
             }
         } else {
-            // Coming back from a suspended state
+            // Coming back from background state
             setContent {
                 MainView(commonBilling, appMetadata)
             }
         }
-
-        // Setup the in-app purchase manager for iOS
-        purchaseManager = PurchaseManager(
-            this,
-            commonBilling
-        )
-        purchaseManager.billingSetup()
     }
 
     // TextToSpeech.OnInitListener

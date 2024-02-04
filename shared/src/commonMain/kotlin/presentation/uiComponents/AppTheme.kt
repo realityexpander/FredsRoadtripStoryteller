@@ -72,8 +72,8 @@ fun AppTheme(
     )
 
     MaterialTheme(
-            // colorScheme = colors, // material3
-            colors = colors,
+        // colorScheme = colors, // material3
+        colors = colors,
         typography = typography,
         shapes = shapes,
         content = content
