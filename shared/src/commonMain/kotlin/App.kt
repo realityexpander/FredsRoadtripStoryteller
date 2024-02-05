@@ -108,11 +108,13 @@ data class CommonAppMetadata(
     var installAtEpochMilli: Long = 0L,
     var platformId: String = "unknown" // "android" or "iOS"
 )
-var appNameStr = configPropertyString("app.name", "app.name string not found")
+var appNameStr =
+    configPropertyString("app.name", "app.name string not found")
 var appMetadata = CommonAppMetadata()
 var debugLog = mutableListOf("Debug log: start time:" + Clock.System.now())
 
-val kMaxReloadRadiusMiles = configPropertyFloat("app.maxReloadRadiusMiles", 2.0f).toDouble()
+val kMaxReloadRadiusMiles =
+    configPropertyFloat("app.maxReloadRadiusMiles", 2.0f).toDouble()
 const val kMaxMarkerDetailsAgeSeconds = 60 * 60 * 24 * 30  // 30 days
 
 // Improve performance by restricting cluster size & updates
