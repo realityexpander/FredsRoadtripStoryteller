@@ -1,4 +1,5 @@
 Alpha Build 20
+- bug - fix sticky splash screen when returning from background
 
 Alpha Build 19
 - code - fix broken tests, if any
