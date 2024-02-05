@@ -1,3 +1,6 @@
+Alpha Build 21
+- bug - fix crash when opening details panel
+
 Alpha Build 20
 - bug - fix sticky splash screen when returning from background
 

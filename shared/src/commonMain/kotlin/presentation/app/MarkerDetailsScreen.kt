@@ -193,6 +193,7 @@ fun MarkerDetailsScreen(
                 modifier = Modifier.size(64.dp),
                 color = MaterialTheme.colors.onBackground,
                 strokeWidth = 4.dp,
+                progress = 0.5f
             )
         }
 

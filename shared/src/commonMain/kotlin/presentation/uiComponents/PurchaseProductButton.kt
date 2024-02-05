@@ -1,7 +1,5 @@
 package presentation.uiComponents
 
-import data.billing.CommonBilling
-import data.billing.CommonBilling.BillingState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -22,9 +20,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import appMetadata
-import data.billing.calcTrialTimeRemainingString
 import consumeProductAction
 import data.appSettings
+import data.billing.CommonBilling
+import data.billing.CommonBilling.BillingState
+import data.billing.calcTrialTimeRemainingString
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import purchaseProductAction
@@ -124,7 +124,8 @@ fun PurchaseProductButton(
                             .width(18.dp),
                         strokeWidth = 2.dp,
                         color = MaterialTheme.colors.onPrimary,
-                        backgroundColor = MaterialTheme.colors.primary
+                        backgroundColor = MaterialTheme.colors.primary,
+                        progress = 0.5f
                     )
                 }
             }
