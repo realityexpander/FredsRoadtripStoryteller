@@ -1,3 +1,8 @@
+Alpha Build 22
+- ui - fix light mode color issues
+- code - add parameterized previews for UI
+- bug - Fix possible hang at launch
+
 Alpha Build 21
 - bug - fix crash when opening details panel
 
