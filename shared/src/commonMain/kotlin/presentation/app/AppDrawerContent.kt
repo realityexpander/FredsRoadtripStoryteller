@@ -365,7 +365,6 @@ fun AppDrawerContent(
                     .animateItemPlacement(animationSpec = tween(250))
                     .clickable {
                         coroutineScope.launch {
-                            println("Clicked on marker: ${marker.id}")
                             onExpandBottomSheet()
                             onSetBottomSheetActiveScreen(
                                 BottomSheetScreen.MarkerDetailsScreen(id=marker.id)

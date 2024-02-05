@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity(),
     PurchasesUpdatedListener
 {
     private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
-    private val splashState = MutableStateFlow(false)
+    private val splashState = MutableStateFlow(true)
 
     private var isSendingUserToAndroidAppSettingsScreen = false
 
@@ -94,7 +94,7 @@ class MainActivity : AppCompatActivity(),
             this,
             commonBilling
         )
-        purchaseManager.billingSetup()
+        purchaseManager.setupBillingClient()
 
         // https://proandroiddev.com/implementing-core-splashscreen-api-e62f0e690f74
         installSplashScreen().apply {
@@ -143,8 +143,8 @@ class MainActivity : AppCompatActivity(),
                     }
                     .show()
             } else {
-                // Dismiss the splash screen
-                splashState.tryEmit(true)
+                // Permissions Granted -> Dismiss the splash screen
+                splashState.tryEmit(false)
                 appSettings.isPermissionsGranted = true
 
                 setContent {
@@ -233,17 +233,20 @@ class MainActivity : AppCompatActivity(),
 
         // If permissions are not granted yet, show the splash screen for permissions.
         if(!appSettings.isPermissionsGranted) {
+            splashState.tryEmit(false)
             setContent {
                 AppTheme {
                     SplashScreenForPermissions(appSettings.isPermissionsGranted)
                 }
             }
-        } else {
-            // Coming back from background state
-            setContent {
-                MainView(commonBilling, appMetadata)
-            }
         }
+//        else {
+//            // Coming back from background state
+//            splashState.tryEmit(false)
+//            setContent {
+//                MainView(commonBilling, appMetadata)
+//            }
+//        }
     }
 
     // TextToSpeech.OnInitListener
@@ -258,6 +261,11 @@ class MainActivity : AppCompatActivity(),
                 Log.d("TTS: Initialization success!")
             }
         }
+    }
+
+    override fun onPostResume() {
+        super.onPostResume()
+        splashState.tryEmit(false)
     }
 
     // Turn off the notification service for the GPS service, which prevents background location updates
@@ -289,8 +297,6 @@ class MainActivity : AppCompatActivity(),
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
 
-        println("onNewIntent: intent: $intent")
-
         if(intent?.action == GPSForegroundNotificationService.ACTION_STOP_NOTIFICATION_SERVICE) {
             stopBackgroundUpdates()
         }
@@ -312,7 +318,6 @@ class MainActivity : AppCompatActivity(),
 
     override fun onResume() {
         super.onResume()
-        println("onResume: intent: $intent")
         isTemporarilyPreventPerformanceTuningActive = true
 
         // Relaunch the permission dialog if the user was previously sent to the Android's "App Settings" screen

@@ -109,7 +109,7 @@ data class PurchaseManager(
             }
         }
 
-    fun billingSetup() {
+    fun setupBillingClient() {
         billingClient = BillingClient.newBuilder(activity)
             .setListener(purchasesUpdatedListener)
             .enablePendingPurchases()

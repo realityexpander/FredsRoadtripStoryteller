@@ -402,7 +402,6 @@ fun App(
             shouldCalcClusterItems,
             isSeenTrackingPaused
         ) {
-            println("isSeenTrackingPaused = $isSeenTrackingPaused")
             while(!isSeenTrackingPaused) {
                 Log.d("👁️ 2.START - Collecting recently seen markers after location update..., finalMarkers.size=${finalMarkers.value.size}")
                 addSeenMarkersToRecentlySeenList(
@@ -448,7 +447,6 @@ fun App(
                         Log.d("👁️ 2.1-END, processing time = ${(Clock.System.now() - startTime)}")
 
                         // If more than 5 markers "seen", then show the "Dense Marker Area" warning
-                        println("updatedIsSeenMarkers.size = ${updatedIsSeenMarkers.size}")
                         if (updatedIsSeenMarkers.size >= 5) {
                             coroutineScope.launch {
                                 scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
@@ -557,10 +555,6 @@ fun App(
         // Poll for next unspoken/unannounced marker
         LaunchedEffect(Unit, _uiRecentlySeenMarkersFlow.value, isMarkerCurrentlySpeaking) {
             while (true) {
-                yield()
-                println(_uiRecentlySeenMarkersFlow.value.map {
-                    "markersRepo.marker(${it.id+":"+it.title})?.isAnnounced = ${markersRepo.marker(it.id)?.isAnnounced}"
-                })
                 delay(1000)  // allow time for last text-to-speech to end
 
                 if (appSettings.isSpeakWhenUnseenMarkerFoundEnabled
@@ -568,12 +562,6 @@ fun App(
                     && !isTextToSpeechSpeaking()
                     && !isMarkerCurrentlySpeaking
                 ) {
-                    println("uiRecentlySeenMarkersList = ${_uiRecentlySeenMarkersFlow.value.map { 
-                        it.title +": " +
-                        "ann=" + markersRepo.marker(it.id)?.isAnnounced +", " + 
-                        "spk=" + markersRepo.marker(it.id)?.isSpoken        
-                    }}")
-
                     // Speak Marker: Announcing or Speaking?
                     val nextMarkerToSpeak =
                         if(appSettings.isSpeakDetailsWhenUnseenMarkerFoundEnabled) {
@@ -590,16 +578,9 @@ fun App(
                             }
                         }
 
-                    if(nextMarkerToSpeak == null) {
-                        println("nextMarkerToSpeak is null")
-                    } else {
-                        println("nextMarkerToSpeak = ${nextMarkerToSpeak.title}")
-                    }
                     nextMarkerToSpeak?.let { speakMarker ->
                         isMarkerCurrentlySpeaking = true
                         yield() // allow UI to update
-
-                        println("nextUnspokenMarker = ${nextMarkerToSpeak.title}")
 
                         // Speak the next unspoken marker and Set as Active Speaking Marker
                         activeSpeakingMarker = speakRecentlySeenMarker(

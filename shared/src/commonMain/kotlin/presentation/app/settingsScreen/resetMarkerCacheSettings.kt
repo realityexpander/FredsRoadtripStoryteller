@@ -23,10 +23,6 @@ fun resetMarkerCacheSettings(
     recentlySeenMarkersSet.update { emptySet() }
     uiRecentlySeenMarkersFlow.update { emptyList() }
 
-    println("RESET uiRecentlySeenMarkersList = ${uiRecentlySeenMarkersFlow.value.map {
-        it.id
-    }}")
-
     // Reset the settings cache of markers
     settings.clear(kMarkersResult)
     settings.clear(kMarkersLastUpdatedLocation)

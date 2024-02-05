@@ -251,7 +251,6 @@ actual fun GoogleMaps(
 
         previousCameraLocationLatLong = shouldCenterCameraOnLatLong
         shouldCenterCameraOnLatLong?.let { cameraLocationLatLong ->
-            println("💿 GoogleMaps-Android 👾: LaunchedEffect(shouldCenterCameraOnLatLong), shouldCenterCameraOnLatLong = $shouldCenterCameraOnLatLong")
             cameraPositionState.animate(
                 CameraUpdateFactory.newLatLng(
                     LatLng(
@@ -273,7 +272,6 @@ actual fun GoogleMaps(
 
         previousCameraLocationLatLongZoom = shouldZoomToLatLongZoom
         shouldZoomToLatLongZoom?.let { cameraLocationLatLongZoom ->
-            println("💿 GoogleMaps-Android 👾: LaunchedEffect(shouldZoomToLatLongZoom), shouldZoomToLatLongZoom = $shouldZoomToLatLongZoom")
             cameraPositionState.animate(
                 CameraUpdateFactory.newLatLngZoom(
                     LatLng(
@@ -375,7 +373,6 @@ actual fun GoogleMaps(
             onDidAllowCacheReset()
         }
         if(previousCameraZoomLevel != cameraPositionState.position.zoom) {
-            println("📛 Zoom Level Change: previousCameraZoomLevel = $previousCameraZoomLevel, cameraPositionState.position.zoom = ${cameraPositionState.position.zoom}")
             isRestrictedClusterRadiusActive = true
             previousCameraZoomLevel = cameraPositionState.position.zoom
             restrictedClusterRadiusPhase = 0 // reset
@@ -481,15 +478,11 @@ actual fun GoogleMaps(
                     }
                 } ?: listOf<SeeableClusterItem>()
 
-                println("🎌 START save to cache")
-
                 // Add to internal cached list of cluster items
                 cachedMarkerIdToSeeableClusterItemMap.clear()
                 localCachedClusterItemList.forEach { clusterItem ->
                     cachedMarkerIdToSeeableClusterItemMap[clusterItem.id] = clusterItem
                 }
-
-                println("🎌 END save to cache")
 
                 previousRestrictedClusterCenterLatLng = clusterCenterLatLng
                 previousRestrictedClusterRadiusMeters =
@@ -936,7 +929,6 @@ actual fun GoogleMaps(
                 }
             }
             infoMarker?.let { marker ->
-                //println("🔷🔷 infoMarker: ${infoMarker?.title}, infoMarkerInfoWindowOpenPhase = $infoMarkerInfoWindowOpenPhase")
                 // Render the info marker (yes, it requires it to be remembered twice, IDK WHY DAMMIT)
                 if(infoMarkerInfoWindowOpenPhase < 2) {
                     infoMarkerState = rememberMarkerState(

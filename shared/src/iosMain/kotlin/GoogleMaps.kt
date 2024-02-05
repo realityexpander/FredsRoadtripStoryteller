@@ -176,7 +176,7 @@ actual fun GoogleMaps(
         //        didTapMarker: GMSMarker
         //    ): Boolean {
         //        val userData = didTapMarker.userData()
-        //        println("map marker click ${userData}")
+        //        Reprintln("map marker click ${userData}")
         //        return false
         //    }
 
@@ -318,12 +318,6 @@ actual fun GoogleMaps(
                     googleMapView
                 },
                 update = { view ->
-                    println(
-                        "view.selectedMarker=${view.selectedMarker}, " +
-                        "view.selectedMarker.userData=${view.selectedMarker?.userData()}," +
-                        "selectedMarker=${selectedMarker?.snippet}, " +
-                        "selectedMarker.userData=${selectedMarker?.userData()}"
-                    )
 
                     if (isTrackingEnabled) {
                         userLocation?.let { myLocation ->
