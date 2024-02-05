@@ -240,7 +240,7 @@ class MainActivity : AppCompatActivity(),
                 }
             }
         }
-//        else {
+//        else { // todo remove this soon?
 //            // Coming back from background state
 //            splashState.tryEmit(false)
 //            setContent {
