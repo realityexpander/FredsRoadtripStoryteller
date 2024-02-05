@@ -240,7 +240,7 @@ class MainActivity : AppCompatActivity(),
                 }
             }
         }
-//        else { // todo remove this soon?
+//        else { // todo remove this soon - not needed?
 //            // Coming back from background state
 //            splashState.tryEmit(false)
 //            setContent {

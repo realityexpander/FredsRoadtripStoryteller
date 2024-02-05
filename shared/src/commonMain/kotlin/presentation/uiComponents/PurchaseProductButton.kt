@@ -13,6 +13,11 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontStyle
@@ -37,21 +42,14 @@ fun PurchaseProductButton(
     billingState: BillingState,
     commonBilling: CommonBilling,
     coroutineScope: CoroutineScope,
-    onCloseDrawer: () -> Unit
+    onCloseDrawer: () -> Unit,
+    trialTimeRemainingStr: String = calcTrialTimeRemainingString(appSettings.installAtEpochMilli)
 ) {
     when (billingState) {
         is BillingState.NotPurchased -> {
             Spacer(modifier = Modifier.height(16.dp))
             // Show trial time remaining
-            Text(
-                text = calcTrialTimeRemainingString(appSettings.installAtEpochMilli),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp),
-                fontStyle = FontStyle.Normal,
-                fontSize = MaterialTheme.typography.body1.fontSize,
-                textAlign = TextAlign.Center,
-            )
+            DisplayTrialTimeRemaining(trialTimeRemainingStr)
             Spacer(modifier = Modifier.height(4.dp))
 
             Button(
@@ -71,8 +69,10 @@ fun PurchaseProductButton(
                         .fillMaxWidth()
                         .padding(start = 8.dp, end = 8.dp),
                     fontStyle = FontStyle.Normal,
+                    fontWeight = FontWeight.Bold,
                     fontSize = MaterialTheme.typography.body1.fontSize,
                     textAlign = TextAlign.Center,
+                    color = MaterialTheme.colors.onPrimary
                 )
             }
             billingState.lastBillingMessage?.let {
@@ -95,6 +95,18 @@ fun PurchaseProductButton(
         }
 
         is BillingState.Pending -> {
+            var indeterminateProgress by remember { mutableStateOf(0.0f) }
+
+            LaunchedEffect(Unit) {
+                while (true) {
+                    indeterminateProgress += 0.05f
+                    if (indeterminateProgress > 1) {
+                        indeterminateProgress = 0.0f
+                    }
+                    kotlinx.coroutines.delay(100)
+                }
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = { },
@@ -117,6 +129,7 @@ fun PurchaseProductButton(
                         fontStyle = FontStyle.Normal,
                         fontSize = MaterialTheme.typography.body1.fontSize,
                         textAlign = TextAlign.Center,
+                        color = MaterialTheme.colors.onBackground
                     )
                     CircularProgressIndicator(
                         modifier = Modifier
@@ -125,7 +138,7 @@ fun PurchaseProductButton(
                         strokeWidth = 2.dp,
                         color = MaterialTheme.colors.onPrimary,
                         backgroundColor = MaterialTheme.colors.primary,
-                        progress = 0.5f
+                        progress = indeterminateProgress
                     )
                 }
             }
@@ -140,8 +153,10 @@ fun PurchaseProductButton(
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp),
                 fontStyle = FontStyle.Normal,
+                fontWeight = FontWeight.Bold,
                 fontSize = MaterialTheme.typography.body1.fontSize,
                 textAlign = TextAlign.Center,
+                color = MaterialTheme.colors.primary
             )
             Spacer(modifier = Modifier.height(8.dp))
         }
@@ -149,15 +164,7 @@ fun PurchaseProductButton(
         is BillingState.Disabled -> {
             Spacer(modifier = Modifier.height(16.dp))
             // Show trial time remaining
-            Text(
-                text = calcTrialTimeRemainingString(appSettings.installAtEpochMilli),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp),
-                fontStyle = FontStyle.Normal,
-                fontSize = MaterialTheme.typography.body1.fontSize,
-                textAlign = TextAlign.Center,
-            )
+            DisplayTrialTimeRemaining(trialTimeRemainingStr)
             Spacer(modifier = Modifier.height(4.dp))
 
             Button(
@@ -175,6 +182,7 @@ fun PurchaseProductButton(
                     fontStyle = FontStyle.Normal,
                     fontSize = MaterialTheme.typography.body1.fontSize,
                     textAlign = TextAlign.Center,
+                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -183,15 +191,7 @@ fun PurchaseProductButton(
         is BillingState.Error -> {
             Spacer(modifier = Modifier.height(8.dp))
             // Show trial time remaining
-            Text(
-                text = calcTrialTimeRemainingString(appSettings.installAtEpochMilli),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp),
-                fontStyle = FontStyle.Normal,
-                fontSize = MaterialTheme.typography.body1.fontSize,
-                textAlign = TextAlign.Center,
-            )
+            DisplayTrialTimeRemaining(trialTimeRemainingStr)
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
@@ -199,7 +199,7 @@ fun PurchaseProductButton(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp)
-                    .background(MaterialTheme.colors.onError),
+                    .background(MaterialTheme.colors.error),
                 fontStyle = FontStyle.Normal,
                 fontSize = MaterialTheme.typography.body1.fontSize,
                 textAlign = TextAlign.Center,
@@ -242,4 +242,18 @@ fun PurchaseProductButton(
         }
         Spacer(modifier = Modifier.height(16.dp))
     }
+}
+
+@Composable
+private fun DisplayTrialTimeRemaining(trialTimeRemainingStr: String) {
+    Text(
+        text = trialTimeRemainingStr,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp),
+        fontStyle = FontStyle.Normal,
+        fontSize = MaterialTheme.typography.body1.fontSize,
+        textAlign = TextAlign.Center,
+        color = MaterialTheme.colors.onSurface.copy(alpha = 0.75f)
+    )
 }
