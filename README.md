@@ -10,6 +10,8 @@ Listen to historical markers as you travel - Learn about local history as you dr
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.9.22-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
 ![badge-android](http://img.shields.io/badge/platform-android-6EDB8D.svg?style=flat)
 ![badge-ios](http://img.shields.io/badge/platform-ios-CDCDCD.svg?style=flat)
+![badge-kmp](https://img.shields.io/badge/Compose-1.5.3-blue)
+![badge-kmp](https://img.shields.io/badge/KMP-1.5.12-blue)
 
 ### YouTube series following the development of the app: 
 
