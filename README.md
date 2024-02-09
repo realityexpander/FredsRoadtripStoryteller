@@ -14,7 +14,7 @@ Listen to historical markers as you travel - Learn about local history as you dr
 ### YouTube series following the development of the app: 
 
 [<img alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/451b11ae-5dd8-4dd1-ae93-6739a76df4b7" width="300">](https://youtube.com/playlist?list=PLzUxWOrVXB4QmB3xvfjqkOMDZpwZnFb2x&si=e9IBn124BJKA57Ah)
-
+![YouTube Video Views](https://img.shields.io/youtube/views/:Sgo8GeIiw0s)
 
 ### Assets
 - Wiki: [Fred's Roadtrip Storyteller Wiki](https://github.com/realityexpander/FredsRoadtripStoryteller/wiki)
