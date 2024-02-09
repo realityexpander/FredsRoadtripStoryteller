@@ -7,6 +7,10 @@ Listen to historical markers as you travel - Learn about local history as you dr
 - KMP (Kotlin Multi-Platform) Compose-based Proof-of-concept experimental app using Google Maps for iOS and Android.
 - Pure Kotlin App using _SHARED_ core and _SHARED_ Compose based UI, running in native Kotlin.
 
+[![Kotlin](https://img.shields.io/badge/Kotlin-1.9.22-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
+![badge-android](http://img.shields.io/badge/platform-android-6EDB8D.svg?style=flat)
+![badge-ios](http://img.shields.io/badge/platform-ios-CDCDCD.svg?style=flat)
+
 ### YouTube series following the development of the app: 
 
 [<img alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/451b11ae-5dd8-4dd1-ae93-6739a76df4b7" width="300">](https://youtube.com/playlist?list=PLzUxWOrVXB4QmB3xvfjqkOMDZpwZnFb2x&si=e9IBn124BJKA57Ah)
