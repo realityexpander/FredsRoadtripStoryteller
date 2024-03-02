@@ -746,7 +746,6 @@ private fun panZoomImageButton(
     }
 }
 
-@OptIn(ExperimentalKamelApi::class)
 @Composable
 fun PanZoomImageDialog(
     onDismiss: () -> Unit = {},
