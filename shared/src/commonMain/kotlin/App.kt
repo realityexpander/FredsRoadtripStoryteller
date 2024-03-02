@@ -704,27 +704,9 @@ fun App(
                             }
                         }
 
-//                        markerDetailsLoadingState = loadMarkerDetails(marker) // reactive composable
-//
-//                        // Update the `marker` with Marker details (as they are loaded)
-//                        LaunchedEffect(markerDetailsLoadingState) {
-//                            val updatedDetailsMarker =
-//                                (markerDetailsLoadingState as? LoadingState.Loaded<Marker>)?.data
-//
-//                            // Did fresh details get loaded?
-//                            if (updatedDetailsMarker != null
-//                                && markerDetailsLoadingState is LoadingState.Loaded
-//                                && !marker.isDetailsLoaded
-//                                && updatedDetailsMarker.isDetailsLoaded
-//                            ) {
-//                                markersRepo.updateMarkerDetails(updatedDetailsMarker)
-//                            }
-//                        }
-
                         MarkerDetailsScreen(
                             marker,
                             finalMarkers,
-//                            markerDetailsLoadingState,
                             isTextToSpeechCurrentlySpeaking = isMarkerCurrentlySpeaking,
                             loadMarkerDetailsFunc = { markerToFetch, useFakeData, onUpdateMarkerDetails ->
                                 loadMarkerDetails(
