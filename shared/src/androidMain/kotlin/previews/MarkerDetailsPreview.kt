@@ -44,7 +44,7 @@ fun MarkerDetailsPreview(
     AppTheme {
         Surface {
             MarkerDetailsScreen(
-                baseMarker = Marker(
+                marker = Marker(
                     id = "M69420",
                     position = LatLong(
                         latitude = 0.0,

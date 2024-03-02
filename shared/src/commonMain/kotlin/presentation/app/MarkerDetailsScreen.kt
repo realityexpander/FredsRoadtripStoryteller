@@ -82,7 +82,7 @@ const val kMaxWeightOfBottomDrawer = 0.9f // 90% of screen height (10% peeking t
 @OptIn(ExperimentalKamelApi::class)
 @Composable
 fun MarkerDetailsScreen(
-    baseMarker: Marker,
+    marker: Marker,
     markerLoadingState: LoadingState<Marker>,
     isTextToSpeechCurrentlySpeaking: Boolean = false,
     onClickStartSpeakingMarker: (Marker) -> Unit = {},
@@ -166,11 +166,11 @@ fun MarkerDetailsScreen(
 
             // Title & Close Button
             // Subtitle & Speak Button
-            TitleCloseSubtitleSpeakSection(baseMarker, onDismiss)
+            TitleCloseSubtitleSpeakSection(marker, onDismiss)
 
             // ID, Navigate to Marker, Locate on Map, Speak
             MarkerIdWithNavigateLocateSpeakActionButtonSection(
-                baseMarker,
+                marker,
                 isTextToSpeechCurrentlySpeaking,
                 coroutineScope,
                 onLocateMarkerOnMap,
