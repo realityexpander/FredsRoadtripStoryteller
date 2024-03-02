@@ -341,10 +341,10 @@ fun App(
             }
         }
 
-        // Marker Details Load Result (for Bottom Sheet)
-        var markerDetailsLoadingState by remember {
-            mutableStateOf<LoadingState<Marker>>(LoadingState.Loading)
-        }
+//        // Marker Details Load Result (for Bottom Sheet)
+//        var markerDetailsLoadingState by remember {
+//            mutableStateOf<LoadingState<Marker>>(LoadingState.Loading)
+//        }
 
         // Optimize energy usage by pausing "seen marker" tracking when user is not moving.
         var isSeenTrackingPaused by remember { mutableStateOf(false) }
@@ -704,27 +704,34 @@ fun App(
                             }
                         }
 
-                        markerDetailsLoadingState = loadMarkerDetails(marker) // reactive composable
-
-                        // Update the `marker` with Marker details (as they are loaded)
-                        LaunchedEffect(markerDetailsLoadingState) {
-                            val updatedDetailsMarker =
-                                (markerDetailsLoadingState as? LoadingState.Loaded<Marker>)?.data
-
-                            // Did fresh details get loaded?
-                            if (updatedDetailsMarker != null
-                                && markerDetailsLoadingState is LoadingState.Loaded
-                                && !marker.isDetailsLoaded
-                                && updatedDetailsMarker.isDetailsLoaded
-                            ) {
-                                markersRepo.updateMarkerDetails(updatedDetailsMarker)
-                            }
-                        }
+//                        markerDetailsLoadingState = loadMarkerDetails(marker) // reactive composable
+//
+//                        // Update the `marker` with Marker details (as they are loaded)
+//                        LaunchedEffect(markerDetailsLoadingState) {
+//                            val updatedDetailsMarker =
+//                                (markerDetailsLoadingState as? LoadingState.Loaded<Marker>)?.data
+//
+//                            // Did fresh details get loaded?
+//                            if (updatedDetailsMarker != null
+//                                && markerDetailsLoadingState is LoadingState.Loaded
+//                                && !marker.isDetailsLoaded
+//                                && updatedDetailsMarker.isDetailsLoaded
+//                            ) {
+//                                markersRepo.updateMarkerDetails(updatedDetailsMarker)
+//                            }
+//                        }
 
                         MarkerDetailsScreen(
                             marker,
-                            markerDetailsLoadingState,
+                            finalMarkers,
+//                            markerDetailsLoadingState,
                             isTextToSpeechCurrentlySpeaking = isMarkerCurrentlySpeaking,
+                            loadMarkerDetailsFunc = { markerToFetch, useFakeData, onUpdateMarkerDetails ->
+                                loadMarkerDetails(
+                                    markerToFetch,
+                                    onUpdateMarkerDetails = onUpdateMarkerDetails
+                                )
+                            },
                             onClickStartSpeakingMarker = { speakMarker ->
                                 activeSpeakingMarker = speakRecentlySeenMarker(
                                     RecentlySeenMarker(speakMarker.id, speakMarker.title),
@@ -751,6 +758,9 @@ fun App(
                                     shouldZoomCameraToLatLongZoom =
                                         LatLongZoom(locateMarker.position, 14f)
                                 }
+                            },
+                            onUpdateMarkerDetails = { updatedMarker ->
+                                markersRepo.updateMarkerDetails(updatedMarker)
                             },
                             onDismiss = {
                                 coroutineScope.launch {

@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.rememberTransformableState
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -22,6 +24,10 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PageSize
+import androidx.compose.foundation.pager.PagerDefaults
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
@@ -43,6 +49,7 @@ import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -64,6 +71,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import data.loadMarkerDetails.loadMarkerDetails
 import data.util.LoadingState
 import io.kamel.core.ExperimentalKamelApi
 import io.kamel.core.Resource
@@ -71,6 +79,7 @@ import io.kamel.image.KamelImage
 import io.kamel.image.KamelImageBox
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import openNavigationAction
 import presentation.maps.Marker
@@ -79,192 +88,380 @@ import stopTextToSpeech
 
 const val kMaxWeightOfBottomDrawer = 0.9f // 90% of screen height (10% peeking thru at the top)
 
-@OptIn(ExperimentalKamelApi::class)
+@OptIn(ExperimentalKamelApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun MarkerDetailsScreen(
-    marker: Marker,
-    markerLoadingState: LoadingState<Marker>,
+    initialDisplayMarker: Marker,  // Which marker to display first.
+    markers: StateFlow<List<Marker>>,
     isTextToSpeechCurrentlySpeaking: Boolean = false,
     onClickStartSpeakingMarker: (Marker) -> Unit = {},
     onLocateMarkerOnMap: (Marker) -> Unit = {},
+    onUpdateMarkerDetails: (marker: Marker) -> Unit = {},
     onDismiss: () -> Unit = {},
+    loadMarkerDetailsFunc: @Composable (
+            marker: Marker,
+            useFakeData: Boolean,
+            onUpdateMarkerDetails: (marker: Marker) -> Unit
+        ) -> LoadingState<Marker> = { marker, useFakeData, onUpdateDetails ->
+            loadMarkerDetails(marker, useFakeData, onUpdateDetails)
+        }
 ) {
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     var isPanZoomImageDialogVisible by remember { mutableStateOf(false) }
+    var currentDisplayMarker by remember { mutableStateOf(initialDisplayMarker) }
 
-    // Show Error (if any)
-    if (markerLoadingState is LoadingState.Error) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(kMaxWeightOfBottomDrawer)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            Spacer(modifier = Modifier.padding(8.dp))
+    var markerDetailsLoadingState by remember {
+        mutableStateOf<LoadingState<Marker>>(LoadingState.Loading)
+    }
+    markerDetailsLoadingState =
+        loadMarkerDetailsFunc( // a reactive composable
+            currentDisplayMarker,
+            false,  // todo setup for automated testing
+            onUpdateMarkerDetails
+        )
 
-            // Error message
-            Text(
-                markerLoadingState.errorMessage,
+    val pagerState = rememberPagerState(
+        initialPage = 1,
+        initialPageOffsetFraction = 0f
+    ) {
+        // provide pageCount
+        markers.value.size
+    }
+    LaunchedEffect(Unit, pagerState.currentPage) {
+        currentDisplayMarker = markers.value[pagerState.currentPage]
+    }
+
+    HorizontalPager(
+        modifier = Modifier,
+        state = pagerState,
+        pageSpacing = 0.dp,
+        userScrollEnabled = true,
+        reverseLayout = false,
+        contentPadding = PaddingValues(0.dp),
+        beyondBoundsPageCount = 0,
+        pageSize = PageSize.Fill,
+        flingBehavior = PagerDefaults.flingBehavior(state = pagerState),
+        key = { page -> markers.value[page].id },
+    ) {
+        // Show Error (if any)
+        if (markerDetailsLoadingState is LoadingState.Error) {
+
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(
-                        MaterialTheme.colors.error,
-                        shape = MaterialTheme.shapes.medium
-                    ),
-                fontSize = MaterialTheme.typography.h5.fontSize,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colors.onError,
-            )
-            Spacer(modifier = Modifier.padding(16.dp))
-
-            // OK Button
-            Button(
-                onClick = {
-                    onDismiss()
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .background(
-                        MaterialTheme.colors.primary,
-                        shape = MaterialTheme.shapes.medium
-                    )
+                    .fillMaxHeight(kMaxWeightOfBottomDrawer)
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
             ) {
+
+                Spacer(modifier = Modifier.padding(8.dp))
+
+                // Error message
                 Text(
-                    "OK",
+                    (markerDetailsLoadingState as LoadingState.Error).errorMessage,
                     modifier = Modifier
-                        .padding(8.dp)
-                        .fillMaxWidth(),
-                    fontSize = MaterialTheme.typography.h6.fontSize,
+                        .fillMaxWidth()
+                        .background(
+                            MaterialTheme.colors.error,
+                            shape = MaterialTheme.shapes.medium
+                        ),
+                    fontSize = MaterialTheme.typography.h5.fontSize,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
-                    color = MaterialTheme.colors.onPrimary,
+                    color = MaterialTheme.colors.onError,
                 )
+                Spacer(modifier = Modifier.padding(16.dp))
+
+                // OK Button
+                Button(
+                    onClick = {
+                        onDismiss()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .background(
+                            MaterialTheme.colors.primary,
+                            shape = MaterialTheme.shapes.medium
+                        )
+                ) {
+                    Text(
+                        "OK",
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .fillMaxWidth(),
+                        fontSize = MaterialTheme.typography.h6.fontSize,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colors.onPrimary,
+                    )
+                }
             }
+
+            return@HorizontalPager
         }
 
-        return
-    }
+        // Show Loading
+        if (markerDetailsLoadingState is LoadingState.Loading) {
 
-    // Show Loading
-    if(markerLoadingState is LoadingState.Loading) {
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(kMaxWeightOfBottomDrawer)
-                .padding(start = 16.dp, end = 16.dp, bottom = 0.dp, top = 0.dp)
-            ,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top,
-        ) {
-
-            // Title & Close Button
-            // Subtitle & Speak Button
-            TitleCloseSubtitleSpeakSection(marker, onDismiss)
-
-            // ID, Navigate to Marker, Locate on Map, Speak
-            MarkerIdWithNavigateLocateSpeakActionButtonSection(
-                marker,
-                isTextToSpeechCurrentlySpeaking,
-                coroutineScope,
-                onLocateMarkerOnMap,
-                onClickStartSpeakingMarker,
-                onDismiss
-            )
-            Spacer(modifier = Modifier.padding(16.dp))
-
-            Text(
-                "Loading Details...",
-                modifier = Modifier.fillMaxWidth(),
-                fontSize = MaterialTheme.typography.h6.fontSize,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colors.onBackground,
-            )
-            Spacer(modifier = Modifier.padding(32.dp))
-
-            CircularProgressIndicator(
-                modifier = Modifier.size(64.dp),
-                color = MaterialTheme.colors.onBackground,
-                strokeWidth = 4.dp,
-                progress = 0.5f
-            )
-        }
-
-        return
-    }
-
-    // Show Loaded Marker Details
-    AnimatedVisibility(
-        markerLoadingState is LoadingState.Loaded<Marker>,
-        enter = fadeIn(TweenSpec(800)),
-        exit = fadeOut(TweenSpec(500))
-    ) {
-        markerLoadingState as LoadingState.Loaded<Marker>
-        val marker = markerLoadingState.data
-
-        val painterResource: Resource<Painter> =
-            asyncPainterResource(
-                data = marker.mainPhotoUrl,
-                filterQuality = FilterQuality.Medium,
-            )
-        var panZoomDialogImageUrl by remember {
-            mutableStateOf(marker.mainPhotoUrl)
-        }
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(kMaxWeightOfBottomDrawer) // lets some map show through
-                .padding(start = 16.dp, end = 16.dp, bottom = 0.dp, top = 0.dp)
-        ) {
-            // Title & Close Button
-            // Subtitle & Speak Button
-            TitleCloseSubtitleSpeakSection(marker, onDismiss)
-
-            // ID, Navigate to Marker, Locate on Map, Speak
-            MarkerIdWithNavigateLocateSpeakActionButtonSection(
-                marker,
-                isTextToSpeechCurrentlySpeaking,
-                coroutineScope,
-                onLocateMarkerOnMap,
-                onClickStartSpeakingMarker,
-                onDismiss
-            )
-            Spacer(modifier = Modifier.padding(4.dp))
-
-            // Marker Info Content
             Column(
-                Modifier
-                    .weight(4f)
-                    .verticalScroll(
-                        scrollState,
-                        enabled = true,
-                    ),
-                horizontalAlignment = Alignment.Start,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(kMaxWeightOfBottomDrawer)
+                    .padding(start = 16.dp, end = 16.dp, bottom = 0.dp, top = 0.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top,
             ) {
 
-                // Main Photo
-                if(!LocalInspectionMode.current) {
-                    if (marker.mainPhotoUrl.isNotEmpty()) {
-                        Surface(
-                            modifier = Modifier.background(
-                                MaterialTheme.colors.background,
-                                shape = MaterialTheme.shapes.medium,
-                            )
-                        ) {
-                            var isFinishedLoading by remember {
-                                mutableStateOf(false)
-                            }
+                // Title & Close Button
+                // Subtitle & Speak Button
+                TitleCloseSubtitleSpeakSection(currentDisplayMarker, onDismiss)
 
-                            BoxWithConstraints(
+                // ID, Navigate to Marker, Locate on Map, Speak
+                MarkerIdWithNavigateLocateSpeakActionButtonSection(
+                    currentDisplayMarker,
+                    isTextToSpeechCurrentlySpeaking,
+                    coroutineScope,
+                    onLocateMarkerOnMap,
+                    onClickStartSpeakingMarker,
+                    onDismiss
+                )
+                Spacer(modifier = Modifier.padding(16.dp))
+
+                Text(
+                    "Loading Details...",
+                    modifier = Modifier.fillMaxWidth(),
+                    fontSize = MaterialTheme.typography.h6.fontSize,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colors.onBackground,
+                )
+                Spacer(modifier = Modifier.padding(32.dp))
+
+                CircularProgressIndicator(
+                    modifier = Modifier.size(64.dp),
+                    color = MaterialTheme.colors.onBackground,
+                    strokeWidth = 4.dp,
+                    progress = 0.5f
+                )
+            }
+
+            return@HorizontalPager
+        }
+
+        // Show Loaded Marker Details
+        AnimatedVisibility(
+            markerDetailsLoadingState is LoadingState.Loaded<Marker>,
+            enter = fadeIn(TweenSpec(800)),
+            exit = fadeOut(TweenSpec(500))
+        ) {
+            markerDetailsLoadingState as LoadingState.Loaded<Marker>
+            val displayMarker = (markerDetailsLoadingState as LoadingState.Loaded<Marker>).data
+
+            val painterResource: Resource<Painter> =
+                asyncPainterResource(
+                    data = displayMarker.mainPhotoUrl,
+                    filterQuality = FilterQuality.Medium,
+                )
+            var panZoomDialogImageUrl by remember {
+                mutableStateOf(displayMarker.mainPhotoUrl)
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(kMaxWeightOfBottomDrawer) // lets some map show through
+                    .padding(start = 16.dp, end = 16.dp, bottom = 0.dp, top = 0.dp)
+            ) {
+                // Title & Close Button
+                // Subtitle & Speak Button
+                TitleCloseSubtitleSpeakSection(displayMarker, onDismiss)
+
+                // ID, Navigate to Marker, Locate on Map, Speak
+                MarkerIdWithNavigateLocateSpeakActionButtonSection(
+                    displayMarker,
+                    isTextToSpeechCurrentlySpeaking,
+                    coroutineScope,
+                    onLocateMarkerOnMap,
+                    onClickStartSpeakingMarker,
+                    onDismiss
+                )
+                Spacer(modifier = Modifier.padding(4.dp))
+
+                // Marker Info Content
+                Column(
+                    Modifier
+                        .weight(4f)
+                        .verticalScroll(
+                            scrollState,
+                            enabled = true,
+                        ),
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.Top,
+                ) {
+
+                    // Main Photo
+                    if (!LocalInspectionMode.current) {
+                        if (displayMarker.mainPhotoUrl.isNotEmpty()) {
+                            Surface(
+                                modifier = Modifier.background(
+                                    MaterialTheme.colors.background,
+                                    shape = MaterialTheme.shapes.medium,
+                                )
+                            ) {
+                                var isFinishedLoading by remember {
+                                    mutableStateOf(false)
+                                }
+
+                                BoxWithConstraints(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .aspectRatio(1280f / 959f)
+                                        .background(
+                                            MaterialTheme.colors.surface,
+                                            shape = MaterialTheme.shapes.medium
+                                        )
+                                ) {
+
+                                    KamelImageBox(
+                                        resource = painterResource,
+                                        modifier = Modifier
+                                            .fillMaxWidth(),
+                                        onLoading = { progress ->
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxSize(),
+                                                contentAlignment = Alignment.Center,
+                                            ) {
+                                                if (progress < 0.05f) {
+                                                    Text(
+                                                        "Loading marker image...",
+                                                        color = MaterialTheme.colors.onSurface,
+                                                    )
+                                                } else {
+                                                    CircularProgressIndicator(
+                                                        progress,
+                                                        color = MaterialTheme.colors.onSurface,
+                                                        backgroundColor = MaterialTheme.colors.onSurface.copy(
+                                                            alpha = 0.4f
+                                                        ),
+                                                    )
+                                                }
+
+                                                // Prevent flicker of progress indicator (ugh)
+                                                if (progress > 0.85f) {
+                                                    isFinishedLoading = true
+                                                }
+                                            }
+                                        },
+                                        onFailure = { exception: Throwable ->
+                                            coroutineScope.launch {
+                                                snackbarHostState.showSnackbar(
+                                                    message = "Image loading error: " + exception.message.toString(),
+                                                    duration = SnackbarDuration.Long
+                                                )
+                                            }
+                                        },
+                                        animationSpec = if (isFinishedLoading)
+                                            TweenSpec(800)
+                                        else
+                                            null,
+                                        onSuccess = { painter ->
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .clip(MaterialTheme.shapes.medium)
+                                            ) {
+                                                Image(
+                                                    painter,
+                                                    displayMarker.title,
+                                                    contentScale = ContentScale.Crop,
+                                                    alignment = Alignment.Center,
+                                                    modifier = Modifier.fillMaxSize()
+                                                )
+                                            }
+                                        }
+                                    )
+
+                                    // Zoom Image Button
+                                    panZoomImageButton(
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .padding(8.dp),
+                                        onClick = {
+                                            isPanZoomImageDialogVisible = true
+                                            panZoomDialogImageUrl = displayMarker.mainPhotoUrl
+                                        }
+                                    )
+                                }
+                            }
+                        } else {
+                            PreviewPlaceholder(
+                                "No image found for this marker",
+                                placeholderKind = ""
+                            )
+                        }
+                    } else {
+                        PreviewPlaceholder("Another Image")
+                    }
+
+                    // Attributions for photo
+                    if (displayMarker.photoAttributions.isNotEmpty()) {
+                        if (displayMarker.photoAttributions[0].isNotBlank()) {
+                            Text(
+                                "Photo Credit: " + displayMarker.photoAttributions[0],
+                                fontSize = MaterialTheme.typography.overline.fontSize,
+                                textAlign = TextAlign.End,
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.padding(8.dp))
+
+                    // Show loading error (if any)
+                    SnackbarHost(
+                        hostState = snackbarHostState,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(0.dp, 64.dp)
+                    ) { data ->
+                        Text(
+                            text = data.message,
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .fillMaxWidth()
+                                .background(
+                                    MaterialTheme.colors.error,
+                                    shape = MaterialTheme.shapes.medium
+                                ),
+                            color = MaterialTheme.colors.onError,
+                            textAlign = TextAlign.Center
+
+                        )
+                    }
+
+                    // Inscription
+                    if (displayMarker.englishInscription.isNotBlank()) { // todo add spanish translation
+                        Text(
+                            displayMarker.englishInscription,
+                            fontSize = MaterialTheme.typography.body2.fontSize,
+                        )
+                    } else {
+                        Text(
+                            displayMarker.inscription,
+                            fontSize = MaterialTheme.typography.body2.fontSize,
+                        )
+                    }
+                    Spacer(modifier = Modifier.padding(8.dp))
+                    Divider()
+                    Spacer(modifier = Modifier.padding(8.dp))
+
+                    // More Photos
+                    displayMarker.markerPhotos.forEachIndexed { index, photoUrl ->
+                        if (index > 0) {
+                            Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .aspectRatio(1280f / 959f)
@@ -273,65 +470,15 @@ fun MarkerDetailsScreen(
                                         shape = MaterialTheme.shapes.medium
                                     )
                             ) {
-
-                                KamelImageBox(
-                                    resource = painterResource,
+                                KamelImage(
+                                    resource = asyncPainterResource(
+                                        data = photoUrl,
+                                        filterQuality = FilterQuality.Medium,
+                                    ),
+                                    contentDescription = null,
                                     modifier = Modifier
                                         .fillMaxWidth(),
-                                    onLoading = { progress ->
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxSize(),
-                                            contentAlignment = Alignment.Center,
-                                        ) {
-                                            if (progress < 0.05f) {
-                                                Text(
-                                                    "Loading marker image...",
-                                                    color = MaterialTheme.colors.onSurface,
-                                                )
-                                            } else {
-                                                CircularProgressIndicator(
-                                                    progress,
-                                                    color = MaterialTheme.colors.onSurface,
-                                                    backgroundColor = MaterialTheme.colors.onSurface.copy(
-                                                        alpha = 0.4f
-                                                    ),
-                                                )
-                                            }
-
-                                            // Prevent flicker of progress indicator (ugh)
-                                            if (progress > 0.85f) {
-                                                isFinishedLoading = true
-                                            }
-                                        }
-                                    },
-                                    onFailure = { exception: Throwable ->
-                                        coroutineScope.launch {
-                                            snackbarHostState.showSnackbar(
-                                                message = "Image loading error: " + exception.message.toString(),
-                                                duration = SnackbarDuration.Long
-                                            )
-                                        }
-                                    },
-                                    animationSpec = if (isFinishedLoading)
-                                        TweenSpec(800)
-                                    else
-                                        null,
-                                    onSuccess = { painter ->
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .clip(MaterialTheme.shapes.medium)
-                                        ) {
-                                            Image(
-                                                painter,
-                                                marker.title,
-                                                contentScale = ContentScale.Crop,
-                                                alignment = Alignment.Center,
-                                                modifier = Modifier.fillMaxSize()
-                                            )
-                                        }
-                                    }
+                                    contentScale = ContentScale.Crop,
                                 )
 
                                 // Zoom Image Button
@@ -341,166 +488,72 @@ fun MarkerDetailsScreen(
                                         .padding(8.dp),
                                     onClick = {
                                         isPanZoomImageDialogVisible = true
-                                        panZoomDialogImageUrl = marker.mainPhotoUrl
+                                        panZoomDialogImageUrl = photoUrl
                                     }
                                 )
                             }
-                        }
-                    } else {
-                        PreviewPlaceholder(
-                            "No image found for this marker",
-                            placeholderKind = ""
-                        )
-                    }
-                } else {
-                    PreviewPlaceholder("Another Image")
-                }
-
-                // Attributions for photo
-                if(marker.photoAttributions.isNotEmpty()) {
-                    if (marker.photoAttributions[0].isNotBlank()) {
-                        Text(
-                            "Photo Credit: " + marker.photoAttributions[0],
-                            fontSize = MaterialTheme.typography.overline.fontSize,
-                            textAlign = TextAlign.End,
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.padding(8.dp))
-
-                // Show loading error (if any)
-                SnackbarHost(
-                    hostState = snackbarHostState,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(0.dp, 64.dp)
-                ) { data ->
-                    Text(
-                        text = data.message,
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .fillMaxWidth()
-                            .background(
-                                MaterialTheme.colors.error,
-                                shape = MaterialTheme.shapes.medium
-                            ),
-                        color = MaterialTheme.colors.onError,
-                        textAlign = TextAlign.Center
-
-                    )
-                }
-
-                // Inscription
-                if (marker.englishInscription.isNotBlank()) { // todo add spanish translation
-                    Text(
-                        marker.englishInscription,
-                        fontSize = MaterialTheme.typography.body2.fontSize,
-                    )
-                } else {
-                    Text(
-                        marker.inscription,
-                        fontSize = MaterialTheme.typography.body2.fontSize,
-                    )
-                }
-                Spacer(modifier = Modifier.padding(8.dp))
-                Divider()
-                Spacer(modifier = Modifier.padding(8.dp))
-
-                // More Photos
-                marker.markerPhotos.forEachIndexed { index, photoUrl ->
-                    if (index > 0) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(1280f / 959f)
-                                .background(
-                                    MaterialTheme.colors.surface,
-                                    shape = MaterialTheme.shapes.medium
+                            // Caption for photo
+                            if (displayMarker.photoCaptions[index].isNotBlank()) {
+                                Text(
+                                    displayMarker.photoCaptions[index],
+                                    fontSize = MaterialTheme.typography.caption.fontSize,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.fillMaxWidth()
                                 )
-                        ) {
-                            KamelImage(
-                                resource = asyncPainterResource(
-                                    data = photoUrl,
-                                    filterQuality = FilterQuality.Medium,
-                                ),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                contentScale = ContentScale.Crop,
-                            )
-
-                            // Zoom Image Button
-                            panZoomImageButton(
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .padding(8.dp),
-                                onClick = {
-                                    isPanZoomImageDialogVisible = true
-                                    panZoomDialogImageUrl = photoUrl
-                                }
-                            )
+                            }
+                            // Attributions for photo
+                            if (displayMarker.photoAttributions[index].isNotBlank()) {
+                                Text(
+                                    "Photo Credit: " + displayMarker.photoAttributions[index],
+                                    fontSize = MaterialTheme.typography.overline.fontSize,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                            Spacer(modifier = Modifier.padding(8.dp))
                         }
-                        // Caption for photo
-                        if (marker.photoCaptions[index].isNotBlank()) {
-                            Text(
-                                marker.photoCaptions[index],
-                                fontSize = MaterialTheme.typography.caption.fontSize,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                        // Attributions for photo
-                        if (marker.photoAttributions[index].isNotBlank()) {
-                            Text(
-                                "Photo Credit: " + marker.photoAttributions[index],
-                                fontSize = MaterialTheme.typography.overline.fontSize,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                        Spacer(modifier = Modifier.padding(8.dp))
                     }
-                }
 
-                // Erected
-                if(marker.erected.isNotBlank()) {
-                    Text(
-                        "Erected " + marker.erected,
-                        fontSize = MaterialTheme.typography.body1.fontSize,
-                    )
-                }
+                    // Erected
+                    if (displayMarker.erected.isNotBlank()) {
+                        Text(
+                            "Erected " + displayMarker.erected,
+                            fontSize = MaterialTheme.typography.body1.fontSize,
+                        )
+                    }
 
-                // Location details
-                if(marker.location.isNotBlank()) {
-                    Text(
-                        marker.location,
-                        fontSize = MaterialTheme.typography.body1.fontSize,
-                    )
-                } else {
-                    Text(
-                        "Marker Latitude: ${marker.position.latitude}",
-                        fontSize = MaterialTheme.typography.body1.fontSize,
-                        fontWeight = FontWeight.Normal,
-                    )
-                    Text(
-                        "Marker Longitude: ${marker.position.longitude}",
-                        fontSize = MaterialTheme.typography.body1.fontSize,
-                        fontWeight = FontWeight.Normal,
-                    )
+                    // Location details
+                    if (displayMarker.location.isNotBlank()) {
+                        Text(
+                            displayMarker.location,
+                            fontSize = MaterialTheme.typography.body1.fontSize,
+                        )
+                    } else {
+                        Text(
+                            "Marker Latitude: ${displayMarker.position.latitude}",
+                            fontSize = MaterialTheme.typography.body1.fontSize,
+                            fontWeight = FontWeight.Normal,
+                        )
+                        Text(
+                            "Marker Longitude: ${displayMarker.position.longitude}",
+                            fontSize = MaterialTheme.typography.body1.fontSize,
+                            fontWeight = FontWeight.Normal,
+                        )
+                    }
                 }
             }
-        }
 
-        // Show Pan/Zoom Image Dialog
-        if(isPanZoomImageDialogVisible) {
-            PanZoomImageDialog(
-                onDismiss = {
-                    coroutineScope.launch {
-                        isPanZoomImageDialogVisible = false
-                    }
-                },
-                imageUrl = panZoomDialogImageUrl
-            )
+            // Show Pan/Zoom Image Dialog
+            if (isPanZoomImageDialogVisible) {
+                PanZoomImageDialog(
+                    onDismiss = {
+                        coroutineScope.launch {
+                            isPanZoomImageDialogVisible = false
+                        }
+                    },
+                    imageUrl = panZoomDialogImageUrl
+                )
+            }
         }
     }
 }
