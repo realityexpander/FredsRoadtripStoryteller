@@ -76,40 +76,42 @@ https://github.com/JetBrains/compose-multiplatform/tree/master/examples/cocoapod
 - Note: There are many spurious warning messages and pop-up warnings. It seems these can be safely ignored.
 
 ## Latest commit Ran & Built with:
-- Android Studio Hedgehog | 2023.1.1 Patch 2
-- Build #AI-231.9392.1.2311.11330709, built on January 18, 2024
-- Runtime version: 17.0.7+0-17.0.7b1000.6-10550314 aarch64
-- VM: OpenJDK 64-Bit Server VM by JetBrains s.r.o.
-- macOS 13.6.3
-- GC: G1 Young Generation, G1 Old Generation
-- Memory: 4096M
-- Cores: 10
-- Metal Rendering is ON
-- Registry:
-- analyze.exceptions.on.the.fly=true
-- external.system.auto.import.disabled=true
-- debugger.new.tool.window.layout=true
-- ide.text.editor.with.preview.show.floating.toolbar=false
-- ide.tooltip.initialDelay=812
-- ide.experimental.ui=true
-- ide.browser.jcef.gpu.disable=true
-- 
-- Non-Bundled Plugins:
-- com.c5inco.modifiers (1.0.14)
-- wu.seal.tool.jsontokotlin (3.7.4)
-- idea.plugin.protoeditor (231.9225.5)
-- com.wakatime.intellij.plugin (14.3.11)
-- com.github.airsaid.androidlocalize (3.0.0)
-- DBN (3.4.2700.0)
-- net.seesharpsoft.intellij.plugins.csv (3.2.3-231)
-- com.github.copilot (1.4.13.4415)
-- com.jetbrains.kmm (0.8.2(231)-25)
-- com.squareup.sqldelight (2.0.1)
-- com.developerphil.adbidea (1.6.11)
-- org.jetbrains.compose.desktop.ide (1.5.12)
-- by.overpass.svg-to-compose-intellij (0.12)
-- mobi.hsz.idea.gitignore (4.5.2)
-- com.abeade.plugin.figma.import (1.3.0)
+* Android Studio Iguana | 2023.2.1 RC 2
+* Build #AI-232.10227.8.2321.11429013, built on February 9, 2024
+* Runtime version: 17.0.9+0-17.0.9b1087.7-11185874 aarch64
+* VM: OpenJDK 64-Bit Server VM by JetBrains s.r.o.
+* macOS 13.6.3
+* GC: G1 Young Generation, G1 Old Generation
+* Memory: 4096M
+* Cores: 10
+* Metal Rendering is ON
+* Registry:
+* analyze.exceptions.on.the.fly=true
+* debugger.new.tool.window.layout=true
+* ide.tooltip.initialDelay=812
+* ide.experimental.ui=true
+* ide.browser.jcef.gpu.disable=true
+* 
+* Non-Bundled Plugins:
+* com.c5inco.modifiers (1.0.14)
+* com.intellij.javafx (1.0.4)
+* com.intellij.marketplace (232.10227.13)
+* wu.seal.tool.jsontokotlin (3.7.4)
+* org.jetbrains.kotlin (232-1.9.20-RC2-release-495-AS10072.27)
+* idea.plugin.protoeditor (232.9559.10)
+* com.wakatime.intellij.plugin (14.3.11)
+* com.github.airsaid.androidlocalize (3.0.0)
+* DBN (3.4.3073.0)
+* net.seesharpsoft.intellij.plugins.csv (3.3.0-232)
+* com.jetbrains.kmm (0.8.2(232)-20)
+* com.squareup.sqldelight (2.0.1)
+* com.developerphil.adbidea (1.6.13)
+* org.jetbrains.compose.desktop.ide (1.6.0)
+* by.overpass.svg-to-compose-intellij (0.14)
+* com.github.copilot (1.4.18.4775)
+* mobi.hsz.idea.gitignore (4.5.2)
+* com.abeade.plugin.figma.import (1.3.0)
+* 
 
 
 ### Code style
