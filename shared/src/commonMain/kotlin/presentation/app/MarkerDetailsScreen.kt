@@ -107,7 +107,6 @@ fun MarkerDetailsScreen(
             loadMarkerDetails(marker, useFakeData, onUpdateDetails)
         }
 ) {
-    val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     var isPanZoomImageDialogVisible by remember { mutableStateOf(false) }
@@ -125,7 +124,7 @@ fun MarkerDetailsScreen(
     }
 
     val markerDetailsLoadingStates by remember {
-        mutableStateOf(mutableMapOf<Int, LoadingState<Marker>>())
+        mutableStateOf(mutableMapOf<Int, LoadingState<Marker>>())  // PageNum to LoadingState
     }
 
     var panZoomDialogImageUrl by remember(pagerState.currentPage) {
@@ -152,6 +151,8 @@ fun MarkerDetailsScreen(
                 onUpdateMarkerDetails
             )
         val markerDetailsLoadingState = markerDetailsLoadingStates[page]
+
+        val scrollState = rememberScrollState()
 
         // Show Error (if any)
         if (markerDetailsLoadingState is LoadingState.Error) {
