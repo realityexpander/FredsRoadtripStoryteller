@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -115,8 +114,7 @@ fun MarkerDetailsScreen(
     // Setup HorizontalPager
     val pagerState = rememberPagerState(
         initialPage = markers.value.indexOf(initialDisplayMarker),
-        initialPageOffsetFraction = 0f
-    ) { markers.value.size } // provide pageCount
+    ) { markers.value.size /* provide pageCount */ }
     LaunchedEffect(Unit, pagerState.currentPage) {
         currentDisplayMarker = markers.value[pagerState.currentPage] // update the current marker when the user swipes
     }
@@ -134,16 +132,15 @@ fun MarkerDetailsScreen(
     HorizontalPager(
         modifier = Modifier,
         state = pagerState,
-        pageSpacing = 0.dp,
         userScrollEnabled = true,
         reverseLayout = false,
         contentPadding = PaddingValues(0.dp),
         beyondBoundsPageCount = 1,
-        pageSize = PageSize.Fill,
         flingBehavior = PagerDefaults.flingBehavior(state = pagerState),
         key = { page -> markers.value[page].id },
     ) { page ->
 
+        // Load Marker Details for this page
         markerDetailsLoadingStates[page] =
             loadMarkerDetailsFunc( // a reactive composable
                 markers.value[page],
@@ -277,6 +274,7 @@ fun MarkerDetailsScreen(
                     filterQuality = FilterQuality.Medium,
                 )
 
+            // Marker Details
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -559,8 +557,9 @@ fun MarkerDetailsScreen(
             }
         }
     }
-                // Show Pan/Zoom Image Dialog
-                if (isPanZoomImageDialogVisible) {
+
+    // Show Pan/Zoom Image Dialog
+    if (isPanZoomImageDialogVisible) {
                     PanZoomImageDialog(
                         onDismiss = {
                             coroutineScope.launch {
