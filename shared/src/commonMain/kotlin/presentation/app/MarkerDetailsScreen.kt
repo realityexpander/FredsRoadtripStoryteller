@@ -109,7 +109,7 @@ fun MarkerDetailsScreen(
     // Setup HorizontalPager
     val pagerState = rememberPagerState(
         initialPage = markers.value.indexOf(initialDisplayMarker),
-    ) { markers.value.size /* provide pageCount */ }
+    ) { markers.value.size /* provide page count */ }
     LaunchedEffect(Unit, pagerState.currentPage) {
         currentDisplayMarker = markers.value[pagerState.currentPage] // update the current marker when the user swipes
     }
