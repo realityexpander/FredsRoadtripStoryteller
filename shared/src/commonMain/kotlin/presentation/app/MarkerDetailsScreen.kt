@@ -112,21 +112,21 @@ fun MarkerDetailsScreen(
     var isPanZoomImageDialogVisible by remember { mutableStateOf(false) }
     var currentDisplayMarker by remember(initialDisplayMarker) { mutableStateOf(initialDisplayMarker) }
 
+    // Setup HorizontalPager
     val pagerState = rememberPagerState(
         initialPage = markers.value.indexOf(initialDisplayMarker),
         initialPageOffsetFraction = 0f
-    ) {
-        // provide pageCount
-        markers.value.size
-    }
+    ) { markers.value.size } // provide pageCount
     LaunchedEffect(Unit, pagerState.currentPage) {
         currentDisplayMarker = markers.value[pagerState.currentPage] // update the current marker when the user swipes
     }
 
+    // Loading States for each marker
     val markerDetailsLoadingStates by remember {
         mutableStateOf(mutableMapOf<Int, LoadingState<Marker>>())  // PageNum to LoadingState
     }
 
+    // URL of the image to show in the Pan/Zoom Image Dialog
     var panZoomDialogImageUrl by remember(pagerState.currentPage) {
         mutableStateOf("")
     }
