@@ -116,7 +116,7 @@ fun MarkerDetailsScreen(
 
     // Loading States for each marker
     val markerDetailsLoadingStates by remember {
-        mutableStateOf(mutableMapOf<Int, LoadingState<Marker>>())  // PageNum to LoadingState
+        mutableStateOf(mutableMapOf<Int, LoadingState<Marker>>())  // PageIndex to LoadingState
     }
 
     // URL of the image to show in the Pan/Zoom Image Dialog
@@ -132,16 +132,16 @@ fun MarkerDetailsScreen(
         contentPadding = PaddingValues(0.dp),
         beyondBoundsPageCount = 1,
         flingBehavior = PagerDefaults.flingBehavior(state = pagerState),
-        //key = { page -> markers.value[page].id },
-    ) { page ->
+        key = { page -> markers.value[page].id },
+    ) { PageIndex ->
         // Load Marker Details for this page
-        markerDetailsLoadingStates[page] =
+        markerDetailsLoadingStates[PageIndex] =
             loadMarkerDetailsFunc(
                 // a reactive composable
-                markers.value[page],
+                markers.value[PageIndex],
                 false,  // todo setup for automated testing
             )
-        val markerDetailsLoadingState = markerDetailsLoadingStates[page]
+        val markerDetailsLoadingState = markerDetailsLoadingStates[PageIndex]
 
         val scrollState = rememberScrollState()
 

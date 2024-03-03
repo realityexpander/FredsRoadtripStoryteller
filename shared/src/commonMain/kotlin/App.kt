@@ -703,11 +703,10 @@ fun App(
                             marker,
                             finalMarkers,
                             isTextToSpeechCurrentlySpeaking = isMarkerCurrentlySpeaking,
-                            loadMarkerDetailsFunc = { markerToFetch, useFakeData/*, onUpdateMarkerDetails*/ ->
+                            loadMarkerDetailsFunc = { markerToFetch, useFakeData ->
                                 loadMarkerDetails(
                                     markerToFetch,
                                     useFakeData = false,
-//                                    onUpdateMarkerDetails = onUpdateMarkerDetails
                                     onUpdateMarkerDetails = { updatedMarker ->
                                         markersRepo.updateMarkerDetails(updatedMarker)
                                     }
@@ -740,9 +739,6 @@ fun App(
                                         LatLongZoom(locateMarker.position, 14f)
                                 }
                             },
-//                            onUpdateMarkerDetails = { updatedMarker ->
-//                                markersRepo.updateMarkerDetails(updatedMarker)
-//                            },
                             onDismiss = {
                                 coroutineScope.launch {
                                     bottomSheetScaffoldState.bottomSheetState.collapse()
