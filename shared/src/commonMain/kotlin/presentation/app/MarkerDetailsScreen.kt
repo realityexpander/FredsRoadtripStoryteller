@@ -70,7 +70,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import data.loadMarkerDetails.loadMarkerDetails
 import data.util.LoadingState
 import io.kamel.core.ExperimentalKamelApi
 import io.kamel.core.Resource
@@ -96,15 +95,11 @@ fun MarkerDetailsScreen(
     isTextToSpeechCurrentlySpeaking: Boolean = false,
     onClickStartSpeakingMarker: (Marker) -> Unit = {},
     onLocateMarkerOnMap: (Marker) -> Unit = {},
-    onUpdateMarkerDetails: (marker: Marker) -> Unit = {},
     onDismiss: () -> Unit = {},
     loadMarkerDetailsFunc: @Composable (
             marker: Marker,
             useFakeData: Boolean,
-            onUpdateMarkerDetails: (marker: Marker) -> Unit
-        ) -> LoadingState<Marker> = { marker, useFakeData, onUpdateDetails ->
-            loadMarkerDetails(marker, useFakeData, onUpdateDetails)
-        }
+        ) -> LoadingState<Marker>
 ) {
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -137,15 +132,14 @@ fun MarkerDetailsScreen(
         contentPadding = PaddingValues(0.dp),
         beyondBoundsPageCount = 1,
         flingBehavior = PagerDefaults.flingBehavior(state = pagerState),
-        key = { page -> markers.value[page].id },
+        //key = { page -> markers.value[page].id },
     ) { page ->
-
         // Load Marker Details for this page
         markerDetailsLoadingStates[page] =
-            loadMarkerDetailsFunc( // a reactive composable
+            loadMarkerDetailsFunc(
+                // a reactive composable
                 markers.value[page],
                 false,  // todo setup for automated testing
-                onUpdateMarkerDetails
             )
         val markerDetailsLoadingState = markerDetailsLoadingStates[page]
 
@@ -263,65 +257,214 @@ fun MarkerDetailsScreen(
             markerDetailsLoadingState is LoadingState.Loaded<Marker>,
             enter = fadeIn(TweenSpec(1000)),
             exit = fadeOut(TweenSpec(1000))
-        ) {
-            val loadedMarker = markerDetailsLoadingState as LoadingState.Loaded<Marker>
-            val displayMarker = loadedMarker.data
-
-            val painterResource: Resource<Painter> =
-                asyncPainterResource(
-                    data = displayMarker.mainPhotoUrl,
-                    key = displayMarker.id,
-                    filterQuality = FilterQuality.Medium,
-                )
-
-            // Marker Details
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(kMaxWeightOfBottomDrawer) // lets some map show through
-                    .padding(start = 16.dp, end = 16.dp, bottom = 0.dp, top = 0.dp)
             ) {
-                // Title & Close Button
-                // Subtitle & Speak Button
-                TitleCloseSubtitleSpeakSection(displayMarker, onDismiss)
+                val loadedMarker = markerDetailsLoadingState as LoadingState.Loaded<Marker>
+                val displayMarker = loadedMarker.data
 
-                // ID, Navigate to Marker, Locate on Map, Speak
-                MarkerIdWithNavigateLocateSpeakActionButtonSection(
-                    displayMarker,
-                    isTextToSpeechCurrentlySpeaking,
-                    coroutineScope,
-                    onLocateMarkerOnMap,
-                    onClickStartSpeakingMarker,
-                    onDismiss
-                )
-                Spacer(modifier = Modifier.padding(4.dp))
+                val painterResource: Resource<Painter> =
+                    asyncPainterResource(
+                        data = displayMarker.mainPhotoUrl,
+                        key = displayMarker.id,
+                        filterQuality = FilterQuality.Medium,
+                    )
 
-                // Marker Info Content
+                // Marker Details
                 Column(
-                    Modifier
-                        .weight(4f)
-                        .verticalScroll(
-                            scrollState,
-                            enabled = true,
-                        ),
-                    horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.Top,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(kMaxWeightOfBottomDrawer) // lets some map show through
+                        .padding(start = 16.dp, end = 16.dp, bottom = 0.dp, top = 0.dp)
                 ) {
+                    // Title & Close Button
+                    // Subtitle & Speak Button
+                    TitleCloseSubtitleSpeakSection(displayMarker, onDismiss)
 
-                    // Main Photo
-                    if (!LocalInspectionMode.current) {
-                        if (displayMarker.mainPhotoUrl.isNotEmpty()) {
-                            Surface(
-                                modifier = Modifier.background(
-                                    MaterialTheme.colors.background,
-                                    shape = MaterialTheme.shapes.medium,
-                                )
-                            ) {
-                                var isFinishedLoading by remember {
-                                    mutableStateOf(false)
+                    // ID, Navigate to Marker, Locate on Map, Speak
+                    MarkerIdWithNavigateLocateSpeakActionButtonSection(
+                        displayMarker,
+                        isTextToSpeechCurrentlySpeaking,
+                        coroutineScope,
+                        onLocateMarkerOnMap,
+                        onClickStartSpeakingMarker,
+                        onDismiss
+                    )
+                    Spacer(modifier = Modifier.padding(4.dp))
+
+                    // Marker Info Content
+                    Column(
+                        Modifier
+                            .weight(4f)
+                            .verticalScroll(
+                                scrollState,
+                                enabled = true,
+                            ),
+                        horizontalAlignment = Alignment.Start,
+                        verticalArrangement = Arrangement.Top,
+                    ) {
+
+                        // Main Photo
+                        if (!LocalInspectionMode.current) {
+                            if (displayMarker.mainPhotoUrl.isNotEmpty()) {
+                                Surface(
+                                    modifier = Modifier.background(
+                                        MaterialTheme.colors.background,
+                                        shape = MaterialTheme.shapes.medium,
+                                    )
+                                ) {
+                                    var isFinishedLoading by remember {
+                                        mutableStateOf(false)
+                                    }
+
+                                    BoxWithConstraints(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .aspectRatio(1280f / 959f)
+                                            .background(
+                                                MaterialTheme.colors.surface,
+                                                shape = MaterialTheme.shapes.medium
+                                            )
+                                    ) {
+
+                                        KamelImageBox(
+                                            resource = painterResource,
+                                            modifier = Modifier
+                                                .fillMaxWidth(),
+                                            onLoading = { progress ->
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxSize(),
+                                                    contentAlignment = Alignment.Center,
+                                                ) {
+                                                    if (progress < 0.05f) {
+                                                        Text(
+                                                            "Loading marker image...",
+                                                            color = MaterialTheme.colors.onSurface,
+                                                        )
+                                                    } else {
+                                                        CircularProgressIndicator(
+                                                            progress,
+                                                            color = MaterialTheme.colors.onSurface,
+                                                            backgroundColor = MaterialTheme.colors.onSurface.copy(
+                                                                alpha = 0.4f
+                                                            ),
+                                                        )
+                                                    }
+
+                                                    // Prevent flicker of progress indicator (ugh)
+                                                    if (progress > 0.85f) {
+                                                        isFinishedLoading = true
+                                                    }
+                                                }
+                                            },
+                                            onFailure = { exception: Throwable ->
+                                                coroutineScope.launch {
+                                                    snackbarHostState.showSnackbar(
+                                                        message = "Image loading error: " + exception.message.toString(),
+                                                        duration = SnackbarDuration.Long
+                                                    )
+                                                }
+                                            },
+                                            animationSpec = if (isFinishedLoading)
+                                                TweenSpec(800)
+                                            else
+                                                null,
+                                            onSuccess = { painter ->
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxSize()
+                                                        .clip(MaterialTheme.shapes.medium)
+                                                ) {
+                                                    Image(
+                                                        painter,
+                                                        displayMarker.title,
+                                                        contentScale = ContentScale.Crop,
+                                                        alignment = Alignment.Center,
+                                                        modifier = Modifier.fillMaxSize()
+                                                    )
+                                                }
+                                            }
+                                        )
+
+                                        // Zoom Image Button
+                                        panZoomImageButton(
+                                            modifier = Modifier
+                                                .align(Alignment.TopEnd)
+                                                .padding(8.dp),
+                                            onClick = {
+                                                coroutineScope.launch {
+                                                    panZoomDialogImageUrl =
+                                                        displayMarker.mainPhotoUrl
+                                                    yield()
+                                                    isPanZoomImageDialogVisible = true
+                                                }
+                                            }
+                                        )
+                                    }
                                 }
+                            } else {
+                                PreviewPlaceholder(
+                                    "No image found for this marker",
+                                    placeholderKind = ""
+                                )
+                            }
+                        } else {
+                            PreviewPlaceholder("Another Image")
+                        }
 
-                                BoxWithConstraints(
+                        // Attributions for photo
+                        if (displayMarker.photoAttributions.isNotEmpty()) {
+                            if (displayMarker.photoAttributions[0].isNotBlank()) {
+                                Text(
+                                    "Photo Credit: " + displayMarker.photoAttributions[0],
+                                    fontSize = MaterialTheme.typography.overline.fontSize,
+                                    textAlign = TextAlign.End,
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.padding(8.dp))
+
+                        // Show loading error (if any)
+                        SnackbarHost(
+                            hostState = snackbarHostState,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(0.dp, 64.dp)
+                        ) { data ->
+                            Text(
+                                text = data.message,
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .fillMaxWidth()
+                                    .background(
+                                        MaterialTheme.colors.error,
+                                        shape = MaterialTheme.shapes.medium
+                                    ),
+                                color = MaterialTheme.colors.onError,
+                                textAlign = TextAlign.Center
+
+                            )
+                        }
+
+                        // Inscription
+                        if (displayMarker.englishInscription.isNotBlank()) { // todo add spanish translation
+                            Text(
+                                displayMarker.englishInscription,
+                                fontSize = MaterialTheme.typography.body2.fontSize,
+                            )
+                        } else {
+                            Text(
+                                displayMarker.inscription,
+                                fontSize = MaterialTheme.typography.body2.fontSize,
+                            )
+                        }
+                        Spacer(modifier = Modifier.padding(8.dp))
+                        Divider()
+                        Spacer(modifier = Modifier.padding(8.dp))
+
+                        // More Photos
+                        displayMarker.markerPhotos.forEachIndexed { index, photoUrl ->
+                            if (index > 0) {
+                                Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .aspectRatio(1280f / 959f)
@@ -330,65 +473,16 @@ fun MarkerDetailsScreen(
                                             shape = MaterialTheme.shapes.medium
                                         )
                                 ) {
-
-                                    KamelImageBox(
-                                        resource = painterResource,
+                                    KamelImage(
+                                        resource = asyncPainterResource(
+                                            data = photoUrl,
+                                            key = displayMarker.id,
+                                            filterQuality = FilterQuality.Medium,
+                                        ),
+                                        contentDescription = null,
                                         modifier = Modifier
                                             .fillMaxWidth(),
-                                        onLoading = { progress ->
-                                            Box(
-                                                modifier = Modifier
-                                                    .fillMaxSize(),
-                                                contentAlignment = Alignment.Center,
-                                            ) {
-                                                if (progress < 0.05f) {
-                                                    Text(
-                                                        "Loading marker image...",
-                                                        color = MaterialTheme.colors.onSurface,
-                                                    )
-                                                } else {
-                                                    CircularProgressIndicator(
-                                                        progress,
-                                                        color = MaterialTheme.colors.onSurface,
-                                                        backgroundColor = MaterialTheme.colors.onSurface.copy(
-                                                            alpha = 0.4f
-                                                        ),
-                                                    )
-                                                }
-
-                                                // Prevent flicker of progress indicator (ugh)
-                                                if (progress > 0.85f) {
-                                                    isFinishedLoading = true
-                                                }
-                                            }
-                                        },
-                                        onFailure = { exception: Throwable ->
-                                            coroutineScope.launch {
-                                                snackbarHostState.showSnackbar(
-                                                    message = "Image loading error: " + exception.message.toString(),
-                                                    duration = SnackbarDuration.Long
-                                                )
-                                            }
-                                        },
-                                        animationSpec = if (isFinishedLoading)
-                                            TweenSpec(800)
-                                        else
-                                            null,
-                                        onSuccess = { painter ->
-                                            Box(
-                                                modifier = Modifier
-                                                    .fillMaxSize()
-                                                    .clip(MaterialTheme.shapes.medium)
-                                            ) {
-                                                Image(
-                                                    painter,
-                                                    displayMarker.title,
-                                                    contentScale = ContentScale.Crop,
-                                                    alignment = Alignment.Center,
-                                                    modifier = Modifier.fillMaxSize()
-                                                )
-                                            }
-                                        }
+                                        contentScale = ContentScale.Crop,
                                     )
 
                                     // Zoom Image Button
@@ -398,177 +492,78 @@ fun MarkerDetailsScreen(
                                             .padding(8.dp),
                                         onClick = {
                                             coroutineScope.launch {
-                                                panZoomDialogImageUrl = displayMarker.mainPhotoUrl
+                                                panZoomDialogImageUrl = photoUrl
                                                 yield()
                                                 isPanZoomImageDialogVisible = true
                                             }
                                         }
                                     )
                                 }
-                            }
-                        } else {
-                            PreviewPlaceholder(
-                                "No image found for this marker",
-                                placeholderKind = ""
-                            )
-                        }
-                    } else {
-                        PreviewPlaceholder("Another Image")
-                    }
-
-                    // Attributions for photo
-                    if (displayMarker.photoAttributions.isNotEmpty()) {
-                        if (displayMarker.photoAttributions[0].isNotBlank()) {
-                            Text(
-                                "Photo Credit: " + displayMarker.photoAttributions[0],
-                                fontSize = MaterialTheme.typography.overline.fontSize,
-                                textAlign = TextAlign.End,
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.padding(8.dp))
-
-                    // Show loading error (if any)
-                    SnackbarHost(
-                        hostState = snackbarHostState,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(0.dp, 64.dp)
-                    ) { data ->
-                        Text(
-                            text = data.message,
-                            modifier = Modifier
-                                .padding(8.dp)
-                                .fillMaxWidth()
-                                .background(
-                                    MaterialTheme.colors.error,
-                                    shape = MaterialTheme.shapes.medium
-                                ),
-                            color = MaterialTheme.colors.onError,
-                            textAlign = TextAlign.Center
-
-                        )
-                    }
-
-                    // Inscription
-                    if (displayMarker.englishInscription.isNotBlank()) { // todo add spanish translation
-                        Text(
-                            displayMarker.englishInscription,
-                            fontSize = MaterialTheme.typography.body2.fontSize,
-                        )
-                    } else {
-                        Text(
-                            displayMarker.inscription,
-                            fontSize = MaterialTheme.typography.body2.fontSize,
-                        )
-                    }
-                    Spacer(modifier = Modifier.padding(8.dp))
-                    Divider()
-                    Spacer(modifier = Modifier.padding(8.dp))
-
-                    // More Photos
-                    displayMarker.markerPhotos.forEachIndexed { index, photoUrl ->
-                        if (index > 0) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .aspectRatio(1280f / 959f)
-                                    .background(
-                                        MaterialTheme.colors.surface,
-                                        shape = MaterialTheme.shapes.medium
+                                // Caption for photo
+                                if (displayMarker.photoCaptions[index].isNotBlank()) {
+                                    Text(
+                                        displayMarker.photoCaptions[index],
+                                        fontSize = MaterialTheme.typography.caption.fontSize,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier.fillMaxWidth()
                                     )
-                            ) {
-                                KamelImage(
-                                    resource = asyncPainterResource(
-                                        data = photoUrl,
-                                        key = displayMarker.id,
-                                        filterQuality = FilterQuality.Medium,
-                                    ),
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .fillMaxWidth(),
-                                    contentScale = ContentScale.Crop,
-                                )
+                                }
+                                // Attributions for photo
+                                if (displayMarker.photoAttributions[index].isNotBlank()) {
+                                    Text(
+                                        "Photo Credit: " + displayMarker.photoAttributions[index],
+                                        fontSize = MaterialTheme.typography.overline.fontSize,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                }
+                                Spacer(modifier = Modifier.padding(8.dp))
+                            }
+                        }
 
-                                // Zoom Image Button
-                                panZoomImageButton(
-                                    modifier = Modifier
-                                        .align(Alignment.TopEnd)
-                                        .padding(8.dp),
-                                    onClick = {
-                                        coroutineScope.launch {
-                                            panZoomDialogImageUrl = photoUrl
-                                            yield()
-                                            isPanZoomImageDialogVisible = true
-                                        }
-                                    }
-                                )
-                            }
-                            // Caption for photo
-                            if (displayMarker.photoCaptions[index].isNotBlank()) {
-                                Text(
-                                    displayMarker.photoCaptions[index],
-                                    fontSize = MaterialTheme.typography.caption.fontSize,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            }
-                            // Attributions for photo
-                            if (displayMarker.photoAttributions[index].isNotBlank()) {
-                                Text(
-                                    "Photo Credit: " + displayMarker.photoAttributions[index],
-                                    fontSize = MaterialTheme.typography.overline.fontSize,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            }
-                            Spacer(modifier = Modifier.padding(8.dp))
+                        // Erected
+                        if (displayMarker.erected.isNotBlank()) {
+                            Text(
+                                "Erected " + displayMarker.erected,
+                                fontSize = MaterialTheme.typography.body1.fontSize,
+                            )
+                        }
+
+                        // Location details
+                        if (displayMarker.location.isNotBlank()) {
+                            Text(
+                                displayMarker.location,
+                                fontSize = MaterialTheme.typography.body1.fontSize,
+                            )
+                        } else {
+                            Text(
+                                "Marker Latitude: ${displayMarker.position.latitude}",
+                                fontSize = MaterialTheme.typography.body1.fontSize,
+                                fontWeight = FontWeight.Normal,
+                            )
+                            Text(
+                                "Marker Longitude: ${displayMarker.position.longitude}",
+                                fontSize = MaterialTheme.typography.body1.fontSize,
+                                fontWeight = FontWeight.Normal,
+                            )
                         }
                     }
 
-                    // Erected
-                    if (displayMarker.erected.isNotBlank()) {
-                        Text(
-                            "Erected " + displayMarker.erected,
-                            fontSize = MaterialTheme.typography.body1.fontSize,
-                        )
-                    }
-
-                    // Location details
-                    if (displayMarker.location.isNotBlank()) {
-                        Text(
-                            displayMarker.location,
-                            fontSize = MaterialTheme.typography.body1.fontSize,
-                        )
-                    } else {
-                        Text(
-                            "Marker Latitude: ${displayMarker.position.latitude}",
-                            fontSize = MaterialTheme.typography.body1.fontSize,
-                            fontWeight = FontWeight.Normal,
-                        )
-                        Text(
-                            "Marker Longitude: ${displayMarker.position.longitude}",
-                            fontSize = MaterialTheme.typography.body1.fontSize,
-                            fontWeight = FontWeight.Normal,
-                        )
-                    }
                 }
-
             }
-        }
     }
 
     // Show Pan/Zoom Image Dialog
     if (isPanZoomImageDialogVisible) {
-                    PanZoomImageDialog(
-                        onDismiss = {
-                            coroutineScope.launch {
-                                isPanZoomImageDialogVisible = false
-                            }
-                        },
-                        imageUrl = panZoomDialogImageUrl
-                    )
+        PanZoomImageDialog(
+            onDismiss = {
+                coroutineScope.launch {
+                    isPanZoomImageDialogVisible = false
                 }
+            },
+            imageUrl = panZoomDialogImageUrl
+        )
+    }
 }
 
 

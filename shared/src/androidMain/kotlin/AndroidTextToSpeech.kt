@@ -26,7 +26,7 @@ class AndroidTextToSpeechService(
     private var wordsToSpeak: List<String> = ArrayList()
     private var currentSpokenWordIndex: Int = 0
     private var previousSpokenWordIndex: Int = 0
-    private val kNumWordsToSpeakPerChunk = 10
+    private val kNumWordsToSpeakPerChunk = 25  // This is the max number of words to speak per chunk, this is for pause/resume speaking
 
     init {
         androidTextToSpeech.setOnUtteranceProgressListener(this)
