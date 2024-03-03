@@ -26,6 +26,8 @@ fun String.calculateMarkerDetailsPageUrl(): String {
     return kBaseHmdbDotOrgUrl + "m.asp?m=$markerKeyNumber"
 }
 
+
+// Using a composable here to allow for the use of LaunchedEffect & reactive state
 @Composable
 fun loadMarkerDetails(
     marker: Marker,

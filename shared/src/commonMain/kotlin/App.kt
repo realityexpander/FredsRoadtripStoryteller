@@ -341,11 +341,6 @@ fun App(
             }
         }
 
-//        // Marker Details Load Result (for Bottom Sheet)
-//        var markerDetailsLoadingState by remember {
-//            mutableStateOf<LoadingState<Marker>>(LoadingState.Loading)
-//        }
-
         // Optimize energy usage by pausing "seen marker" tracking when user is not moving.
         var isSeenTrackingPaused by remember { mutableStateOf(false) }
         var isSeenTrackingPausedPhase by remember { mutableStateOf(0) }

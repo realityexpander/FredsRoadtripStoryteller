@@ -81,6 +81,7 @@ import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 import openNavigationAction
 import presentation.maps.Marker
 import presentation.uiComponents.PreviewPlaceholder
@@ -110,27 +111,25 @@ fun MarkerDetailsScreen(
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     var isPanZoomImageDialogVisible by remember { mutableStateOf(false) }
-    var currentDisplayMarker by remember { mutableStateOf(initialDisplayMarker) }
-
-    var markerDetailsLoadingState by remember {
-        mutableStateOf<LoadingState<Marker>>(LoadingState.Loading)
-    }
-    markerDetailsLoadingState =
-        loadMarkerDetailsFunc( // a reactive composable
-            currentDisplayMarker,
-            false,  // todo setup for automated testing
-            onUpdateMarkerDetails
-        )
+    var currentDisplayMarker by remember(initialDisplayMarker) { mutableStateOf(initialDisplayMarker) }
 
     val pagerState = rememberPagerState(
-        initialPage = 1,
+        initialPage = markers.value.indexOf(initialDisplayMarker),
         initialPageOffsetFraction = 0f
     ) {
         // provide pageCount
         markers.value.size
     }
     LaunchedEffect(Unit, pagerState.currentPage) {
-        currentDisplayMarker = markers.value[pagerState.currentPage]
+        currentDisplayMarker = markers.value[pagerState.currentPage] // update the current marker when the user swipes
+    }
+
+    val markerDetailsLoadingStates by remember {
+        mutableStateOf(mutableMapOf<Int, LoadingState<Marker>>())
+    }
+
+    var panZoomDialogImageUrl by remember(pagerState.currentPage) {
+        mutableStateOf("")
     }
 
     HorizontalPager(
@@ -140,11 +139,20 @@ fun MarkerDetailsScreen(
         userScrollEnabled = true,
         reverseLayout = false,
         contentPadding = PaddingValues(0.dp),
-        beyondBoundsPageCount = 0,
+        beyondBoundsPageCount = 1,
         pageSize = PageSize.Fill,
         flingBehavior = PagerDefaults.flingBehavior(state = pagerState),
         key = { page -> markers.value[page].id },
-    ) {
+    ) { page ->
+
+        markerDetailsLoadingStates[page] =
+            loadMarkerDetailsFunc( // a reactive composable
+                markers.value[page],
+                false,  // todo setup for automated testing
+                onUpdateMarkerDetails
+            )
+        val markerDetailsLoadingState = markerDetailsLoadingStates[page]
+
         // Show Error (if any)
         if (markerDetailsLoadingState is LoadingState.Error) {
 
@@ -255,20 +263,18 @@ fun MarkerDetailsScreen(
         // Show Loaded Marker Details
         AnimatedVisibility(
             markerDetailsLoadingState is LoadingState.Loaded<Marker>,
-            enter = fadeIn(TweenSpec(800)),
-            exit = fadeOut(TweenSpec(500))
+            enter = fadeIn(TweenSpec(1000)),
+            exit = fadeOut(TweenSpec(1000))
         ) {
-            markerDetailsLoadingState as LoadingState.Loaded<Marker>
-            val displayMarker = (markerDetailsLoadingState as LoadingState.Loaded<Marker>).data
+            val loadedMarker = markerDetailsLoadingState as LoadingState.Loaded<Marker>
+            val displayMarker = loadedMarker.data
 
             val painterResource: Resource<Painter> =
                 asyncPainterResource(
                     data = displayMarker.mainPhotoUrl,
+                    key = displayMarker.id,
                     filterQuality = FilterQuality.Medium,
                 )
-            var panZoomDialogImageUrl by remember {
-                mutableStateOf(displayMarker.mainPhotoUrl)
-            }
 
             Column(
                 modifier = Modifier
@@ -392,8 +398,11 @@ fun MarkerDetailsScreen(
                                             .align(Alignment.TopEnd)
                                             .padding(8.dp),
                                         onClick = {
-                                            isPanZoomImageDialogVisible = true
-                                            panZoomDialogImageUrl = displayMarker.mainPhotoUrl
+                                            coroutineScope.launch {
+                                                panZoomDialogImageUrl = displayMarker.mainPhotoUrl
+                                                yield()
+                                                isPanZoomImageDialogVisible = true
+                                            }
                                         }
                                     )
                                 }
@@ -473,6 +482,7 @@ fun MarkerDetailsScreen(
                                 KamelImage(
                                     resource = asyncPainterResource(
                                         data = photoUrl,
+                                        key = displayMarker.id,
                                         filterQuality = FilterQuality.Medium,
                                     ),
                                     contentDescription = null,
@@ -487,8 +497,11 @@ fun MarkerDetailsScreen(
                                         .align(Alignment.TopEnd)
                                         .padding(8.dp),
                                     onClick = {
-                                        isPanZoomImageDialogVisible = true
-                                        panZoomDialogImageUrl = photoUrl
+                                        coroutineScope.launch {
+                                            panZoomDialogImageUrl = photoUrl
+                                            yield()
+                                            isPanZoomImageDialogVisible = true
+                                        }
                                     }
                                 )
                             }
@@ -541,22 +554,23 @@ fun MarkerDetailsScreen(
                         )
                     }
                 }
-            }
 
-            // Show Pan/Zoom Image Dialog
-            if (isPanZoomImageDialogVisible) {
-                PanZoomImageDialog(
-                    onDismiss = {
-                        coroutineScope.launch {
-                            isPanZoomImageDialogVisible = false
-                        }
-                    },
-                    imageUrl = panZoomDialogImageUrl
-                )
             }
         }
     }
+                // Show Pan/Zoom Image Dialog
+                if (isPanZoomImageDialogVisible) {
+                    PanZoomImageDialog(
+                        onDismiss = {
+                            coroutineScope.launch {
+                                isPanZoomImageDialogVisible = false
+                            }
+                        },
+                        imageUrl = panZoomDialogImageUrl
+                    )
+                }
 }
+
 
 @Composable
 private fun TitleCloseSubtitleSpeakSection(
