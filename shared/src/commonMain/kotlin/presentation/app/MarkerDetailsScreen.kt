@@ -106,7 +106,7 @@ fun MarkerDetailsScreen(
     var isPanZoomImageDialogVisible by remember { mutableStateOf(false) }
     var currentDisplayMarker by remember(initialDisplayMarker) { mutableStateOf(initialDisplayMarker) }
 
-    // Setup HorizontalPager
+    // Setup Horizontal swipe Pager
     val pagerState = rememberPagerState(
         initialPage = markers.value.indexOf(initialDisplayMarker),
     ) { markers.value.size /* provide page count */ }
