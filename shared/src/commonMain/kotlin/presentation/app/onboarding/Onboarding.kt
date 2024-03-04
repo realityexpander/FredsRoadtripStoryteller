@@ -4,7 +4,9 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -51,10 +53,18 @@ fun OnboardingDialog(
     onDismiss: () -> Unit = {}
 ) {
     val pages = listOf(
-        "onboarding_page1.png",
-        "onboarding_page2.png",
-        "onboarding_page4.png",
-        "onboarding_page3.png",
+        "01-OnBoarding.png",
+        "02-OnBoarding.png",
+        "03-OnBoarding.png",
+        "04-OnBoarding.png",
+        "05-OnBoarding.png",
+        "06-OnBoarding.png",
+        "07-OnBoarding.png",
+        "08-OnBoarding.png",
+        "09-OnBoarding.png",
+        "10-OnBoarding.png",
+        "11-OnBoarding.png",
+        "12-OnBoarding.png"
     )
 
     val pagerState = rememberPagerState(
@@ -96,12 +106,19 @@ fun OnboardingDialog(
                     flingBehavior = PagerDefaults.flingBehavior(state = pagerState),
                     key = { pages[it] },
                     pageContent = { index ->
-                        Image(
-                            painter = painterResource(res = pages[index]),
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
+                        Column(
+                           modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Image(
+                                painter = painterResource(res = pages[index]),
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize(.85f),
+                                alignment = Alignment.Center,
+                            )
+                        }
                     }
                 )
 
@@ -110,10 +127,10 @@ fun OnboardingDialog(
                     modifier = Modifier
                         .wrapContentSize()
                         .offset(y = -(16).dp)
-                        .fillMaxWidth(0.5f)
+                        .fillMaxWidth(0.8f)
                         .clip(RoundedCornerShape(100))
                         .background(MaterialTheme.colors.background)
-                        .padding(8.dp)
+                        .padding(start=8.dp, end=8.dp, top=4.dp, bottom=4.dp)
                         .align(Alignment.BottomCenter)
                 ) {
                     IconButton(
