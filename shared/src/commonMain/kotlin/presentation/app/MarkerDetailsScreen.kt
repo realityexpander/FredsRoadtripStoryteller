@@ -98,7 +98,7 @@ fun MarkerDetailsScreen(
     onDismiss: () -> Unit = {},
     loadMarkerDetailsFunc: @Composable (
             marker: Marker,
-            useFakeData: Boolean,
+            shouldUseFakeData: Boolean,
         ) -> LoadingState<Marker>
 ) {
     val coroutineScope = rememberCoroutineScope()

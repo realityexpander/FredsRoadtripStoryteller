@@ -703,10 +703,10 @@ fun App(
                             marker,
                             finalMarkers,
                             isTextToSpeechCurrentlySpeaking = isMarkerCurrentlySpeaking,
-                            loadMarkerDetailsFunc = { markerToFetch, useFakeData ->
+                            loadMarkerDetailsFunc = { markerToFetch, shouldUseFakeData ->
                                 loadMarkerDetails(
                                     markerToFetch,
-                                    useFakeData = false,
+                                    shouldUseFakeData,
                                     onUpdateMarkerDetails = { updatedMarker ->
                                         markersRepo.updateMarkerDetails(updatedMarker)
                                     }

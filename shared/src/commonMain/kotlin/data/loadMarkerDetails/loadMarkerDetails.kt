@@ -31,7 +31,7 @@ fun String.calculateMarkerDetailsPageUrl(): String {
 @Composable
 fun loadMarkerDetails(
     marker: Marker,
-    useFakeData: Boolean = false,
+    shouldUseFakeData: Boolean = false,
     onUpdateMarkerDetails: (marker: Marker) -> Unit
 ): LoadingState<Marker> {
     var loadingState: LoadingState<Marker> by remember(marker) {
@@ -63,7 +63,7 @@ fun loadMarkerDetails(
         yield() // Allow UI to render LoadingState.Loading state
 
         try {
-            if (!useFakeData) {
+            if (!shouldUseFakeData) {
                 val response = httpClient.get(markerDetailsPageUrl)
                 val markerDetailsPageHtml = response.body<String>()
 
