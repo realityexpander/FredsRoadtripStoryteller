@@ -265,7 +265,7 @@ fun App(
             mutableStateOf(appSettings.markersLastUpdatedLocation)
         }
 
-        // Seen Marker Radius
+        // "Seen" Radius for Marker Tracking
         var seenRadiusMiles by remember {
             mutableStateOf(appSettings.seenRadiusMiles)
         }
