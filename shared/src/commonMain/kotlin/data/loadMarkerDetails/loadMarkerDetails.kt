@@ -12,7 +12,7 @@ import data.network.httpClient
 import data.util.LoadingState
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import kMaxMarkerDetailsAgeSeconds
+import kMaxMarkerDetailsAgeDuration
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.yield
 import kotlinx.datetime.Clock
@@ -108,7 +108,7 @@ fun loadMarkerDetails(
 
 private fun isMarkerDetailsLoadedAndNotExpired(marker: Marker) =
     marker.isDetailsLoaded
-        && marker.lastUpdatedDetailsEpochSeconds +
-            kMaxMarkerDetailsAgeSeconds < Clock.System.now().epochSeconds
+        && (marker.lastUpdatedDetailsEpochSeconds +
+            kMaxMarkerDetailsAgeDuration.inWholeSeconds) < Clock.System.now().epochSeconds
 
 

@@ -94,6 +94,7 @@ import presentation.speech.CommonSpeech.SpeechState
 import presentation.speech.speakRecentlySeenMarker
 import presentation.uiComponents.AppTheme
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
 import co.touchlab.kermit.Logger as Log
 
@@ -115,7 +116,8 @@ var debugLog = mutableListOf("Debug log: start time:" + Clock.System.now())
 
 val kMaxReloadRadiusMiles =
     configPropertyFloat("app.maxReloadRadiusMiles", 2.0f).toDouble()
-const val kMaxMarkerDetailsAgeSeconds = 60 * 60 * 24 * 30  // 30 days
+//const val kMaxMarkerDetailsAgeSeconds = 60 * 60 * 24 * 30  // 30 days
+val kMaxMarkerDetailsAgeDuration = 30.days
 
 // Improve performance by restricting cluster size & updates
 var frameCount = 0
