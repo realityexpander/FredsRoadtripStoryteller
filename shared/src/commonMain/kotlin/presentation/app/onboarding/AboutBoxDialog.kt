@@ -22,6 +22,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -59,11 +60,11 @@ fun AboutBoxDialog(
     ) {
         Box(
             modifier = Modifier.fillMaxSize()
-                .background(MaterialTheme.colors.background),
+                .background(Color.Black),
             contentAlignment = Alignment.TopCenter
         ) {
             Image(
-                painter = painterResource("about_box.png"),
+                painter = painterResource("about.png"),
                 contentDescription = null,
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.fillMaxSize(),
@@ -104,6 +105,8 @@ fun AboutBoxDialog(
                         .align(Alignment.BottomCenter),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    Spacer(modifier = Modifier.padding(16.dp))
+
                     // Link to app website
                     Button(
                         onClick = {
@@ -113,7 +116,6 @@ fun AboutBoxDialog(
                     ) {
                         Text("$appNameStr website")
                     }
-                    Spacer(modifier = Modifier.padding(16.dp))
 
                     Column(
                         modifier = Modifier
