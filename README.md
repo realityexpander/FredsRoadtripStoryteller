@@ -64,6 +64,9 @@ _note: screenshots may differ slightly from current version_
   - LinkedIn: https://www.linkedin.com/groups/14367209
   - FaceBook: https://www.facebook.com/groups/913147236893976
 
+## Application Architecture
+- [<img src="raw_assets/Support_Documents/App_architecture.png" width="800">](raw_assets/Support_Documents/Application_Architecture.md)
+
 # Developer notes
 
 Source: (Code snapshot taken 10/8/23)
