@@ -8,6 +8,6 @@ actual fun sendDeveloperFeedback() {
         to = "realityexpanderdev@gmail.com",
         subject = "$appNameStr ${appMetadata.versionStr} Feedback",
         body = "Please provide feedback for $appNameStr ${appMetadata.versionStr}-" +
-                "build-${appMetadata.androidBuildNumberStr} via your email app:"
+                "build-${appMetadata.androidBuildNumberStr} (Android) via your email app:"
     )
 }
