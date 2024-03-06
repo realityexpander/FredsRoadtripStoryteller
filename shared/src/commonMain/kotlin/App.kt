@@ -166,7 +166,7 @@ fun App(
         }
         var isOnboardingDialogVisible by remember { mutableStateOf(false)}
         var isAboutBoxDialogVisible by remember { mutableStateOf(false)}
-        var appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState by remember {
+        var appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState by remember { // reactive to appSettings
             mutableStateOf(appSettings.isSpeakWhenUnseenMarkerFoundEnabled)
         }
 

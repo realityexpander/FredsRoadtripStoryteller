@@ -43,7 +43,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import presentation.uiComponents.SettingsSlider
 import presentation.uiComponents.SettingsSwitch
-import triggerDeveloperFeedback
+import sendDeveloperFeedback
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -170,9 +170,9 @@ fun SettingsScreen(
                 }
             )
 
-            // Show feedback button on Android only
+            // Show feedback button on Android only (Firebase App Distribution doesn't work correctly with Play Store yet)
             // - to turn on dev mode: adb shell setprop debug.firebase.appdistro.devmode true // false to turn off
-            if (getPlatformName().contains("Android") && appMetadata.isDebuggable) {
+            //if (getPlatformName().contains("Android") && appMetadata.isDebuggable) { // todo try again later, doesn't work with play store yet
                 Spacer(modifier = Modifier.padding(8.dp))
                 Button(
                     modifier = Modifier
@@ -180,13 +180,12 @@ fun SettingsScreen(
                     onClick = {
                         coroutineScope.launch {
                             bottomSheetScaffoldState.bottomSheetState.collapse()
-                            // trigger feedback
-                            triggerDeveloperFeedback()
+                            sendDeveloperFeedback()
                         }
                     }) {
                     Text("Send Feedback to Developer")
                 }
-            }
+            //}
 
             Spacer(modifier = Modifier.padding(8.dp))
             Divider(
