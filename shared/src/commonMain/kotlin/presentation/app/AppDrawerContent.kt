@@ -203,7 +203,7 @@ fun AppDrawerContent(
     }
     Spacer(modifier = Modifier.height(16.dp))
 
-    // Search box - rounded text field
+    // Search box
     var searchQuery by remember { mutableStateOf("") }
     var isSearchDialogVisible by remember { mutableStateOf(false) }
     Box(

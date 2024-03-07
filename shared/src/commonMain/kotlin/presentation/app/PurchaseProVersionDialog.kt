@@ -28,7 +28,7 @@ import kotlinx.coroutines.CoroutineScope
 import presentation.uiComponents.PurchaseProVersionButton
 
 @Composable
-fun PurchaseProDialog(
+fun PurchaseProVersionDialog(
     billingState: CommonBilling.BillingState,
     commonBilling: CommonBilling,
     calcTrialTimeRemainingStringFunc: () -> String,
@@ -91,7 +91,7 @@ fun PurchaseProDialog(
                         style = MaterialTheme.typography.h5,
                     )
                     Text(
-                        "☑️ Announce Seen Markers",
+                        "☑️ Announce Marker Details",
                         fontWeight = FontWeight.Normal,
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.h5,

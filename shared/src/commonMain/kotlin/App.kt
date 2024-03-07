@@ -52,6 +52,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import data.AppSettings.Companion.kInstallAtEpochMilli
 import data.MarkersRepo
 import data.appSettings
 import data.billing.CommonBilling
@@ -80,7 +81,7 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 import presentation.app.AppDrawerContent
 import presentation.app.MarkerDetailsScreen
-import presentation.app.PurchaseProDialog
+import presentation.app.PurchaseProVersionDialog
 import presentation.app.RecentlySeenMarkers
 import presentation.app.onboarding.AboutBoxDialog
 import presentation.app.onboarding.OnboardingDialog
@@ -115,7 +116,7 @@ data class CommonAppMetadata(
 )
 var appNameStr =
     configPropertyString("app.name", "app.name string not found")
-var appMetadata = CommonAppMetadata()
+lateinit var appMetadata: CommonAppMetadata // = CommonAppMetadata() // dummy placeholder, this will be passed in from platform side.
 var debugLog = mutableListOf("Debug log: start time:" + Clock.System.now())
 
 // "Load new marker for Location" trigger radius
@@ -200,7 +201,9 @@ fun App(
             }
         }
         fun displayPurchaseProMessage() {
-            isPurchaseProDialogVisible = true
+            coroutineScope.launch {
+                isPurchaseProDialogVisible = true
+            }
         }
         // Collect billing message
         LaunchedEffect(Unit) {
@@ -211,7 +214,9 @@ fun App(
         }
         // Set installation time stamp for trial period
         LaunchedEffect(Unit) {
-            if(!appSettings.hasKey("installAtEpochMilli")) {
+            appMetadata = commonAppMetadata
+
+            if(!appSettings.hasKey(kInstallAtEpochMilli)) {
                 if(commonAppMetadata.installAtEpochMilli == 0L) { // iOS does not set this at so we set it here. Android sets this from Build settings.
                     commonAppMetadata.installAtEpochMilli = Clock.System.now().toEpochMilliseconds()
                 }
@@ -1256,7 +1261,7 @@ fun App(
 
             // Show Purchase Pro Dialog
             if (isPurchaseProDialogVisible) {
-                PurchaseProDialog(
+                PurchaseProVersionDialog(
                     billingState,
                     commonBilling,
                     calcTrialTimeRemainingStringFunc = {

@@ -6,11 +6,11 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import presentation.maps.Location
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.minutes
 
 // Trial/Pro version handling
-val kTrialPeriodDuration = 3.days
-const val kTrialStartOutsideRadiusMiles = 25.0  // Distance from install location to start trial.
+val kTrialPeriodDuration = 3.minutes
+const val kTrialStartOutsideRadiusMiles = 1.0  // Distance from install location to start trial.
 
 // Check if user location is outside the trial radius & start trial.
 fun AppSettings.isTrialStartDetected(
