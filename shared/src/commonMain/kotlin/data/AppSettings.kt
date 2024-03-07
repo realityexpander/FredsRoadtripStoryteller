@@ -24,6 +24,10 @@ import co.touchlab.kermit.Logger as Log
  *
  * - Singleton for the app settings.
  * - Typesafe accessors for settings.
+ *
+ * ## ⚠️ REMEMBER TO ADD NEW SETTINGS TO THE MAP! - FORMATTING IS INTENTIONAL.
+ *
+ * ## ⚠️ REMEMBER TO ADD NEW TYPES TO THE WHEN STATEMENT IN THE DELEGATE GETTER/SETTER.
  */
 
 // Singleton for the app settings
@@ -141,39 +145,39 @@ class AppSettings(val settingsInstance: Settings) {
 
         // Settings Keys
         const val kMarkersResult =
-            "kMarkersResult"
+                 "kMarkersResult"
         const val kMarkersLastUpdatedLocation =
-            "kMarkersLastUpdatedLocation"
+                 "kMarkersLastUpdatedLocation"
         const val kLastKnownUserLocation =
-            "kLastKnownUserLocation"
+                 "kLastKnownUserLocation"
         const val kIsPermissionsGranted =
-            "kIsPermissionsGranted"
+                 "kIsPermissionsGranted"
         const val kIsRecentlySeenMarkersPanelVisible =
-            "kIsRecentlySeenMarkersPanelVisible"
+                 "kIsRecentlySeenMarkersPanelVisible"
         const val kRecentlySeenMarkersSet =
-            "kRecentlySeenMarkersSet"
+                 "kRecentlySeenMarkersSet"
         const val kUiRecentlySeenMarkersList =
-            "kUiRecentlySeenMarkersList"
+                 "kUiRecentlySeenMarkersList"
         const val kLastSpokenRecentlySeenMarker =
-            "kLastSpokenRecentlySeenMarker"
+                 "kLastSpokenRecentlySeenMarker"
         const val kInstallAtEpochMilli =
-            "kInstallAtEpochMilli"
+                 "kInstallAtEpochMilli"
         const val kInstallAtLocation =
-            "kInstallAtLocation"
+                 "kInstallAtLocation"
         const val kTrialStartAtEpochMilli =
-            "kTrialStartAtEpochMilli"
+                 "kTrialStartAtEpochMilli"
 
         // • For Settings panel
         const val kIsSpeakWhenUnseenMarkerFoundEnabled =
-            "kIsSpeakWhenUnseenMarkerFoundEnabled"
+                 "kIsSpeakWhenUnseenMarkerFoundEnabled"
         const val kIsSpeakDetailsWhenUnseenMarkerFoundEnabled =
-            "kIsSpeakDetailsWhenUnseenMarkerFoundEnabled"
+                 "kIsSpeakDetailsWhenUnseenMarkerFoundEnabled"
         const val kIsStartBackgroundTrackingWhenAppLaunchesEnabled =
-            "kIsStartBackgroundTrackingWhenAppLaunchesEnabled"
+                 "kIsStartBackgroundTrackingWhenAppLaunchesEnabled"
         const val kSeenRadiusMiles =
-            "kSeenRadiusMiles"
+                 "kSeenRadiusMiles"
         const val kIsMarkersLastUpdatedLocationVisible =
-            "kIsMarkersLastUpdatedLocationVisible"
+                 "kIsMarkersLastUpdatedLocationVisible"
     }
 
     // Use [] access operator
@@ -264,6 +268,7 @@ class AppSettings(val settingsInstance: Settings) {
     }
 }
 
+// ⚠️ REMEMBER TO ADD NEW TYPES TO THE WHEN STATEMENT IN THE DELEGATE GETTER/SETTER.
 @Suppress("UNCHECKED_CAST") // You can see we are checking the type in the `when` statement... so this is safe, Kotlin compiler people...
 class SettingsDelegate<T>(
     private val settings: Settings,
