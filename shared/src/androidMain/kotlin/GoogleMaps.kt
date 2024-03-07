@@ -413,110 +413,108 @@ actual fun GoogleMaps(
         //Log.d("💿 ⚝⚝⚝ 🔧 LaunchedEffect(shouldCalculateClusterItemList): START calculating new cluster items...")
         isCalculatingClusterItems = true
         val startTime = Clock.System.now()
-        kotlinx.atomicfu.locks.synchronized(synchronizedObject) { // todo remove soon? // Used to manage large data set
-            coroutineScope.launch {
-                val localCachedClusterItemList =
-                    mutableListOf<SeeableClusterItem>()
+        coroutineScope.launch {
+            val localCachedClusterItemList =
+                mutableListOf<SeeableClusterItem>()
 
-                val clusterCenterLatLng =
-                    if (cameraPositionState.position.target.latitude != 0.0
-                        && cameraPositionState.position.target.longitude != 0.0
-                    ) {
-                        cameraPositionState.position.target
-                    } else {
-                        // Default to user location if the camera position is 0.0, 0.0
-                        userLocation?.let { userLocation ->
-                            LatLng(userLocation.latitude, userLocation.longitude)
-                        } ?: LatLng(0.0, 0.0)
-                    }
-                val clusterRadiusMeters =
-                    calcRestrictedClusterRadiusMetersForCameraZoomLevel(
-                        cameraPositionState.position.zoom,
-                        isRestrictedClusterRadiusActive,
-                        restrictedClusterRadiusPhase,
-                        seenRadiusMiles
-                    )
-                val clusterRadiusMiles = clusterRadiusMeters.metersToMiles()
-
-                fun Marker.isMarkerWithinRadiusMilesOfLatLng(
-                    radiusMiles: Double,
-                    centerLatLng: LatLng
-                ): Boolean {
-                    val marker = this
-                    val distanceMiles =
-                        distanceBetweenInMiles(
-                            marker.position.latitude,
-                            marker.position.longitude,
-                            centerLatLng.latitude,
-                            centerLatLng.longitude
-                        )
-
-                    return distanceMiles <= radiusMiles
+            val clusterCenterLatLng =
+                if (cameraPositionState.position.target.latitude != 0.0
+                    && cameraPositionState.position.target.longitude != 0.0
+                ) {
+                    cameraPositionState.position.target
+                } else {
+                    // Default to user location if the camera position is 0.0, 0.0
+                    userLocation?.let { userLocation ->
+                        LatLng(userLocation.latitude, userLocation.longitude)
+                    } ?: LatLng(0.0, 0.0)
                 }
+            val clusterRadiusMeters =
+                calcRestrictedClusterRadiusMetersForCameraZoomLevel(
+                    cameraPositionState.position.zoom,
+                    isRestrictedClusterRadiusActive,
+                    restrictedClusterRadiusPhase,
+                    seenRadiusMiles
+                )
+            val clusterRadiusMiles = clusterRadiusMeters.metersToMiles()
 
-                // Collect the cluster items in the radius
-                markers?.forEachIndexed { _, marker ->
-                    if (marker.isMarkerWithinRadiusMilesOfLatLng(
-                            clusterRadiusMiles,
-                            clusterCenterLatLng
-                        )
-                    ) {
-                        localCachedClusterItemList.add(
-                            SeeableClusterItem(
-                                id = marker.id,
-                                clusterItem = object : ClusterItem {
-                                    override fun getTitle(): String = marker.title
-                                    override fun getSnippet(): String = marker.id
-                                    override fun getPosition(): LatLng =
-                                        LatLng(marker.position.latitude, marker.position.longitude)
-
-                                    override fun getZIndex(): Float = 1.0f
-                                },
-                                isSeen = marker.isSeen
-                            )
-                        )
-                    }
-                } ?: listOf<SeeableClusterItem>()
-
-                // Add to internal cached list of cluster items
-                cachedMarkerIdToSeeableClusterItemMap.clear()
-                localCachedClusterItemList.forEach { clusterItem ->
-                    cachedMarkerIdToSeeableClusterItemMap[clusterItem.id] = clusterItem
-                }
-
-                previousRestrictedClusterCenterLatLng = clusterCenterLatLng
-                previousRestrictedClusterRadiusMeters =
-                    calcRestrictedClusterRadiusMetersForCameraZoomLevel(
-                        cameraPositionState.position.zoom,
-                        isRestrictedClusterRadiusActive = true,  // use the restricted cluster radius for slop
-                        restrictedClusterRadiusPhase = 2, // use size for second largest circle (phase 2)
-                        seenRadiusMiles
+            fun Marker.isMarkerWithinRadiusMilesOfLatLng(
+                radiusMiles: Double,
+                centerLatLng: LatLng
+            ): Boolean {
+                val marker = this
+                val distanceMiles =
+                    distanceBetweenInMiles(
+                        marker.position.latitude,
+                        marker.position.longitude,
+                        centerLatLng.latitude,
+                        centerLatLng.longitude
                     )
 
-                // Check for changes to markers (optimization)
-                //if(!shouldAllowCacheReset) { // allow "user-initiated `reset marker info cache` to force a cluster item recalculation
-                if (finalRenderClusterItems.size == localCachedClusterItemList.size) {
-                    Log.d("💿 ⚝⚝⚝ 🌟 🔧  LaunchedEffect(shouldCalculateClusterItemList): No change in cluster items size, cachedClusterItemList.size = ${localCachedClusterItemList.size}")
-                    isCalculatingClusterItems = false // reset
+                return distanceMiles <= radiusMiles
+            }
 
-                    didUpdateClusterItems = false
-                    onDidCalculateClusterItemList()
-                    return@launch
+            // Collect the cluster items in the radius
+            markers?.forEachIndexed { _, marker ->
+                if (marker.isMarkerWithinRadiusMilesOfLatLng(
+                        clusterRadiusMiles,
+                        clusterCenterLatLng
+                    )
+                ) {
+                    localCachedClusterItemList.add(
+                        SeeableClusterItem(
+                            id = marker.id,
+                            clusterItem = object : ClusterItem {
+                                override fun getTitle(): String = marker.title
+                                override fun getSnippet(): String = marker.id
+                                override fun getPosition(): LatLng =
+                                    LatLng(marker.position.latitude, marker.position.longitude)
+
+                                override fun getZIndex(): Float = 1.0f
+                            },
+                            isSeen = marker.isSeen
+                        )
+                    )
                 }
-                //}
+            } ?: listOf<SeeableClusterItem>()
 
-                finalRenderClusterItems = localCachedClusterItemList
-                //Log.d(
-                //    "💿 ⚝⚝⚝ 🟨 🔧 LaunchedEffect(shouldCalculateClusterItemList): Recalculated updatedClusterItemList: \n" +
-                //            "  ⎣ finalRenderClusterItems.size= ${finalRenderClusterItems.size}\n" +
-                //            "  ⎣ radius= $clusterRadiusMiles\n" +
-                //            "  ⎣ time= ${Clock.System.now() - startTime}"
-                //)
-                isCalculatingClusterItems = false //reset
+            // Add to internal cached list of cluster items
+            cachedMarkerIdToSeeableClusterItemMap.clear()
+            localCachedClusterItemList.forEach { clusterItem ->
+                cachedMarkerIdToSeeableClusterItemMap[clusterItem.id] = clusterItem
+            }
 
-                didUpdateClusterItems = true
+            previousRestrictedClusterCenterLatLng = clusterCenterLatLng
+            previousRestrictedClusterRadiusMeters =
+                calcRestrictedClusterRadiusMetersForCameraZoomLevel(
+                    cameraPositionState.position.zoom,
+                    isRestrictedClusterRadiusActive = true,  // use the restricted cluster radius for slop
+                    restrictedClusterRadiusPhase = 2, // use size for second largest circle (phase 2)
+                    seenRadiusMiles
+                )
+
+            // Check for changes to markers (optimization)
+            //if(!shouldAllowCacheReset) { // allow "user-initiated `reset marker info cache` to force a cluster item recalculation
+            if (finalRenderClusterItems.size == localCachedClusterItemList.size) {
+                Log.d("💿 ⚝⚝⚝ 🌟 🔧  LaunchedEffect(shouldCalculateClusterItemList): No change in cluster items size, cachedClusterItemList.size = ${localCachedClusterItemList.size}")
+                isCalculatingClusterItems = false // reset
+
+                didUpdateClusterItems = false
                 onDidCalculateClusterItemList()
-            } // todo remove soon - kotlinx.atomicfu.locks.synchronized(synchronizedObject)
+                return@launch
+            }
+            //}
+
+            finalRenderClusterItems = localCachedClusterItemList
+            //Log.d(
+            //    "💿 ⚝⚝⚝ 🟨 🔧 LaunchedEffect(shouldCalculateClusterItemList): Recalculated updatedClusterItemList: \n" +
+            //            "  ⎣ finalRenderClusterItems.size= ${finalRenderClusterItems.size}\n" +
+            //            "  ⎣ radius= $clusterRadiusMiles\n" +
+            //            "  ⎣ time= ${Clock.System.now() - startTime}"
+            //)
+            isCalculatingClusterItems = false //reset
+
+            didUpdateClusterItems = true
+            onDidCalculateClusterItemList()
         }
     }
 

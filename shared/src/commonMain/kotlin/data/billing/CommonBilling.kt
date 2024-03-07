@@ -1,5 +1,4 @@
 package data.billing
-import data.billing.CommonBilling.Companion.kMaxTrialTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -7,12 +6,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import util.CommonFlow
 import util.asCommonFlow
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.days
 
 /**
  * CommonBilling is a class that is used to communicate between the shared code and the platform
@@ -110,41 +105,5 @@ open class CommonBilling {
 
     companion object {
         const val kProProductId = "pro"
-        val kMaxTrialTime = 3.days
-    }
-}
-
-fun calcTrialTimeRemaining(
-    installAtEpochMilli: Long,
-    maxTrialTime: Duration = kMaxTrialTime
-): Duration {
-    val now = Clock.System.now()
-    val installAt = Instant.fromEpochMilliseconds(installAtEpochMilli)
-    val timeLeft = maxTrialTime - (now - installAt)
-
-    return timeLeft
-}
-
-fun calcTrialTimeRemainingString(
-    installAtEpochMilli: Long,
-    maxTrialTime: Duration = kMaxTrialTime
-): String {
-    val timeLeft = calcTrialTimeRemaining(installAtEpochMilli, maxTrialTime)
-    if(timeLeft <= Duration.ZERO) return "Trial expired - Please purchase Pro version for unlimited features"
-
-    return timeLeft.toHumanReadableString() + " remaining for Trial version"
-}
-
-fun Duration.toHumanReadableString(): String {
-    val days = this.inWholeDays
-    val hours = this.inWholeHours - (days * 24)
-    val minutes = this.inWholeMinutes - (days * 24 * 60) - (hours * 60)
-    val seconds = this.inWholeSeconds - (days * 24 * 60 * 60) - (hours * 60 * 60) - (minutes * 60)
-
-    return when {
-        days > 0 -> "$days days, $hours hours, $minutes minutes"
-        hours > 0 -> "$hours hours, $minutes minutes"
-        minutes > 0 -> "$minutes minutes"
-        else -> "$seconds seconds"
     }
 }

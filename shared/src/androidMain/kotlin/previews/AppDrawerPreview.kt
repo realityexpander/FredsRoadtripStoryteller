@@ -1,3 +1,5 @@
+@file:Suppress("FunctionName")
+
 package previews
 
 import data.billing.CommonBilling
@@ -11,6 +13,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.tooling.preview.Preview
 import appNameStr
+import data.AppSettings
+import data.FakeSettings
 import presentation.app.AppDrawerContent
 import presentation.maps.LatLong
 import presentation.maps.Marker
@@ -25,7 +29,7 @@ import presentation.uiComponents.AppTheme
 )
 @Composable
 fun AppDrawerPreview() {
-    appNameStr = "Fred's History Hunt"
+    appNameStr = "Fred's Roadtrip Storyteller"
 
     AppTheme {
         Surface {
@@ -53,15 +57,17 @@ fun AppDrawerPreview() {
                             position = LatLong(38.882334, -77.171091),
                         ),
                     ),
-                    isMarkerCurrentlySpeaking = true,
                     activeSpeakingMarker = RecentlySeenMarker(
                         id = "M69420",
                         // title = "Plans to fight the Ordinance of Nullification",
                         title = "Plans to fight the Ordinance",
                         insertedAtEpochMilliseconds = 0,
                     ),
+                    isMarkerCurrentlySpeaking = true,
                     commonBilling = CommonBilling(),
                     billingState = BillingState.NotPurchased(),
+                    calcTrialTimeRemainingStringFunc = { "1 hour Remaining in Trial" },
+                    appSettings = AppSettings(FakeSettings()),
                 )
 
             }

@@ -1,3 +1,5 @@
+@file:Suppress("FunctionName")
+
 package previews
 
 import androidx.compose.foundation.layout.Column
@@ -11,7 +13,7 @@ import data.billing.CommonBilling.BillingState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import presentation.uiComponents.AppTheme
-import presentation.uiComponents.PurchaseProductButton
+import presentation.uiComponents.PurchaseProVersionButton
 
 
 @PreviewLightDark
@@ -23,7 +25,7 @@ fun PurchaseButtonPreview(
     AppTheme {
         Surface {
             Column {
-                PurchaseProductButton(
+                PurchaseProVersionButton(
                     billingState = billingState,
                     commonBilling = CommonBilling(),
                     coroutineScope = CoroutineScope(Dispatchers.Main),

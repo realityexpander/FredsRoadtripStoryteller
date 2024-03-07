@@ -1,8 +1,8 @@
+@file:Suppress("FunctionName") // for Composable names
+
 package presentation.app
 
 import BottomSheetScreen
-import data.billing.CommonBilling
-import data.billing.CommonBilling.BillingState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -68,13 +69,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import appNameStr
+import data.AppSettings
+import data.billing.CommonBilling
+import data.billing.CommonBilling.BillingState
+import data.billing.isProVersion
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import openNavigationAction
 import presentation.maps.Marker
 import presentation.maps.RecentlySeenMarker
-import presentation.uiComponents.PurchaseProductButton
+import presentation.uiComponents.PurchaseProVersionButton
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -92,6 +97,9 @@ fun AppDrawerContent(
     onLocateMarker: (Marker) -> Unit = {},
     commonBilling: CommonBilling,
     billingState: BillingState,
+    calcTrialTimeRemainingStringFunc: () -> String,
+    appSettings: AppSettings,
+    onDisplayPurchaseProMessage: () -> Unit = {},
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -163,11 +171,12 @@ fun AppDrawerContent(
     Spacer(modifier = Modifier.height(16.dp))
 
     // Purchase Pro Version
-    PurchaseProductButton(
+    PurchaseProVersionButton(
         billingState,
         commonBilling,
         coroutineScope,
-        onCloseDrawer
+        onCloseDrawer,
+        calcTrialTimeRemainingStringFunc()
     )
 
     // Show about box
@@ -343,7 +352,9 @@ fun AppDrawerContent(
             onClickStopSpeakingMarker = onClickStopSpeakingMarker,
             onDismiss = {
                 isSearchDialogVisible = false
-            }
+            },
+            appSettings = appSettings,
+            billingState = billingState,
         )
     }
 
@@ -364,6 +375,11 @@ fun AppDrawerContent(
                     .padding(8.dp)
                     .animateItemPlacement(animationSpec = tween(250))
                     .clickable {
+                        if (!data.appSettings.isProVersion(billingState)) {
+                            onDisplayPurchaseProMessage()
+                            return@clickable
+                        }
+
                         coroutineScope.launch {
                             onExpandBottomSheet()
                             onSetBottomSheetActiveScreen(
@@ -449,9 +465,12 @@ fun SearchMarkerDialog(
     onClickStartSpeakingMarker: (Marker, isSpeakDetailsEnabled: Boolean) -> Unit = { _, _ -> },
     onClickStopSpeakingMarker: () -> Unit = {},
     onDismiss: () -> Unit = {},
+    appSettings: AppSettings,
+    billingState: BillingState,
 ) {
     val coroutineScope = rememberCoroutineScope()
     var searchQuery by remember(initialSearchQuery) { mutableStateOf(initialSearchQuery) }
+    var showDialogForProVersion by remember { mutableStateOf(false) }
 
     Dialog(
         properties = DialogProperties(
@@ -613,6 +632,12 @@ fun SearchMarkerDialog(
                                 .heightIn(min = 48.dp)
                                 .padding(8.dp, 0.dp, 8.dp, 4.dp)
                                 .clickable {
+                                    if (!appSettings.isProVersion(billingState)) {
+                                        showDialogForProVersion = true
+
+                                        return@clickable
+                                    }
+
                                     onShowMarkerDetails(marker)
                                 }
                                 .weight(3f)
@@ -723,7 +748,42 @@ fun SearchMarkerDialog(
                 }
             }
         }
+
+        if(showDialogForProVersion) {
+            ShowDialogForProVersion(
+                onDismiss = {
+                    showDialogForProVersion = false
+                }
+            )
+        }
     }
+}
+
+@Composable
+private fun ShowDialogForProVersion(
+    onDismiss: () -> Unit = {},
+) {
+    AlertDialog(
+        onDismissRequest = {
+            onDismiss()
+        },
+        title = {
+            Text("Pro Version Required")
+        },
+        text = {
+            Text("This feature is only available in the Pro version of the app.")
+            Text("Please purchase the Pro version to use this feature.")
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    onDismiss()
+                }
+            ) {
+                Text("OK")
+            }
+        }
+    )
 }
 
 private fun calcSearchEntries(

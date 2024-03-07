@@ -1,3 +1,4 @@
+@file:Suppress("FunctionName")
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
@@ -55,6 +56,9 @@ import data.MarkersRepo
 import data.appSettings
 import data.billing.CommonBilling
 import data.billing.CommonBilling.BillingState
+import data.billing.calcTrialTimeRemainingString
+import data.billing.isProVersion
+import data.billing.isTrialStartDetected
 import data.configPropertyFloat
 import data.configPropertyString
 import data.loadMarkerDetails.loadMarkerDetails
@@ -62,7 +66,6 @@ import data.loadMarkers.distanceBetweenInMiles
 import data.loadMarkers.loadMarkers
 import data.loadMarkers.sampleData.kUseRealNetwork
 import data.util.LoadingState
-import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -77,6 +80,7 @@ import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 import presentation.app.AppDrawerContent
 import presentation.app.MarkerDetailsScreen
+import presentation.app.PurchaseProDialog
 import presentation.app.RecentlySeenMarkers
 import presentation.app.onboarding.AboutBoxDialog
 import presentation.app.onboarding.OnboardingDialog
@@ -106,14 +110,15 @@ data class CommonAppMetadata(
     var versionStr: String = "0.0.0",
     var androidBuildNumberStr: String = "n/a",   // Android only
     var iOSBundleVersionStr: String = "n/a", // iOS only
-    var installAtEpochMilli: Long = 0L,
-    var platformId: String = "unknown" // "android" or "iOS"
+    var installAtEpochMilli: Long = 0L,  // only set on android. We set this on iOS side at first launch.
+    var platformId: String = "unknown", // "android" or "iOS"
 )
 var appNameStr =
     configPropertyString("app.name", "app.name string not found")
 var appMetadata = CommonAppMetadata()
 var debugLog = mutableListOf("Debug log: start time:" + Clock.System.now())
 
+// "Load new marker for Location" trigger radius
 val kMaxReloadRadiusMiles =
     configPropertyFloat("app.maxReloadRadiusMiles", 2.0f).toDouble()
 //const val kMaxMarkerDetailsAgeSeconds = 60 * 60 * 24 * 30  // 30 days
@@ -123,9 +128,6 @@ val kMaxMarkerDetailsAgeDuration = 30.days
 var frameCount = 0
 var didFullFrameRender = false
 var isTemporarilyPreventPerformanceTuningActive = false // prevents premature optimization after returning from background
-
-// Attempt to fix database contention / race condition issue // todo remove soon
-val synchronizedObject = SynchronizedObject()
 
 // Error Messages Flow
 @Suppress("ObjectPropertyName") // for leading underscore
@@ -143,7 +145,7 @@ sealed class BottomSheetScreen {
     data object SettingsScreen : BottomSheetScreen()
     data class MarkerDetailsScreen(
         val marker: Marker? = null,  // Can pass in a MapMarker...
-        val id: String? = marker?.id // ...or just an id string
+        val id: String? = marker?.id // ...or just an id string.
     ) : BottomSheetScreen()
     data object None : BottomSheetScreen()
 }
@@ -169,8 +171,9 @@ fun App(
         var appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState by remember { // reactive to appSettings
             mutableStateOf(appSettings.isSpeakWhenUnseenMarkerFoundEnabled)
         }
+        var isPurchaseProDialogVisible by remember { mutableStateOf(false) }
 
-        // Error Message state & value
+        // 🔸 Error Message state & value
         var errorMessageStr by remember {
             mutableStateOf<String?>(null)
         }
@@ -184,21 +187,25 @@ fun App(
             }
         }
 
-        // Billing State & Message
+        // 🔸 Billing State & Message
         val billingState = commonBilling.billingStateFlow()
             .collectAsState(BillingState.NotPurchased()).value
         var billingMessageStr by remember {
             mutableStateOf<String?>(null)
         }
+        fun clearBillingMessageAfterDelay() {
+            coroutineScope.launch {
+                delay(8.seconds)
+                billingMessageStr = null
+            }
+        }
+        fun displayPurchaseProMessage() {
+            isPurchaseProDialogVisible = true
+        }
         LaunchedEffect(Unit) {
             commonBilling.billingMessageFlow().collectLatest { billingMessage ->
                 billingMessageStr = billingMessage
-
-                // Clear message on UI after a few seconds
-                coroutineScope.launch {
-                    delay(8.seconds)
-                    billingMessageStr = null
-                }
+                clearBillingMessageAfterDelay()
             }
         }
         // Set installation time stamp for trial period
@@ -213,11 +220,29 @@ fun App(
                     installAtEpochMilli = appSettings.installAtEpochMilli
                 )
             }
-
-            // todo Launch onboarding dialog if first time or Pro-offer if expired? // todo
+        }
+        // todo - if appSettings.installAtLocation is null, then poll GPS until it is ready and then set it.
+        LaunchedEffect(Unit) {
+            do {
+                if (appSettings.installAtLocation == Location(0.0, 0.0)) {
+                    commonGpsLocationService.onUpdatedGPSLocation(
+                        errorCallback = { errorMessage ->
+                            Log.w(errorMessage)
+                            errorMessageStr = errorMessage
+                        }
+                    ) { updatedLocation ->
+                        appSettings.installAtLocation = updatedLocation ?: run {
+                            errorMessageStr = "Unable to get current location"
+                            Log.w(errorMessageStr.toString())
+                            return@run appSettings.installAtLocation // just return most recent location
+                        }
+                    }
+                }
+                delay(3.seconds)
+            } while (appSettings.installAtLocation == Location(0.0, 0.0))
         }
 
-        // Speech State
+        // 🔸 Speech State
         var isMarkerCurrentlySpeaking by remember { // reactive to text-to-speech state
             mutableStateOf(false)
         }
@@ -242,14 +267,14 @@ fun App(
             }
         }
 
-        // Google Maps UI elements
+        // 🔸 Google Maps UI elements
         var userLocation: Location by remember {
             mutableStateOf(appSettings.lastKnownUserLocation)
         }
         var isTrackingEnabled by remember {
             mutableStateOf(appSettings.isStartBackgroundTrackingWhenAppLaunchesEnabled)
         }
-        // Map Commands (should...)
+        // 🔸 Map Commands (should...)
         var shouldCenterCameraOnLocation by remember {
             mutableStateOf<Location?>(null) // used to center map on user location
         }
@@ -258,7 +283,7 @@ fun App(
         }
         var shouldAllowCacheReset by remember { mutableStateOf(false) }
 
-        // UI marker-data last-updated-at location
+        // 🔸 UI marker-data last-updated-at location
         var isMarkersLastUpdatedLocationVisible by
             remember(appSettings.isMarkersLastUpdatedLocationVisible) {
             mutableStateOf(appSettings.isMarkersLastUpdatedLocationVisible)
@@ -267,12 +292,12 @@ fun App(
             mutableStateOf(appSettings.markersLastUpdatedLocation)
         }
 
-        // "Seen" Radius for Marker Tracking
+        // 🔸 "Seen" Radius for Marker Tracking, add to the `isSeen` list
         var seenRadiusMiles by remember {
             mutableStateOf(appSettings.seenRadiusMiles)
         }
 
-        // Recently Seen Markers (Set)
+        // 🔸 Recently Seen Markers (Set)
         @Suppress("LocalVariableName")  // for underscore prefix
         val _recentlySeenMarkersSet =
             MutableStateFlow(appSettings.recentlySeenMarkersSet.list.toSet())
@@ -280,7 +305,7 @@ fun App(
         val _uiRecentlySeenMarkersFlow =
             MutableStateFlow(appSettings.uiRecentlySeenMarkersList.list)
 
-        // Load markers based on user location (Reactively)
+        // 🔸 Load markers based on user location (Reactively)
         var networkLoadingState: LoadingState<String> by remember {
             mutableStateOf(LoadingState.Finished)
         }
@@ -313,12 +338,12 @@ fun App(
         //    markerIdToMarker = mutableMapOf()
         //)
 
-        // Command to Update the Map Markers (Cluster Items)
+        // 🔸 Command to Update the Map Markers (Cluster Items)
         var shouldCalcClusterItems by remember {
             mutableStateOf(true)
         }
 
-        // Command to Show Info Marker
+        // 🔸 Command to Show Info Marker
         var shouldShowInfoMarker by remember {
             mutableStateOf<Marker?>(null)
         }
@@ -326,7 +351,7 @@ fun App(
         val finalMarkers =
             MutableStateFlow(markersRepo.markers())
 
-        // Set finalMarkers after any update to the MarkersRepo
+        // 🔸 Set finalMarkers after any update to the MarkersRepo
         LaunchedEffect(Unit, markersRepo) {
             markersRepo.markersResultFlow.collect { loadMarkersResult ->
                 val startTime = Clock.System.now()
@@ -343,11 +368,11 @@ fun App(
             }
         }
 
-        // Optimize energy usage by pausing "seen marker" tracking when user is not moving.
+        // 🔸 Optimize energy usage by pausing "seen marker" tracking when user is not moving.
         var isSeenTrackingPaused by remember { mutableStateOf(false) }
         var isSeenTrackingPausedPhase by remember { mutableStateOf(0) }
 
-        // 1) Update user GPS location
+        // 🔸 1) Update user GPS location
         LaunchedEffect(Unit, seenRadiusMiles) { //, shouldCalculateMapMarkers) {
             // Set the last known location to the current location in settings
             commonGpsLocationService.onUpdatedGPSLocation(
@@ -368,6 +393,14 @@ fun App(
                     Log.w(errorMessageStr.toString())
                     return@run userLocation // just return most recent location
                 }
+
+                // Start trial if user is outside the trial radius.
+                if(appSettings.isTrialStartDetected(userLocation)) {
+                    billingMessageStr = "Trial period has started. " +
+                        "You have ${appSettings.calcTrialTimeRemainingString()}"
+                    clearBillingMessageAfterDelay()
+                }
+
                 errorMessageStr = null // clear any previous error message
             }
 
@@ -389,7 +422,7 @@ fun App(
             //    }
         }
 
-        // Track and update `isSeen` for any markers within the `seenRadiusMiles`
+        // 🔸 Track and update `isSeen` for any markers within the `seenRadiusMiles`
         var previousUserLocation by remember { mutableStateOf(userLocation) }
         LaunchedEffect(
             Unit,
@@ -497,7 +530,7 @@ fun App(
             }
         }
 
-        // Poll to update `isMarkerCurrentlySpeaking` flag for reactive UI
+        // 🔸 Poll to update `isMarkerCurrentlySpeaking` flag for reactive UI
         // Collect next unspoken marker words for iOS (for now)
         LaunchedEffect(Unit, unspokenText, isMarkerCurrentlySpeaking) {
             while (true) {
@@ -551,7 +584,7 @@ fun App(
             }
         }
 
-        // Poll for next unspoken/unannounced marker
+        // 🔸 Poll for next unspoken/unannounced marker
         LaunchedEffect(Unit, _uiRecentlySeenMarkersFlow.value, isMarkerCurrentlySpeaking) {
             while (true) {
                 delay(1000)  // allow time for last text-to-speech to end
@@ -603,13 +636,13 @@ fun App(
             }
         }
 
-        // Force update UI when app first opens
+        // 🔸 Force update UI when app first opens
         LaunchedEffect(Unit) {
             // Update location
             userLocation = jiggleLocationToForceUiUpdate(userLocation)
         }
 
-        // For render performance tuning
+        // 🔸 For render performance tuning
         didFullFrameRender = false
 
         BottomSheetScaffold(
@@ -814,6 +847,13 @@ fun App(
                         },
                         commonBilling = commonBilling,
                         billingState = billingState,
+                        calcTrialTimeRemainingStringFunc = {
+                            appSettings.calcTrialTimeRemainingString()
+                        },
+                        appSettings = appSettings,
+                        onDisplayPurchaseProMessage = {
+                            displayPurchaseProMessage()
+                        },
                     )
                 }
             },
@@ -972,7 +1012,7 @@ fun App(
                     verticalArrangement = Arrangement.SpaceBetween,
                     horizontalAlignment = Alignment.Start
                 ) {
-//                    if(frameCount<=2) return@Column // prevent FoUC: frame 0=FoUC, 1=too-zoomed-out, 2=zoomed-in-properly // todo - is this still needed?
+                    if(frameCount<=2) return@Column // prevent FoUC: frame 0=FoUC, 1=too-zoomed-out, 2=zoomed-in-properly // todo - is this still needed?
 
                     // Show Error
                     AnimatedVisibility(errorMessageStr != null) {
@@ -1030,8 +1070,7 @@ fun App(
                                 shouldCenterCameraOnLocation = null
                             },
                             seenRadiusMiles = seenRadiusMiles,
-                            cachedMarkersLastUpdatedLocation =
-                            remember(
+                            cachedMarkersLastUpdatedLocation = remember(
                                 appSettings.isMarkersLastUpdatedLocationVisible,
                                 markersLastUpdatedLocation
                             ) {
@@ -1056,10 +1095,14 @@ fun App(
                             isMarkersLastUpdatedLocationVisible = isMarkersLastUpdatedLocationVisible,
                             isMapOptionSwitchesVisible = !isRecentlySeenMarkersPanelVisible,  // hide map options when showing marker list
                             onMarkerInfoClick = { marker ->
+                                if (!appSettings.isProVersion(billingState)) {
+                                    displayPurchaseProMessage()
+                                    return@MapContent
+                                }
+
                                 // Show marker details
                                 coroutineScope.launch {
-                                    bottomSheetActiveScreen =
-                                        BottomSheetScreen.MarkerDetailsScreen(marker)
+                                    bottomSheetActiveScreen = BottomSheetScreen.MarkerDetailsScreen(marker)
                                     bottomSheetScaffoldState.bottomSheetState.apply {
                                         if (isCollapsed) expand()
                                     }
@@ -1090,6 +1133,11 @@ fun App(
                         appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState, // reactive to settings
                         markersRepo = markersRepo,
                         onClickRecentlySeenMarkerItem = { markerId ->
+                            if (!appSettings.isProVersion(billingState)) {
+                                displayPurchaseProMessage()
+                                return@RecentlySeenMarkers
+                            }
+
                             // Show marker details
                             coroutineScope.launch {
                                 bottomSheetActiveScreen =
@@ -1101,8 +1149,14 @@ fun App(
                         },
                         onClickStartSpeakingMarker = { recentlySeenMarker, isSpeakDetailsEnabled: Boolean ->
                             if(isTextToSpeechSpeaking()) stopTextToSpeech()
+
+                            if (!appSettings.isProVersion(billingState)) {
+                                displayPurchaseProMessage()
+                                return@RecentlySeenMarkers
+                            }
+
                             coroutineScope.launch {
-                                isTemporarilyPreventPerformanceTuningActive=true // prevents using emojis
+                                isTemporarilyPreventPerformanceTuningActive = true // prevents using emojis as marker icons
                                 delay(150)
 
                                 activeSpeakingMarker =
@@ -1113,11 +1167,12 @@ fun App(
                                         coroutineScope,
                                         onUpdateLoadingState = { loadingState ->
                                             networkLoadingState = loadingState
+                                        },
+                                        onError =  { errorMessage ->
+                                            Log.w(errorMessage)
+                                            errorMessageStr = errorMessage
                                         }
-                                    ) { errorMessage ->
-                                        Log.w(errorMessage)
-                                        errorMessageStr = errorMessage
-                                    }
+                                    )
                             }
                         },
                         onClickPauseSpeakingMarker = {
@@ -1137,12 +1192,17 @@ fun App(
                         onClickResumeSpeakingAllMarkers = {
                             appSettings.isSpeakWhenUnseenMarkerFoundEnabled = true
                             appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState = true
-                            isTemporarilyPreventPerformanceTuningActive=true // prevents using emojis for markers // todo remove? needed>?
+                            isTemporarilyPreventPerformanceTuningActive = true // prevents using emojis for markers // todo remove? needed>?
                         },
                         onClickSkipSpeakingToNextMarker = {
                             isTemporarilyPreventPerformanceTuningActive = true // prevents using emojis for markers // todo needed?
                             if (isTextToSpeechSpeaking()) stopTextToSpeech()
                             if (isMarkerCurrentlySpeaking) stopTextToSpeech()
+
+                            if (!appSettings.isProVersion(billingState)) {
+                                displayPurchaseProMessage()
+                                return@RecentlySeenMarkers
+                            }
 
                             if (_uiRecentlySeenMarkersFlow.value.isNotEmpty()) {
                                 val nextUnspokenMarker =
@@ -1175,7 +1235,7 @@ fun App(
             }
             frameCount++
 
-            // Show Onboarding
+            // Show Onboarding Dialog
             if (isOnboardingDialogVisible) {
                 OnboardingDialog(
                     onDismiss = {
@@ -1184,12 +1244,27 @@ fun App(
                 )
             }
 
-            // Show AboutBox
+            // Show AboutBox Dialog
             if (isAboutBoxDialogVisible) {
                 AboutBoxDialog(
                     onDismiss = {
                         isAboutBoxDialogVisible = false
                     }
+                )
+            }
+
+            // Show Purchase Pro Dialog
+            if (isPurchaseProDialogVisible) {
+                PurchaseProDialog(
+                    billingState,
+                    commonBilling,
+                    calcTrialTimeRemainingStringFunc = {
+                        appSettings.calcTrialTimeRemainingString()
+                    },
+                    onDismiss = {
+                        isPurchaseProDialogVisible = false
+                    },
+                    coroutineScope = coroutineScope
                 )
             }
 

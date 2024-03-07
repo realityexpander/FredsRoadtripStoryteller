@@ -26,6 +26,7 @@ val appSettings = AppSettings.create()
         printAppSettings()
     }
 
+
 @Suppress("MemberVisibilityCanBePrivate") // for settingsInstance - will be used in tests
 class AppSettings(val settingsInstance: Settings) {
 
@@ -60,6 +61,12 @@ class AppSettings(val settingsInstance: Settings) {
     var installAtEpochMilli: Long by
         SettingsDelegate(settingsInstance,
        kInstallAtEpochMilli, defaultValue = Clock.System.now().toEpochMilliseconds())
+    var installAtLocation: Location by
+        SettingsDelegate(settingsInstance,
+       kInstallAtLocation, defaultValue = Location(0.0, 0.0))
+    var trialStartAtEpochMilli: Long by
+        SettingsDelegate(settingsInstance,
+       kTrialStartAtEpochMilli, defaultValue = 0L)
 
     // • For Settings panel
     var isSpeakWhenUnseenMarkerFoundEnabled by
@@ -108,10 +115,14 @@ class AppSettings(val settingsInstance: Settings) {
         kLastSpokenRecentlySeenMarker to
          lastSpokenRecentlySeenMarker,
         kInstallAtEpochMilli to
-         installAtEpochMilli
+         installAtEpochMilli,
+        kInstallAtLocation to
+         installAtLocation,
+        kTrialStartAtEpochMilli to
+         trialStartAtEpochMilli
     )
 
-    // - REMEMBER TO ADD NEW SETTINGS TO THE CONST LIST! - FORMATTING IS INTENTIONAL
+    // ⚠️ REMEMBER TO ADD NEW SETTINGS TO THE CONST LIST! - FORMATTING IS INTENTIONAL
     companion object {
         fun create(): AppSettings {
             return AppSettings(Settings())
@@ -139,6 +150,10 @@ class AppSettings(val settingsInstance: Settings) {
             "kLastSpokenRecentlySeenMarker"
         const val kInstallAtEpochMilli =
             "kInstallAtEpochMilli"
+        const val kInstallAtLocation =
+            "kInstallAtLocation"
+        const val kTrialStartAtEpochMilli =
+            "kTrialStartAtEpochMilli"
 
         // • For Settings panel
         const val kIsSpeakWhenUnseenMarkerFoundEnabled =

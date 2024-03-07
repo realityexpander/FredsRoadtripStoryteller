@@ -1,3 +1,5 @@
+@file:Suppress("FunctionName")
+
 package presentation
 
 import androidx.compose.foundation.Image
@@ -73,7 +75,7 @@ fun SplashScreenForPermissions(
                     )
                 }
                 Text(
-                    text = appNameStr,
+                    text = "Fred's Roadtrip Storyteller",
                     color = Color.White,
                     textAlign = TextAlign.Start,
                     fontSize = MaterialTheme.typography.h4.fontSize,

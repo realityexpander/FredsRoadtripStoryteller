@@ -1,3 +1,5 @@
+@file:Suppress("FunctionName")
+
 package presentation.uiComponents
 
 import androidx.compose.foundation.background
@@ -26,10 +28,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import appMetadata
 import consumeProductAction
-import data.appSettings
 import data.billing.CommonBilling
 import data.billing.CommonBilling.BillingState
-import data.billing.calcTrialTimeRemainingString
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import purchaseProductAction
@@ -38,12 +38,12 @@ import purchaseProductAction
 private const val isTestingPayments_enableConsumeProduct = true
 
 @Composable
-fun PurchaseProductButton(
+fun PurchaseProVersionButton(
     billingState: BillingState,
     commonBilling: CommonBilling,
     coroutineScope: CoroutineScope,
     onCloseDrawer: () -> Unit,
-    trialTimeRemainingStr: String = calcTrialTimeRemainingString(appSettings.installAtEpochMilli)
+    trialTimeRemainingStr: String
 ) {
     when (billingState) {
         is BillingState.NotPurchased -> {
