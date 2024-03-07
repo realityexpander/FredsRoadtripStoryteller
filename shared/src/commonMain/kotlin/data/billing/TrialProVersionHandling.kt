@@ -25,7 +25,7 @@ import kotlin.time.Duration.Companion.minutes
  *   - Unlimited access to all features.
  */
 
-val kTrialPeriodDuration = 3.minutes
+val kTrialPeriodDuration = 7.minutes
 const val kTrialStartOutsideRadiusMiles = 1.0  // Distance from install location to start trial.
 
 // Check if user location is outside the trial radius & start trial.
