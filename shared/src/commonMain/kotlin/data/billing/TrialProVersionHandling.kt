@@ -8,7 +8,23 @@ import presentation.maps.Location
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
-// Trial/Pro version handling
+/**
+ * # Trial/Pro version handling
+ *
+ * ## Trial version
+ * - Trial starts when user is outside the `kTrialStartOutsideRadiusMiles` of the app install location.
+ * - Trial duration is `kTrialPeriodDuration` days.
+ * - After trial ends, the following features are disabled:
+ *   - Can't view the details of the markers.
+ *   - Can't speak the details of the markers.
+ *   - Can't announce the details of the markers.
+ *
+ * ## Pro version
+ * - Pro version is enabled if the user has purchased the Pro version.
+ * - Pro version features:
+ *   - Unlimited access to all features.
+ */
+
 val kTrialPeriodDuration = 3.minutes
 const val kTrialStartOutsideRadiusMiles = 1.0  // Distance from install location to start trial.
 
