@@ -2,8 +2,7 @@
 
 package previews
 
-import data.billing.CommonBilling
-import data.billing.CommonBilling.BillingState
+import CommonAppMetadata
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,9 +11,12 @@ import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.tooling.preview.Preview
+import appMetadata
 import appNameStr
 import data.AppSettings
 import data.FakeSettings
+import data.billing.CommonBilling
+import data.billing.CommonBilling.BillingState
 import presentation.app.AppDrawerContent
 import presentation.maps.LatLong
 import presentation.maps.Marker
@@ -30,6 +32,7 @@ import presentation.uiComponents.AppTheme
 @Composable
 fun AppDrawerPreview() {
     appNameStr = "Fred's Roadtrip Storyteller"
+    appMetadata = CommonAppMetadata()
 
     AppTheme {
         Surface {
