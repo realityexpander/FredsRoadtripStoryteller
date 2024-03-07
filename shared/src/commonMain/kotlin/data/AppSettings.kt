@@ -19,6 +19,13 @@ import kotlin.reflect.KProperty
 import kotlin.reflect.safeCast
 import co.touchlab.kermit.Logger as Log
 
+/**
+ * # AppSettings
+ *
+ * - Singleton for the app settings.
+ * - Typesafe accessors for settings.
+ */
+
 // Singleton for the app settings
 val appSettings = AppSettings.create()
     .apply {
@@ -31,10 +38,10 @@ val appSettings = AppSettings.create()
 @Suppress("MemberVisibilityCanBePrivate") // for settingsInstance - will be used in tests
 class AppSettings(val settingsInstance: Settings) {
 
-    // Typesafe accessors for settings
-    // is there a way to put these into the map automatically & keep typesafe w/o using casts?
-    // REMEMBER TO ADD NEW SETTINGS TO THE MAP! - FORMATTING IS INTENTIONAL
-    // ALSO REMEMBER TO ADD NEW TYPES TO THE WHEN STATEMENT IN THE DELEGATE GETTER/SETTER
+    // 🔸Typesafe accessors for settings
+    // todo - Is there a way to put these into the map automatically & keep typesafe w/o using casts?
+    // ⚠️ REMEMBER TO ADD NEW SETTINGS TO THE MAP! - FORMATTING IS INTENTIONAL.
+    //    ALSO REMEMBER TO ADD NEW TYPES TO THE WHEN STATEMENT IN THE DELEGATE GETTER/SETTER.
     var loadMarkersResult by
         SettingsDelegate(settingsInstance,
        kMarkersResult, defaultValue = LoadMarkersResult())
