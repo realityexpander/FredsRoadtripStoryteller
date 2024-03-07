@@ -72,7 +72,7 @@ import appNameStr
 import data.AppSettings
 import data.billing.CommonBilling
 import data.billing.CommonBilling.BillingState
-import data.billing.isProVersion
+import data.billing.isProVersionEnabled
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
@@ -375,7 +375,7 @@ fun AppDrawerContent(
                     .padding(8.dp)
                     .animateItemPlacement(animationSpec = tween(250))
                     .clickable {
-                        if (!data.appSettings.isProVersion(billingState)) {
+                        if (!data.appSettings.isProVersionEnabled(billingState)) {
                             onDisplayPurchaseProMessage()
                             return@clickable
                         }
@@ -632,7 +632,7 @@ fun SearchMarkerDialog(
                                 .heightIn(min = 48.dp)
                                 .padding(8.dp, 0.dp, 8.dp, 4.dp)
                                 .clickable {
-                                    if (!appSettings.isProVersion(billingState)) {
+                                    if (!appSettings.isProVersionEnabled(billingState)) {
                                         showDialogForProVersion = true
 
                                         return@clickable

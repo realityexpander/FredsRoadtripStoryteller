@@ -19,6 +19,7 @@ import kotlin.reflect.KProperty
 import kotlin.reflect.safeCast
 import co.touchlab.kermit.Logger as Log
 
+// Singleton for the app settings
 val appSettings = AppSettings.create()
     .apply {
         if(kForceClearAllSettingsAtLaunch) { clearAllSettings() }
@@ -171,10 +172,10 @@ class AppSettings(val settingsInstance: Settings) {
     // Use [] access operator
     // Note: Not typesafe, so you have to cast the type for `get`.
     // Use get:
-    //     val markers: MarkersResult = settings[kMarkersResult]
-    //                  ^^^^^^^^^^^^^-- note: type is NOT inferred and must be specified.
+    //     val markers: Markers = settings[kMarkers]
+    //                  ^^^^^^^-- note: type is NOT inferred and must be specified.
     // Use set:
-    //     settings.settingsMap[kMarkersResult] = MarkersResult() // no need to cast for setting.
+    //     settings.settingsMap[kMarkers] = Markers() // no need to cast for setting.
     inline operator fun <reified TValue> get(key: String): TValue {
         // Guard
         settingsMap[key] ?: throw IllegalArgumentException("No setting delegate found for key= $key")

@@ -47,7 +47,7 @@ fun AppSettings.isTrialEnded(): Boolean {
                 trialStartAtEpochMilli + kTrialPeriodDuration.inWholeMilliseconds)
 }
 
-fun AppSettings.isProVersion(billingState: CommonBilling.BillingState): Boolean {
+fun AppSettings.isProVersionEnabled(billingState: CommonBilling.BillingState): Boolean {
     if(!isTrialEnded()) return true // Use Pro features if still in trial.
 
     return billingState is CommonBilling.BillingState.Purchased

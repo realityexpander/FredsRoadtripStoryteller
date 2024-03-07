@@ -57,7 +57,7 @@ import data.appSettings
 import data.billing.CommonBilling
 import data.billing.CommonBilling.BillingState
 import data.billing.calcTrialTimeRemainingString
-import data.billing.isProVersion
+import data.billing.isProVersionEnabled
 import data.billing.isTrialStartDetected
 import data.configPropertyFloat
 import data.configPropertyString
@@ -202,6 +202,7 @@ fun App(
         fun displayPurchaseProMessage() {
             isPurchaseProDialogVisible = true
         }
+        // Collect billing message
         LaunchedEffect(Unit) {
             commonBilling.billingMessageFlow().collectLatest { billingMessage ->
                 billingMessageStr = billingMessage
@@ -221,7 +222,7 @@ fun App(
                 )
             }
         }
-        // todo - if appSettings.installAtLocation is null, then poll GPS until it is ready and then set it.
+        // Set "Install Location" at first launch
         LaunchedEffect(Unit) {
             do {
                 if (appSettings.installAtLocation == Location(0.0, 0.0)) {
@@ -1095,7 +1096,7 @@ fun App(
                             isMarkersLastUpdatedLocationVisible = isMarkersLastUpdatedLocationVisible,
                             isMapOptionSwitchesVisible = !isRecentlySeenMarkersPanelVisible,  // hide map options when showing marker list
                             onMarkerInfoClick = { marker ->
-                                if (!appSettings.isProVersion(billingState)) {
+                                if (!appSettings.isProVersionEnabled(billingState)) {
                                     displayPurchaseProMessage()
                                     return@MapContent
                                 }
@@ -1133,7 +1134,7 @@ fun App(
                         appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState, // reactive to settings
                         markersRepo = markersRepo,
                         onClickRecentlySeenMarkerItem = { markerId ->
-                            if (!appSettings.isProVersion(billingState)) {
+                            if (!appSettings.isProVersionEnabled(billingState)) {
                                 displayPurchaseProMessage()
                                 return@RecentlySeenMarkers
                             }
@@ -1150,7 +1151,7 @@ fun App(
                         onClickStartSpeakingMarker = { recentlySeenMarker, isSpeakDetailsEnabled: Boolean ->
                             if(isTextToSpeechSpeaking()) stopTextToSpeech()
 
-                            if (!appSettings.isProVersion(billingState)) {
+                            if (!appSettings.isProVersionEnabled(billingState)) {
                                 displayPurchaseProMessage()
                                 return@RecentlySeenMarkers
                             }
@@ -1199,7 +1200,7 @@ fun App(
                             if (isTextToSpeechSpeaking()) stopTextToSpeech()
                             if (isMarkerCurrentlySpeaking) stopTextToSpeech()
 
-                            if (!appSettings.isProVersion(billingState)) {
+                            if (!appSettings.isProVersionEnabled(billingState)) {
                                 displayPurchaseProMessage()
                                 return@RecentlySeenMarkers
                             }
