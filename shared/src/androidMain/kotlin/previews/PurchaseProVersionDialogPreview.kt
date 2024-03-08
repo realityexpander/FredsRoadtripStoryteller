@@ -14,7 +14,7 @@ import presentation.uiComponents.AppTheme
 
 
 @Preview(
-    name = "PurchaseProVersion Dialog (night)",
+    name = "Purchase Pro Version Dialog (night)",
     group = "top element",
     uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL,
     device = "spec:width=1080px,height=2040px,dpi=440"
@@ -36,7 +36,7 @@ fun PurchaseProVersionDialogPreview() {
 }
 
 @Preview(
-    name = "PurchaseProVersion Dialog (day)",
+    name = "Purchase Pro Version Dialog (day)",
     group = "top element",
     uiMode = Configuration.UI_MODE_NIGHT_NO or Configuration.UI_MODE_TYPE_NORMAL,
     device = "spec:width=1080px,height=2040px,dpi=440"

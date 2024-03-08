@@ -6,7 +6,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import presentation.maps.Location
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.days
 
 /**
  * # Trial/Pro version handling
@@ -34,8 +34,8 @@ import kotlin.time.Duration.Companion.minutes
  * @see AppSettings class is used to persistently store application preferences.
  */
 
-val kTrialPeriodDuration = 7.minutes
-const val kTrialStartOutsideRadiusMiles = 1.0  // Distance from install location to start trial.
+val kTrialPeriodDuration = 3.days
+const val kTrialStartOutsideRadiusMiles = 25.0  // Distance from install location to start trial.
 
 // Check if user location is outside the trial radius & start trial.
 fun AppSettings.isTrialStartDetected(
