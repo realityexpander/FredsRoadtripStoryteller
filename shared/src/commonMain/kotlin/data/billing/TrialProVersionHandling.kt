@@ -23,6 +23,15 @@ import kotlin.time.Duration.Companion.minutes
  * - Pro version is enabled if the user has purchased the Pro version.
  * - Pro version features:
  *   - Unlimited access to all features.
+ *
+ * # Public Functions
+ * - `isTrialStartDetected` function checks if the user is outside the trial radius and starts the trial.
+ * - `isTrialStarted` function checks if the trial has started.
+ * - `isTrialEnded` function checks if the trial has ended.
+ * - `isProVersionEnabled` function checks if the Pro version is enabled.
+ * - `calcTrialTimeRemainingString` function calculates the String for time remaining for the trial.
+ *
+ * @see AppSettings class is used to persistently store application preferences.
  */
 
 val kTrialPeriodDuration = 7.minutes
