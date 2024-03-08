@@ -216,6 +216,7 @@ fun App(
         LaunchedEffect(Unit) {
             appMetadata = commonAppMetadata
 
+            // Set "Install At" at first launch
             if(!appSettings.hasKey(kInstallAtEpochMilli)) {
                 if(commonAppMetadata.installAtEpochMilli == 0L) { // iOS does not set this at so we set it here. Android sets this from Build settings.
                     commonAppMetadata.installAtEpochMilli = Clock.System.now().toEpochMilliseconds()

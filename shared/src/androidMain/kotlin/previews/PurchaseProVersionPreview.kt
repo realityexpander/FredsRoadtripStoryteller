@@ -34,3 +34,25 @@ fun PurchaseProVersionDialogPreview() {
         }
     }
 }
+
+@Preview(
+    name = "PurchaseProVersion Dialog (day)",
+    group = "top element",
+    uiMode = Configuration.UI_MODE_NIGHT_NO or Configuration.UI_MODE_TYPE_NORMAL,
+    device = "spec:width=1080px,height=2040px,dpi=440"
+)
+@Composable
+fun PurchaseProVersionDialogPreviewDay() {
+    appMetadata = CommonAppMetadata()
+
+    AppTheme {
+        Surface {
+            PurchaseProVersionDialog(
+                billingState = CommonBilling.BillingState.NotPurchased(),
+                commonBilling = CommonBilling(),
+                calcTrialTimeRemainingStringFunc = { "1 day remaining" },
+                onDismiss = {}
+            )
+        }
+    }
+}

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -101,7 +102,7 @@ fun PurchaseProVersionDialog(
 
                 Text(
                     "Purchase Pro version",
-                    color = Color.Cyan,
+                    color = MaterialTheme.colors.primary,
                     fontWeight = FontWeight.ExtraBold,
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.h4,
@@ -136,7 +137,10 @@ fun PurchaseProVersionDialog(
 
                 Button(
                     onClick = onDismiss,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = Color.DarkGray,
+                        contentColor = Color.White)
                 ) {
                     Text("Close")
                 }
