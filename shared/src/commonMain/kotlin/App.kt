@@ -1197,6 +1197,11 @@ fun App(
                             stopTextToSpeech()
                         },
                         onClickResumeSpeakingAllMarkers = {
+                            if (!appSettings.isProVersionEnabled(billingState)) {
+                                displayPurchaseProMessage()
+                                return@RecentlySeenMarkers
+                            }
+
                             appSettings.isSpeakWhenUnseenMarkerFoundEnabled = true
                             appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState = true
                             isTemporarilyPreventPerformanceTuningActive = true // prevents using emojis for markers // todo remove? needed>?
