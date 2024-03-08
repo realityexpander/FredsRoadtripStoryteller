@@ -116,7 +116,7 @@ data class CommonAppMetadata(
 )
 var appNameStr =
     configPropertyString("app.name", "app.name string not found")
-lateinit var appMetadata: CommonAppMetadata // = CommonAppMetadata() // dummy placeholder, this will be passed in from platform side.
+lateinit var appMetadata: CommonAppMetadata // Details will be passed in from platform side.
 var debugLog = mutableListOf("Debug log: start time:" + Clock.System.now())
 
 // "Load new marker for Location" trigger radius
