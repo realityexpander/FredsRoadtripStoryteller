@@ -235,14 +235,15 @@ fun App(
                         errorCallback = { errorMessage ->
                             Log.w(errorMessage)
                             errorMessageStr = errorMessage
+                        },
+                        locationCallback = { updatedLocation ->
+                            appSettings.installAtLocation = updatedLocation ?: run {
+                                errorMessageStr = "Unable to get current location"
+                                Log.w(errorMessageStr.toString())
+                                return@run appSettings.installAtLocation // just return most recent location
+                            }
                         }
-                    ) { updatedLocation ->
-                        appSettings.installAtLocation = updatedLocation ?: run {
-                            errorMessageStr = "Unable to get current location"
-                            Log.w(errorMessageStr.toString())
-                            return@run appSettings.installAtLocation // just return most recent location
-                        }
-                    }
+                    )
                 }
                 delay(3.seconds)
             } while (appSettings.installAtLocation == Location(0.0, 0.0))
@@ -642,10 +643,14 @@ fun App(
             }
         }
 
-        // 🔸 Force update UI when app first opens
+        // 🔸 Force update upon launch - Sometimes the GPS does not update the location on first launch.
         LaunchedEffect(Unit) {
-            // Update location
-            userLocation = jiggleLocationToForceUiUpdate(userLocation)
+            do {
+                delay(3.seconds)
+                if (finalMarkers.value.isEmpty()) {
+                    userLocation = jiggleLocationToForceUiUpdate(userLocation)
+                }
+            } while (finalMarkers.value.isEmpty())
         }
 
         // 🔸 For render performance tuning
