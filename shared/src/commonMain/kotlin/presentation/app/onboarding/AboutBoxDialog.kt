@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import appMetadata
-import appNameStr
 import debugLog
 import json
 import kotlinx.coroutines.launch
@@ -114,7 +113,7 @@ fun AboutBoxDialog(
                             onDismiss()
                         },
                     ) {
-                        Text("$appNameStr website")
+                        Text("${appMetadata.appNameStr} website")
                     }
 
                     Column(
@@ -139,7 +138,7 @@ fun AboutBoxDialog(
 
                         // Version number
                         Text(
-                            "$appNameStr v${appMetadata.versionStr} " +
+                            "${appMetadata.appNameStr} v${appMetadata.versionStr} " +
                                     if (appMetadata.platformId == "android")
                                         "build ${appMetadata.androidBuildNumberStr} "
                                     else
@@ -170,7 +169,7 @@ fun AboutBoxDialog(
                                 coroutineScope.launch {
                                     debugLog.add(
                                         "AboutBoxDialog: Send debug log, debugLog.size=${debugLog.size}, " +
-                                                "$appNameStr version " +
+                                                "${appMetadata.appNameStr} version " +
                                                 "${appMetadata.versionStr} build ${appMetadata.androidBuildNumberStr}"
                                     )
                                     sendEmailAction(body = json.encodeToString(debugLog))

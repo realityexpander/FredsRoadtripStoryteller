@@ -12,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.tooling.preview.Preview
 import appMetadata
-import appNameStr
 import data.AppSettings
 import data.FakeSettings
 import data.billing.CommonBilling
@@ -27,12 +26,12 @@ import presentation.uiComponents.AppTheme
     name = "App Drawer (night)",
     group = "top element",
     uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL,
-    device = "spec:width=1080px,height=1340px,dpi=440"
+    device = "spec:width=1080px,height=1640px,dpi=440"
 )
 @Composable
 fun AppDrawerPreview() {
-    appNameStr = "Fred's Roadtrip Storyteller"
     appMetadata = CommonAppMetadata()
+    appMetadata.appNameStr = "Fred's Roadtrip Storyteller"
 
     AppTheme {
         Surface {
@@ -53,11 +52,14 @@ fun AppDrawerPreview() {
                             id = "M2020202",
                             title = "Sears Home Kit",
                             position = LatLong(38.882334, -77.171091),
+                            isSeen = true,
+                            isSpoken = true,
                         ),
                         Marker(
                             title = "Here is a very long title of a marker that will be truncated at this very long length due to the sordid details of this insanely long title",
                             id = "M123987",
                             position = LatLong(38.882334, -77.171091),
+                            isSeen = true,
                         ),
                     ),
                     activeSpeakingMarker = RecentlySeenMarker(
@@ -79,7 +81,7 @@ fun AppDrawerPreview() {
 }
 @Preview(
     name = "App Drawer (light)",
-    group = "top element", device = "spec:width=1080px,height=1340px,dpi=440"
+    group = "top element", device = "spec:width=1080px,height=1640px,dpi=440"
 )
 @Composable
 fun AppDrawerLightPreview() {

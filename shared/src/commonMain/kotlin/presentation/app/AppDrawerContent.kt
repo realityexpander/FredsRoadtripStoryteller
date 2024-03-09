@@ -68,7 +68,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import appNameStr
+import appMetadata
 import data.AppSettings
 import data.billing.CommonBilling
 import data.billing.CommonBilling.BillingState
@@ -123,7 +123,7 @@ fun AppDrawerContent(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            appNameStr,
+            appMetadata.appNameStr,
             fontSize = MaterialTheme.typography.h5.fontSize,
             fontWeight = FontWeight.Bold,
             modifier = Modifier

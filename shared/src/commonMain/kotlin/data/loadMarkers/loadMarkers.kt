@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import appMetadata
 import data.AppSettings
 import data.AppSettings.Companion.kMarkersLastUpdatedLocation
 import data.MarkersRepo
@@ -26,7 +27,6 @@ import data.util.LoadingState
 import data.util.toInstant
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import appNameStr
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -202,7 +202,7 @@ fun loadMarkers(
         ) {
             when (val state = debugLoadingState) {
                 is LoadingState.Loading -> {
-                    Text("$appNameStr Loading...")
+                    Text("${appMetadata.appNameStr} Loading...")
                 }
 
                 is LoadingState.Loaded<String> -> {

@@ -6,8 +6,8 @@ actual fun sendDeveloperFeedback() {
     //        Firebase.appDistribution.startFeedback("We value your feedback!")
     sendEmailAction(
         to = "realityexpanderdev@gmail.com",
-        subject = "$appNameStr ${appMetadata.versionStr} Feedback",
-        body = "Please provide feedback for $appNameStr ${appMetadata.versionStr}-" +
+        subject = "${appMetadata.appNameStr} ${appMetadata.versionStr} Feedback",
+        body = "Please provide feedback for ${appMetadata.appNameStr} ${appMetadata.versionStr}-" +
                 "build-${appMetadata.androidBuildNumberStr} (Android) via your email app:"
     )
 }
