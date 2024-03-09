@@ -48,6 +48,8 @@ import presentation.uiComponents.AppTheme
 import java.util.Locale
 import co.touchlab.kermit.Logger as Log
 
+private val appMetadata = CommonAppMetadata()
+
 class MainActivity : AppCompatActivity(),
     TextToSpeech.OnInitListener,
     PurchasesUpdatedListener
@@ -58,7 +60,7 @@ class MainActivity : AppCompatActivity(),
     private var isSendingUserToAndroidAppSettingsScreen = false
 
     private val commonBilling = CommonBilling()
-    private val appMetadata = CommonAppMetadata()
+
     private lateinit var purchaseManager: PurchaseManager
 
     @RequiresApi(Build.VERSION_CODES.O)

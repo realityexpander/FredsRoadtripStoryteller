@@ -115,7 +115,7 @@ data class CommonAppMetadata(
     var installAtEpochMilli: Long = 0L,  // only set on android. We set this on iOS side at first launch.
     var platformId: String = "unknown", // "android" or "iOS"
 )
-lateinit var appMetadata: CommonAppMetadata // Details will be passed in from platform side.
+var appMetadata: CommonAppMetadata = CommonAppMetadata() // Details will be passed in from platform side.
 var debugLog = mutableListOf("Debug log: start time:" + Clock.System.now())
 
 // "Load new marker for Location" trigger radius
