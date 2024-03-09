@@ -107,13 +107,13 @@ import co.touchlab.kermit.Logger as Log
 const val kForceClearAllSettingsAtLaunch = false
 
 data class CommonAppMetadata(
+    var appNameStr: String = configPropertyString("app.name", "app.name string not found"),
     var isDebuggable: Boolean = false,
     var versionStr: String = "0.0.0",
     var androidBuildNumberStr: String = "n/a",   // Android only
     var iOSBundleVersionStr: String = "n/a", // iOS only
     var installAtEpochMilli: Long = 0L,  // only set on android. We set this on iOS side at first launch.
     var platformId: String = "unknown", // "android" or "iOS"
-    var appNameStr: String = configPropertyString("app.name", "app.name string not found")
 )
 lateinit var appMetadata: CommonAppMetadata // Details will be passed in from platform side.
 var debugLog = mutableListOf("Debug log: start time:" + Clock.System.now())
