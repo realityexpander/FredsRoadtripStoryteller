@@ -122,7 +122,6 @@ var debugLog = mutableListOf("Debug log: start time:" + Clock.System.now())
 // "Load new marker for Location" trigger radius
 val kMaxReloadRadiusMiles =
     configPropertyFloat("app.maxReloadRadiusMiles", 2.0f).toDouble()
-//const val kMaxMarkerDetailsAgeSeconds = 60 * 60 * 24 * 30  // 30 days
 val kMaxMarkerDetailsAgeDuration = 30.days
 
 // Improve performance by restricting cluster size & updates
