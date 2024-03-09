@@ -654,7 +654,7 @@ fun App(
             } while (finalMarkers.value.isEmpty())
         }
 
-        // 🔸 For render performance tuning
+        // 🔸 For frame-render performance tuning
         didFullFrameRender = false
 
         BottomSheetScaffold(
