@@ -646,10 +646,11 @@ fun App(
         // 🔸 Force update upon launch - Sometimes the GPS does not update the location on first launch.
         LaunchedEffect(Unit) {
             do {
-                delay(3.seconds)
+                delay(5.seconds)
                 if (finalMarkers.value.isEmpty()) {
                     userLocation = jiggleLocationToForceUiUpdate(userLocation)
                 }
+                delay(15.seconds)
             } while (finalMarkers.value.isEmpty())
         }
 
