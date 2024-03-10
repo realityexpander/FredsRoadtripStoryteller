@@ -9,7 +9,7 @@ import androidx.compose.ui.text.font.FontWeight
 // This is the common interface for Android and iOS.
 // This version is specifically for Compose 1.5.x and below.
 //
-// Based on this article:
+// Based on these article:
 // https://proandroiddev.com/custom-font-magic-in-compose-multiplatform-unlock-your-creativity-dcd0c9fa7756
 // https://pnbharat.medium.com/using-custom-fonts-in-kmp-compose-multiplatform-967220873161
 //
