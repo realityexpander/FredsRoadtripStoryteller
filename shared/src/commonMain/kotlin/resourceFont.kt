@@ -10,7 +10,8 @@ import androidx.compose.ui.text.font.FontWeight
 // This version is specifically for Compose 1.5.x and below.
 //
 // Based on this article:
-// https://medium.com/@kamal.lakhani56/fontresource-kmm-3df685804cb0
+// https://proandroiddev.com/custom-font-magic-in-compose-multiplatform-unlock-your-creativity-dcd0c9fa7756
+// https://pnbharat.medium.com/using-custom-fonts-in-kmp-compose-multiplatform-967220873161
 //
 // - Alternative, didnt work for me :https://stackoverflow.com/a/75841745/2857200
 

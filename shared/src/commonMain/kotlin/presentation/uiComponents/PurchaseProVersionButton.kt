@@ -75,7 +75,6 @@ fun PurchaseProVersionButton(
         is BillingState.NotPurchased -> {
 
             Spacer(modifier = Modifier.height(16.dp))
-            // Show trial time remaining
             DisplayTrialTimeRemaining(isTrialInProgress, trialTimeRemaining)
             Spacer(modifier = Modifier.height(4.dp))
 
@@ -102,6 +101,7 @@ fun PurchaseProVersionButton(
                     color = MaterialTheme.colors.onPrimary
                 )
             }
+            // Show last billing message if it exists
             billingState.lastBillingMessage?.let {
                 if(it.isNotBlank()) {
                     Text(
@@ -175,7 +175,7 @@ fun PurchaseProVersionButton(
         is BillingState.Purchased -> {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                "Pro Version Enabled ✔︎",
+                "✔︎ Pro Version Enabled\nThank you!",
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp),
@@ -304,6 +304,9 @@ private fun DisplayTrialTimeRemaining(
             .padding(top=12.dp, bottom=12.dp, start=8.dp, end=8.dp)
 
     ) {
+        WOPRDotScanner(componentWidth, isReverse = true)
+        Spacer(modifier = Modifier.height(8.dp))
+
         Text(
             text = trialTimeRemainingStr,
             modifier = Modifier
@@ -325,8 +328,10 @@ private fun DisplayTrialTimeRemaining(
 }
 
 
+// WOPR-style Countdown Dots
+// Inspiration: WarGames — WOPR https://youtu.be/_aUHQKneAdw?si=sYxz0vKHLpHdlay6&t=27
 @Composable
-fun WOPRDotScanner(componentWidth: Dp) {
+fun WOPRDotScanner(componentWidth: Dp, isReverse: Boolean = false) {
     val dotSize = 8.dp
     val delayUnit = 125
     val spaceBetween = 7.dp
@@ -370,7 +375,15 @@ fun WOPRDotScanner(componentWidth: Dp) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
-        alphas.forEach {
+        val  dots =
+            if(isReverse)
+                alphas
+                    .asReversed()
+                    .drop(10)
+            else
+                alphas
+
+        dots.forEach {
             Spacer(Modifier.width(spaceBetween))
             Dot(it.value)
         }
