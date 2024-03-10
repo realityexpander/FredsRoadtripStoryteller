@@ -30,7 +30,6 @@ fun PurchaseButtonPreview(
                     commonBilling = CommonBilling(),
                     coroutineScope = CoroutineScope(Dispatchers.Main),
                     onCloseDrawer = {},
-                    trialTimeRemainingStr = "TRIAL\nTIME REMAINING\n09 HRS\n43 MIN  25 SEC",
                     isTrialInProgress = true
                 )
             }

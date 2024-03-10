@@ -59,11 +59,10 @@ fun PurchaseProVersionButton(
     commonBilling: CommonBilling,
     coroutineScope: CoroutineScope,
     onCloseDrawer: () -> Unit,
-    trialTimeRemainingStr: String = "",  // todo - remove this default value
-    calcTimeRemainingStrFunc: () -> String = {""},
+    calcTimeRemainingStrFunc: () -> String = {"TRIAL\nTIME REMAINING\n10 HRS\n30 MIN  15 SEC"},
     isTrialInProgress: Boolean = false
 ) {
-    var trialTimeRemaining by remember { mutableStateOf(trialTimeRemainingStr) }
+    var trialTimeRemaining by remember { mutableStateOf(calcTimeRemainingStrFunc()) }
     LaunchedEffect(Unit) {
         while(true) {
             trialTimeRemaining = calcTimeRemainingStrFunc()

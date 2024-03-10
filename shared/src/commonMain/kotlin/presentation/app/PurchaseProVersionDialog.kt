@@ -123,7 +123,6 @@ fun PurchaseProVersionDialog(
                     commonBilling,
                     coroutineScope,
                     onDismiss,
-                    calcTrialTimeRemainingStringFunc(),
                     calcTrialTimeRemainingStringFunc,
                     isTrialInProgress
                 )
