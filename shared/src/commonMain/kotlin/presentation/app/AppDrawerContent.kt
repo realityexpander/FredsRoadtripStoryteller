@@ -100,7 +100,7 @@ fun AppDrawerContent(
     billingState: BillingState,
     calcTrialTimeRemainingStringFunc: () -> String,
     appSettings: AppSettings,
-    onDisplayPurchaseProMessage: () -> Unit = {},
+    onDisplayPurchaseProDialog: () -> Unit = {},
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -378,7 +378,7 @@ fun AppDrawerContent(
                     .animateItemPlacement(animationSpec = tween(250))
                     .clickable {
                         if (!data.appSettings.isProVersionEnabled(billingState)) {
-                            onDisplayPurchaseProMessage()
+                            onDisplayPurchaseProDialog()
                             return@clickable
                         }
 

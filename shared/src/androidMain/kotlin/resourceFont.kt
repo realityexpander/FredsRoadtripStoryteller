@@ -7,7 +7,12 @@ import androidx.compose.ui.text.font.FontWeight
 
 @Composable
 @SuppressLint("DiscouragedApi") // for `getIdentifier` complaining about not using id's
-actual fun resourceFont(name: String, res: String, weight: FontWeight, style: FontStyle): Font {
+actual fun resourceFont(
+    name: String,
+    res: String,
+    weight: FontWeight,
+    style: FontStyle
+): Font {
     val context = LocalContext.current
     val id = context.resources.getIdentifier(res, "font", context.packageName)
 

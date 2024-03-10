@@ -59,7 +59,7 @@ fun PurchaseProVersionButton(
     commonBilling: CommonBilling,
     coroutineScope: CoroutineScope,
     onCloseDrawer: () -> Unit,
-    trialTimeRemainingStr: String = "",
+    trialTimeRemainingStr: String = "",  // todo - remove this default value
     calcTimeRemainingStrFunc: () -> String = {""},
     isTrialInProgress: Boolean = false
 ) {

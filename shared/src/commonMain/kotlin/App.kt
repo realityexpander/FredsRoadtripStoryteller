@@ -199,7 +199,7 @@ fun App(
                 billingMessageStr = null
             }
         }
-        fun displayPurchaseProMessage() {
+        fun displayPurchaseProDialog() {
             coroutineScope.launch {
                 isPurchaseProDialogVisible = true
             }
@@ -863,8 +863,8 @@ fun App(
                             appSettings.calcTrialTimeRemainingString()
                         },
                         appSettings = appSettings,
-                        onDisplayPurchaseProMessage = {
-                            displayPurchaseProMessage()
+                        onDisplayPurchaseProDialog = {
+                            displayPurchaseProDialog()
                         },
                     )
                 }
@@ -1108,7 +1108,7 @@ fun App(
                             isMapOptionSwitchesVisible = !isRecentlySeenMarkersPanelVisible,  // hide map options when showing marker list
                             onMarkerInfoClick = { marker ->
                                 if (!appSettings.isProVersionEnabled(billingState)) {
-                                    displayPurchaseProMessage()
+                                    displayPurchaseProDialog()
                                     return@MapContent
                                 }
 
@@ -1146,7 +1146,7 @@ fun App(
                         markersRepo = markersRepo,
                         onClickRecentlySeenMarkerItem = { markerId ->
                             if (!appSettings.isProVersionEnabled(billingState)) {
-                                displayPurchaseProMessage()
+                                displayPurchaseProDialog()
                                 return@RecentlySeenMarkers
                             }
 
@@ -1163,7 +1163,7 @@ fun App(
                             if(isTextToSpeechSpeaking()) stopTextToSpeech()
 
                             if (!appSettings.isProVersionEnabled(billingState)) {
-                                displayPurchaseProMessage()
+                                displayPurchaseProDialog()
                                 return@RecentlySeenMarkers
                             }
 
@@ -1203,7 +1203,7 @@ fun App(
                         },
                         onClickResumeSpeakingAllMarkers = {
                             if (!appSettings.isProVersionEnabled(billingState)) {
-                                displayPurchaseProMessage()
+                                displayPurchaseProDialog()
                                 return@RecentlySeenMarkers
                             }
 
@@ -1217,7 +1217,7 @@ fun App(
                             if (isMarkerCurrentlySpeaking) stopTextToSpeech()
 
                             if (!appSettings.isProVersionEnabled(billingState)) {
-                                displayPurchaseProMessage()
+                                displayPurchaseProDialog()
                                 return@RecentlySeenMarkers
                             }
 
