@@ -12,8 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 // Based on this article:
 // https://medium.com/@kamal.lakhani56/fontresource-kmm-3df685804cb0
 //
-// Compose 1.6.0+ has a better way to load fonts.
-// - Compose 1.6.0+ :https://stackoverflow.com/questions/68020883/how-do-i-use-fonts-in-jetpack-compose-for-desktop
+// - Alternative, didnt work for me :https://stackoverflow.com/a/75841745/2857200
 
 @Composable
 expect fun resourceFont(
