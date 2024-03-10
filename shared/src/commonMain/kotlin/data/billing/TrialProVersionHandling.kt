@@ -85,7 +85,7 @@ private fun calcTrialTimeRemainingString(
 ): String {
     if(trialStartAtEpochMilli == 0L)
         return "Trial has not started yet. " +
-            "Trial starts when you are $kTrialStartOutsideRadiusMiles miles away from the app install location."
+            "Trial starts when you are $kTrialStartOutsideRadiusMiles miles away from the initial app install location."
 
     val timeLeft = calcTrialTimeRemaining(trialStartAtEpochMilli, maxTrialTime)
     if(timeLeft <= Duration.ZERO) return "Trial expired - Please purchase Pro version for unlimited features."
