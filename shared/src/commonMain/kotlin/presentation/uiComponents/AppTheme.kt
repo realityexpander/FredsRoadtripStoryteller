@@ -57,7 +57,7 @@ fun AppTheme(
         )
     }
 
-    // WOPR Font for Trial Countdown
+    // WOPR Font for Trial Countdown (From Commodore PET character set)
     val petMeFontFamily = FontFamily(
         resourceFont("PetMe",
             res = "pet_me",
