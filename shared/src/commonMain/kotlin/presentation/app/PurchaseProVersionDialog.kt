@@ -32,6 +32,7 @@ import presentation.uiComponents.PurchaseProVersionButton
 fun PurchaseProVersionDialog(
     billingState: CommonBilling.BillingState,
     commonBilling: CommonBilling,
+    isTrialInProgress: Boolean = false,
     calcTrialTimeRemainingStringFunc: () -> String,
     onDismiss: () -> Unit,
     coroutineScope: CoroutineScope = rememberCoroutineScope()
@@ -122,12 +123,14 @@ fun PurchaseProVersionDialog(
                     commonBilling,
                     coroutineScope,
                     onDismiss,
-                    calcTrialTimeRemainingStringFunc()
+                    calcTrialTimeRemainingStringFunc(),
+                    calcTrialTimeRemainingStringFunc,
+                    isTrialInProgress
                 )
 
                 Text(
                     "Markers will continue to be collected, but you will not be able " +
-                            "to view or speak details of the markers without Pro version.",
+                            "to view or speak details of markers without Pro version.",
                     fontWeight = FontWeight.Normal,
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.h6,

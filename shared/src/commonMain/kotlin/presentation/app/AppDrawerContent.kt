@@ -73,6 +73,7 @@ import data.AppSettings
 import data.billing.CommonBilling
 import data.billing.CommonBilling.BillingState
 import data.billing.isProVersionEnabled
+import data.billing.isTrialInProgress
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
@@ -144,7 +145,7 @@ fun AppDrawerContent(
         }
 
     }
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(8.dp))
 
     // Show onboarding button
     Button(
@@ -168,7 +169,7 @@ fun AppDrawerContent(
             textAlign = TextAlign.Center,
         )
     }
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(8.dp))
 
     // Purchase Pro Version
     PurchaseProVersionButton(
@@ -176,7 +177,8 @@ fun AppDrawerContent(
         commonBilling,
         coroutineScope,
         onCloseDrawer,
-        calcTrialTimeRemainingStringFunc()
+        calcTimeRemainingStrFunc = calcTrialTimeRemainingStringFunc,
+        isTrialInProgress = appSettings.isTrialInProgress()
     )
 
     // Show about box

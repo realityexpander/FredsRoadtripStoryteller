@@ -9,11 +9,15 @@ import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import resourceFont
+
 
 @Composable
 fun AppTheme(
@@ -52,6 +56,16 @@ fun AppTheme(
             error = Color(0xFFFF0000)
         )
     }
+
+    // WOPR Font for Trial Countdown
+    val petMeFontFamily = FontFamily(
+        resourceFont("PetMe",
+            res = "pet_me",
+            weight = FontWeight.Medium,
+            style = FontStyle.Normal
+        )
+    )
+
     val typography = Typography(
         // bodyMedium = TextStyle( // material3
         body2 = TextStyle(
@@ -63,7 +77,17 @@ fun AppTheme(
             fontFamily = FontFamily.Default,
             fontWeight = FontWeight.Normal,
             fontSize = 8.sp
-        )
+        ),
+        subtitle2 = TextStyle(
+            fontFamily = if(LocalInspectionMode.current)
+                    FontFamily.Monospace
+                else
+                    petMeFontFamily,
+            fontWeight = FontWeight.Medium,
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
+            letterSpacing = 2.sp
+        ),
     )
     val shapes = Shapes(
         small = RoundedCornerShape(4.dp),

@@ -27,6 +27,7 @@ struct ContentView: View {
             let isDebuggable = false
         #endif
         commonAppMetadata = CommonAppMetadata(
+            appNameStr: Bundle.main.infoDictionary![kCFBundleNameKey as String] as! String,
             isDebuggable: isDebuggable,
             versionStr: version,
             androidBuildNumberStr: "n/a", // Android only

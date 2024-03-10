@@ -59,6 +59,7 @@ import data.billing.CommonBilling
 import data.billing.CommonBilling.BillingState
 import data.billing.calcTrialTimeRemainingString
 import data.billing.isProVersionEnabled
+import data.billing.isTrialInProgress
 import data.billing.isTrialStartDetected
 import data.configPropertyFloat
 import data.configPropertyString
@@ -1274,6 +1275,7 @@ fun App(
                 PurchaseProVersionDialog(
                     billingState,
                     commonBilling,
+                    isTrialInProgress = appSettings.isTrialInProgress(),
                     calcTrialTimeRemainingStringFunc = {
                         appSettings.calcTrialTimeRemainingString()
                     },

@@ -34,7 +34,7 @@ import kotlin.time.Duration.Companion.days
  * @see AppSettings class is used to persistently store application preferences.
  */
 
-val kTrialPeriodDuration = 3.days
+val kTrialPeriodDuration = 2.days
 const val kTrialStartOutsideRadiusMiles = 25.0  // Distance from install location to start trial.
 
 // Check if user location is outside the trial radius & start trial.
@@ -64,13 +64,10 @@ fun AppSettings.isTrialStartDetected(
 
 fun AppSettings.isTrialStarted() = trialStartAtEpochMilli != 0L
 fun AppSettings.isTrialEnded(): Boolean {
-    if(!isTrialStarted()) return false  // Trial has not started yet.
-
-    // Check if trial has ended.
-    return trialStartAtEpochMilli != 0L &&
-            (Clock.System.now().toEpochMilliseconds() >
-                trialStartAtEpochMilli + kTrialPeriodDuration.inWholeMilliseconds)
+    return (isTrialStarted() && Clock.System.now().toEpochMilliseconds() >
+            trialStartAtEpochMilli + kTrialPeriodDuration.inWholeMilliseconds)
 }
+fun AppSettings.isTrialInProgress() = isTrialStarted() && !isTrialEnded()
 
 fun AppSettings.isProVersionEnabled(billingState: CommonBilling.BillingState): Boolean {
     if(!isTrialEnded()) return true // Use Pro features if still in trial.
@@ -93,7 +90,9 @@ private fun calcTrialTimeRemainingString(
     val timeLeft = calcTrialTimeRemaining(trialStartAtEpochMilli, maxTrialTime)
     if(timeLeft <= Duration.ZERO) return "Trial expired - Please purchase Pro version for unlimited features."
 
-    return timeLeft.toHumanReadableString() + " remaining for Trial version."
+    return "TRIAL\n" +
+            "TIME REMAINING\n" +
+            timeLeft.toHumanReadableString()
 }
 private fun calcTrialTimeRemaining(
     installAtEpochMilli: Long,
@@ -113,10 +112,12 @@ fun Duration.toHumanReadableString(): String {
     val minutes = this.inWholeMinutes - (days * 24 * 60) - (hours * 60)
     val seconds = this.inWholeSeconds - (days * 24 * 60 * 60) - (hours * 60 * 60) - (minutes * 60)
 
+    fun Long.pad() = this.toString().padStart(2, '0')
+
     return when {
-        days > 0 -> "$days days, $hours hours, $minutes minutes"
-        hours > 0 -> "$hours hours, $minutes minutes"
-        minutes > 0 -> "$minutes minutes" + if(minutes < 2) ", $seconds seconds" else ""
-        else -> "$seconds seconds"
+        days > 0 -> "${days.pad()} DAYS $hours HRS\n${minutes.pad()} MIN  ${seconds.pad()} SEC"
+        hours > 0 -> "${hours.pad()} HRS\n${minutes.pad()} MIN  ${seconds.pad()} SEC"
+        minutes > 0 -> "${minutes.pad()} MIN  ${seconds.pad()} SEC"
+        else -> "${seconds.pad()} SEC"
     }
 }
