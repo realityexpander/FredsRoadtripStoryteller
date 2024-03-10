@@ -278,6 +278,7 @@ private fun DisplayTrialTimeRemaining(
 ) {
     var componentWidth by remember { mutableStateOf(0.dp) }
 
+    // Show plain text if trial is not in progress.
     if(!isTrialInProgress) {
         Text(
             trialTimeRemainingStr,
@@ -294,7 +295,7 @@ private fun DisplayTrialTimeRemaining(
         return
     }
 
-    // Display the WOPR-style Countdown Dots
+    // Display the WOPR-style Countdown Dots when trial is in progress.
     Column(
         modifier = Modifier
             .fillMaxWidth()

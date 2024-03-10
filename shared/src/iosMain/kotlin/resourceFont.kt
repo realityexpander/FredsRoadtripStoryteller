@@ -19,7 +19,7 @@ actual fun resourceFont(
 ): Font {
     return cache.getOrPut(res) {
         val byteArray = runBlocking {
-            resource("font/$res.ttf").readBytes()
+            resource("font/$res.ttf").readBytes() // Resource is in `src/commonMain/resources/font/`
         }
         androidx.compose.ui.text.platform.Font(res, byteArray, weight, style)
     }
