@@ -115,7 +115,7 @@ fun Duration.toHumanReadableString(): String {
     fun Long.pad() = this.toString().padStart(2, '0')
 
     return when {
-        days > 0 -> "${days.pad()} DAYS $hours HRS\n${minutes.pad()} MIN  ${seconds.pad()} SEC"
+        days > 0 -> "${days.pad()} DAYS ${hours.pad()} HRS\n${minutes.pad()} MIN  ${seconds.pad()} SEC"
         hours > 0 -> "${hours.pad()} HRS\n${minutes.pad()} MIN  ${seconds.pad()} SEC"
         minutes > 0 -> "${minutes.pad()} MIN  ${seconds.pad()} SEC"
         else -> "${seconds.pad()} SEC"
