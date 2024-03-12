@@ -64,7 +64,8 @@ fun OnboardingDialog(
         "09-OnBoarding.png",
         "10-OnBoarding.png",
         "11-OnBoarding.png",
-        "12-OnBoarding.png"
+        "12-OnBoarding.png",
+        "13-OnBoarding.png",
     )
 
     val pagerState = rememberPagerState(

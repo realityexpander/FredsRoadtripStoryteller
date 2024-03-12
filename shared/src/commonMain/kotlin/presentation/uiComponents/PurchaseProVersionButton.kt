@@ -9,6 +9,7 @@ import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -42,12 +43,15 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import appMetadata
 import consumeProductAction
+import data.appSettings
 import data.billing.CommonBilling
 import data.billing.CommonBilling.BillingState
+import data.billing.calcSpeakTimeRemainString
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import purchaseProductAction
+import speakTextToSpeech
 import kotlin.time.Duration.Companion.seconds
 
 // Set to true to enable `consume product` button for testing payments
@@ -301,6 +305,10 @@ private fun DisplayTrialTimeRemaining(
             .padding(start = 16.dp, end = 16.dp)
             .border(3.dp, MaterialTheme.colors.primary.copy(alpha = 0.75f))
             .padding(top=12.dp, bottom=12.dp, start=8.dp, end=8.dp)
+            .clickable {
+                // speak the time remaining
+                speakTextToSpeech("Estimated Time remaining " + appSettings.calcSpeakTimeRemainString())
+            }
 
     ) {
         WOPRDotScanner(componentWidth, isReverse = true)

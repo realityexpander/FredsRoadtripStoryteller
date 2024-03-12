@@ -79,6 +79,13 @@ fun AppSettings.calcTrialTimeRemainingString(): String {
     return calcTrialTimeRemainingString(trialStartAtEpochMilli)
 }
 
+fun AppSettings.calcSpeakTimeRemainString(): String {
+    val timeLeft = calcTrialTimeRemaining(trialStartAtEpochMilli, kTrialPeriodDuration)
+    if(timeLeft <= Duration.ZERO) return ""
+
+    return timeLeft.toSpeakableHumanReadableString()
+}
+
 private fun calcTrialTimeRemainingString(
     trialStartAtEpochMilli: Long,
     maxTrialTime: Duration = kTrialPeriodDuration
@@ -104,6 +111,20 @@ private fun calcTrialTimeRemaining(
     val timeLeft = maxTrialTime - (now - installAt)
 
     return timeLeft
+}
+
+fun Duration.toSpeakableHumanReadableString(): String {
+    val days = this.inWholeDays
+    val hours = this.inWholeHours - (days * 24)
+    val minutes = this.inWholeMinutes - (days * 24 * 60) - (hours * 60)
+    val seconds = this.inWholeSeconds - (days * 24 * 60 * 60) - (hours * 60 * 60) - (minutes * 60)
+
+    return when {
+        days > 0 -> "$days days $hours hours $minutes minutes  $seconds seconds"
+        hours > 0 -> "$hours hours $minutes minutes  $seconds seconds"
+        minutes > 0 -> "$minutes minutes  $seconds seconds"
+        else -> "$seconds seconds"
+    }
 }
 
 fun Duration.toHumanReadableString(): String {
