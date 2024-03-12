@@ -120,7 +120,7 @@ fun Duration.toSpeakableHumanReadableString(): String {
     val seconds = this.inWholeSeconds - (days * 24 * 60 * 60) - (hours * 60 * 60) - (minutes * 60)
 
     return when {
-        days > 0 -> "$days days $hours hours $minutes minutes  $seconds seconds"
+        days > 0 -> "$days day $hours hours $minutes minutes  $seconds seconds"
         hours > 0 -> "$hours hours $minutes minutes  $seconds seconds"
         minutes > 0 -> "$minutes minutes  $seconds seconds"
         else -> "$seconds seconds"
@@ -136,7 +136,7 @@ fun Duration.toHumanReadableString(): String {
     fun Long.pad() = this.toString().padStart(2, '0')
 
     return when {
-        days > 0 -> "${days.pad()} DAYS ${hours.pad()} HRS\n${minutes.pad()} MIN  ${seconds.pad()} SEC"
+        days > 0 -> "${days.pad()} DAY  ${hours.pad()} HRS\n${minutes.pad()} MIN  ${seconds.pad()} SEC"
         hours > 0 -> "${hours.pad()} HRS\n${minutes.pad()} MIN  ${seconds.pad()} SEC"
         minutes > 0 -> "${minutes.pad()} MIN  ${seconds.pad()} SEC"
         else -> "${seconds.pad()} SEC"
