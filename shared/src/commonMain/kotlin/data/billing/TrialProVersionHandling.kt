@@ -34,7 +34,7 @@ import kotlin.time.Duration.Companion.days
  * @see AppSettings class is used to persistently store application preferences.
  */
 
-val kTrialPeriodDuration = 2.days
+val kTrialPeriodDuration = 3.days
 const val kTrialStartOutsideRadiusMiles = 25.0  // Distance from install location to start trial.
 
 // Check if user location is outside the trial radius & start trial.
@@ -119,8 +119,10 @@ fun Duration.toSpeakableHumanReadableString(): String {
     val minutes = this.inWholeMinutes - (days * 24 * 60) - (hours * 60)
     val seconds = this.inWholeSeconds - (days * 24 * 60 * 60) - (hours * 60 * 60) - (minutes * 60)
 
+    val dayAppendChar = if (days.toInt() == 0 || days > 1) "s" else ""
+
     return when {
-        days > 0 -> "$days day $hours hours $minutes minutes  $seconds seconds"
+        days > 0 -> "$days day$dayAppendChar $hours hours $minutes minutes  $seconds seconds"
         hours > 0 -> "$hours hours $minutes minutes  $seconds seconds"
         minutes > 0 -> "$minutes minutes  $seconds seconds"
         else -> "$seconds seconds"
@@ -135,8 +137,10 @@ fun Duration.toHumanReadableString(): String {
 
     fun Long.pad() = this.toString().padStart(2, '0')
 
+    val dayAppendChar = if (days.toInt() == 0 || days > 1) "S" else " "
+
     return when {
-        days > 0 -> "${days.pad()} DAY  ${hours.pad()} HRS\n${minutes.pad()} MIN  ${seconds.pad()} SEC"
+        days > 0 -> "${days.pad()} DAY$dayAppendChar ${hours.pad()} HRS\n${minutes.pad()} MIN  ${seconds.pad()} SEC"
         hours > 0 -> "${hours.pad()} HRS\n${minutes.pad()} MIN  ${seconds.pad()} SEC"
         minutes > 0 -> "${minutes.pad()} MIN  ${seconds.pad()} SEC"
         else -> "${seconds.pad()} SEC"
