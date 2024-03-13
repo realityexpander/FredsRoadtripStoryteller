@@ -87,7 +87,7 @@ class AndroidTextToSpeechService(
     }
 
     fun isSpeaking(): Boolean {
-        return androidTextToSpeech.isSpeaking ?: false
+        return androidTextToSpeech.isSpeaking
     }
 
     override fun onStart(utteranceId: String?) {

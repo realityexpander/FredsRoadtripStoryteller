@@ -292,6 +292,8 @@ fun parseMarkersPageHtml(rawPageHtml: String): LoadMarkersResult {
                         indexOfSecondDashLine = i
                 }
             }
+
+            @Suppress("UNUSED_VARIABLE") // Leave for reference
             val description = if (indexOfSecondDashLine > indexOfFirstDashLine) {
                 lines
                     .subList(indexOfFirstDashLine + 1, indexOfSecondDashLine)

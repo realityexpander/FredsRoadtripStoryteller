@@ -183,4 +183,5 @@ apply(plugin = "kotlinx-atomicfu") // Needs to be applied after the buildscript 
 dependencies {
     // For Compose previews
     debugImplementation(libs.androidx.ui.tooling.preview.v160)
+    implementation(libs.androidx.ui.tooling.preview.v160)
 }

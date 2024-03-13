@@ -112,7 +112,7 @@ fun RecentlySeenMarkers(
                     .padding(8.dp, 4.dp, 8.dp, 8.dp)
                     .animateContentSize(
                         animationSpec = tween(500)
-                    ) { initialValue, targetValue ->
+                    ) { initialValue, _ ->
                         if (initialValue.height == 0) {
                             expandVertically()
                         } else {

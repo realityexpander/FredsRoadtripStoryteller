@@ -160,6 +160,7 @@ fun MarkerDetailsScreen(
                 Spacer(modifier = Modifier.padding(8.dp))
 
                 // Error message
+                @Suppress("USELESS_CAST") // For LoadingState.Error I want to be explicit
                 Text(
                     (markerDetailsLoadingState as LoadingState.Error).errorMessage,
                     modifier = Modifier

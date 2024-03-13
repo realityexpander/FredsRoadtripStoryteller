@@ -1,3 +1,5 @@
+@file:Suppress("UNUSED_ANONYMOUS_PARAMETER")
+
 package data.loadMarkerDetails
 
 import co.touchlab.kermit.Logger
