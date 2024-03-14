@@ -26,34 +26,32 @@ Listen to historical markers as you travel - Learn about local history as you dr
 
 <!-- img width="1700" alt="image" src="https://github.com/realityexpander/GoolgeMapsUsingCocoaPodsExample/assets/5157474/7b0395d3-04e6-48df-9219-990cb10d81e1" -->
 ## Screen Shots
-_note: screenshots may differ slightly from current version_
 
 ### Android Screenshots
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/2f2ced36-3770-47ea-94c3-9a4b174f488a">]()
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/b853d679-7dee-48e4-9172-6bae51c5775d">]()
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/b2c7e953-26d9-4ccc-8428-148baf4f89f5">]()
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/993e82d2-2291-4ba2-8ce6-30c42c72684f">]()
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/f9ab525c-c539-45cb-9ed1-dc3c6fd644a2">]()
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/f66be4ae-bcaf-4ce6-83cb-5fcf1dbee62a">]()
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/2f75762c-2f8e-4994-9995-eb84cb391b3f">]()
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/1e1c650e-bd9e-434f-96fe-d72ae757803c">]()
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/4324212b-1b0a-4925-9677-5695e24802ba">]()
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/99f27fae-355c-4d0e-9d0d-afcbd51572ff">]()
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/4accaa98-4bc6-43df-a175-7236ab69c4ab">]()
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/0b423837-f2f4-40eb-a9f7-60fee1b26097">]()
+[<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/369d81f1-8f53-4cb5-bc25-31ff502ae2cc">]()
+[<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/70a85983-d1d2-4fc9-b5f5-88f5272fb45c">]()
+[<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/b635ec05-b117-43e2-8f8b-12a250f1496f">]()
+[<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/4f420a44-7d64-473b-96c8-3ee3fe3e96a9">]()
+[<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/12fe1588-9b5c-4273-84d6-82750936211d">]()
+[<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/cc77fc6d-eb68-4d1e-a650-d696a2a5151e">]()
+[<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/47c5320c-4c5c-4cef-890e-f83fdf985a24">]()
+[<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/109718d8-fabd-458f-bd86-66da31bac411">]()
+[<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/891531d1-2487-41df-b282-c8c506b39141">]()
+[<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/d5178c01-0e3c-4d47-a68e-05a4ab6562e0">]()
 
 ### iOS Screenshots
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/b339bbd0-2b22-4931-abd2-c61a70aa6474">]()
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/dce44c86-1de3-434c-a5b1-91ca0582788f">]()
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/34dac8a8-4608-4d65-906b-840202214e58">]()
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/72b42050-a43a-4069-8f11-3bd14746a851">]()
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/44cb0711-e4e0-4022-80a6-1acbba1ddbb3">]()
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/da8bf05f-be04-40f5-b290-5f1be1c0dc9f">]()
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/9c064296-a82c-4967-bf95-93d0b5fb4aed">]()
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/d303624f-71e7-4321-9ab6-71a6ead2efb0">]()
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/9aeb361c-1ac0-48a7-85b4-22fc86b4d9cc">]()
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/c977ad13-4d0e-4f6f-b2d3-fe6572efc630">]()
-[<img width="250" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/7d6ec8fa-de16-4732-a5ff-9ba03f7eb464">]()
+_note: screenshots may differ slightly from current version_
+[<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/b339bbd0-2b22-4931-abd2-c61a70aa6474">]()
+[<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/dce44c86-1de3-434c-a5b1-91ca0582788f">]()
+[<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/34dac8a8-4608-4d65-906b-840202214e58">]()
+[<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/72b42050-a43a-4069-8f11-3bd14746a851">]()
+[<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/44cb0711-e4e0-4022-80a6-1acbba1ddbb3">]()
+[<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/da8bf05f-be04-40f5-b290-5f1be1c0dc9f">]()
+[<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/9c064296-a82c-4967-bf95-93d0b5fb4aed">]()
+[<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/d303624f-71e7-4321-9ab6-71a6ead2efb0">]()
+[<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/9aeb361c-1ac0-48a7-85b4-22fc86b4d9cc">]()
+[<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/c977ad13-4d0e-4f6f-b2d3-fe6572efc630">]()
+[<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/7d6ec8fa-de16-4732-a5ff-9ba03f7eb464">]()
 
 ## External Locations for Promoting Project
 - https://medium.com/@chrisathanas/
