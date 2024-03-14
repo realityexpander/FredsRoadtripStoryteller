@@ -1,4 +1,5 @@
-[<img width="1024" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/3d0543bb-772a-42cc-925b-5e2743c8fc40">](https://play.google.com/store/apps/details?id=com.realityexpander.talkinghistoricalmarkers)
+[<img width="1024" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/832e34ff-2ac6-4f66-b2df-175096e61215">](https://play.google.com/store/apps/details?id=com.realityexpander.talkinghistoricalmarkers)
+
 _note: link to play store not publicly active yet_
 
 # Fred's Roadtrip Storyteller
@@ -28,6 +29,7 @@ Listen to historical markers as you travel - Learn about local history as you dr
 ## Screen Shots
 
 ### Android Screenshots
+
 [<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/369d81f1-8f53-4cb5-bc25-31ff502ae2cc">]()
 [<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/70a85983-d1d2-4fc9-b5f5-88f5272fb45c">]()
 [<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/b635ec05-b117-43e2-8f8b-12a250f1496f">]()
@@ -41,6 +43,7 @@ Listen to historical markers as you travel - Learn about local history as you dr
 
 ### iOS Screenshots
 _note: screenshots may differ slightly from current version_
+
 [<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/b339bbd0-2b22-4931-abd2-c61a70aa6474">]()
 [<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/dce44c86-1de3-434c-a5b1-91ca0582788f">]()
 [<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/34dac8a8-4608-4d65-906b-840202214e58">]()
