@@ -70,7 +70,6 @@ fun AppDrawerPreview() {
                     commonBilling = CommonBilling(),
                     billingState = BillingState.NotPurchased(),
                     calcTrialTimeRemainingStringFunc = { "1 hour Remaining in Trial" },
-//                    appSettings = AppSettings(FakeSettings()),
                     isProVersionEnabledFunc = { false },
                 )
 

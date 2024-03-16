@@ -29,7 +29,8 @@ fun PurchaseProVersionDialogPreview() {
                 billingState = CommonBilling.BillingState.NotPurchased(),
                 commonBilling = CommonBilling(),
                 calcTrialTimeRemainingStringFunc = { "1 day remaining" },
-                onDismiss = {}
+                onDismiss = {},
+                isTrialInProgressFunc = { true }
             )
         }
     }
@@ -51,7 +52,8 @@ fun PurchaseProVersionDialogPreviewDay() {
                 billingState = CommonBilling.BillingState.NotPurchased(),
                 commonBilling = CommonBilling(),
                 calcTrialTimeRemainingStringFunc = { "1 day remaining" },
-                onDismiss = {}
+                onDismiss = {},
+                isTrialInProgressFunc = { true }
             )
         }
     }

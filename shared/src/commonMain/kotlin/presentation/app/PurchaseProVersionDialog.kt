@@ -32,7 +32,7 @@ import presentation.uiComponents.PurchaseProVersionButton
 fun PurchaseProVersionDialog(
     billingState: CommonBilling.BillingState,
     commonBilling: CommonBilling,
-    isTrialInProgress: Boolean = false,
+    isTrialInProgressFunc: () -> Boolean = { false },
     calcTrialTimeRemainingStringFunc: () -> String,
     onDismiss: () -> Unit,
     coroutineScope: CoroutineScope = rememberCoroutineScope()
@@ -123,8 +123,8 @@ fun PurchaseProVersionDialog(
                     commonBilling,
                     coroutineScope,
                     onDismiss,
-                    calcTrialTimeRemainingStringFunc,
-                    isTrialInProgressFunc = { isTrialInProgress }
+                    isTrialInProgressFunc,
+                    calcTrialTimeRemainingStringFunc
                 )
 
                 Text(

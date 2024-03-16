@@ -172,14 +172,13 @@ fun AppDrawerContent(
     Spacer(modifier = Modifier.height(8.dp))
 
     // Purchase Pro Version
-    @Suppress("unused")
     PurchaseProVersionButton(
         billingState,
         commonBilling,
         coroutineScope,
         onCloseDrawer,
-        calcTrialTimeRemainingStringFunc,
         isTrialInProgressFunc,
+        calcTrialTimeRemainingStringFunc,
     )
 
     // Show about box
@@ -315,6 +314,7 @@ fun AppDrawerContent(
         )
     }
 
+    // No markers loaded yet
     if (finalMarkers.isEmpty()) {
         Spacer(modifier = Modifier.height(8.dp))
         Text(
@@ -325,6 +325,7 @@ fun AppDrawerContent(
         )
     }
 
+    // Search results
     if(isSearchDialogVisible) {
         SearchMarkerDialog(
             initialSearchQuery = searchQuery,

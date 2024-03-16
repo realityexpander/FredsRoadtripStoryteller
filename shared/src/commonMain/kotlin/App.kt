@@ -862,13 +862,15 @@ fun App(
                         calcTrialTimeRemainingStringFunc = {
                             appSettings.calcTrialTimeRemainingString()
                         },
-//                        appSettings = appSettings,
                         onDisplayPurchaseProDialog = {
                             displayPurchaseProDialog()
                         },
                         isProVersionEnabledFunc = {
                             appSettings.isProVersionEnabled(billingState)
-                        }
+                        },
+                        isTrialInProgressFunc = {
+                            appSettings.isTrialInProgress()
+                        },
                     )
                 }
             },
@@ -1278,7 +1280,9 @@ fun App(
                 PurchaseProVersionDialog(
                     billingState,
                     commonBilling,
-                    isTrialInProgress = appSettings.isTrialInProgress(),
+                    isTrialInProgressFunc = {
+                        appSettings.isTrialInProgress()
+                    },
                     calcTrialTimeRemainingStringFunc = {
                         appSettings.calcTrialTimeRemainingString()
                     },

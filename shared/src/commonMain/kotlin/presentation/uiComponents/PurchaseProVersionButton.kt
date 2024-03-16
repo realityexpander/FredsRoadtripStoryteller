@@ -63,9 +63,10 @@ fun PurchaseProVersionButton(
     commonBilling: CommonBilling,
     coroutineScope: CoroutineScope,
     onCloseDrawer: () -> Unit,
-    calcTimeRemainingStrFunc: () -> String = {"TRIAL\nTIME REMAINING\n10 HRS\n30 MIN  15 SEC"},
-    isTrialInProgressFunc: () -> Boolean = { true }
+    isTrialInProgressFunc: () -> Boolean = { true },
+    calcTimeRemainingStrFunc: () -> String = { "TRIAL\nTIME REMAINING\n10 HRS\n30 MIN  15 SEC" }
 ) {
+    // Calculate trial time remaining once per second
     var trialTimeRemaining by remember { mutableStateOf(calcTimeRemainingStrFunc()) }
     LaunchedEffect(Unit) {
         while(true) {
