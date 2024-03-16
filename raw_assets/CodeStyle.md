@@ -352,6 +352,10 @@ advantages and disadvantages.
     - `Double`, `Float`, `Integer`, `Long` types should never be used raw, and should always have a unit attached.
       - ie: `maxAcceptedPennies` is preferred over `maxAccepted`
       - ie: `MaxTrialTimeEpochMillis` is preferred over `MaxTrialTime`
+  - Lambda types (functions)
+    - Prefer explicit naming of the lambda type
+      - ie: `isBookCheckedOutFunc` is preferred over `isBookCheckedOut`
+      - ie: `isBookCheckedOutPredicate` is preferred over `isBookCheckedOut`
 
 ### Encourage Explicit Naming of Any Overloaded Term
 
