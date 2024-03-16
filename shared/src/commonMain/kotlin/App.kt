@@ -813,16 +813,16 @@ fun App(
                         onSetBottomSheetActiveScreen = { screen ->
                             bottomSheetActiveScreen = screen
                         },
-                        onShowAboutBox = { isAboutBoxDialogVisible = true },
                         onShowOnboarding = { isOnboardingDialogVisible = true },
-                        onCloseDrawer = {
-                            coroutineScope.launch {
-                                bottomSheetScaffoldState.drawerState.close()
-                            }
-                        },
+                        onShowAboutBox = { isAboutBoxDialogVisible = true },
                         onExpandBottomSheet = {
                             coroutineScope.launch {
                                 bottomSheetScaffoldState.bottomSheetState.expand()
+                            }
+                        },
+                        onCloseDrawer = {
+                            coroutineScope.launch {
+                                bottomSheetScaffoldState.drawerState.close()
                             }
                         },
                         activeSpeakingMarker = activeSpeakingMarker,
@@ -862,10 +862,13 @@ fun App(
                         calcTrialTimeRemainingStringFunc = {
                             appSettings.calcTrialTimeRemainingString()
                         },
-                        appSettings = appSettings,
+//                        appSettings = appSettings,
                         onDisplayPurchaseProDialog = {
                             displayPurchaseProDialog()
                         },
+                        isProVersionEnabledFunc = {
+                            appSettings.isProVersionEnabled(billingState)
+                        }
                     )
                 }
             },

@@ -64,7 +64,7 @@ fun PurchaseProVersionButton(
     coroutineScope: CoroutineScope,
     onCloseDrawer: () -> Unit,
     calcTimeRemainingStrFunc: () -> String = {"TRIAL\nTIME REMAINING\n10 HRS\n30 MIN  15 SEC"},
-    isTrialInProgress: Boolean = false
+    isTrialInProgressFunc: () -> Boolean = { true }
 ) {
     var trialTimeRemaining by remember { mutableStateOf(calcTimeRemainingStrFunc()) }
     LaunchedEffect(Unit) {
@@ -78,7 +78,7 @@ fun PurchaseProVersionButton(
         is BillingState.NotPurchased -> {
 
             Spacer(modifier = Modifier.height(16.dp))
-            DisplayTrialTimeRemaining(isTrialInProgress, trialTimeRemaining)
+            DisplayTrialTimeRemaining(isTrialInProgressFunc(), trialTimeRemaining)
             Spacer(modifier = Modifier.height(4.dp))
 
             Button(
@@ -194,7 +194,7 @@ fun PurchaseProVersionButton(
         is BillingState.Disabled -> {
             Spacer(modifier = Modifier.height(16.dp))
             // Show trial time remaining
-            DisplayTrialTimeRemaining(isTrialInProgress, trialTimeRemaining)
+            DisplayTrialTimeRemaining(isTrialInProgressFunc(), trialTimeRemaining)
             Spacer(modifier = Modifier.height(4.dp))
 
             Button(
@@ -221,7 +221,7 @@ fun PurchaseProVersionButton(
         is BillingState.Error -> {
             Spacer(modifier = Modifier.height(8.dp))
             // Show trial time remaining
-            DisplayTrialTimeRemaining(isTrialInProgress, trialTimeRemaining)
+            DisplayTrialTimeRemaining(isTrialInProgressFunc(), trialTimeRemaining)
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(

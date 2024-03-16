@@ -124,7 +124,7 @@ fun PurchaseProVersionDialog(
                     coroutineScope,
                     onDismiss,
                     calcTrialTimeRemainingStringFunc,
-                    isTrialInProgress
+                    isTrialInProgressFunc = { isTrialInProgress }
                 )
 
                 Text(

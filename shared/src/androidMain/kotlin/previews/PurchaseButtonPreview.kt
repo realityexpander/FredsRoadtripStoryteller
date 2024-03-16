@@ -30,7 +30,7 @@ fun PurchaseButtonPreview(
                     commonBilling = CommonBilling(),
                     coroutineScope = CoroutineScope(Dispatchers.Main),
                     onCloseDrawer = {},
-                    isTrialInProgress = true
+                    isTrialInProgressFunc = { false }
                 )
             }
         }

@@ -12,8 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.tooling.preview.Preview
 import appMetadata
-import data.AppSettings
-import data.FakeSettings
 import data.billing.CommonBilling
 import data.billing.CommonBilling.BillingState
 import presentation.app.AppDrawerContent
@@ -72,7 +70,8 @@ fun AppDrawerPreview() {
                     commonBilling = CommonBilling(),
                     billingState = BillingState.NotPurchased(),
                     calcTrialTimeRemainingStringFunc = { "1 hour Remaining in Trial" },
-                    appSettings = AppSettings(FakeSettings()),
+//                    appSettings = AppSettings(FakeSettings()),
+                    isProVersionEnabledFunc = { false },
                 )
 
             }

@@ -69,11 +69,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import appMetadata
-import data.AppSettings
 import data.billing.CommonBilling
 import data.billing.CommonBilling.BillingState
-import data.billing.isProVersionEnabled
-import data.billing.isTrialInProgress
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
@@ -91,16 +88,19 @@ fun AppDrawerContent(
     onShowAboutBox: () -> Unit = {},
     onExpandBottomSheet: () -> Unit = {},
     onCloseDrawer: () -> Unit = {},
+
     activeSpeakingMarker: RecentlySeenMarker? = null,
     isMarkerCurrentlySpeaking: Boolean = false,
     onClickStartSpeakingMarker: (Marker, isSpeakDetailsEnabled: Boolean) -> Unit = { _, _ -> },
     onClickStopSpeakingMarker: () -> Unit = {},
     onLocateMarker: (Marker) -> Unit = {},
+
     commonBilling: CommonBilling,
     billingState: BillingState,
     calcTrialTimeRemainingStringFunc: () -> String,
-    appSettings: AppSettings,
     onDisplayPurchaseProDialog: () -> Unit = {},
+    isTrialInProgressFunc: () -> Boolean = { false },
+    isProVersionEnabledFunc: () -> Boolean,
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -172,13 +172,14 @@ fun AppDrawerContent(
     Spacer(modifier = Modifier.height(8.dp))
 
     // Purchase Pro Version
+    @Suppress("unused")
     PurchaseProVersionButton(
         billingState,
         commonBilling,
         coroutineScope,
         onCloseDrawer,
-        calcTimeRemainingStrFunc = calcTrialTimeRemainingStringFunc,
-        isTrialInProgress = appSettings.isTrialInProgress()
+        calcTrialTimeRemainingStringFunc,
+        isTrialInProgressFunc,
     )
 
     // Show about box
@@ -355,8 +356,7 @@ fun AppDrawerContent(
             onDismiss = {
                 isSearchDialogVisible = false
             },
-            appSettings = appSettings,
-            billingState = billingState,
+            isProVersionEnabledFunc = isProVersionEnabledFunc,
         )
     }
 
@@ -377,7 +377,7 @@ fun AppDrawerContent(
                     .padding(8.dp)
                     .animateItemPlacement(animationSpec = tween(250))
                     .clickable {
-                        if (!data.appSettings.isProVersionEnabled(billingState)) {
+                        if (!isProVersionEnabledFunc()) {
                             onDisplayPurchaseProDialog()
                             return@clickable
                         }
@@ -467,8 +467,7 @@ fun SearchMarkerDialog(
     onClickStartSpeakingMarker: (Marker, isSpeakDetailsEnabled: Boolean) -> Unit = { _, _ -> },
     onClickStopSpeakingMarker: () -> Unit = {},
     onDismiss: () -> Unit = {},
-    appSettings: AppSettings,
-    billingState: BillingState,
+    isProVersionEnabledFunc: () -> Boolean,
 ) {
     val coroutineScope = rememberCoroutineScope()
     var searchQuery by remember(initialSearchQuery) { mutableStateOf(initialSearchQuery) }
@@ -634,7 +633,7 @@ fun SearchMarkerDialog(
                                 .heightIn(min = 48.dp)
                                 .padding(8.dp, 0.dp, 8.dp, 4.dp)
                                 .clickable {
-                                    if (!appSettings.isProVersionEnabled(billingState)) {
+                                    if (!isProVersionEnabledFunc()) {
                                         showDialogForProVersion = true
 
                                         return@clickable
@@ -809,6 +808,7 @@ private fun calcSearchEntries(
 }
 
 @Composable
+@Suppress("unused") // Leave for reference
 private fun NavigationActionButton(
     marker: Marker,
     modifier: Modifier = Modifier,
