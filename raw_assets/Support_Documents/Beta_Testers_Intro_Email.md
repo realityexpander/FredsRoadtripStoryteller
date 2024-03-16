@@ -31,4 +31,4 @@ Happy exploring!
 Warm regards,
 
 Fred's Roadtrip Storyteller Team
-Feedback Contact: realityexpanderdev@gmail.com
+Feedback Contact: fredsroadtripstoryteller@mail.com
