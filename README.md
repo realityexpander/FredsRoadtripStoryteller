@@ -68,7 +68,8 @@ _note: screenshots may differ slightly from current version_
   - FaceBook: https://www.facebook.com/groups/913147236893976
 
 - Support email:
-  - fredsroadtripstoryteller@mail.com
+  - info@fredsroadtripstoryteller.com
+  - Email forwarding service (Free): https://app.improvmx.com/
 
 ## Application Architecture
 - [<img src="raw_assets/Support_Documents/App_architecture.png" width="800">](raw_assets/Support_Documents/Application_Architecture.md)

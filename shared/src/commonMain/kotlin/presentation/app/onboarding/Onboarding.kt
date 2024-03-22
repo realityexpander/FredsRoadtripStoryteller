@@ -115,7 +115,7 @@ fun OnboardingDialog(
                             Image(
                                 painter = painterResource(res = pages[index]),
                                 contentDescription = null,
-                                contentScale = ContentScale.Crop,
+                                contentScale = ContentScale.FillHeight,
                                 modifier = Modifier.fillMaxSize(.85f),
                                 alignment = Alignment.Center,
                             )

@@ -12,7 +12,7 @@ actual fun sendEmailAction(
     body: String
 ) {
     // Replacement for:
-    // """mailto:fredsroadtripstoryteller@mail.com?subject=FredDebugLog""" +
+    // """mailto:info@fredsroadtripstoryteller.com?subject=FredDebugLog""" +
     // "&body=" + json.encodeToString(debugLog.joinToString(separator = "\n")))
 
     CoroutineScope(Dispatchers.Main).launch {
