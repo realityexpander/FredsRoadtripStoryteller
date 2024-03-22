@@ -1,5 +1,7 @@
 [<img width="1024" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/832e34ff-2ac6-4f66-b2df-175096e61215">](https://play.google.com/store/apps/details?id=com.realityexpander.talkinghistoricalmarkers)
 
+[<img src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/df65a271-758f-470d-b3b5-2e71de93b9fe" width="250">](https://play.google.com/store/apps/details?id=com.realityexpander.talkinghistoricalmarkers)
+
 _note: link to iOS version for App store coming soon_
 
 # Fred's Roadtrip Storyteller
