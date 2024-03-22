@@ -70,7 +70,7 @@ _note: screenshots may differ slightly from current version_
 - Support email:
   - info@fredsroadtripstoryteller.com
   - Email forwarding service (Free): https://app.improvmx.com/
-  - Hostinger hosting dashboard: https://hpanel.hostinger.com/domain/fredsroadtripstoryteller.com/dns
+  - Hostinger hosting dashboard: https://hpanel.hostinger.com/ realityexpanderdev acct
 
 ## Application Architecture
 - [<img src="raw_assets/Support_Documents/App_architecture.png" width="800">](raw_assets/Support_Documents/Application_Architecture.md)
