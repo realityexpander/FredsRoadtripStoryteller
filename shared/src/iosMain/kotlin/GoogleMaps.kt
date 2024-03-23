@@ -123,8 +123,6 @@ actual fun GoogleMaps(
     }
     val appleMapView = remember(isMapRedrawTriggered) { MKMapView() }
 
-//    val heatmapLayer = GMUHeatmapTileLayer()
-
     LaunchedEffect(userLocation, markers) {
         if (userLocation != null) {
             isMapRedrawTriggered = true

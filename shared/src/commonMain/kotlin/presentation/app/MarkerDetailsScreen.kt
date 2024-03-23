@@ -110,8 +110,12 @@ fun MarkerDetailsScreen(
     val pagerState = rememberPagerState(
         initialPage = markers.value.indexOf(initialDisplayMarker),
     ) { markers.value.size /* provide page count */ }
-    LaunchedEffect(Unit, pagerState.currentPage) {
-        currentDisplayMarker = markers.value[pagerState.currentPage] // update the current marker when the user swipes
+    LaunchedEffect(Unit, pagerState.currentPage) {// update the current marker when the user swipes
+        currentDisplayMarker = markers.value[pagerState.currentPage]
+    }
+    LaunchedEffect(initialDisplayMarker) { // when the initialDisplayMarker changes, update the current marker
+        currentDisplayMarker = markers.value[markers.value.indexOf(initialDisplayMarker)] // update the current marker when the user swipes
+        pagerState.scrollToPage(markers.value.indexOf(initialDisplayMarker))
     }
 
     // Loading States for each marker
@@ -133,7 +137,7 @@ fun MarkerDetailsScreen(
         beyondBoundsPageCount = 1,
         flingBehavior = PagerDefaults.flingBehavior(state = pagerState),
         key = { pageIndex -> markers.value[pageIndex].id },
-    ) { pageIndex ->  // Index starts at 1, not 0!!!
+    ) { pageIndex ->
         // Load Marker Details for this page
         markerDetailsLoadingStates[pageIndex] =
             loadMarkerDetailsFunc(

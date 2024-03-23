@@ -10,8 +10,6 @@ plugins {
 }
 
 kotlin {
-//    @Suppress("OPT_IN_USAGE")  // todo remove soon
-//    targetHierarchy.default()  // todo remove soon
     kotlin.applyDefaultHierarchyTemplate()
 
     androidTarget()

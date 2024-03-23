@@ -367,7 +367,6 @@ fun AppDrawerContent(
         state = rememberLazyListState(),
         userScrollEnabled = true,
     ) {
-        // Header
 
         items(searchMarkers.size) { markerIdx ->
             val marker = searchMarkers[markerIdx]

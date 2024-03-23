@@ -714,7 +714,7 @@ fun App(
                         openBottomSheet(bottomSheetScaffoldState, coroutineScope)
 
                         // Use id string (coming from map marker in google maps)
-                        // or marker id (coming from item in marker details screen)
+                        // or marker id (coming from item in list view)
                         val bottomSheetParams =
                             bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen
                         val localMarker = bottomSheetParams.marker
@@ -728,7 +728,7 @@ fun App(
                             )
                         }
 
-                        // Get marker from current mapMarkers list
+                        // Get marker from repo based on id
                         val marker = remember(markerIdStrFromMarker, markerIdStrFromParamId) {
                             val markerId: MarkerIdStr =
                                 markerIdStrFromParamId
@@ -807,7 +807,7 @@ fun App(
             drawerScrimColor = Color.Black.copy(alpha = 0.5f),
             drawerGesturesEnabled = !bottomSheetScaffoldState.drawerState.isClosed,
             drawerContent = {
-                if(bottomSheetScaffoldState.drawerState.isOpen) {
+                if(bottomSheetScaffoldState.drawerState.isOpen) { // only update when drawer is open (performance)
                     AppDrawerContent(
                         finalMarkers.value, // SSoT is the finalMarkers
                         onSetBottomSheetActiveScreen = { screen ->
