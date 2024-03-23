@@ -211,7 +211,7 @@ fun App(
                 clearBillingMessageAfterDelay()
             }
         }
-        // Set installation time stamp for trial period
+        // Set installation time stamp for trial period at first launch
         LaunchedEffect(Unit) {
             appMetadata = commonAppMetadata
 
