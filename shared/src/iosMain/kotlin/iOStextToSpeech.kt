@@ -1,3 +1,4 @@
+
 import platform.AVFAudio.AVSpeechBoundary
 import platform.AVFAudio.AVSpeechSynthesisVoice
 import platform.AVFAudio.AVSpeechSynthesizer
@@ -29,6 +30,7 @@ class TextToSpeechManager : NSObject(), AVSpeechSynthesizerDelegateProtocol {
     private var synthesizer: AVSpeechSynthesizer = AVSpeechSynthesizer()
     var isSpeaking = false
     var isPaused = false
+    var utterance = AVSpeechUtterance()
 
     init {
         synthesizer.delegate = this
@@ -42,6 +44,10 @@ class TextToSpeechManager : NSObject(), AVSpeechSynthesizerDelegateProtocol {
 
         val utterance = AVSpeechUtterance.speechUtteranceWithString(text)
         utterance.voice = AVSpeechSynthesisVoice.voiceWithLanguage("en-US") // default to english
+        if(utterance.voice == null) {
+            println("Voice not found for language: ${utterance.voice?.language}")
+            return
+        }
 
         // Detect language
         val recognizer = NLLanguageRecognizer()

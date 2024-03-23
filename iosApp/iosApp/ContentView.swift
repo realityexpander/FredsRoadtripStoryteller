@@ -11,7 +11,8 @@ struct ContentView: View {
     private var entitlementManager: EntitlementManager
     @StateObject
     private var purchaseManager: PurchaseManager
-    
+
+    // Implementation #2 - LEAVE FOR REFERENCE
     private var commonSpeech: CommonSpeech = CommonSpeech()
     private var textToSpeechManager: TextToSpeechManager
     
@@ -36,7 +37,7 @@ struct ContentView: View {
             platformId: "iOS"
         )
 
-        // Implementation #2
+        // Implementation #2 - LEAVE FOR REFERENCE
         // Setup speech
         textToSpeechManager = TextToSpeechManager(commonSpeech: commonSpeech)
 
@@ -74,7 +75,7 @@ struct ContentView: View {
         }
     }
 
-    // Implementation #2
+    // Implementation #2 - LEAVE FOR REFERENCE
     func listenToCommonSpeechSpeakTextCommandFlow() {
         commonSpeech.speakTextCommandCommonFlow().watch { text in
             print("Speak: \(text ?? "") ")
@@ -105,7 +106,7 @@ struct ContentView: View {
                 do {
                     try await purchaseManager.loadProducts()
                     listenToCommonBillingCommandFlow()
-                    listenToCommonSpeechSpeakTextCommandFlow()
+                    listenToCommonSpeechSpeakTextCommandFlow() // Implementation #2 - LEAVE FOR REFERENCE
                 } catch {
                     print(error)
                 }
@@ -117,7 +118,7 @@ struct ContentView: View {
 struct ComposeView: UIViewControllerRepresentable {
     private var commonAppMetadata: CommonAppMetadata
     private var commonBilling: CommonBilling
-    private var commonSpeech: CommonSpeech
+    private var commonSpeech: CommonSpeech  // Implementation #2 - LEAVE FOR REFERENCE
 
     init(
         commonAppMetadata: CommonAppMetadata,
@@ -126,7 +127,7 @@ struct ComposeView: UIViewControllerRepresentable {
     ) {
         self.commonAppMetadata = commonAppMetadata
         self.commonBilling = commonBilling
-        self.commonSpeech = commonSpeech
+        self.commonSpeech = commonSpeech  // Implementation #2 - LEAVE FOR REFERENCE
     }
 
     func makeUIViewController(context: Context) -> UIViewController {
@@ -141,7 +142,7 @@ struct ComposeView: UIViewControllerRepresentable {
         return Main_iosKt.MainViewController(
             commonBilling: commonBilling,
             commonAppMetadata: commonAppMetadata,
-            commonSpeech: commonSpeech
+            commonSpeech: commonSpeech  // Implementation #2 - LEAVE FOR REFERENCE
         )
     }
 

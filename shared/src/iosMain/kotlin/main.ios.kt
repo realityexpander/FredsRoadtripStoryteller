@@ -1,3 +1,4 @@
+
 import androidx.compose.ui.window.ComposeUIViewController
 import data.billing.CommonBilling
 import presentation.speech.CommonSpeech
@@ -10,5 +11,9 @@ fun MainViewController(
     commonSpeech: CommonSpeech
 ) =
     ComposeUIViewController {
-        App(commonBilling, commonAppMetadata, commonSpeech)
+        App(
+            commonBilling,
+            commonAppMetadata,
+            commonSpeech
+        )
     }
