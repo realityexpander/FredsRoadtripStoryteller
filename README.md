@@ -75,6 +75,8 @@ _note: screenshots may differ slightly from current version_
 ## Application Architecture
 - [<img src="raw_assets/Support_Documents/App_architecture.png" width="800">](raw_assets/Support_Documents/Application_Architecture.md)
 
+
+
 # Developer notes
 
 Source: (Code snapshot taken 10/8/23)
@@ -87,42 +89,38 @@ https://github.com/JetBrains/compose-multiplatform/tree/master/examples/cocoapod
 - Note: There are many spurious warning messages and pop-up warnings. It seems these can be safely ignored.
 
 ## Latest commit Ran & Built with:
-* Android Studio Iguana | 2023.2.1 RC 2
-* Build #AI-232.10227.8.2321.11429013, built on February 9, 2024
-* Runtime version: 17.0.9+0-17.0.9b1087.7-11185874 aarch64
+* Android Studio Koala | 2023.3.2 Canary 2
+* Build #AI-233.14475.28.2332.11606850, built on March 21, 2024
+* Runtime version: 17.0.10+0-17.0.10b1087.21-11572160 aarch64
 * VM: OpenJDK 64-Bit Server VM by JetBrains s.r.o.
-* macOS 13.6.3
+* macOS 14.4
 * GC: G1 Young Generation, G1 Old Generation
 * Memory: 4096M
 * Cores: 10
 * Metal Rendering is ON
 * Registry:
-* analyze.exceptions.on.the.fly=true
-* debugger.new.tool.window.layout=true
 * ide.tooltip.initialDelay=812
-* ide.experimental.ui=true
 * ide.browser.jcef.gpu.disable=true
-* 
+* debugger.new.tool.window.layout=true
+* analyze.exceptions.on.the.fly=true
+* ide.experimental.ui=true
 * Non-Bundled Plugins:
-* com.c5inco.modifiers (1.0.14)
-* com.intellij.javafx (1.0.4)
-* com.intellij.marketplace (232.10227.13)
+* com.c5inco.modifiers (1.0.15)
+* dev.j-a.swift (0.21.0.336-233)
 * wu.seal.tool.jsontokotlin (3.7.4)
-* org.jetbrains.kotlin (232-1.9.20-RC2-release-495-AS10072.27)
-* idea.plugin.protoeditor (232.9559.10)
+* idea.plugin.protoeditor (233.13135.65)
 * com.wakatime.intellij.plugin (14.3.11)
 * com.github.airsaid.androidlocalize (3.0.0)
 * DBN (3.4.3073.0)
-* net.seesharpsoft.intellij.plugins.csv (3.3.0-232)
-* com.jetbrains.kmm (0.8.2(232)-20)
+* net.seesharpsoft.intellij.plugins.csv (3.3.0-233)
+* com.jetbrains.kmm (0.8.2(233)-8)
 * com.squareup.sqldelight (2.0.1)
-* com.developerphil.adbidea (1.6.13)
-* org.jetbrains.compose.desktop.ide (1.6.0)
+* com.developerphil.adbidea (1.6.15)
+* org.jetbrains.compose.desktop.ide (1.6.1)
 * by.overpass.svg-to-compose-intellij (0.14)
-* com.github.copilot (1.4.18.4775)
+* com.github.copilot (1.5.0.5148)
 * mobi.hsz.idea.gitignore (4.5.2)
-* com.abeade.plugin.figma.import (1.3.0)
-* 
+* com.abeade.plugin.figma.import (1.0.8) 
 
 
 ### Code style
