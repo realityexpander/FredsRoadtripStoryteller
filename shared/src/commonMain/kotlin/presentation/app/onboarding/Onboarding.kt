@@ -105,7 +105,7 @@ fun OnboardingDialog(
                     beyondBoundsPageCount = 0,
                     pageSize = PageSize.Fill,
                     flingBehavior = PagerDefaults.flingBehavior(state = pagerState),
-                    key = { pages[it] },
+                    key = { index -> pages[index-1] },
                     pageContent = { index ->
                         Column(
                            modifier = Modifier.fillMaxSize(),

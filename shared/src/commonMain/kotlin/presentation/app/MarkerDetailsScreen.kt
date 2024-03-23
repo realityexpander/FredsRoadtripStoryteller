@@ -132,22 +132,21 @@ fun MarkerDetailsScreen(
         contentPadding = PaddingValues(0.dp),
         beyondBoundsPageCount = 1,
         flingBehavior = PagerDefaults.flingBehavior(state = pagerState),
-        key = { page -> markers.value[page].id },
-    ) { PageIndex ->  // Index starts at 1, not 0!!!
+        key = { pageIndex -> markers.value[pageIndex].id },
+    ) { pageIndex ->  // Index starts at 1, not 0!!!
         // Load Marker Details for this page
-        markerDetailsLoadingStates[PageIndex-1] =
+        markerDetailsLoadingStates[pageIndex] =
             loadMarkerDetailsFunc(
                 // a reactive composable
-                markers.value[PageIndex-1],
+                markers.value[pageIndex],
                 false,  // todo setup for automated testing
             )
-        val markerDetailsLoadingState = markerDetailsLoadingStates[PageIndex-1]
+        val markerDetailsLoadingState = markerDetailsLoadingStates[pageIndex]
 
         val scrollState = rememberScrollState()
 
         // Show Error (if any)
         if (markerDetailsLoadingState is LoadingState.Error) {
-
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -207,7 +206,6 @@ fun MarkerDetailsScreen(
 
         // Show Loading
         if (markerDetailsLoadingState is LoadingState.Loading) {
-
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
