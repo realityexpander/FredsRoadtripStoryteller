@@ -228,6 +228,7 @@ fun App(
                 )
             }
         }
+        // 🔸 User GPS Location
         var userLocation: Location by remember {
             mutableStateOf(appSettings.lastKnownUserLocation)
         }
@@ -258,9 +259,6 @@ fun App(
         }
 
         // 🔸 Google Maps UI elements
-//        var userLocation: Location by remember(appSettings.lastKnownUserLocation) {
-//            mutableStateOf(appSettings.lastKnownUserLocation)
-//        }
         var isTrackingEnabled by remember {
             mutableStateOf(appSettings.isStartBackgroundTrackingWhenAppLaunchesEnabled)
         }
@@ -1015,8 +1013,6 @@ fun App(
                     verticalArrangement = Arrangement.SpaceBetween,
                     horizontalAlignment = Alignment.Start
                 ) {
-                    //if(frameCount<=2) return@Column // prevent FoUC: frame 0=FoUC, 1=too-zoomed-out, 2=zoomed-in-properly // todo - is this still needed?
-
                     // Show Error
                     AnimatedVisibility(errorMessageStr != null) {
                         if(errorMessageStr != null) {
@@ -1126,10 +1122,9 @@ fun App(
                             },
                         )
 
-                        Log.d("✏️✏️🛑  END map rendering, time to render = ${(Clock.System.now() - startTime)}\n")
-                        }
+                        //Log.d("✏️✏️🛑  END map rendering, time to render = ${(Clock.System.now() - startTime)}\n")
+                    }
 
-                    //Log.d("✏️✏️⬇️  START recently seen markers rendering")
                     RecentlySeenMarkers(
                         _uiRecentlySeenMarkersFlow.value,
                         activeSpeakingMarker = activeSpeakingMarker,
