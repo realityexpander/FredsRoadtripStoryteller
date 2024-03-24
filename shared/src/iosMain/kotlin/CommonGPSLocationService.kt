@@ -121,7 +121,7 @@ actual class CommonGPSLocationService  {
             location?.run {
                 continuation.resume(this)
             } ?: run {
-                continuation.resumeWithException(Exception("Unable to get current location"))
+                continuation.resumeWithException(Exception("Unable to get current location - 2"))
             }
         }
         oneTimeLocationManager.delegate = locationDelegate

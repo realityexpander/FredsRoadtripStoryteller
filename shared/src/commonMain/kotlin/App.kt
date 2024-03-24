@@ -42,7 +42,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -58,6 +57,8 @@ import data.appSettings
 import data.billing.CommonBilling
 import data.billing.CommonBilling.BillingState
 import data.billing.calcTrialTimeRemainingString
+import data.billing.isInstallAtLocationSet
+import data.billing.isLastKnownLocationSet
 import data.billing.isProVersionEnabled
 import data.billing.isTrialInProgress
 import data.billing.isTrialStartDetected
@@ -227,26 +228,8 @@ fun App(
                 )
             }
         }
-        // Set "Install Location" at first launch
-        LaunchedEffect(Unit) {
-            do {
-                if (appSettings.installAtLocation == Location(0.0, 0.0)) {
-                    commonGpsLocationService.onUpdatedGPSLocation(
-                        errorCallback = { errorMessage ->
-                            Log.w(errorMessage)
-                            errorMessageStr = errorMessage
-                        },
-                        locationCallback = { updatedLocation ->
-                            appSettings.installAtLocation = updatedLocation ?: run {
-                                errorMessageStr = "Unable to get current location"
-                                Log.w(errorMessageStr.toString())
-                                return@run appSettings.installAtLocation // just return most recent location
-                            }
-                        }
-                    )
-                }
-                delay(3.seconds)
-            } while (appSettings.installAtLocation == Location(0.0, 0.0))
+        var userLocation: Location by remember {
+            mutableStateOf(appSettings.lastKnownUserLocation)
         }
 
         // 🔸 Speech State
@@ -275,9 +258,9 @@ fun App(
         }
 
         // 🔸 Google Maps UI elements
-        var userLocation: Location by remember {
-            mutableStateOf(appSettings.lastKnownUserLocation)
-        }
+//        var userLocation: Location by remember(appSettings.lastKnownUserLocation) {
+//            mutableStateOf(appSettings.lastKnownUserLocation)
+//        }
         var isTrackingEnabled by remember {
             mutableStateOf(appSettings.isStartBackgroundTrackingWhenAppLaunchesEnabled)
         }
@@ -338,12 +321,6 @@ fun App(
             //    kSingleItemPageFakeDataset,
             useFakeDataSetId = kUseRealNetwork,
         )
-        // LEAVE for testing
-        //val loadMarkersResult: LoadMarkersResult = LoadMarkersResult( // empty set markers
-        //    loadingState = LoadingState.Finished,
-        //    isParseMarkersPageFinished = true,
-        //    markerIdToMarker = mutableMapOf()
-        //)
 
         // 🔸 Command to Update the Map Markers (Cluster Items)
         var shouldCalcClusterItems by remember {
@@ -381,44 +358,52 @@ fun App(
 
         // 🔸 1) Update user GPS location
         LaunchedEffect(Unit, seenRadiusMiles) { //, shouldCalculateMapMarkers) {
-            // Set the last known location to the current location in settings
-            commonGpsLocationService.onUpdatedGPSLocation(
-                errorCallback = { errorMessage ->
-                    Log.w("Error: $errorMessage")
-                    errorMessageStr = errorMessage
-                }
-            ) { updatedLocation ->
-                //    val locationTemp = Location(
-                //        37.422160,
-                //        -122.084270 // googleplex
-                //        // 18.976794,
-                //        // -99.095387 // Tepoztlan
-                //    )
-                //    myLocation = locationTemp ?: run { // use fake location above
-                userLocation = updatedLocation ?: run {
-                    errorMessageStr = "Unable to get current location"
-                    Log.w(errorMessageStr.toString())
-                    return@run userLocation // just return most recent location
-                }
 
-                // Start trial if user is outside the trial radius.
-                if(appSettings.isTrialStartDetected(userLocation)) {
-                    billingMessageStr = "Trial period has started. " +
-                        "You have ${appSettings.calcTrialTimeRemainingString()}"
-                    clearBillingMessageAfterDelay()
-                }
+            while(true) {
+                commonGpsLocationService.onUpdatedGPSLocation(
+                    errorCallback = { errorMessage ->
+                        Log.w("Error: $errorMessage")
+                        errorMessageStr = errorMessage
+                    },
+                    locationCallback = { updatedLocation ->
 
-                errorMessageStr = null // clear any previous error message
+                        // use fake location above - LEAVE for testing
+                        //    val locationTemp = Location(
+                        //        37.422160,
+                        //        -122.084270 // googleplex
+                        //        // 18.976794,
+                        //        // -99.095387 // Tepoztlan
+                        //    )
+                        //    userLocation = locationTemp
+
+                        errorMessageStr = null // clear any previous error message
+
+                        // Update user location
+                        updatedLocation?.let { location ->
+                            userLocation = location
+                            appSettings.lastKnownUserLocation = location
+
+                            // Set "Install Location" at first location update, if not set.
+                            if(appSettings.isInstallAtLocationSet()) {
+                                appSettings.installAtLocation = location
+                            }
+
+                            isSeenTrackingPaused = false // Resume tracking (battery optimization)
+
+                            // Start trial if user is outside the trial radius.
+                            if (appSettings.isTrialStartDetected(location)) {
+                                billingMessageStr = "Trial period has started.\n" +
+                                        "You have ${appSettings.calcTrialTimeRemainingString()}"
+                                clearBillingMessageAfterDelay()
+                            }
+                        } ?: run {
+                            errorMessageStr = "Unable to get current location - 1"
+                            Log.w(errorMessageStr.toString())
+                        }
+                    })
+
+                delay(1.seconds)
             }
-
-            // Save last known location & add any recently seen markers
-            snapshotFlow { userLocation }
-                .collect { location ->
-                    // 1. Save the last known location to settings
-                    appSettings.lastKnownUserLocation = location
-                    yield() // allows UI to update the location
-                    isSeenTrackingPaused = false // unpause tracking
-                }
 
             // LEAVE FOR REFERENCE
             //    // Get heading updates
@@ -657,7 +642,8 @@ fun App(
         // 🔸 For frame-render performance tuning
         didFullFrameRender = false
 
-        BottomSheetScaffold(
+        if(appSettings.isLastKnownLocationSet())
+            BottomSheetScaffold(
             scaffoldState = bottomSheetScaffoldState,
             sheetElevation = 16.dp,
             sheetGesturesEnabled = false, // interferes with map gestures
@@ -1029,7 +1015,7 @@ fun App(
                     verticalArrangement = Arrangement.SpaceBetween,
                     horizontalAlignment = Alignment.Start
                 ) {
-                    if(frameCount<=2) return@Column // prevent FoUC: frame 0=FoUC, 1=too-zoomed-out, 2=zoomed-in-properly // todo - is this still needed?
+                    //if(frameCount<=2) return@Column // prevent FoUC: frame 0=FoUC, 1=too-zoomed-out, 2=zoomed-in-properly // todo - is this still needed?
 
                     // Show Error
                     AnimatedVisibility(errorMessageStr != null) {
@@ -1073,7 +1059,7 @@ fun App(
                             modifier = Modifier
                                 .fillMaxHeight(1.0f - transitionRecentMarkersPanelState),
                             initialUserLocation =
-                                appSettings.lastKnownUserLocation,
+                            appSettings.lastKnownUserLocation,
                             userLocation = userLocation,
                             markers = finalMarkers.value,
                             mapBounds = null,  // leave for future use
@@ -1119,7 +1105,8 @@ fun App(
 
                                 // Show marker details
                                 coroutineScope.launch {
-                                    bottomSheetActiveScreen = BottomSheetScreen.MarkerDetailsScreen(marker)
+                                    bottomSheetActiveScreen =
+                                        BottomSheetScreen.MarkerDetailsScreen(marker)
                                     bottomSheetScaffoldState.bottomSheetState.apply {
                                         if (isCollapsed) expand()
                                     }
@@ -1140,7 +1127,7 @@ fun App(
                         )
 
                         Log.d("✏️✏️🛑  END map rendering, time to render = ${(Clock.System.now() - startTime)}\n")
-                    }
+                        }
 
                     //Log.d("✏️✏️⬇️  START recently seen markers rendering")
                     RecentlySeenMarkers(
@@ -1335,7 +1322,6 @@ private fun jiggleLocationToForceUiUpdate(userLocation: Location) = Location(
     userLocation.longitude +
             Random.nextDouble(-0.00001, 0.00001)
 )
-
 
 // Check for new markers inside talk radius & add to recentlySeen list
 private fun addSeenMarkersToRecentlySeenList(

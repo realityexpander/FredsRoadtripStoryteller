@@ -61,7 +61,7 @@ actual class CommonGPSLocationService  {
                 latestLocation.set(updatedLocation)
                 continuation.resume(updatedLocation)
             } ?: run {
-                continuation.resumeWithException(Exception("Unable to get current location"))
+                continuation.resumeWithException(Exception("Unable to get current location - 3"))
             }
         }.addOnFailureListener { e ->
             continuation.resumeWithException(e)

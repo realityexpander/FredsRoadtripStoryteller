@@ -1,0 +1,30 @@
+App Review 2023-12-04 11:09 AM response:
+
+Item 1 - Guideline 2.1 - Specifically, we were redirected to the map page after tapping "Purchase Pro version".
+  - This is now fixed. You will now be redirected to the in-app purchase dialog.
+
+Item 2 - Guideline 2.1 - Demo video
+  - Included is a product demo that documents all relevant app features, services, and user permission requests.
+  - Here is the link to the unlisted youtube demo:
+
+Item 3 - Guideline 2.1 - In-app purchase info
+  1. Who are the users that will use the paid content and subscriptions in the app?
+    - Anyone who wants to continue to use all the app features after the 3-day trial period ends.
+    - There is no subscription. The user pays once for the Pro version of the app.
+  2. Where can users purchase the content and subscriptions that can be accessed in the app?
+    - From the app drawer, tap "Purchase Pro version". This uses Apple's in-app purchase system.
+  3. What specific types of previously purchased content and subscriptions can a user access in the app?
+    - They can see the details of the markers collected in the app, after the 3-day trial period ends.
+  4. What paid content, subscriptions, or features are unlocked within your app that do not use in-app purchase?
+    - All other features are available without in-app purchase.
+
+Item 4 - Guideline 2.3.8 - Accurate Metadata - App name
+   - App UI is now updated to reflect final app name.
+
+Item 5 - Guideline 2.5.4 - Software Requirements
+   - Demo video now shows functionality.
+   - User must tap "play" to start the background tracking, otherwise the tracking only works when the app is in the foreground.
+   - This is also documented for the user by tapping the "how to use this app" button in the app drawer
+
+
+

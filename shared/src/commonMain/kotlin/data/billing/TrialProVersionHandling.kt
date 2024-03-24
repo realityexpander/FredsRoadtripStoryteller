@@ -86,6 +86,16 @@ fun AppSettings.calcSpeakTimeRemainString(): String {
     return timeLeft.toSpeakableHumanReadableString()
 }
 
+fun AppSettings.isLastKnownLocationSet(): Boolean {
+    return lastKnownUserLocation.latitude != 0.0 &&
+            lastKnownUserLocation.longitude != 0.0
+}
+
+fun AppSettings.isInstallAtLocationSet(): Boolean {
+    return installAtLocation.latitude != 0.0 &&
+            installAtLocation.longitude != 0.0
+}
+
 private fun calcTrialTimeRemainingString(
     trialStartAtEpochMilli: Long,
     maxTrialTime: Duration = kTrialPeriodDuration
