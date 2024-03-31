@@ -341,7 +341,7 @@ private fun DisplayTrialTimeRemaining(
 @Composable
 fun WOPRDotScanner(componentWidth: Dp, isReverse: Boolean = false) {
     val dotSize = 8.dp
-    val delayUnit = 125
+    val delayMs = 125 / if(appMetadata.platformId=="iOS") 2 else 1 // iOS is slower by 2x (why???)
     val spaceBetween = 7.dp
     val minAlpha = 0.1f
     val dotColor: Color = MaterialTheme.colors.onPrimary
@@ -366,17 +366,17 @@ fun WOPRDotScanner(componentWidth: Dp, isReverse: Boolean = false) {
             initialValue = minAlpha,
             targetValue = minAlpha,
             animationSpec = infiniteRepeatable(animation = keyframes {
-                durationMillis = numberOfDots * delayUnit
+                durationMillis = numberOfDots * delayMs
 
                 minAlpha at delay using LinearEasing
-                1f at delay + (delayUnit/5) using LinearEasing
+                1f at delay + (delayMs/5) using LinearEasing
                 minAlpha at delay + durationMillis / 5
             })
         )
 
     val alphas = arrayListOf<State<Float>>()
     for (i in 0 until numberOfDots) {
-        alphas.add(animateAlphaWithDelay(delay = i * delayUnit))
+        alphas.add(animateAlphaWithDelay(delay = i * delayMs))
     }
 
     Row(
