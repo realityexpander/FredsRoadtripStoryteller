@@ -143,7 +143,7 @@ android {
     namespace = "com.realityexpander.common"
 
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-    sourceSets["main"].res.srcDirs("src/androidMain/res", "src/commonMain/resources")
+    sourceSets["main"].res.srcDirs("src/androidMain/res")
     sourceSets["main"].resources.srcDirs("src/commonMain/composeResources")
 
     defaultConfig {
@@ -167,7 +167,7 @@ android {
 }
 
 dependencies {
-    // For Compose previews
-    debugImplementation(libs.androidx.ui.tooling.preview.v160)
-    implementation(libs.androidx.ui.tooling.preview.v160)
+    // For Compose previews (only works on Android)
+    debugImplementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.ui.tooling.preview)
 }

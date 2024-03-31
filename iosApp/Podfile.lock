@@ -1,0 +1,28 @@
+PODS:
+  - GoogleMaps (8.4.0):
+    - GoogleMaps/Maps (= 8.4.0)
+  - GoogleMaps/Base (8.4.0)
+  - GoogleMaps/Maps (8.4.0):
+    - GoogleMaps/Base
+  - shared (1.0.0):
+    - GoogleMaps (= 8.4.0)
+
+DEPENDENCIES:
+  - GoogleMaps (= 8.4.0)
+  - shared (from `../shared`)
+
+SPEC REPOS:
+  trunk:
+    - GoogleMaps
+
+EXTERNAL SOURCES:
+  shared:
+    :path: "../shared"
+
+SPEC CHECKSUMS:
+  GoogleMaps: 8939898920281c649150e0af74aa291c60f2e77d
+  shared: ac46a53d060ef8854fa580729feab3e392b08d2b
+
+PODFILE CHECKSUM: d10e7a644ad812a08d3fc4517fcbc23da8a57504
+
+COCOAPODS: 1.11.3

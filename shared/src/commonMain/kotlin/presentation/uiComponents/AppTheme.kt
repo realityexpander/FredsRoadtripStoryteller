@@ -16,9 +16,13 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import resourceFont
+import fredsroadtripstoryteller.shared.generated.resources.Res
+import fredsroadtripstoryteller.shared.generated.resources.pet_me
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.Font
 
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun AppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -59,11 +63,7 @@ fun AppTheme(
 
     // WOPR Font for Trial Countdown (From Commodore PET character set)
     val petMeFontFamily = FontFamily(
-        resourceFont("PetMe",
-            res = "pet_me",
-            weight = FontWeight.Medium,
-            style = FontStyle.Normal
-        )
+        Font(Res.font.pet_me, FontWeight.Medium, FontStyle.Normal)
     )
 
     val typography = Typography(

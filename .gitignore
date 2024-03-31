@@ -1,5 +1,4 @@
 local.properties
-iosApp/Podfile.lock
 iosApp/Pods/*
 iosApp/iosApp.xcworkspace/*
 iosApp/iosApp.xcodeproj/*

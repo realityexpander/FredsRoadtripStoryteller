@@ -15,7 +15,7 @@ plugins {
     // Crashlytics
     id("com.google.firebase.crashlytics")
     // Firebase App Distribution Gradle plugin
-//    id("com.google.firebase.appdistribution") // note: must be disabled to add to play store
+//    id("com.google.firebase.appdistribution") // note: must be disabled to add to play store, bug?
 
     id("com.github.gmazzo.buildconfig")  // for buildConfigField
 }
@@ -121,18 +121,18 @@ android {
         }
     }
 
-    // check if the current build is being run
-    if(project.ext.properties.containsKey("isTrialVersion")) {
-        // if so, set the buildConfigField
-        buildConfig {
-            packageName = "com.realityexpander.common"
-            forClass(packageName="", className="RootConfig") {
-                buildConfigField("String", "TRIAL_VERSION",
-                    "\"${project.ext.properties["isTrialVersion"]}\""
-                )
-            }
-        }
-    }
+    //    // check if the current build is being run - LEAVE FOR REFERENCE FOR USE WITH BUILD CONFIG
+    //    if(project.ext.properties.containsKey("isTrialVersion")) {
+    //        // if so, set the buildConfigField
+    //        buildConfig {
+    //            packageName = "com.realityexpander.common"
+    //            forClass(packageName="", className="RootConfig") {
+    //                buildConfigField("String", "TRIAL_VERSION",
+    //                    "\"${project.ext.properties["isTrialVersion"]}\""
+    //                )
+    //            }
+    //        }
+    //    }
 
     // note: must set `buildConfig=true` in `buildFeatures` block above (leave for reference)
     // https://developer.android.com/build/build-variants?utm_source=studio

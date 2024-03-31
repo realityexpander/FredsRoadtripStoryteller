@@ -24,7 +24,7 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import fredsroadtripstoryteller.shared.generated.resources.Res
-import fredsroadtripstoryteller.shared.generated.resources.fred_head_owl_1
+import fredsroadtripstoryteller.shared.generated.resources.fredheadowl1
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import presentation.uiComponents.PreviewPlaceholder
@@ -68,7 +68,7 @@ fun SplashScreenForPermissions(
                     )
                 } else {
                     Image(
-                        painter = painterResource(Res.drawable.fred_head_owl_1),
+                        painter = painterResource(Res.drawable.fredheadowl1),
                         contentDescription = null,
                         modifier = Modifier
                             .weight(1f),

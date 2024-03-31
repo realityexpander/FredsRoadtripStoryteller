@@ -1,32 +1,23 @@
 [versions]
 agp = "8.2.2"
-android-billingclient-billing = "6.1.0"
+android-billingclient-billing = "6.2.0"
 androidx-activityCompose = "1.8.2"
 androidx-coreSplashscreen = "1.0.1"
 androidx-appcompat = "1.6.1"
 androidx-core-ktx = "1.12.0"
-#compose = "1.5.3"
-compose = "1.6.1"
-#compose-preview = "1.5.3"    # usually the same as compose
-compose-preview = "1.6.1"    # usually the same as compose
-compose-compiler = "1.5.11"   # not the same as compose version
-#compose-material = "1.5.3"   # usually the same as compose
-compose-material = "1.6.1"   # usually the same as compose
-#compose-material-icons-extended = "1.5.3"  # usually the same as compose
-compose-material-icons-extended = "1.6.1"  # usually the same as compose
-compose-material3 = "1.1.2"  # usually the same as compose
-#compose-uiToolingPreview = "1.6.0"
-compose-uiToolingPreview = "1.6.1"
+compose = "1.6.4"
+compose-compiler = "1.5.11"  # not the same as compose version, IDE says not used, but _it is_ used via a .get() (why can't gradle see that?)
+compose-material3 = "1.2.1"  # not the same as compose
+compose-material-icons-extended = "1.6.1"  # usually the same as compose, and seems to lag behind.
+compose-uiToolingPreview = "1.6.1"  # usually the same as compose, and seems to lag behind.
 google-MapsAndroidComposeVersion = "3.1.0"
-google-PlayServicesAndroidLocation = "21.1.0"
+google-PlayServicesAndroidLocation = "21.2.0"
 google-PlayServicesAndroidMaps = "18.2.0"
 google-FirebaseBom = "32.7.1"
 google-FirebaseAppdistribution = "16.0.0-beta11"
 logger-kermit = "2.0.1"
-#kamelImage = "0.5.1"
 kamelImage = "0.9.4"
 kMutliplatformSettingsVersion = "1.1.0"
-#kotlin = "1.9.22" # Must also be updated in gradle.properties
 kotlin = "1.9.23" # Must also be updated in gradle.properties
 kotlinx-CoroutinesCore = "1.7.3"
 kotlinx-Datetime = "0.4.1"
@@ -36,7 +27,6 @@ ksoupVersion = "0.2.1"
 ktor-ClientCore = "2.3.5"
 ktor-ClientAndroid = "2.2.4"
 logger-Slf4jNop = "2.0.9"
-#pods-google-maps = "8.3.1"
 pods-google-maps = "8.4.0"
 pods-google-mapsUtils = "4.2.2"
 
@@ -46,25 +36,17 @@ android-billingclient-billing = { module = "com.android.billingclient:billing", 
 android-billingclient-billing-ktx = { module = "com.android.billingclient:billing-ktx", version.ref = "android-billingclient-billing" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
-androidx-compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose" }
-androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }
-androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose-preview" }
-androidx-compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "compose" }
+androidx-compose-material = { module = "androidx.compose.material:material", version.ref = "compose" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "compose-material3" }
-androidx-compose-material = { module = "androidx.compose.material:material", version.ref = "compose-material" }
+androidx-compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose" }
+androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "androidx-coreSplashscreen" }
-androidx-ui-tooling-preview-v160 = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose-uiToolingPreview" }
+androidx-ui-graphics-android = { group = "androidx.compose.ui", name = "ui-graphics-android", version.ref = "compose" }
 atomicfu-gradle-plugin = { module = "org.jetbrains.kotlinx:atomicfu-gradle-plugin", version.ref = "kotlinx-atomicfu" }
-compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose" }
-compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose" }
-#compose-material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "compose" }
 compose-material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "compose-material-icons-extended" }
-compose-material = { module = "org.jetbrains.compose.material:material", version.ref = "compose-material" }
-compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "compose-material3" }
-compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose" }
-compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
-compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose" }
-compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose-preview" }
+compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose-uiToolingPreview" }
+compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose-uiToolingPreview" }
 google-firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "google-FirebaseBom" }
 google-firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version = "" } # no version needed
 google-firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics", version = "" } # no version needed
@@ -93,9 +75,6 @@ multiplatform-settings = { module = "com.russhwolf:multiplatform-settings", vers
 multiplatform-settings-no-arg = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "kMutliplatformSettingsVersion" }
 multiplatform-settings-test = { module = "com.russhwolf:multiplatform-settings-test", version.ref = "kMutliplatformSettingsVersion" }
 logger-slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "logger-Slf4jNop" }
-androidx-ui-tooling-preview-android = { group = "androidx.compose.ui", name = "ui-tooling-preview-android", version.ref = "compose" }
-androidx-ui-graphics-android = { group = "androidx.compose.ui", name = "ui-graphics-android", version.ref = "compose" }
-androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }
 
 
 [plugins]

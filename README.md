@@ -138,6 +138,9 @@ https://github.com/JetBrains/compose-multiplatform/tree/master/examples/cocoapod
   - https://github.com/realityexpander/FredsRoadtripStoryteller/blob/main/raw_assets/CodeStyle.md
 
 ### KMP Stuff
+- KMP Jetbrains Wizard (basic)
+  - https://kmp.jetbrains.com/#newProject  
+
 - KMP Wizard
   - https://terrakok.github.io/Compose-Multiplatform-Wizard/
 
