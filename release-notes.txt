@@ -1,3 +1,19 @@
+Alpha Build 32
+- Assets - Improve App store presence for iOS	Done
+- bug - Fix `isSeen` issue	Done
+- Bug - iOS - Click info window opens details properly	Done
+- ios Release to App Store	Done
+- Android release to play store	In Progress
+- Bug - Fix navigate from drawer to details while details is already open	Done
+- iOS - Bug - Speech crash, Marker Details offset crash	Done
+- Bug - Fix onboarding aspect ratio	Done
+- Asset - Update marketing for play store	Done
+- Play Store - Start open testing	Done
+- Play Store - Add missing permission	Done
+- Asset - Add FRS email to mail.com	Done
+- code - Refactor remove AppSettings from dependency	Done
+- Asset - Beta program - Intro sentences	Done
+
 Alpha Build 22
 - ui - fix light mode color issues
 - code - add parameterized previews for UI

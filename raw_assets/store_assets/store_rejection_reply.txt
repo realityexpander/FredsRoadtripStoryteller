@@ -4,8 +4,9 @@ Item 1 - Guideline 2.1 - Specifically, we were redirected to the map page after 
   - This is now fixed. You will now be redirected to the in-app purchase dialog.
 
 Item 2 - Guideline 2.1 - Demo video
-  - Included is a product demo that documents all relevant app features, services, and user permission requests.
-  - Here is the link to the unlisted youtube demo:
+  - Included is a product demo that documents all relevant app features & capabilities.
+  - Unfortunately could not demo the accepting of permissions, as my screen recording software could not capture the dialog interaction (for an unknown reason)
+  - Here is the link to the unlisted youtube demo: https://youtu.be/HecQCSdkQ3E
 
 Item 3 - Guideline 2.1 - In-app purchase info
   1. Who are the users that will use the paid content and subscriptions in the app?
@@ -23,7 +24,8 @@ Item 4 - Guideline 2.3.8 - Accurate Metadata - App name
 
 Item 5 - Guideline 2.5.4 - Software Requirements
    - Demo video now shows functionality.
-   - User must tap "play" to start the background tracking, otherwise the tracking only works when the app is in the foreground.
+   - User must tap "play" to start the background tracking, otherwise the GPS tracking only works when
+     the app is in the foreground.
    - This is also documented for the user by tapping the "how to use this app" button in the app drawer.
 
 

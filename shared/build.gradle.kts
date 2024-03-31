@@ -1,3 +1,5 @@
+import org.jetbrains.compose.ExperimentalComposeLibrary
+
 plugins {
     kotlin("multiplatform")
     kotlin("native.cocoapods")
@@ -44,15 +46,16 @@ kotlin {
 
     sourceSets {
 
+        @OptIn(ExperimentalComposeLibrary::class)
         val commonMain by getting {
             dependencies {
-                implementation(libs.compose.runtime)
-                implementation(libs.compose.foundation)
-                implementation(libs.compose.ui)
-                implementation(libs.compose.material)
+                implementation(compose.runtime)
+                implementation(compose.foundation)
+                implementation(compose.ui)
+                implementation(compose.material)
+                implementation(compose.components.resources)
                 // implementation(libs.compose.material3) // todo use material 3
                 implementation(libs.compose.material.icons.extended)
-                implementation(libs.compose.components.resources)
 
                 // Ktor client for HTTP requests
                 implementation(libs.ktor.client.core)
@@ -141,7 +144,7 @@ android {
 
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     sourceSets["main"].res.srcDirs("src/androidMain/res", "src/commonMain/resources")
-    sourceSets["main"].resources.srcDirs("src/commonMain/resources")
+    sourceSets["main"].resources.srcDirs("src/commonMain/composeResources")
 
     defaultConfig {
         minSdk = (findProperty("android.minSdk") as String).toInt()
@@ -162,21 +165,6 @@ android {
         kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
     }
 }
-
-buildscript {
-    repositories {
-        mavenCentral()
-        google()
-    }
-
-    dependencies {
-        // kotlinx.atomicfu has to be on the classpath
-        //  it's an implementation detail of kotlinx.atomicfu gradle plugin
-        classpath(libs.atomicfu.gradle.plugin)
-    }
-}
-
-apply(plugin = "kotlinx-atomicfu") // Needs to be applied after the buildscript block
 
 dependencies {
     // For Compose previews

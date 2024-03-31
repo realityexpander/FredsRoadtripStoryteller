@@ -29,6 +29,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import appMetadata
 import debugLog
+import fredsroadtripstoryteller.shared.generated.resources.Res
+import fredsroadtripstoryteller.shared.generated.resources.about
 import json
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
@@ -63,11 +65,11 @@ fun AboutBoxDialog(
             contentAlignment = Alignment.TopCenter
         ) {
             Image(
-                painter = painterResource("about.png"),
+                painter = painterResource(Res.drawable.about),
                 contentDescription = null,
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.fillMaxSize(),
-                alignment = Alignment.TopCenter
+                alignment = Alignment.Center
             )
 
             // Close Button
@@ -76,8 +78,9 @@ fun AboutBoxDialog(
                     onDismiss()
                 },
                 modifier = Modifier
-                    .padding(8.dp)
+                    .offset(y = 48.dp)  // skip top bar
                     .align(Alignment.TopEnd)
+                    .padding(8.dp)
                     .background(
                         MaterialTheme.colors.surface.copy(alpha = 0.5f),
                         shape = MaterialTheme.shapes.medium

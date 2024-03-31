@@ -368,8 +368,8 @@ fun WOPRDotScanner(componentWidth: Dp, isReverse: Boolean = false) {
             animationSpec = infiniteRepeatable(animation = keyframes {
                 durationMillis = numberOfDots * delayUnit
 
-                minAlpha at delay with LinearEasing
-                1f at delay + (delayUnit/5) with LinearEasing
+                minAlpha at delay using LinearEasing
+                1f at delay + (delayUnit/5) using LinearEasing
                 minAlpha at delay + durationMillis / 5
             })
         )

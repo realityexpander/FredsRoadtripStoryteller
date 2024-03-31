@@ -76,17 +76,28 @@ _note: screenshots may differ slightly from current version_
 - [<img src="raw_assets/Support_Documents/App_architecture.png" width="800">](raw_assets/Support_Documents/Application_Architecture.md)
 
 
-
 # Developer notes
+
+### INSTALLATION
+- Secrets Files
+  - Check the `*.example` files for proper placement 
+  - Must create `AppSecrets.plist` from within Xcode - in password vault, for google maps account ID's.
+  - Can get `google-services.json` from Google Cloud Console for google maps account ID's.
+    - Get a [Google Maps API key](https://developers.google.com/maps/documentation/android-sdk/get-api-key)
+- Add to `local.properties` file located in the root directory (create if it doesn't exist):
+  - `MAPS_API_KEY=YOUR_KEY` where `YOUR_KEY` is your key from previous step;
+  - `sdk.dir=YOUR_SDK_PATH` where `YOUR_SDK_PATH` is a path to Android SDK in your system.
+- From root dir, must run `./gradlew :shared:generateDummyFramework`.
+- Must run `pod update` then `pod install` in the `iosApp` folder.
+- Must build the Android app before running the iOS app.
+- 
+- Open project in IntelliJ IDEA or Android Studio and run the `androidApp` configuration.
+
+- Note: There are many spurious warning messages from the AS IDE and pop-up warnings. 
+  - It seems these can be safely ignored. (I assume they will address these issues in upcoming releases)
 
 Source: (Code snapshot taken 10/8/23)
 https://github.com/JetBrains/compose-multiplatform/tree/master/examples/cocoapods-ios-example
-
-- Must create `AppSecrets.plist` from within Xcode - in password vault
-- Can get `google-services.json` from Google Cloud Console
-- must do `pod install` from the `iosApp` folder
-
-- Note: There are many spurious warning messages and pop-up warnings. It seems these can be safely ignored.
 
 ## Latest commit Ran & Built with:
 * Android Studio Koala | 2023.3.2 Canary 2

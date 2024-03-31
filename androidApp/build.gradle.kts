@@ -176,6 +176,7 @@ android {
 
         // Android-only Components
         implementation(libs.androidx.appcompat)
+        implementation(libs.androidx.core.ktx)
 
         // Splash Screen
         implementation(libs.androidx.core.splashscreen)

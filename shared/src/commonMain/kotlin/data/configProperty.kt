@@ -1,8 +1,8 @@
 package data
 
+import fredsroadtripstoryteller.shared.generated.resources.Res
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.resource
 
 private const val kAppConfigDefault = "appConfig.properties"
 
@@ -38,8 +38,7 @@ fun configPropertyNullable(
 
     runBlocking {
         try {
-            resource(propertyFile)
-                .readBytes()
+            Res.readBytes("files/$propertyFile") // in src/commonMain/composeResources/
                 .decodeToString()
                 .split("\n")
                 .forEach { line ->

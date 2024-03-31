@@ -40,11 +40,11 @@ const val kTrialStartOutsideRadiusMiles = 25.0  // Distance from install locatio
 // Check if user location is outside the trial radius & start trial.
 fun AppSettings.isTrialStartDetected(
     userLocation: Location,
-): Boolean {  // `true` means it started the trial.
-    if(isTrialStarted()) return false // Trial has already started.
+): Boolean {  // `true` means the trial was started.
+    if(isTrialStarted()) return false
 
     // Set the install location if not set yet.
-    if(installAtLocation.latitude == 0.0 && installAtLocation.longitude == 0.0) {
+    if(!isInstallAtLocationSet()) {
         installAtLocation = userLocation
         return false
     }

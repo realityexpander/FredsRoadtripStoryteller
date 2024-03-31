@@ -28,10 +28,10 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeMute
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material.icons.filled.VolumeMute
-import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -211,7 +211,7 @@ fun RecentlySeenMarkers(
                                 }
                             ) {
                                 Icon(
-                                    imageVector = Icons.Filled.VolumeUp,
+                                    imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                                     contentDescription = "Speak Marker",
                                     tint = MaterialTheme.colors.onBackground
                                 )
@@ -306,7 +306,7 @@ fun RecentlySeenMarkers(
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Filled.VolumeUp,
+                                        imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                                         contentDescription = "Start Speaking All Markers",
                                         tint = MaterialTheme.colors.onBackground
                                     )
@@ -460,7 +460,7 @@ fun RecentlySeenMarkers(
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.VolumeMute,
+                                        imageVector = Icons.AutoMirrored.Filled.VolumeMute,
                                         contentDescription = "Speak Marker Again",
                                         tint = MaterialTheme.colors.onBackground.copy(alpha =.75f)
                                     )
@@ -475,7 +475,7 @@ fun RecentlySeenMarkers(
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Icon(
-                                    imageVector = Icons.Filled.VolumeUp,
+                                    imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                                     contentDescription = "Speak Marker",
                                     tint = MaterialTheme.colors.onBackground // note: no alpha
                                 )

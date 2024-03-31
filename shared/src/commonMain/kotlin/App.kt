@@ -14,10 +14,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.BottomSheetScaffold
 import androidx.compose.material.BottomSheetScaffoldState
+import androidx.compose.material.DrawerState
+import androidx.compose.material.DrawerValue
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ModalDrawer
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Snackbar
 import androidx.compose.material.SnackbarDuration
@@ -33,6 +36,7 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.rememberBottomSheetScaffoldState
+import androidx.compose.material.rememberDrawerState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -57,7 +61,6 @@ import data.appSettings
 import data.billing.CommonBilling
 import data.billing.CommonBilling.BillingState
 import data.billing.calcTrialTimeRemainingString
-import data.billing.isInstallAtLocationSet
 import data.billing.isLastKnownLocationSet
 import data.billing.isProVersionEnabled
 import data.billing.isTrialInProgress
@@ -340,22 +343,21 @@ fun App(
                 finalMarkers.update {
                     loadMarkersResult.markerIdToMarkerMap.values.toList()
                         .also {
-                            shouldCalcClusterItems = true
-                            Log.d("🍉 END - markersRepo.updateMarkersResultFlow.collectLatest:\n" +
-                                    "    ⎣ finalMarkers.size = ${it.size}\n" +
-                                    "    ⎣ time to update all markers = ${(Clock.System.now() - startTime)}\n"
-                            )
+                            coroutineScope.launch {
+                                shouldCalcClusterItems = true
+                                Log.d(
+                                    "🍉 END - markersRepo.updateMarkersResultFlow.collectLatest:\n" +
+                                            "    ⎣ finalMarkers.size = ${it.size}\n" +
+                                            "    ⎣ time to update all markers = ${(Clock.System.now() - startTime)}\n"
+                                )
+                            }
                         }
                 }
             }
         }
 
-        // 🔸 Optimize energy usage by pausing "seen marker" tracking when user is not moving.
-        var isSeenTrackingPaused by remember { mutableStateOf(false) }
-        var isSeenTrackingPausedPhase by remember { mutableStateOf(0) }
-
         // 🔸 1) Update user GPS location
-        LaunchedEffect(Unit, seenRadiusMiles) { //, shouldCalculateMapMarkers) {
+        LaunchedEffect(Unit) { //, shouldCalculateMapMarkers) {
 
             while(true) {
                 commonGpsLocationService.onUpdatedGPSLocation(
@@ -381,13 +383,6 @@ fun App(
                             userLocation = location
                             appSettings.lastKnownUserLocation = location
 
-                            // Set "Install Location" at first location update, if not set.
-                            if(appSettings.isInstallAtLocationSet()) {
-                                appSettings.installAtLocation = location
-                            }
-
-                            isSeenTrackingPaused = false // Resume tracking (battery optimization)
-
                             // Start trial if user is outside the trial radius.
                             if (appSettings.isTrialStartDetected(location)) {
                                 billingMessageStr = "Trial period has started.\n" +
@@ -400,7 +395,7 @@ fun App(
                         }
                     })
 
-                delay(1.seconds)
+                delay(2.seconds)
             }
 
             // LEAVE FOR REFERENCE
@@ -413,18 +408,13 @@ fun App(
         }
 
         // 🔸 Track and update `isSeen` for any markers within the `seenRadiusMiles`
-        var previousUserLocation by remember { mutableStateOf(userLocation) }
         LaunchedEffect(
             Unit,
-            isSeenTrackingPaused,
             finalMarkers.value,
             userLocation,
             seenRadiusMiles,
-            markersRepo,
-            shouldCalcClusterItems,
-            isSeenTrackingPaused
+            markersRepo.markersResultFlow.value,
         ) {
-            while(!isSeenTrackingPaused) {
                 Log.d("👁️ 2.START - Collecting recently seen markers after location update..., finalMarkers.size=${finalMarkers.value.size}")
                 addSeenMarkersToRecentlySeenList(
                     finalMarkers.value, // SSoT is finalMarkers
@@ -452,19 +442,19 @@ fun App(
                         appSettings.uiRecentlySeenMarkersList =
                             RecentlySeenMarkersList(_uiRecentlySeenMarkersFlow.value.toList())
 
+                        launch {
                         // Update `isSeen` in the markers repo (will trigger a redraw of the map & markers)
-                        coroutineScope.launch {
                             updatedIsSeenMarkers.forEach { updatedMarker ->
                                 markersRepo.updateMarkerIsSeen(
                                     updatedMarker,
                                     isSeen = true
                                 )
                             }
-                            delay(500) // allow time for repo to update
 
                             // Update the UI with the updated markers
                             shouldCalcClusterItems = true
                             shouldAllowCacheReset = true
+                            seenRadiusMiles += .00000001f  // hack to force update of the map
                         }
                         Log.d("👁️ 2.1-END, processing time = ${(Clock.System.now() - startTime)}")
 
@@ -485,24 +475,6 @@ fun App(
                         Log.d("👁️ 5.END With NO-CHANGES - onFinishedProcessRecentlySeenList, processing time = ${(Clock.System.now() - startTime)}")
                     }
                 )
-
-                // Pause tracking if user is not moving (to save battery)
-                if(!isSeenTrackingPaused) {
-                    if(userLocation == previousUserLocation) {
-                        isSeenTrackingPausedPhase++
-
-                        if (isSeenTrackingPausedPhase >= 3) {
-                            isSeenTrackingPaused = true
-                            isSeenTrackingPausedPhase = 0
-                        }
-                    } else {
-                        isSeenTrackingPausedPhase = 0
-                    }
-                }
-
-                previousUserLocation = userLocation
-                delay(500)
-            }
         }
 
         fun startTracking() {
@@ -640,158 +612,14 @@ fun App(
         // 🔸 For frame-render performance tuning
         didFullFrameRender = false
 
-        if(appSettings.isLastKnownLocationSet())
-            BottomSheetScaffold(
-            scaffoldState = bottomSheetScaffoldState,
-            sheetElevation = 16.dp,
-            sheetGesturesEnabled = false, // interferes with map gestures
-            sheetPeekHeight = 0.dp,
-            sheetContentColor = MaterialTheme.colors.onBackground,
-            sheetBackgroundColor = MaterialTheme.colors.background,
-            sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-            sheetContent = {
-                when (bottomSheetActiveScreen) {
-                    is BottomSheetScreen.SettingsScreen -> {
-                        openBottomSheet(bottomSheetScaffoldState, coroutineScope)
-                        SettingsScreen(
-                            appSettings = appSettings,
-                            markersRepo,
-                            bottomSheetScaffoldState,
-                            seenRadiusMiles,
-                            appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState,
-                            onIsSpeakWhenUnseenMarkerFoundEnabledChange = { isEnabled ->
-                                appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState = isEnabled
-                            },
-                            onSeenRadiusChange = { updatedRadiusMiles ->
-                                seenRadiusMiles = updatedRadiusMiles
-                            },
-                            onIsCachedMarkersLastUpdatedLocationVisibleChange = {
-                                isMarkersLastUpdatedLocationVisible = it
-                            },
-                            onResetMarkerSettings = {
-                                coroutineScope.launch {
-                                    resetMarkerCacheSettings(
-                                        appSettings,
-                                        finalMarkers,
-                                        _recentlySeenMarkersSet,
-                                        _uiRecentlySeenMarkersFlow,
-                                        markersRepo
-                                    )
-                                    isSeenTrackingPaused = false // turn off optimization
-                                    activeSpeakingMarker = null
-                                    delay(1000) // wait for reset
-                                    shouldCalcClusterItems = true
-                                    shouldAllowCacheReset = true
-                                    delay(1500) // wait for loading to finish
-                                    userLocation = jiggleLocationToForceUiUpdate(userLocation)
-                                }
-                            },
-                            onDismiss = {
-                                coroutineScope.launch {
-                                    bottomSheetScaffoldState.bottomSheetState.collapse()
-                                    bottomSheetActiveScreen = BottomSheetScreen.None
-                                }
-                            }
-                        )
-                    }
-                    is BottomSheetScreen.MarkerDetailsScreen -> {
-                        openBottomSheet(bottomSheetScaffoldState, coroutineScope)
-
-                        // Use id string (coming from map marker in google maps)
-                        // or marker id (coming from item in list view)
-                        val bottomSheetParams =
-                            bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen
-                        val localMarker = bottomSheetParams.marker
-                        val markerIdStrFromParamId = bottomSheetParams.id
-                        val markerIdStrFromMarker = localMarker?.id
-                        // Guard
-                        if (markerIdStrFromParamId.isNullOrBlank() && markerIdStrFromMarker.isNullOrBlank()) {
-                            throw IllegalStateException(
-                                "Error: Both markerIdFromId and " +
-                                        "markerIdFromMarker are null, need to have at least one non-null value."
-                            )
-                        }
-
-                        // Get marker from repo based on id
-                        val marker = remember(markerIdStrFromMarker, markerIdStrFromParamId) {
-                            val markerId: MarkerIdStr =
-                                markerIdStrFromParamId
-                                    ?: markerIdStrFromMarker
-                                    ?: run {
-                                        errorMessageStr =
-                                            "Error: Unable to find marker id=$markerIdStrFromMarker"
-                                        return@remember localMarker ?: Marker()
-                                    }
-
-                            markersRepo.marker(markerId) ?: run {
-                                errorMessageStr =
-                                    "Error: Unable to find marker with id=$markerId"
-                                return@remember localMarker ?: Marker()
-                            }
-                        }
-
-                        MarkerDetailsScreen(
-                            marker,
-                            finalMarkers,
-                            isTextToSpeechCurrentlySpeaking = isMarkerCurrentlySpeaking,
-                            loadMarkerDetailsFunc = { markerToFetch, shouldUseFakeData ->
-                                loadMarkerDetails(
-                                    markerToFetch,
-                                    shouldUseFakeData,
-                                    onUpdateMarkerDetails = { updatedMarker ->
-                                        markersRepo.updateMarkerDetails(updatedMarker)
-                                    }
-                                )
-                            },
-                            onClickStartSpeakingMarker = { speakMarker ->
-                                activeSpeakingMarker = speakRecentlySeenMarker(
-                                    RecentlySeenMarker(speakMarker.id, speakMarker.title),
-                                    true,
-                                    markersRepo = markersRepo,
-                                    coroutineScope,
-                                    onUpdateLoadingState = { loadingState ->
-                                        loadingStateIcon = calcLoadingStateIcon(loadingState)
-                                    },
-                                    onError = { errorMessage ->
-                                        Log.w(errorMessage)
-                                        errorMessageStr = errorMessage
-                                    },
-                                    onSetUnspokenText = { nextTextChunk ->
-                                        unspokenText = nextTextChunk
-                                    }
-                                )
-                            },
-                            onLocateMarkerOnMap = { locateMarker ->
-                                coroutineScope.launch {
-                                    shouldCenterCameraOnLocation =
-                                        locateMarker.position.toLocation()
-                                    shouldShowInfoMarker = locateMarker
-                                    shouldZoomCameraToLatLongZoom =
-                                        LatLongZoom(locateMarker.position, 14f)
-                                }
-                            },
-                            onDismiss = {
-                                coroutineScope.launch {
-                                    bottomSheetScaffoldState.bottomSheetState.collapse()
-                                    bottomSheetActiveScreen = BottomSheetScreen.None
-                                }
-                            }
-                        )
-                    }
-                    is BottomSheetScreen.None -> {
-                        if(bottomSheetScaffoldState.bottomSheetState.isExpanded) {
-                            coroutineScope.launch {
-                                bottomSheetScaffoldState.bottomSheetState.collapse()
-                            }
-                        }
-                    }
-                }
-            },
+        val drawerState = rememberDrawerState(DrawerValue.Closed)
+        ModalDrawer(
+            drawerState = drawerState,
             drawerElevation = 16.dp,
-            drawerScrimColor = Color.Black.copy(alpha = 0.5f),
-            drawerGesturesEnabled = !bottomSheetScaffoldState.drawerState.isClosed,
+            scrimColor = Color.Black.copy(alpha = 0.5f),
+            gesturesEnabled = !drawerState.isClosed,
             drawerContent = {
-                if(bottomSheetScaffoldState.drawerState.isOpen) { // only update when drawer is open (performance)
+                if (drawerState.isOpen) { // only update when drawer is open (performance)
                     AppDrawerContent(
                         finalMarkers.value, // SSoT is the finalMarkers
                         onSetBottomSheetActiveScreen = { screen ->
@@ -806,13 +634,13 @@ fun App(
                         },
                         onCloseDrawer = {
                             coroutineScope.launch {
-                                bottomSheetScaffoldState.drawerState.close()
+                                drawerState.close()
                             }
                         },
                         activeSpeakingMarker = activeSpeakingMarker,
                         isMarkerCurrentlySpeaking = isMarkerCurrentlySpeaking,
                         onClickStartSpeakingMarker = { marker, isSpeakDetailsEnabled: Boolean ->
-                            if(isTextToSpeechSpeaking()) stopTextToSpeech()
+                            if (isTextToSpeechSpeaking()) stopTextToSpeech()
                             coroutineScope.launch {
                                 delay(150)
                                 activeSpeakingMarker =
@@ -836,9 +664,10 @@ fun App(
                         onLocateMarker = { marker ->
                             coroutineScope.launch {
                                 //shouldCenterCameraOnLocation = marker.position.toLocation() // no zooming
-                                bottomSheetScaffoldState.drawerState.close()
+                                drawerState.close()
                                 shouldShowInfoMarker = marker
-                                shouldZoomCameraToLatLongZoom = LatLongZoom(marker.position, 14f)
+                                shouldZoomCameraToLatLongZoom =
+                                    LatLongZoom(marker.position, 14f)
                             }
                         },
                         commonBilling = commonBilling,
@@ -858,426 +687,591 @@ fun App(
                     )
                 }
             },
-            snackbarHost = {
-                SnackbarHost(
-                    hostState = scaffoldState.snackbarHostState,
-                    snackbar = {
-                        Snackbar(
-                            modifier = Modifier.padding(8.dp),
-                            backgroundColor = MaterialTheme.colors.secondary,
-                            shape = RoundedCornerShape(8.dp),
-                            actionOnNewLine = true,
-                            elevation = 8.dp,
-                            action = {
-                                TextButton(
-                                    onClick = {
-                                        scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+        ) {
+            if (appSettings.isLastKnownLocationSet())
+                BottomSheetScaffold(
+                    scaffoldState = bottomSheetScaffoldState,
+                    sheetElevation = 16.dp,
+                    sheetGesturesEnabled = false, // interferes with map gestures
+                    sheetPeekHeight = 0.dp,
+                    sheetContentColor = MaterialTheme.colors.onBackground,
+                    sheetBackgroundColor = MaterialTheme.colors.background,
+                    sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+                    sheetContent = {
+                        when (bottomSheetActiveScreen) {
+                            is BottomSheetScreen.SettingsScreen -> {
+                                openBottomSheet(bottomSheetScaffoldState, coroutineScope)
+                                SettingsScreen(
+                                    appSettings = appSettings,
+                                    markersRepo,
+                                    bottomSheetScaffoldState,
+                                    seenRadiusMiles,
+                                    appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState,
+                                    onIsSpeakWhenUnseenMarkerFoundEnabledChange = { isEnabled ->
+                                        appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState =
+                                            isEnabled
+                                    },
+                                    onSeenRadiusChange = { updatedRadiusMiles ->
+                                        seenRadiusMiles = updatedRadiusMiles
+                                    },
+                                    onIsCachedMarkersLastUpdatedLocationVisibleChange = {
+                                        isMarkersLastUpdatedLocationVisible = it
+                                    },
+                                    onResetMarkerSettings = {
+                                        coroutineScope.launch {
+                                            resetMarkerCacheSettings(
+                                                appSettings,
+                                                finalMarkers,
+                                                _recentlySeenMarkersSet,
+                                                _uiRecentlySeenMarkersFlow,
+                                                markersRepo
+                                            )
+                                            activeSpeakingMarker = null
+                                            delay(1000) // wait for reset
+                                            shouldCalcClusterItems = true
+                                            shouldAllowCacheReset = true
+                                            delay(1500) // wait for loading to finish
+                                            userLocation =
+                                                jiggleLocationToForceUiUpdate(userLocation)
+                                        }
+                                    },
+                                    onDismiss = {
+                                        coroutineScope.launch {
+                                            bottomSheetScaffoldState.bottomSheetState.collapse()
+                                            bottomSheetActiveScreen = BottomSheetScreen.None
+                                        }
+                                    }
+                                )
+                            }
+
+                            is BottomSheetScreen.MarkerDetailsScreen -> {
+                                openBottomSheet(bottomSheetScaffoldState, coroutineScope)
+
+                                // Use id string (coming from map marker in google maps)
+                                // or marker id (coming from item in list view)
+                                val bottomSheetParams =
+                                    bottomSheetActiveScreen as BottomSheetScreen.MarkerDetailsScreen
+                                val localMarker = bottomSheetParams.marker
+                                val markerIdStrFromParamId = bottomSheetParams.id
+                                val markerIdStrFromMarker = localMarker?.id
+                                // Guard
+                                if (markerIdStrFromParamId.isNullOrBlank() && markerIdStrFromMarker.isNullOrBlank()) {
+                                    throw IllegalStateException(
+                                        "Error: Both markerIdFromId and " +
+                                                "markerIdFromMarker are null, need to have at least one non-null value."
+                                    )
+                                }
+
+                                // Get marker from repo based on id
+                                val marker =
+                                    remember(markerIdStrFromMarker, markerIdStrFromParamId) {
+                                        val markerId: MarkerIdStr =
+                                            markerIdStrFromParamId
+                                                ?: markerIdStrFromMarker
+                                                ?: run {
+                                                    errorMessageStr =
+                                                        "Error: Unable to find marker id=$markerIdStrFromMarker"
+                                                    return@remember localMarker ?: Marker()
+                                                }
+
+                                        markersRepo.marker(markerId) ?: run {
+                                            errorMessageStr =
+                                                "Error: Unable to find marker with id=$markerId"
+                                            return@remember localMarker ?: Marker()
+                                        }
+                                    }
+
+                                MarkerDetailsScreen(
+                                    marker,
+                                    finalMarkers,
+                                    isTextToSpeechCurrentlySpeaking = isMarkerCurrentlySpeaking,
+                                    loadMarkerDetailsFunc = { markerToFetch, shouldUseFakeData ->
+                                        loadMarkerDetails(
+                                            markerToFetch,
+                                            shouldUseFakeData,
+                                            onUpdateMarkerDetails = { updatedMarker ->
+                                                markersRepo.updateMarkerDetails(updatedMarker)
+                                            }
+                                        )
+                                    },
+                                    onClickStartSpeakingMarker = { speakMarker ->
+                                        activeSpeakingMarker = speakRecentlySeenMarker(
+                                            RecentlySeenMarker(speakMarker.id, speakMarker.title),
+                                            true,
+                                            markersRepo = markersRepo,
+                                            coroutineScope,
+                                            onUpdateLoadingState = { loadingState ->
+                                                loadingStateIcon =
+                                                    calcLoadingStateIcon(loadingState)
+                                            },
+                                            onError = { errorMessage ->
+                                                Log.w(errorMessage)
+                                                errorMessageStr = errorMessage
+                                            },
+                                            onSetUnspokenText = { nextTextChunk ->
+                                                unspokenText = nextTextChunk
+                                            }
+                                        )
+                                    },
+                                    onLocateMarkerOnMap = { locateMarker ->
+                                        coroutineScope.launch {
+                                            shouldCenterCameraOnLocation =
+                                                locateMarker.position.toLocation()
+                                            shouldShowInfoMarker = locateMarker
+                                            shouldZoomCameraToLatLongZoom =
+                                                LatLongZoom(locateMarker.position, 14f)
+                                        }
+                                    },
+                                    onDismiss = {
+                                        coroutineScope.launch {
+                                            bottomSheetScaffoldState.bottomSheetState.collapse()
+                                            bottomSheetActiveScreen = BottomSheetScreen.None
+                                        }
+                                    }
+                                )
+                            }
+
+                            is BottomSheetScreen.None -> {
+                                if (bottomSheetScaffoldState.bottomSheetState.isExpanded) {
+                                    coroutineScope.launch {
+                                        bottomSheetScaffoldState.bottomSheetState.collapse()
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    snackbarHost = {
+                        SnackbarHost(
+                            hostState = scaffoldState.snackbarHostState,
+                            snackbar = {
+                                Snackbar(
+                                    modifier = Modifier.padding(8.dp),
+                                    backgroundColor = MaterialTheme.colors.secondary,
+                                    shape = RoundedCornerShape(8.dp),
+                                    actionOnNewLine = true,
+                                    elevation = 8.dp,
+                                    action = {
+                                        TextButton(
+                                            onClick = {
+                                                scaffoldState.snackbarHostState.currentSnackbarData?.dismiss()
+                                            }
+                                        ) {
+                                            Text(
+                                                text = "DISMISS",
+                                                color = MaterialTheme.colors.onSecondary
+                                            )
+                                        }
                                     }
                                 ) {
                                     Text(
-                                        text = "DISMISS",
+                                        text = scaffoldState.snackbarHostState.currentSnackbarData?.message
+                                            ?: "",
+                                        fontStyle = FontStyle.Italic,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = MaterialTheme.typography.body1.fontSize,
+                                        color = MaterialTheme.colors.onError,
+                                        modifier = Modifier.padding(4.dp)
+                                    )
+                                }
+                            }
+                        )
+                    },
+                ) {
+                    var isRecentlySeenMarkersPanelVisible by remember {
+                        mutableStateOf(appSettings.isRecentlySeenMarkersPanelVisible)
+                    }
+
+                    FixIssue_ScreenRotationLeavesDrawerPartiallyOpen(drawerState)
+
+                    val startTime = Clock.System.now()
+                    Scaffold(
+                        scaffoldState = scaffoldState,
+                        topBar = {
+                            Column(
+                                Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                TopAppBar(
+                                    navigationIcon = {
+                                        IconButton(onClick = {
+                                            coroutineScope.launch {
+                                                drawerState.apply {
+                                                    if (isClosed) open() else close()
+                                                }
+                                            }
+                                        }) {
+                                            Icon(
+                                                imageVector = Icons.Default.Menu,
+                                                contentDescription = "Settings"
+                                            )
+                                        }
+                                    },
+                                    title = {
+                                        Text(
+                                            text = appMetadata.appNameStr,
+                                            fontStyle = FontStyle.Normal,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 16.sp
+                                        )
+                                    },
+                                    actions = {
+                                        // Settings
+                                        IconButton(onClick = {
+                                            // Toggle the settings panel
+                                            bottomSheetActiveScreen =
+                                                if (bottomSheetActiveScreen != BottomSheetScreen.SettingsScreen) {
+                                                    BottomSheetScreen.SettingsScreen
+                                                } else {
+                                                    BottomSheetScreen.None
+                                                }
+                                        }) {
+                                            Icon(
+                                                imageVector = Icons.Default.Settings,
+                                                contentDescription = "Settings"
+                                            )
+                                        }
+
+                                        // Recent Markers History List
+                                        IconButton(onClick = {
+                                            coroutineScope.launch {
+                                                isRecentlySeenMarkersPanelVisible =
+                                                    !isRecentlySeenMarkersPanelVisible
+                                                appSettings.isRecentlySeenMarkersPanelVisible =
+                                                    isRecentlySeenMarkersPanelVisible
+                                            }
+                                        }) {
+                                            // Loading status icon
+                                            AnimatedVisibility(
+                                                networkLoadingState !is LoadingState.Finished,
+                                                enter = fadeIn(tween(1500)),
+                                                exit = fadeOut(tween(1500))
+                                            ) {
+                                                Icon(
+                                                    imageVector = loadingStateIcon,
+                                                    contentDescription = "Loading Status"
+                                                )
+                                            }
+                                            // History icon
+                                            AnimatedVisibility(
+                                                networkLoadingState is LoadingState.Finished,
+                                                enter = fadeIn(tween(500)),
+                                                exit = fadeOut(tween(500))
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.History,
+                                                    contentDescription = "Hide/Show Marker List"
+                                                )
+                                            }
+                                        }
+                                    }
+                                )
+
+                                // Show loading error
+                                AnimatedVisibility(
+                                    visible = networkLoadingState is LoadingState.Error,
+                                ) {
+                                    if (networkLoadingState is LoadingState.Error) {
+                                        Text(
+                                            modifier = Modifier.fillMaxWidth()
+                                                .background(MaterialTheme.colors.error),
+                                            text = "Error: ${(networkLoadingState as LoadingState.Error).errorMessage}",
+                                            fontStyle = FontStyle.Normal,
+                                            fontWeight = FontWeight.Medium,
+                                            color = MaterialTheme.colors.onError
+                                        )
+                                    }
+                                }
+                            }
+                        },
+                    ) {
+                        val transitionRecentMarkersPanelState: Float by animateFloatAsState(
+                            if (isRecentlySeenMarkersPanelVisible) 0.5f else 0f,
+                            animationSpec = tween(500)
+                        )
+                        //Log.d("🦉 Frame count = $frameCount, time = ${(Clock.System.now() - startTime)}" )
+
+                        Column(
+                            modifier = Modifier.fillMaxHeight(),
+                            verticalArrangement = Arrangement.SpaceBetween,
+                            horizontalAlignment = Alignment.Start
+                        ) {
+                            // Show Error
+                            AnimatedVisibility(errorMessageStr != null) {
+                                if (errorMessageStr != null) {
+                                    Text(
+                                        modifier = Modifier.fillMaxWidth()
+                                            .background(MaterialTheme.colors.error),
+                                        text = errorMessageStr?.let { "Error: $it" } ?: "",
+                                        textAlign = TextAlign.Center,
+                                        fontStyle = FontStyle.Normal,
+                                        fontWeight = FontWeight.Medium,
+                                        color = MaterialTheme.colors.onError
+                                    )
+                                }
+                            }
+
+                            // Show Billing Message
+                            AnimatedVisibility(billingMessageStr != null) {
+                                if (billingMessageStr != null && billingMessageStr.toString()
+                                        .isNotBlank()
+                                ) {
+                                    Text(
+                                        modifier = Modifier.fillMaxWidth()
+                                            .background(MaterialTheme.colors.secondary),
+                                        text = billingMessageStr?.let { "Billing: $it" } ?: "",
+                                        textAlign = TextAlign.Center,
+                                        fontStyle = FontStyle.Normal,
+                                        fontWeight = FontWeight.Medium,
                                         color = MaterialTheme.colors.onSecondary
                                     )
                                 }
                             }
-                        ) {
-                            Text(
-                                text = scaffoldState.snackbarHostState.currentSnackbarData?.message
-                                    ?: "",
-                                fontStyle = FontStyle.Italic,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = MaterialTheme.typography.body1.fontSize,
-                                color = MaterialTheme.colors.onError,
-                                modifier = Modifier.padding(4.dp)
-                            )
-                        }
-                    }
-                )
-            },
-        ) {
-            var isRecentlySeenMarkersPanelVisible by remember {
-                mutableStateOf(appSettings.isRecentlySeenMarkersPanelVisible)
-            }
 
-            FixIssue_ScreenRotationLeavesDrawerPartiallyOpen(bottomSheetScaffoldState)
-
-            val startTime = Clock.System.now()
-            Scaffold(
-                scaffoldState = scaffoldState,
-                topBar = {
-                    Column(
-                        Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        TopAppBar(
-                            navigationIcon = {
-                                IconButton(onClick = {
-                                    coroutineScope.launch {
-                                        bottomSheetScaffoldState.drawerState.apply {
-                                            if (isClosed) open() else close()
-                                        }
-                                    }
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Menu,
-                                        contentDescription = "Settings"
-                                    )
-                                }
-                            },
-                            title = {
-                                Text(
-                                    text = appMetadata.appNameStr,
-                                    fontStyle = FontStyle.Normal,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp
-                                )
-                            },
-                            actions = {
-                                // Settings
-                                IconButton(onClick = {
-                                    // Toggle the settings panel
-                                    bottomSheetActiveScreen =
-                                        if(bottomSheetActiveScreen != BottomSheetScreen.SettingsScreen) {
-                                            BottomSheetScreen.SettingsScreen
-                                        } else {
-                                            BottomSheetScreen.None
-                                        }
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Settings,
-                                        contentDescription = "Settings"
-                                    )
-                                }
-
-                                // Recent Markers History List
-                                IconButton(onClick = {
-                                    coroutineScope.launch {
-                                        isRecentlySeenMarkersPanelVisible =
-                                            !isRecentlySeenMarkersPanelVisible
-                                        appSettings.isRecentlySeenMarkersPanelVisible =
-                                            isRecentlySeenMarkersPanelVisible
-                                    }
-                                }) {
-                                    // Loading status icon
-                                    AnimatedVisibility(
-                                        networkLoadingState !is LoadingState.Finished,
-                                        enter = fadeIn(tween(1500)),
-                                        exit = fadeOut(tween(1500))
-                                    ) {
-                                        Icon(
-                                            imageVector = loadingStateIcon,
-                                            contentDescription = "Loading Status"
-                                        )
-                                    }
-                                    // History icon
-                                    AnimatedVisibility(
-                                        networkLoadingState is LoadingState.Finished,
-                                        enter = fadeIn(tween(500)),
-                                        exit = fadeOut(tween(500))
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.History,
-                                            contentDescription = "Hide/Show Marker List"
-                                        )
-                                    }
-                                }
-                            }
-                        )
-
-                        // Show loading error
-                        AnimatedVisibility(
-                            visible = networkLoadingState is LoadingState.Error,
-                        ) {
-                            if (networkLoadingState is LoadingState.Error) {
-                                Text(
-                                    modifier = Modifier.fillMaxWidth()
-                                        .background(MaterialTheme.colors.error),
-                                    text = "Error: ${(networkLoadingState as LoadingState.Error).errorMessage}",
-                                    fontStyle = FontStyle.Normal,
-                                    fontWeight = FontWeight.Medium,
-                                    color = MaterialTheme.colors.onError
-                                )
-                            }
-                        }
-                    }
-                },
-            ) {
-                val transitionRecentMarkersPanelState: Float by animateFloatAsState(
-                    if (isRecentlySeenMarkersPanelVisible) 0.5f else 0f,
-                    animationSpec = tween(500)
-                )
-                //Log.d("🦉 Frame count = $frameCount, time = ${(Clock.System.now() - startTime)}" )
-
-                Column(
-                    modifier = Modifier.fillMaxHeight(),
-                    verticalArrangement = Arrangement.SpaceBetween,
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    // Show Error
-                    AnimatedVisibility(errorMessageStr != null) {
-                        if(errorMessageStr != null) {
-                            Text(
-                                modifier = Modifier.fillMaxWidth()
-                                    .background(MaterialTheme.colors.error),
-                                text = errorMessageStr?.let{ "Error: $it" } ?: "",
-                                textAlign = TextAlign.Center,
-                                fontStyle = FontStyle.Normal,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colors.onError
-                            )
-                        }
-                    }
-
-                    // Show Billing Message
-                    AnimatedVisibility(billingMessageStr != null) {
-                        if(billingMessageStr != null && billingMessageStr.toString().isNotBlank()) {
-                            Text(
-                                modifier = Modifier.fillMaxWidth()
-                                    .background(MaterialTheme.colors.secondary),
-                                text = billingMessageStr?.let{ "Billing: $it" } ?: "",
-                                textAlign = TextAlign.Center,
-                                fontStyle = FontStyle.Normal,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colors.onSecondary
-                            )
-                        }
-                    }
-
-                    // Map Content
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        // Log.d("✏️✏️⬇️  START map rendering, finalMarkers.size = ${finalMarkers.size}, shouldRedrawMapMarkers=$shouldCalculateMarkers\n")
-
-                        // Show Map
-                        MapContent(
-                            modifier = Modifier
-                                .fillMaxHeight(1.0f - transitionRecentMarkersPanelState),
-                            initialUserLocation =
-                            appSettings.lastKnownUserLocation,
-                            userLocation = userLocation,
-                            markers = finalMarkers.value,
-                            mapBounds = null,  // leave for future use
-                            shouldCalcClusterItems = shouldCalcClusterItems, // calculate the markers clusters/heatmaps
-                            onDidCalcClusterItems = { // map & markers have been redrawn
-                                shouldCalcClusterItems = false
-                            },
-                            isTrackingEnabled = isTrackingEnabled,
-                            shouldCenterCameraOnLocation = shouldCenterCameraOnLocation,
-                            onDidCenterCameraOnLocation = {
-                                shouldCenterCameraOnLocation = null
-                            },
-                            seenRadiusMiles = seenRadiusMiles,
-                            cachedMarkersLastUpdatedLocation = remember(
-                                appSettings.isMarkersLastUpdatedLocationVisible,
-                                markersLastUpdatedLocation
+                            // Map Content
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                if (appSettings.isMarkersLastUpdatedLocationVisible)
-                                    markersLastUpdatedLocation
-                                else
-                                    null
-                            },
-                            onToggleIsTrackingEnabled = {
-                                isTrackingEnabled = !isTrackingEnabled
-                                coroutineScope.launch {
-                                    if (isTrackingEnabled) {
-                                        startTracking()
-                                    } else {
-                                        stopTracking()
-                                    }
-                                }
-                            },
-                            onFindMeButtonClicked = {
-                                shouldCenterCameraOnLocation = userLocation.copy()
-                            },
-                            isMarkersLastUpdatedLocationVisible = isMarkersLastUpdatedLocationVisible,
-                            isMapOptionSwitchesVisible = !isRecentlySeenMarkersPanelVisible,  // hide map options when showing marker list
-                            onMarkerInfoClick = { marker ->
-                                if (!appSettings.isProVersionEnabled(billingState)) {
-                                    displayPurchaseProDialog()
-                                    return@MapContent
-                                }
+                                // Log.d("✏️✏️⬇️  START map rendering, finalMarkers.size = ${finalMarkers.size}, shouldRedrawMapMarkers=$shouldCalculateMarkers\n")
 
-                                // Show marker details
-                                coroutineScope.launch {
-                                    bottomSheetActiveScreen =
-                                        BottomSheetScreen.MarkerDetailsScreen(marker)
-                                    bottomSheetScaffoldState.bottomSheetState.apply {
-                                        if (isCollapsed) expand()
-                                    }
-                                }
-                            },
-                            shouldShowInfoMarker = shouldShowInfoMarker,
-                            onDidShowInfoMarker = {
-                                shouldShowInfoMarker = null
-                            },
-                            shouldZoomToLatLongZoom = shouldZoomCameraToLatLongZoom,
-                            onDidZoomToLatLongZoom = {
-                                shouldZoomCameraToLatLongZoom = null  // reset
-                            },
-                            shouldAllowCacheReset = shouldAllowCacheReset,
-                            onDidAllowCacheReset = {
-                                shouldAllowCacheReset = false
-                            },
-                        )
-
-                        //Log.d("✏️✏️🛑  END map rendering, time to render = ${(Clock.System.now() - startTime)}\n")
-                    }
-
-                    RecentlySeenMarkers(
-                        _uiRecentlySeenMarkersFlow.value,
-                        activeSpeakingMarker = activeSpeakingMarker,
-                        isTextToSpeechCurrentlySpeaking = isMarkerCurrentlySpeaking,
-                        appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState, // reactive to settings
-                        markersRepo = markersRepo,
-                        onClickRecentlySeenMarkerItem = { markerId ->
-                            if (!appSettings.isProVersionEnabled(billingState)) {
-                                displayPurchaseProDialog()
-                                return@RecentlySeenMarkers
-                            }
-
-                            // Show marker details
-                            coroutineScope.launch {
-                                bottomSheetActiveScreen =
-                                    BottomSheetScreen.MarkerDetailsScreen(id = markerId)
-                                bottomSheetScaffoldState.bottomSheetState.apply {
-                                    if (isCollapsed) expand()
-                                }
-                            }
-                        },
-                        onClickStartSpeakingMarker = { recentlySeenMarker, isSpeakDetailsEnabled: Boolean ->
-                            if(isTextToSpeechSpeaking()) stopTextToSpeech()
-
-                            if (!appSettings.isProVersionEnabled(billingState)) {
-                                displayPurchaseProDialog()
-                                return@RecentlySeenMarkers
-                            }
-
-                            coroutineScope.launch {
-                                isTemporarilyPreventPerformanceTuningActive = true // prevents using emojis as marker icons
-                                delay(150)
-
-                                activeSpeakingMarker =
-                                    speakRecentlySeenMarker(
-                                        recentlySeenMarker,
-                                        isSpeakDetailsEnabled = isSpeakDetailsEnabled,
-                                        markersRepo = markersRepo,
-                                        coroutineScope,
-                                        onUpdateLoadingState = { loadingState ->
-                                            networkLoadingState = loadingState
-                                        },
-                                        onError =  { errorMessage ->
-                                            Log.w(errorMessage)
-                                            errorMessageStr = errorMessage
-                                        }
-                                    )
-                            }
-                        },
-                        onClickPauseSpeakingMarker = {
-                            isTemporarilyPreventPerformanceTuningActive=true // prevents using emojis for markers
-                            pauseTextToSpeech()
-                        },
-                        onClickStopSpeakingMarker = {
-                            isTemporarilyPreventPerformanceTuningActive = true // prevents using emojis for markers
-                            stopTextToSpeech()
-                        },
-                        onClickPauseSpeakingAllMarkers = {
-                            appSettings.isSpeakWhenUnseenMarkerFoundEnabled = false
-                            appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState = false
-                            isTemporarilyPreventPerformanceTuningActive=true // prevents using emojis for markers
-                            stopTextToSpeech()
-                        },
-                        onClickResumeSpeakingAllMarkers = {
-                            if (!appSettings.isProVersionEnabled(billingState)) {
-                                displayPurchaseProDialog()
-                                return@RecentlySeenMarkers
-                            }
-
-                            appSettings.isSpeakWhenUnseenMarkerFoundEnabled = true
-                            appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState = true
-                            isTemporarilyPreventPerformanceTuningActive = true // prevents using emojis for markers // todo remove? needed>?
-                        },
-                        onClickSkipSpeakingToNextMarker = {
-                            isTemporarilyPreventPerformanceTuningActive = true // prevents using emojis for markers // todo needed?
-                            if (isTextToSpeechSpeaking()) stopTextToSpeech()
-                            if (isMarkerCurrentlySpeaking) stopTextToSpeech()
-
-                            if (!appSettings.isProVersionEnabled(billingState)) {
-                                displayPurchaseProDialog()
-                                return@RecentlySeenMarkers
-                            }
-
-                            if (_uiRecentlySeenMarkersFlow.value.isNotEmpty()) {
-                                val nextUnspokenMarker =
-                                    _uiRecentlySeenMarkersFlow.value.firstOrNull { marker ->
-                                        !(markersRepo.marker(marker.id)?.isSpoken
-                                            ?: false) // default not spoken yet
-                                    }
-                                nextUnspokenMarker?.let { speakMarker ->
-                                    activeSpeakingMarker =
-                                        speakRecentlySeenMarker(
-                                            speakMarker,
-                                            appSettings.isSpeakDetailsWhenUnseenMarkerFoundEnabled,
-                                            markersRepo = markersRepo,
-                                            coroutineScope,
-                                            onUpdateLoadingState = { loadingState ->
-                                                loadingStateIcon = calcLoadingStateIcon(loadingState)
+                                // Show Map
+                                MapContent(
+                                    modifier = Modifier
+                                        .fillMaxHeight(1.0f - transitionRecentMarkersPanelState),
+                                    initialUserLocation =
+                                    appSettings.lastKnownUserLocation,
+                                    userLocation = userLocation,
+                                    markers = finalMarkers.value,
+                                    mapBounds = null,  // leave for future use
+                                    shouldCalcClusterItems = shouldCalcClusterItems, // calculate the markers clusters/heatmaps
+                                    onDidCalcClusterItems = { // map & markers have been redrawn
+                                        shouldCalcClusterItems = false
+                                    },
+                                    isTrackingEnabled = isTrackingEnabled,
+                                    shouldCenterCameraOnLocation = shouldCenterCameraOnLocation,
+                                    onDidCenterCameraOnLocation = {
+                                        shouldCenterCameraOnLocation = null
+                                    },
+                                    seenRadiusMiles = seenRadiusMiles,
+                                    cachedMarkersLastUpdatedLocation = remember(
+                                        appSettings.isMarkersLastUpdatedLocationVisible,
+                                        markersLastUpdatedLocation
+                                    ) {
+                                        if (appSettings.isMarkersLastUpdatedLocationVisible)
+                                            markersLastUpdatedLocation
+                                        else
+                                            null
+                                    },
+                                    onToggleIsTrackingEnabled = {
+                                        isTrackingEnabled = !isTrackingEnabled
+                                        coroutineScope.launch {
+                                            if (isTrackingEnabled) {
+                                                startTracking()
+                                            } else {
+                                                stopTracking()
                                             }
-                                        ) { errorMessage ->
-                                            Log.w(errorMessage)
-                                            errorMessageStr = errorMessage
                                         }
-                                }
+                                    },
+                                    onFindMeButtonClicked = {
+                                        shouldCenterCameraOnLocation = userLocation.copy()
+                                    },
+                                    isMarkersLastUpdatedLocationVisible = isMarkersLastUpdatedLocationVisible,
+                                    isMapOptionSwitchesVisible = !isRecentlySeenMarkersPanelVisible,  // hide map options when showing marker list
+                                    onMarkerInfoClick = { marker ->
+                                        if (!appSettings.isProVersionEnabled(billingState)) {
+                                            displayPurchaseProDialog()
+                                            return@MapContent
+                                        }
+
+                                        // Show marker details
+                                        coroutineScope.launch {
+                                            bottomSheetActiveScreen =
+                                                BottomSheetScreen.MarkerDetailsScreen(marker)
+                                            bottomSheetScaffoldState.bottomSheetState.apply {
+                                                if (isCollapsed) expand()
+                                            }
+                                        }
+                                    },
+                                    shouldShowInfoMarker = shouldShowInfoMarker,
+                                    onDidShowInfoMarker = {
+                                        shouldShowInfoMarker = null
+                                    },
+                                    shouldZoomToLatLongZoom = shouldZoomCameraToLatLongZoom,
+                                    onDidZoomToLatLongZoom = {
+                                        shouldZoomCameraToLatLongZoom = null  // reset
+                                    },
+                                    shouldAllowCacheReset = shouldAllowCacheReset,
+                                    onDidAllowCacheReset = {
+                                        shouldAllowCacheReset = false
+                                    },
+                                )
+
+                                //Log.d("✏️✏️🛑  END map rendering, time to render = ${(Clock.System.now() - startTime)}\n")
                             }
+
+                            RecentlySeenMarkers(
+                                _uiRecentlySeenMarkersFlow.value,
+                                activeSpeakingMarker = activeSpeakingMarker,
+                                isTextToSpeechCurrentlySpeaking = isMarkerCurrentlySpeaking,
+                                appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState, // reactive to settings
+                                markersRepo = markersRepo,
+                                onClickRecentlySeenMarkerItem = { markerId ->
+                                    if (!appSettings.isProVersionEnabled(billingState)) {
+                                        displayPurchaseProDialog()
+                                        return@RecentlySeenMarkers
+                                    }
+
+                                    // Show marker details
+                                    coroutineScope.launch {
+                                        bottomSheetActiveScreen =
+                                            BottomSheetScreen.MarkerDetailsScreen(id = markerId)
+                                        bottomSheetScaffoldState.bottomSheetState.apply {
+                                            if (isCollapsed) expand()
+                                        }
+                                    }
+                                },
+                                onClickStartSpeakingMarker = { recentlySeenMarker, isSpeakDetailsEnabled: Boolean ->
+                                    if (isTextToSpeechSpeaking()) stopTextToSpeech()
+
+                                    if (!appSettings.isProVersionEnabled(billingState)) {
+                                        displayPurchaseProDialog()
+                                        return@RecentlySeenMarkers
+                                    }
+
+                                    coroutineScope.launch {
+                                        isTemporarilyPreventPerformanceTuningActive =
+                                            true // prevents using emojis as marker icons
+                                        delay(150)
+
+                                        activeSpeakingMarker =
+                                            speakRecentlySeenMarker(
+                                                recentlySeenMarker,
+                                                isSpeakDetailsEnabled = isSpeakDetailsEnabled,
+                                                markersRepo = markersRepo,
+                                                coroutineScope,
+                                                onUpdateLoadingState = { loadingState ->
+                                                    networkLoadingState = loadingState
+                                                },
+                                                onError = { errorMessage ->
+                                                    Log.w(errorMessage)
+                                                    errorMessageStr = errorMessage
+                                                }
+                                            )
+                                    }
+                                },
+                                onClickPauseSpeakingMarker = {
+                                    isTemporarilyPreventPerformanceTuningActive =
+                                        true // prevents using emojis for markers
+                                    pauseTextToSpeech()
+                                },
+                                onClickStopSpeakingMarker = {
+                                    isTemporarilyPreventPerformanceTuningActive =
+                                        true // prevents using emojis for markers
+                                    stopTextToSpeech()
+                                },
+                                onClickPauseSpeakingAllMarkers = {
+                                    appSettings.isSpeakWhenUnseenMarkerFoundEnabled = false
+                                    appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState = false
+                                    isTemporarilyPreventPerformanceTuningActive =
+                                        true // prevents using emojis for markers
+                                    stopTextToSpeech()
+                                },
+                                onClickResumeSpeakingAllMarkers = {
+                                    if (!appSettings.isProVersionEnabled(billingState)) {
+                                        displayPurchaseProDialog()
+                                        return@RecentlySeenMarkers
+                                    }
+
+                                    appSettings.isSpeakWhenUnseenMarkerFoundEnabled = true
+                                    appSettingsIsSpeakWhenUnseenMarkerFoundEnabledState = true
+                                    isTemporarilyPreventPerformanceTuningActive =
+                                        true // prevents using emojis for markers // todo remove? needed>?
+                                },
+                                onClickSkipSpeakingToNextMarker = {
+                                    isTemporarilyPreventPerformanceTuningActive =
+                                        true // prevents using emojis for markers // todo needed?
+                                    if (isTextToSpeechSpeaking()) stopTextToSpeech()
+                                    if (isMarkerCurrentlySpeaking) stopTextToSpeech()
+
+                                    if (!appSettings.isProVersionEnabled(billingState)) {
+                                        displayPurchaseProDialog()
+                                        return@RecentlySeenMarkers
+                                    }
+
+                                    if (_uiRecentlySeenMarkersFlow.value.isNotEmpty()) {
+                                        val nextUnspokenMarker =
+                                            _uiRecentlySeenMarkersFlow.value.firstOrNull { marker ->
+                                                !(markersRepo.marker(marker.id)?.isSpoken
+                                                    ?: false) // default not spoken yet
+                                            }
+                                        nextUnspokenMarker?.let { speakMarker ->
+                                            activeSpeakingMarker =
+                                                speakRecentlySeenMarker(
+                                                    speakMarker,
+                                                    appSettings.isSpeakDetailsWhenUnseenMarkerFoundEnabled,
+                                                    markersRepo = markersRepo,
+                                                    coroutineScope,
+                                                    onUpdateLoadingState = { loadingState ->
+                                                        loadingStateIcon =
+                                                            calcLoadingStateIcon(loadingState)
+                                                    }
+                                                ) { errorMessage ->
+                                                    Log.w(errorMessage)
+                                                    errorMessageStr = errorMessage
+                                                }
+                                        }
+                                    }
+                                }
+                            )
+                            Log.d(
+                                "✏️✏️🛑  END recently seen markers rendering, " +
+                                        "finalMarkers.size = ${finalMarkers.value.size}, " +
+                                        "time to render = ${(Clock.System.now() - startTime)}"
+                            )
                         }
-                    )
-                    Log.d("✏️✏️🛑  END recently seen markers rendering, " +
-                            "finalMarkers.size = ${finalMarkers.value.size}, " +
-                            "time to render = ${(Clock.System.now() - startTime)}")
+                    }
+                    frameCount++
+
+                    // Show Onboarding Dialog
+                    if (isOnboardingDialogVisible) {
+                        OnboardingDialog(
+                            onDismiss = {
+                                isOnboardingDialogVisible = false
+                            }
+                        )
+                    }
+
+                    // Show AboutBox Dialog
+                    if (isAboutBoxDialogVisible) {
+                        AboutBoxDialog(
+                            onDismiss = {
+                                isAboutBoxDialogVisible = false
+                            }
+                        )
+                    }
+
+                    // Show Purchase Pro Dialog
+                    if (isPurchaseProDialogVisible) {
+                        PurchaseProVersionDialog(
+                            billingState,
+                            commonBilling,
+                            isTrialInProgressFunc = {
+                                appSettings.isTrialInProgress()
+                            },
+                            calcTrialTimeRemainingStringFunc = {
+                                appSettings.calcTrialTimeRemainingString()
+                            },
+                            onDismiss = {
+                                isPurchaseProDialogVisible = false
+                            },
+                            coroutineScope = coroutineScope
+                        )
+                    }
+
+                    //Log.d("🎃 END Frame time to render = ${(Clock.System.now() - startTime)}\n" )
                 }
-            }
-            frameCount++
-
-            // Show Onboarding Dialog
-            if (isOnboardingDialogVisible) {
-                OnboardingDialog(
-                    onDismiss = {
-                        isOnboardingDialogVisible = false
-                    }
-                )
-            }
-
-            // Show AboutBox Dialog
-            if (isAboutBoxDialogVisible) {
-                AboutBoxDialog(
-                    onDismiss = {
-                        isAboutBoxDialogVisible = false
-                    }
-                )
-            }
-
-            // Show Purchase Pro Dialog
-            if (isPurchaseProDialogVisible) {
-                PurchaseProVersionDialog(
-                    billingState,
-                    commonBilling,
-                    isTrialInProgressFunc = {
-                        appSettings.isTrialInProgress()
-                    },
-                    calcTrialTimeRemainingStringFunc = {
-                        appSettings.calcTrialTimeRemainingString()
-                    },
-                    onDismiss = {
-                        isPurchaseProDialogVisible = false
-                    },
-                    coroutineScope = coroutineScope
-                )
-            }
-
-            //Log.d("🎃 END Frame time to render = ${(Clock.System.now() - startTime)}\n" )
+            didFullFrameRender = true
         }
-        didFullFrameRender = true
     }
 }
 
@@ -1427,26 +1421,25 @@ private fun addSeenMarkersToRecentlySeenList(
         }
 
         //Log.d("👁️🛑 END NO-update isSeen: processing time = ${Clock.System.now() - startTime}\n")
-        onFinishedProcessRecentlySeenList(Clock.System.now())
+        //onFinishedProcessRecentlySeenList(Clock.System.now())
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
-private fun FixIssue_ScreenRotationLeavesDrawerPartiallyOpen(bottomSheetScaffoldState: BottomSheetScaffoldState) {
+private fun FixIssue_ScreenRotationLeavesDrawerPartiallyOpen(drawerState: DrawerState) {
     // Fix a bug in Material 2 where the drawer isn't fully closed when the screen is rotated
-    var isFinished by remember(bottomSheetScaffoldState.drawerState.isOpen) {
-        if(bottomSheetScaffoldState.drawerState.isClosed) { // could simplify but want this to be explicit
+    var isFinished by remember(drawerState.isOpen) {
+        if(drawerState.isClosed) { // could simplify but want this to be explicit
             mutableStateOf(false)
         } else
             mutableStateOf(true)
     }
-    LaunchedEffect(Unit, bottomSheetScaffoldState.drawerState.isOpen) {
+    LaunchedEffect(Unit, drawerState.isOpen) {
         delay(250)
         while (!isFinished) {
-            if (bottomSheetScaffoldState.drawerState.isClosed) {
-                bottomSheetScaffoldState.drawerState.close() // yes it polls but it's only 250ms
+            if (drawerState.isClosed) {
+                drawerState.close() // yes it polls but it's only 250ms
             }
-            if(bottomSheetScaffoldState.drawerState.isOpen) {
+            if(drawerState.isOpen) {
                 isFinished = true
             }
         }

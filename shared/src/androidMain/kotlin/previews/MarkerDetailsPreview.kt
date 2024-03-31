@@ -44,8 +44,7 @@ fun MarkerDetailsPreview(
  loadingState: LoadingState<Marker> = LoadingState.Loaded(
     testMarker
  )
-){
-
+) {
     val markers: StateFlow<List<Marker>> = MutableStateFlow(
         listOf(
             testMarker
@@ -119,16 +118,4 @@ fun MarkerDetailsPreviewLoadingLandscape() {
         loadingState = LoadingState.Loading
     )
 }
-
-// LEAVE FOR REFERENCE
-//            if(LocalInspectionMode.current) {
-//                PreviewPlaceholder("Freds head")
-//            } else {
-//                Image(
-//                    painter = painterResource("fred-head-owl-1.png"),
-//                    contentDescription = null,
-//                    modifier = Modifier.fillMaxWidth(),
-//                    contentScale = ContentScale.FillWidth,
-//                )
-//            }
 

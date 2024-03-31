@@ -193,7 +193,6 @@ actual fun GoogleMaps(
 
                 onMarkerInfoClick(marker)
             }
-            //println("map marker click ${userData}")
         }
 
 

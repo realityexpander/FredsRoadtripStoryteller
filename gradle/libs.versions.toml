@@ -4,32 +4,40 @@ android-billingclient-billing = "6.1.0"
 androidx-activityCompose = "1.8.2"
 androidx-coreSplashscreen = "1.0.1"
 androidx-appcompat = "1.6.1"
-androidx-core = "1.12.0"
-compose = "1.5.3"
-compose-preview = "1.5.3"    # usually the same as compose
-compose-compiler = "1.5.3"   # sometimes the same as compose
-compose-material = "1.5.3"   # usually the same as compose
-compose-material-icons-extended = "1.5.3"  # usually the same as compose
-compose-material3 = "1.1.2"  # not the same as compose
-compose-uiToolingPreview = "1.6.0"
+androidx-core-ktx = "1.12.0"
+#compose = "1.5.3"
+compose = "1.6.1"
+#compose-preview = "1.5.3"    # usually the same as compose
+compose-preview = "1.6.1"    # usually the same as compose
+compose-compiler = "1.5.11"   # not the same as compose version
+#compose-material = "1.5.3"   # usually the same as compose
+compose-material = "1.6.1"   # usually the same as compose
+#compose-material-icons-extended = "1.5.3"  # usually the same as compose
+compose-material-icons-extended = "1.6.1"  # usually the same as compose
+compose-material3 = "1.1.2"  # usually the same as compose
+#compose-uiToolingPreview = "1.6.0"
+compose-uiToolingPreview = "1.6.1"
 google-MapsAndroidComposeVersion = "3.1.0"
 google-PlayServicesAndroidLocation = "21.1.0"
 google-PlayServicesAndroidMaps = "18.2.0"
 google-FirebaseBom = "32.7.1"
 google-FirebaseAppdistribution = "16.0.0-beta11"
 logger-kermit = "2.0.1"
-kamelImage = "0.5.1"
+#kamelImage = "0.5.1"
+kamelImage = "0.9.4"
 kMutliplatformSettingsVersion = "1.1.0"
-kotlin = "1.9.22" # Must also be updated in gradle.properties
+#kotlin = "1.9.22" # Must also be updated in gradle.properties
+kotlin = "1.9.23" # Must also be updated in gradle.properties
 kotlinx-CoroutinesCore = "1.7.3"
 kotlinx-Datetime = "0.4.1"
 kotlinx-SerializationJson = "1.6.1"
-kotlinx-atomicfu = "0.23.1"
+kotlinx-atomicfu = "0.23.2"
 ksoupVersion = "0.2.1"
 ktor-ClientCore = "2.3.5"
 ktor-ClientAndroid = "2.2.4"
 logger-Slf4jNop = "2.0.9"
-pods-google-maps = "8.3.1"
+#pods-google-maps = "8.3.1"
+pods-google-maps = "8.4.0"
 pods-google-mapsUtils = "4.2.2"
 
 
@@ -87,7 +95,7 @@ multiplatform-settings-test = { module = "com.russhwolf:multiplatform-settings-t
 logger-slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "logger-Slf4jNop" }
 androidx-ui-tooling-preview-android = { group = "androidx.compose.ui", name = "ui-tooling-preview-android", version.ref = "compose" }
 androidx-ui-graphics-android = { group = "androidx.compose.ui", name = "ui-graphics-android", version.ref = "compose" }
-androidx-core = { group = "androidx.core", name = "core", version.ref = "androidx-core" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core-ktx" }
 
 
 [plugins]

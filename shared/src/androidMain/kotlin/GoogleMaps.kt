@@ -1,3 +1,4 @@
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -73,6 +74,9 @@ import com.realityexpander.common.R
 import data.loadMarkers.distanceBetweenInMiles
 import data.loadMarkers.metersToMiles
 import data.loadMarkers.milesToMeters
+import fredsroadtripstoryteller.shared.generated.resources.Res
+import fredsroadtripstoryteller.shared.generated.resources.marker_lightgray_64x64
+import fredsroadtripstoryteller.shared.generated.resources.marker_red_64x64
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -302,8 +306,8 @@ actual fun GoogleMaps(
     }
 
     // Marker Bitmaps
-    val lightGrayMarkerPainterResource = painterResource("marker_lightgray_64x64.png")
-    val redMarkerPainterResource = painterResource("marker_red_64x64.png")
+    val lightGrayMarkerPainterResource = painterResource(Res.drawable.marker_lightgray_64x64)
+    val redMarkerPainterResource = painterResource(Res.drawable.marker_red_64x64)
 
     // Information marker - visible after user clicks "find marker" button in details panel
     var infoMarker by remember { mutableStateOf<Marker?>(null) }
@@ -1015,7 +1019,7 @@ actual fun GoogleMaps(
             }
         }
 
-        // FAB's
+        // Floating Action Buttons
         Column(
             modifier = Modifier
                 .padding(16.dp)

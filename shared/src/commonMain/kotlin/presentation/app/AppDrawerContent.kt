@@ -34,6 +34,8 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeMute
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -42,8 +44,6 @@ import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VolumeMute
-import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -294,7 +294,7 @@ fun AppDrawerContent(
                 .offset((-6).dp, 2.dp)
         )
         Icon(
-            imageVector = Icons.Default.VolumeUp,
+            imageVector = Icons.AutoMirrored.Filled.VolumeUp,
             contentDescription = "Spoken",
             modifier = Modifier
                 .weight(.3f)
@@ -719,7 +719,7 @@ fun SearchMarkerDialog(
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
                                         Icon(
-                                            imageVector = Icons.Default.VolumeMute,
+                                            imageVector = Icons.AutoMirrored.Filled.VolumeMute,
                                             contentDescription = "Speak Marker Again",
                                             tint = MaterialTheme.colors.onBackground.copy(alpha =.75f)
                                         )
@@ -738,7 +738,7 @@ fun SearchMarkerDialog(
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Filled.VolumeUp,
+                                        imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                                         contentDescription = "Speak Marker",
                                         tint = MaterialTheme.colors.onBackground // note: no alpha
                                     )

@@ -16,4 +16,22 @@
       </gpxx:WaypointExtension>
     </extensions>
   </wpt>
+  
+  <wpt lat="37.354112" lon="-121.988504">
+    <time>2023-12-17T22:54:58Z</time>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:Proximity>Apple Computer inc</gpxx:Proximity>
+      </gpxx:WaypointExtension>
+    </extensions>
+  </wpt>
+  
+  <wpt lat="37.254112" lon="-121.988504">
+    <time>2023-12-17T22:56:58Z</time>
+    <extensions>
+      <gpxx:WaypointExtension>
+        <gpxx:Proximity>Apple Computer inc</gpxx:Proximity>
+      </gpxx:WaypointExtension>
+    </extensions>
+  </wpt>
 </gpx>

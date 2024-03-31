@@ -4,9 +4,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,11 +25,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -40,10 +38,26 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import fredsroadtripstoryteller.shared.generated.resources.Res
+import fredsroadtripstoryteller.shared.generated.resources.a01onboarding
+import fredsroadtripstoryteller.shared.generated.resources.a02onboarding
+import fredsroadtripstoryteller.shared.generated.resources.a03onboarding
+import fredsroadtripstoryteller.shared.generated.resources.a04onboarding
+import fredsroadtripstoryteller.shared.generated.resources.a05onboarding
+import fredsroadtripstoryteller.shared.generated.resources.a06onboarding
+import fredsroadtripstoryteller.shared.generated.resources.a07onboarding
+import fredsroadtripstoryteller.shared.generated.resources.a08onboarding
+import fredsroadtripstoryteller.shared.generated.resources.a09onboarding
+import fredsroadtripstoryteller.shared.generated.resources.a10onboarding
+import fredsroadtripstoryteller.shared.generated.resources.a11onboarding
+import fredsroadtripstoryteller.shared.generated.resources.a12onboarding
+import fredsroadtripstoryteller.shared.generated.resources.a13onboarding
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 
@@ -52,21 +66,27 @@ import org.jetbrains.compose.resources.painterResource
 fun OnboardingDialog(
     onDismiss: () -> Unit = {}
 ) {
-    val pages = listOf(
-        "01-OnBoarding.png",
-        "02-OnBoarding.png",
-        "03-OnBoarding.png",
-        "04-OnBoarding.png",
-        "05-OnBoarding.png",
-        "06-OnBoarding.png",
-        "07-OnBoarding.png",
-        "08-OnBoarding.png",
-        "09-OnBoarding.png",
-        "10-OnBoarding.png",
-        "11-OnBoarding.png",
-        "12-OnBoarding.png",
-        "13-OnBoarding.png",
-    )
+    val pages =
+        if (!LocalInspectionMode.current) listOf(
+            Res.drawable.a01onboarding,
+            Res.drawable.a02onboarding,
+            Res.drawable.a03onboarding,
+            Res.drawable.a04onboarding,
+            Res.drawable.a05onboarding,
+            Res.drawable.a06onboarding,
+            Res.drawable.a07onboarding,
+            Res.drawable.a08onboarding,
+            Res.drawable.a09onboarding,
+            Res.drawable.a10onboarding,
+            Res.drawable.a11onboarding,
+            Res.drawable.a12onboarding,
+            Res.drawable.a13onboarding,
+        ) else
+            listOf(
+                DrawableResource(""), // 3 empty pages for previews
+                DrawableResource(""),
+                DrawableResource("")
+            )
 
     val pagerState = rememberPagerState(
         initialPage = 0,
@@ -87,119 +107,131 @@ fun OnboardingDialog(
             onDismiss()
         },
     ) {
-
-        Surface(
+        Box(
             modifier = Modifier
-                .background(MaterialTheme.colors.background)
+                .fillMaxSize()
+                .background(MaterialTheme.colors.background),
+            contentAlignment = Alignment.BottomCenter
         ) {
-            Box(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                HorizontalPager(
-                    modifier = Modifier,
-                    state = pagerState,
-                    pageSpacing = 0.dp,
-                    userScrollEnabled = true,
-                    reverseLayout = false,
-                    contentPadding = PaddingValues(0.dp),
-                    beyondBoundsPageCount = 0,
-                    pageSize = PageSize.Fill,
-                    flingBehavior = PagerDefaults.flingBehavior(state = pagerState),
-                    key = { index -> pages[index] },
-                    pageContent = { index ->
-                        Column(
-                           modifier = Modifier.fillMaxSize(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
+
+            HorizontalPager(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 48.dp),
+                state = pagerState,
+                pageSpacing = 0.dp,
+                userScrollEnabled = true,
+                reverseLayout = false,
+                contentPadding = PaddingValues(0.dp),
+                beyondBoundsPageCount = 0,
+                pageSize = PageSize.Fill,
+                flingBehavior = PagerDefaults.flingBehavior(state = pagerState),
+                key = { index -> pages[index].hashCode() },
+                pageContent = { index ->
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+
+                        if (!LocalInspectionMode.current) {
                             Image(
-                                painter = painterResource(res = pages[index]),
+                                painter = painterResource(resource = pages[index]),
                                 contentDescription = null,
                                 contentScale = ContentScale.FillHeight,
-                                modifier = Modifier.fillMaxSize(.85f),
+                                modifier = Modifier.fillMaxSize(.95f),
                                 alignment = Alignment.Center,
                             )
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize(.95f)
+                                    .background(Color.Red),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("Image Here", color = Color.Black)
+                            }
                         }
                     }
-                )
-
-                // Dots Indicator
-                Box(
-                    modifier = Modifier
-                        .wrapContentSize()
-                        .offset(y = -(16).dp)
-                        .fillMaxWidth(0.8f)
-                        .clip(RoundedCornerShape(100))
-                        .background(MaterialTheme.colors.background)
-                        .padding(start=8.dp, end=8.dp, top=4.dp, bottom=4.dp)
-                        .align(Alignment.BottomCenter)
-                ) {
-                    IconButton(
-                        onClick = {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(
-                                    pagerState.currentPage - 1
-                                )
-                            }
-                        },
-                        modifier = Modifier.align(Alignment.CenterStart)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowLeft,
-                            contentDescription = "Go back",
-                            tint = MaterialTheme.colors.onBackground
-                        )
-                    }
-
-                    DotsIndicator(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.Center),
-                        totalDots = pages.size,
-                        selectedIndex = pagerState.currentPage,
-                        selectedColor = MaterialTheme.colors.onBackground,
-                        unSelectedColor = MaterialTheme.colors.onBackground.copy(alpha = 0.25f)
-                    )
-
-                    IconButton(
-                        onClick = {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(
-                                    pagerState.currentPage + 1
-                                )
-                            }
-                        },
-                        modifier = Modifier.align(Alignment.CenterEnd)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowRight,
-                            contentDescription = "Go forward",
-                            tint = MaterialTheme.colors.onBackground
-                        )
-                    }
                 }
+            )
 
-                // Close Button
+            // Dots Indicator
+            Box(
+                modifier = Modifier
+                    .wrapContentSize()
+                    .offset(y = -(16).dp)
+                    .fillMaxWidth(0.8f)
+                    .clip(RoundedCornerShape(100))
+                    .background(MaterialTheme.colors.surface)
+                    .padding(start = 8.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
+            ) {
                 IconButton(
                     onClick = {
-                        onDismiss()
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(
+                                pagerState.currentPage - 1
+                            )
+                        }
                     },
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .align(Alignment.TopEnd)
-                        .background(
-                            MaterialTheme.colors.surface.copy(alpha = 0.5f),
-                            shape = MaterialTheme.shapes.medium
-                        )
-                        .clickable { onDismiss() }
+                    modifier = Modifier.align(Alignment.CenterStart)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Close",
-                        modifier = Modifier.alpha(0.8f)
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                        contentDescription = "Go back",
+                        tint = MaterialTheme.colors.onBackground
+                    )
+                }
+
+                DotsIndicator(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.Center),
+                    totalDots = pages.size,
+                    selectedIndex = pagerState.currentPage,
+                    selectedColor = MaterialTheme.colors.onBackground,
+                    unSelectedColor = MaterialTheme.colors.onBackground.copy(alpha = 0.25f)
+                )
+
+                IconButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(
+                                pagerState.currentPage + 1
+                            )
+                        }
+                    },
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = "Go forward",
+                        tint = MaterialTheme.colors.onBackground
                     )
                 }
             }
+
+            // Close Button
+            IconButton(
+                onClick = {
+                    onDismiss()
+                },
+                modifier = Modifier
+                    .offset(y = 48.dp)  // skip top bar
+                    .align(Alignment.TopEnd)
+                    .padding(4.dp)
+                    .background(
+                        MaterialTheme.colors.surface.copy(alpha = 0.5f),
+                        shape = MaterialTheme.shapes.medium
+                    )
+                    .clickable { onDismiss() }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Close",
+                    modifier = Modifier.alpha(0.8f)
+                )
+            }
+
         }
     }
 }

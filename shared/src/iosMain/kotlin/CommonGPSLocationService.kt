@@ -1,4 +1,3 @@
-import androidx.compose.runtime.AtomicReference
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import platform.CoreLocation.CLDeviceOrientationPortrait
@@ -13,6 +12,7 @@ import platform.Foundation.NSError
 import platform.darwin.NSObject
 import presentation.maps.Heading
 import presentation.maps.Location
+import kotlin.concurrent.AtomicReference
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -116,7 +116,7 @@ actual class CommonGPSLocationService  {
         val locationDelegate = LocationDelegate()
         locationDelegate.onLocationUpdate = { location ->
             oneTimeLocationManager.stopUpdatingLocation()
-            latestLocation.set(location)
+            latestLocation.getAndSet(location)
 
             location?.run {
                 continuation.resume(this)
@@ -128,7 +128,7 @@ actual class CommonGPSLocationService  {
     }
 
     actual fun getLatestGPSLocation(): Location? {
-        return latestLocation.get()
+        return latestLocation.value
     }
 
     actual fun allowBackgroundLocationUpdates() {

@@ -10,3 +10,18 @@ plugins {
 
     id("com.google.firebase.appdistribution").apply(false)
 }
+
+buildscript {
+    repositories {
+        mavenCentral()
+        google()
+    }
+
+    dependencies {
+        // kotlinx.atomicfu has to be on the classpath
+        //  it's an implementation detail of kotlinx.atomicfu gradle plugin
+        classpath(libs.atomicfu.gradle.plugin)
+    }
+}
+
+apply(plugin = "kotlinx-atomicfu") // Needs to be applied after the buildscript block

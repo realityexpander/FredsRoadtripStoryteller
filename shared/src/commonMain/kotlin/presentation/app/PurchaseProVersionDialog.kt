@@ -72,7 +72,8 @@ fun PurchaseProVersionDialog(
                     fontWeight = FontWeight.Normal,
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.h6,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colors.onSurface
                 )
                 Spacer(modifier = Modifier.height(14.dp))
 
@@ -85,18 +86,21 @@ fun PurchaseProVersionDialog(
                         fontWeight = FontWeight.Normal,
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.h5,
+                        color = MaterialTheme.colors.onSurface
                     )
                     Text(
                         "☑️ Speak Details of Markers",
                         fontWeight = FontWeight.Normal,
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.h5,
+                        color = MaterialTheme.colors.onSurface
                     )
                     Text(
                         "☑️ Announce Marker Details",
                         fontWeight = FontWeight.Normal,
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.h5,
+                        color = MaterialTheme.colors.onSurface
                     )
                 }
                 Spacer(modifier = Modifier.height(20.dp))
@@ -114,7 +118,8 @@ fun PurchaseProVersionDialog(
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.h5,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colors.onSurface
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -133,7 +138,8 @@ fun PurchaseProVersionDialog(
                     fontWeight = FontWeight.Normal,
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.h6,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colors.onSurface
                 )
                 Spacer(modifier = Modifier.height(20.dp))
 

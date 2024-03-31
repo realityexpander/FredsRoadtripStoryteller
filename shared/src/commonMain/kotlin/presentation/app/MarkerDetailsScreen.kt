@@ -41,11 +41,11 @@ import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -59,6 +59,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
@@ -81,13 +82,16 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import openNavigationAction
+import org.jetbrains.compose.resources.ExperimentalResourceApi
 import presentation.maps.Marker
 import presentation.uiComponents.PreviewPlaceholder
 import stopTextToSpeech
 
 const val kMaxWeightOfBottomDrawer = 0.9f // 90% of screen height (10% peeking thru at the top)
 
-@OptIn(ExperimentalKamelApi::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalKamelApi::class, ExperimentalFoundationApi::class,
+    ExperimentalResourceApi::class
+)
 @Composable
 fun MarkerDetailsScreen(
     initialDisplayMarker: Marker,  // Which marker to display first.
@@ -264,13 +268,12 @@ fun MarkerDetailsScreen(
             val loadedMarker = markerDetailsLoadingState as LoadingState.Loaded<Marker>
             val displayMarker = loadedMarker.data
 
-            val painterResource: Resource<Painter> =
-                asyncPainterResource(
-                    data = displayMarker.mainPhotoUrl,
-                    key = displayMarker.id,
-                    filterQuality = FilterQuality.Medium,
-                )
-
+//            val painterResource: Resource<Painter> =
+//                    asyncPainterResource(
+//                        data = displayMarker.mainPhotoUrl,
+//                        key = displayMarker.id,
+//                        filterQuality = FilterQuality.Medium,
+//                    )
             // Marker Details
             Column(
                 modifier = Modifier
@@ -307,6 +310,13 @@ fun MarkerDetailsScreen(
 
                     // Main Photo
                     if (!LocalInspectionMode.current) {
+                        val painterResource: Resource<Painter> =
+                            asyncPainterResource(
+                                data = displayMarker.mainPhotoUrl,
+                                key = displayMarker.id,
+                                filterQuality = FilterQuality.Medium,
+                            )
+
                         if (displayMarker.mainPhotoUrl.isNotEmpty()) {
                             Surface(
                                 modifier = Modifier.background(
@@ -328,65 +338,75 @@ fun MarkerDetailsScreen(
                                         )
                                 ) {
 
-                                    KamelImageBox(
-                                        resource = painterResource,
-                                        modifier = Modifier
-                                            .fillMaxWidth(),
-                                        onLoading = { progress ->
-                                            Box(
-                                                modifier = Modifier
-                                                    .fillMaxSize(),
-                                                contentAlignment = Alignment.Center,
-                                            ) {
-                                                if (progress < 0.05f) {
-                                                    Text(
-                                                        "Loading marker image...",
-                                                        color = MaterialTheme.colors.onSurface,
-                                                    )
-                                                } else {
-                                                    CircularProgressIndicator(
-                                                        progress,
-                                                        color = MaterialTheme.colors.onSurface,
-                                                        backgroundColor = MaterialTheme.colors.onSurface.copy(
-                                                            alpha = 0.4f
-                                                        ),
-                                                    )
-                                                }
+                                    // Show a placeholder in Inspect Mode
+                                    if (!LocalInspectionMode.current) {
+                                        KamelImageBox(
+                                            resource = painterResource,
+                                            modifier = Modifier
+                                                .fillMaxWidth(),
+                                            onLoading = { progress ->
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxSize(),
+                                                    contentAlignment = Alignment.Center,
+                                                ) {
+                                                    if (progress < 0.05f) {
+                                                        Text(
+                                                            "Loading marker image...",
+                                                            color = MaterialTheme.colors.onSurface,
+                                                        )
+                                                    } else {
+                                                        CircularProgressIndicator(
+                                                            progress,
+                                                            color = MaterialTheme.colors.onSurface,
+                                                            backgroundColor = MaterialTheme.colors.onSurface.copy(
+                                                                alpha = 0.4f
+                                                            ),
+                                                        )
+                                                    }
 
-                                                // Prevent flicker of progress indicator (ugh)
-                                                if (progress > 0.85f) {
-                                                    isFinishedLoading = true
+                                                    // Prevent flicker of progress indicator (ugh)
+                                                    if (progress > 0.85f) {
+                                                        isFinishedLoading = true
+                                                    }
+                                                }
+                                            },
+                                            onFailure = { exception: Throwable ->
+                                                coroutineScope.launch {
+                                                    snackbarHostState.showSnackbar(
+                                                        message = "Image loading error: " + exception.message.toString(),
+                                                        duration = SnackbarDuration.Long
+                                                    )
+                                                }
+                                            },
+                                            animationSpec = if (isFinishedLoading)
+                                                TweenSpec(800)
+                                            else
+                                                null,
+                                            onSuccess = { painter ->
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxSize()
+                                                        .clip(MaterialTheme.shapes.medium)
+                                                ) {
+                                                    Image(
+                                                        painter,
+                                                        displayMarker.title,
+                                                        contentScale = ContentScale.Crop,
+                                                        alignment = Alignment.Center,
+                                                        modifier = Modifier.fillMaxSize()
+                                                    )
                                                 }
                                             }
-                                        },
-                                        onFailure = { exception: Throwable ->
-                                            coroutineScope.launch {
-                                                snackbarHostState.showSnackbar(
-                                                    message = "Image loading error: " + exception.message.toString(),
-                                                    duration = SnackbarDuration.Long
-                                                )
-                                            }
-                                        },
-                                        animationSpec = if (isFinishedLoading)
-                                            TweenSpec(800)
-                                        else
-                                            null,
-                                        onSuccess = { painter ->
-                                            Box(
-                                                modifier = Modifier
-                                                    .fillMaxSize()
-                                                    .clip(MaterialTheme.shapes.medium)
-                                            ) {
-                                                Image(
-                                                    painter,
-                                                    displayMarker.title,
-                                                    contentScale = ContentScale.Crop,
-                                                    alignment = Alignment.Center,
-                                                    modifier = Modifier.fillMaxSize()
-                                                )
-                                            }
-                                        }
-                                    )
+                                        )
+                                    } else {
+                                        PreviewPlaceholder(
+                                            "Marker Details",
+                                            modifier = Modifier
+                                                .fillMaxHeight()
+                                                .background(Color.Red)
+                                        )
+                                    }
 
                                     // Zoom Image Button
                                     panZoomImageButton(
@@ -476,31 +496,36 @@ fun MarkerDetailsScreen(
                                         shape = MaterialTheme.shapes.medium
                                     )
                             ) {
-                                KamelImage(
-                                    resource = asyncPainterResource(
-                                        data = photoUrl,
-                                        key = displayMarker.id,
-                                        filterQuality = FilterQuality.Medium,
-                                    ),
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .fillMaxWidth(),
-                                    contentScale = ContentScale.Crop,
-                                )
+                                if (!LocalInspectionMode.current) {
+                                    KamelImage(
+                                        resource = asyncPainterResource(
+                                            data = photoUrl,
+                                            key = displayMarker.id,
+                                            filterQuality = FilterQuality.Medium,
+                                        ),
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .fillMaxWidth(),
+                                        contentScale = ContentScale.Crop,
+                                    )
 
-                                // Zoom Image Button
-                                panZoomImageButton(
-                                    modifier = Modifier
-                                        .align(Alignment.TopEnd)
-                                        .padding(8.dp),
-                                    onClick = {
-                                        coroutineScope.launch {
-                                            panZoomDialogImageUrl = photoUrl
-                                            yield()
-                                            isPanZoomImageDialogVisible = true
+                                    // Zoom Image Button
+                                    panZoomImageButton(
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .padding(8.dp),
+                                        onClick = {
+                                            coroutineScope.launch {
+                                                panZoomDialogImageUrl = photoUrl
+                                                yield()
+                                                isPanZoomImageDialogVisible = true
+                                            }
                                         }
-                                    }
-                                )
+                                    )
+                                } else {
+                                    PreviewPlaceholder("Marker Image")
+                                }
+
                             }
                             // Caption for photo
                             if (displayMarker.photoCaptions[index].isNotBlank()) {
@@ -725,7 +750,7 @@ private fun MarkerIdWithNavigateLocateSpeakActionButtonSection(
                 )
             } else {
                 Icon(
-                    imageVector = Icons.Filled.VolumeUp,
+                    imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                     contentDescription = "Speak Marker",
                     tint = MaterialTheme.colors.onBackground,
                 )
