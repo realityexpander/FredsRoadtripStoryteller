@@ -20,3 +20,4 @@ testers-debug.txt
 
 /build/reports/configuration-cache/*
 androidApp-*.*
+/build/generated/

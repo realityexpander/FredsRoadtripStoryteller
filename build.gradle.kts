@@ -1,3 +1,5 @@
+import java.util.Date
+
 plugins {
     // this is necessary to avoid the plugins to be loaded multiple times
     // in each subproject's classloader
@@ -9,6 +11,8 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization").apply(false)
 
     id("com.google.firebase.appdistribution").apply(false)
+
+    id("com.github.gmazzo.buildconfig")  // for buildConfigField
 }
 
 buildscript {
@@ -25,3 +29,13 @@ buildscript {
 }
 
 apply(plugin = "kotlinx-atomicfu") // Needs to be applied after the buildscript block
+
+buildConfig {
+    useKotlinOutput { topLevelConstants = true }
+
+    buildConfigField("BUILD_TIME_MILLIS", System.currentTimeMillis())
+    buildConfigField("BUILD_DATE", "${ Date() }")
+    buildConfigField("BUILD_VERSION_CODE", extra["android.versionCode"].toString().toInt())
+    buildConfigField("BUILD_VERSION", extra["android.versionName"].toString())
+    buildConfigField("BUILD_NAME", project.name)
+}

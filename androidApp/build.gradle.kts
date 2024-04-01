@@ -15,9 +15,7 @@ plugins {
     // Crashlytics
     id("com.google.firebase.crashlytics")
     // Firebase App Distribution Gradle plugin
-//    id("com.google.firebase.appdistribution") // note: must be disabled to add to play store, bug?
-
-    id("com.github.gmazzo.buildconfig")  // for buildConfigField
+//    id("com.google.firebase.appdistribution") // todo fixed yet? note: must be disabled to add to play store, bug?
 }
 
 kotlin {

@@ -27,8 +27,8 @@ ksoupVersion = "0.2.1"
 ktor-ClientCore = "2.3.9"
 ktor-ClientAndroid = "2.2.4"
 logger-Slf4jNop = "2.0.9"
-pods-google-maps = "8.4.0"
-pods-google-mapsUtils = "4.2.2"
+pods-google-maps = "8.4.0"  # IDE says not used, but _it is_ used via a .get() (why can't gradle see that?)
+pods-google-mapsUtils = "4.2.2" # IDE says not used, but _it is_ used via a .get() (why can't gradle see that?)
 
 
 [libraries]
@@ -75,11 +75,3 @@ multiplatform-settings = { module = "com.russhwolf:multiplatform-settings", vers
 multiplatform-settings-no-arg = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "kMutliplatformSettingsVersion" }
 multiplatform-settings-test = { module = "com.russhwolf:multiplatform-settings-test", version.ref = "kMutliplatformSettingsVersion" }
 logger-slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "logger-Slf4jNop" }
-
-
-[plugins]
-android-application = { id = "com.android.application", version.ref = "agp" }
-android-library = { id = "com.android.library", version.ref = "agp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
-kotlin-cocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version.ref = "kotlin" }
