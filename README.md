@@ -10,11 +10,11 @@ Listen to historical markers as you travel - Learn about local history as you dr
 - KMP (Kotlin Multi-Platform) Compose-based Proof-of-concept experimental app using Google Maps for iOS and Android.
 - Pure Kotlin App using _SHARED_ core and _SHARED_ Compose based UI, running in native Kotlin.
 
-[![Kotlin](https://img.shields.io/badge/Kotlin-1.9.22-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
+[![Kotlin](https://img.shields.io/badge/Kotlin-1.9.23-blue.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
 ![badge-android](http://img.shields.io/badge/platform-android-6EDB8D.svg?style=flat)
 ![badge-ios](http://img.shields.io/badge/platform-ios-CDCDCD.svg?style=flat)
-![badge-kmp](https://img.shields.io/badge/Compose-1.5.3-blue)
-![badge-kmp](https://img.shields.io/badge/KMP-1.5.12-blue)
+![badge-kmp](https://img.shields.io/badge/Compose-1.6.4-blue)
+![badge-kmp](https://img.shields.io/badge/KMP-1.6.1-blue)
 
 ### YouTube series following the development of the app: 
 
