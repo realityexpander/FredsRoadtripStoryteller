@@ -48,7 +48,7 @@ _note: screenshots may differ slightly from current version_
 
 [<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/b339bbd0-2b22-4931-abd2-c61a70aa6474">]()
 [<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/dce44c86-1de3-434c-a5b1-91ca0582788f">]()
-[<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/34dac8a8-4608-4d65-906b-840202214e58">]()
+[<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/abeca974-ca70-4fcb-b4a3-f06b25cd7db9">]()
 [<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/72b42050-a43a-4069-8f11-3bd14746a851">]()
 [<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/44cb0711-e4e0-4022-80a6-1acbba1ddbb3">]()
 [<img width="200" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/da8bf05f-be04-40f5-b290-5f1be1c0dc9f">]()
