@@ -30,7 +30,7 @@ buildscript {
 
 apply(plugin = "kotlinx-atomicfu") // Needs to be applied after the buildscript block
 
-buildConfig {
+buildConfig { // using buildConfig plugin: https://github.com/gmazzo/gradle-buildconfig-plugin
     useKotlinOutput { topLevelConstants = true }
 
     buildConfigField("BUILD_TIME_MILLIS", System.currentTimeMillis())
