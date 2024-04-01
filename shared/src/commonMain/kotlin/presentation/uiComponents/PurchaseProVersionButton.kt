@@ -2,6 +2,8 @@
 
 package presentation.uiComponents
 
+import CommonAppMetadata
+import CommonAppMetadata.Companion.IOS_PLATFORM
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -244,7 +246,7 @@ fun PurchaseProVersionButton(
     if(isTestingPayments_enableConsumeProduct
         && appMetadata.isDebuggable
         && billingState is BillingState.Purchased
-        && appMetadata.platformId == "android"
+        && appMetadata.platformId == CommonAppMetadata.ANDROID_PLATFORM
     ) {
         Spacer(modifier = Modifier.height(16.dp))
         Button(
@@ -341,7 +343,7 @@ private fun DisplayTrialTimeRemaining(
 @Composable
 fun WOPRDotScanner(componentWidth: Dp, isReverse: Boolean = false) {
     val dotSize = 8.dp
-    val delayMs = 125 / if(appMetadata.platformId=="iOS") 2 else 1 // iOS is slower by 2x (why???)
+    val delayMs = 125 / if(appMetadata.platformId==IOS_PLATFORM) 2 else 1 // iOS is slower by 2x (why???)
     val spaceBetween = 7.dp
     val minAlpha = 0.1f
     val dotColor: Color = MaterialTheme.colors.onPrimary

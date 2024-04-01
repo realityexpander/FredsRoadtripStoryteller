@@ -119,7 +119,12 @@ data class CommonAppMetadata(
     var iOSBundleVersionStr: String = "n/a", // iOS only
     var installAtEpochMilli: Long = 0L,  // only set on android. We set this on iOS side at first launch.
     var platformId: String = "unknown", // "android" or "iOS"
-)
+) {
+    companion object {
+        const val IOS_PLATFORM = "iOS"
+        const val ANDROID_PLATFORM = "android"
+    }
+}
 var appMetadata: CommonAppMetadata = CommonAppMetadata() // Details will be passed in from platform side.
 var debugLog = mutableListOf("Debug log: start time:" + Clock.System.now())
 
@@ -501,7 +506,7 @@ fun App(
 
                 // iOS only - collect next unspoken marker words (kMaxSpokenTextCharLength characters max at a time)
                 val kMaxSpokenTextCharLength = 4000
-                if(appMetadata.platformId=="iOS") {
+                if(appMetadata.platformId==CommonAppMetadata.IOS_PLATFORM) {
 
                     // Continue speaking if there is unspoken text (if any)
                     if (!isMarkerCurrentlySpeaking) {

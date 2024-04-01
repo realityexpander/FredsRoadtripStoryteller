@@ -34,7 +34,7 @@ struct ContentView: View {
             androidBuildNumberStr: "n/a", // Android only
             iOSBundleVersionStr: bundleVersion,
             installAtEpochMilli: 0,
-            platformId: "iOS"
+            platformId: CommonAppMetadata.companion.IOS_PLATFORM
         )
 
         // Implementation #2 - LEAVE FOR REFERENCE

@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity(),
 
         // Collect App Metadata
         val packageName = applicationContext.packageName
-        appMetadata.platformId = "android"
+        appMetadata.platformId = CommonAppMetadata.ANDROID_PLATFORM
         appMetadata.isDebuggable = 0 != applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE
         appMetadata.versionStr =
             packageManager.getPackageInfo(packageName, 0).versionName

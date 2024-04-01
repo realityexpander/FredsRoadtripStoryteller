@@ -34,6 +34,7 @@
 		D77CC9712B1E628B006EC035 /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
 		D7B5CB292B1D8C0600A92BEE /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		D7C37E3D2AD358F70098785F /* AppSecrets.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = AppSecrets.plist; sourceTree = "<group>"; };
+		D7D60D9C2BBB2ADB003421F1 /* Privacyinfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Privacyinfo.xcprivacy; sourceTree = "<group>"; };
 		D7E2480B2B2567F8002AA4A7 /* TextToSpeechManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextToSpeechManager.swift; sourceTree = "<group>"; };
 		FF8CA3F5360CEAB49D74065F /* Pods-iosApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-iosApp.release.xcconfig"; path = "Target Support Files/Pods-iosApp/Pods-iosApp.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -100,6 +101,7 @@
 				D7C37E3D2AD358F70098785F /* AppSecrets.plist */,
 				D77CC9712B1E628B006EC035 /* Products.storekit */,
 				D7E2480B2B2567F8002AA4A7 /* TextToSpeechManager.swift */,
+				D7D60D9C2BBB2ADB003421F1 /* Privacyinfo.xcprivacy */,
 			);
 			path = iosApp;
 			sourceTree = "<group>";
