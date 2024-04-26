@@ -67,3 +67,19 @@ dependencyResolutionManagement {
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")  // for Compose dev builds
     }
 }
+
+// From @JacobRhoda https://kotlinlang.slack.com/team/U038NKNJMUJ
+//This will copy a PrivacyInfo.xcprivacy file from your shared project directory into the bundle. For me that was in $REPO_ROOT/shared/PrivacyInfo.xcprivacy
+//project.afterEvaluate {
+//    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink>().forEach { linkTask ->
+//        val frameworkDestinationDir = linkTask.outputFile
+//        linkTask.doLast {
+//            project.copy {
+//                val sharedDir = project.file("PrivacyInfo.xcprivacy")
+//
+//                from(sharedDir)
+//                into(frameworkDestinationDir.get())
+//            }
+//        }
+//    }
+//}

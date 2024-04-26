@@ -1,6 +1,5 @@
 package com.realityexpander
 
-import AndroidTextToSpeechService
 import CommonAppMetadata
 import CommonGPSLocationService
 import MainView
@@ -83,13 +82,13 @@ class MainActivity : AppCompatActivity(),
             appMetadata.androidBuildNumberStr =
                 packageManager.getPackageInfo(packageName, 0).versionCode.toString()
         }
-        Logger.d("App.onCreate(): Starting app, " + appMetadata)
+        Logger.d("App.onCreate(): Starting app, $appMetadata")
 
         // Setup Firebase Analytics
         val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
 
         // Setup TextToSpeech
-        androidTextToSpeechService = AndroidTextToSpeechService(TextToSpeech(this, this))
+        //androidTextToSpeechService = AndroidTextToSpeechService(TextToSpeech(this, this))
 
         // Setup the in-app purchase manager
         purchaseManager = PurchaseManager(

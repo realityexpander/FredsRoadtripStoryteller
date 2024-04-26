@@ -100,7 +100,7 @@ struct ContentView: View {
             // IOS Map experiments extracted from here, LEAVE FOR REFERENCE.
         }
         // Force Dark Mode
-        // .preferredColorScheme(.dark)
+        .preferredColorScheme(.none)
         .task {
             _ = Task<Void, Never> {
                 do {

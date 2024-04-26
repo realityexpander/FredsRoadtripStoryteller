@@ -14,9 +14,11 @@
 		CFDB58B53BB94DE262B13C24 /* Pods_iosApp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6B1049432C0C2B312090ABF6 /* Pods_iosApp.framework */; };
 		D71EB5342B1FB65C00FBF693 /* EntitlementManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D71EB5332B1FB65C00FBF693 /* EntitlementManager.swift */; };
 		D71EB5362B1FB69600FBF693 /* PurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D71EB5352B1FB69600FBF693 /* PurchaseManager.swift */; };
+		D7B31B682BC9BD51003D1A65 /* GoogleMapsPrivacy.bundle in Resources */ = {isa = PBXBuildFile; fileRef = D7B31B672BC9BD51003D1A65 /* GoogleMapsPrivacy.bundle */; };
 		D7B5CB2A2B1D8C0600A92BEE /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7B5CB292B1D8C0600A92BEE /* StoreKit.framework */; };
 		D7C37E3E2AD358F70098785F /* AppSecrets.plist in Resources */ = {isa = PBXBuildFile; fileRef = D7C37E3D2AD358F70098785F /* AppSecrets.plist */; };
 		D7E2480C2B2567F8002AA4A7 /* TextToSpeechManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7E2480B2B2567F8002AA4A7 /* TextToSpeechManager.swift */; };
+		D7F028442BCB79A80006FC17 /* Privacyinfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D7D60D9C2BBB2ADB003421F1 /* Privacyinfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +34,7 @@
 		D71EB5332B1FB65C00FBF693 /* EntitlementManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntitlementManager.swift; sourceTree = "<group>"; };
 		D71EB5352B1FB69600FBF693 /* PurchaseManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchaseManager.swift; sourceTree = "<group>"; };
 		D77CC9712B1E628B006EC035 /* Products.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Products.storekit; sourceTree = "<group>"; };
+		D7B31B672BC9BD51003D1A65 /* GoogleMapsPrivacy.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = GoogleMapsPrivacy.bundle; sourceTree = "<group>"; };
 		D7B5CB292B1D8C0600A92BEE /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		D7C37E3D2AD358F70098785F /* AppSecrets.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = AppSecrets.plist; sourceTree = "<group>"; };
 		D7D60D9C2BBB2ADB003421F1 /* Privacyinfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Privacyinfo.xcprivacy; sourceTree = "<group>"; };
@@ -72,6 +75,7 @@
 		7555FF72242A565900829871 = {
 			isa = PBXGroup;
 			children = (
+				D7B31B672BC9BD51003D1A65 /* GoogleMapsPrivacy.bundle */,
 				AB1DB47929225F7C00F7AF9C /* Configuration */,
 				7555FF7D242A565900829871 /* iosApp */,
 				7555FF7C242A565900829871 /* Products */,
@@ -187,6 +191,8 @@
 				058557D9273AAEEB004C7B11 /* Preview Assets.xcassets in Resources */,
 				D7C37E3E2AD358F70098785F /* AppSecrets.plist in Resources */,
 				058557BB273AAA24004C7B11 /* Assets.xcassets in Resources */,
+				D7B31B682BC9BD51003D1A65 /* GoogleMapsPrivacy.bundle in Resources */,
+				D7F028442BCB79A80006FC17 /* Privacyinfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
