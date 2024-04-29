@@ -1,3 +1,6 @@
+1.1 Build 38
+- Fix MarkerDetails parsing problem
+
 Alpha Build 32
 - Assets - Improve App store presence for iOS	Done
 - bug - Fix `isSeen` issue	Done
