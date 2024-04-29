@@ -268,12 +268,6 @@ fun MarkerDetailsScreen(
             val loadedMarker = markerDetailsLoadingState as LoadingState.Loaded<Marker>
             val displayMarker = loadedMarker.data
 
-//            val painterResource: Resource<Painter> =
-//                    asyncPainterResource(
-//                        data = displayMarker.mainPhotoUrl,
-//                        key = displayMarker.id,
-//                        filterQuality = FilterQuality.Medium,
-//                    )
             // Marker Details
             Column(
                 modifier = Modifier
@@ -469,7 +463,7 @@ fun MarkerDetailsScreen(
                     }
 
                     // Inscription
-                    if (displayMarker.englishInscription.isNotBlank()) { // todo add spanish translation
+                    if (displayMarker.englishInscription.isNotBlank()) { // todo add spanish/other translation
                         Text(
                             displayMarker.englishInscription,
                             fontSize = MaterialTheme.typography.body2.fontSize,
@@ -576,7 +570,6 @@ fun MarkerDetailsScreen(
                         )
                     }
                 }
-
             }
         }
     }

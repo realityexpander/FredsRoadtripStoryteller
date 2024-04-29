@@ -2,6 +2,7 @@ package com.realityexpander.data.loadMarkerDetails
 
 import data.loadMarkerDetails.parseMarkerDetailsPageHtml
 import data.loadMarkerDetails.sampleData.almadenVineyardsM2580MarkerDetailsHtml
+import data.loadMarkerDetails.sampleData.coyulanM245476MarkerDetailsHtml
 import data.loadMarkerDetails.sampleData.deAnzaExpeditionM38342MarkerDetailsHtml
 import data.loadMarkerDetails.sampleData.elTepoztecoNationalParkM207314MarkerDetailsHtml
 import data.loadMarkerDetails.sampleData.firstCityCouncilOfTepoztlanM207310MarkerDetailsHtml
@@ -277,7 +278,7 @@ class ParseMarkerDetailsPageHtmlTest {
 
         // Check that inscription has proper spaces between words
         assertTrue(
-            markerDetails.englishInscription == "This park was decreed as a Protected Area on January 22, 1937, has an area of 23,286 hectares and is located in the Municipality of Tepoztlán, Morelos. This Park is made up of six types of vegetation, from the Oyamel forest to the Low Deciduous Forest. As for fauna, there are 237 species of birds, 60 of mammals and 45 of reptiles. During your visit you can appreciate the natural beauty of this Park, which is incorporated into the \"Chichinautzin Biological Corridor\" and ranges from the Lagunas de Zempoala National Park to the northern area of the municipality of Atlatlahucan. The mountainous characteristics of the area have stimulated the isolation of animal and plant species, however, in this area there are 64 at risk. With your help we keep this site.",
+            markerDetails.englishInscription == "El Tepozteco National Park This park was decreed as a Protected Area on January 22, 1937, has an area of 23,286 hectares and is located in the Municipality of Tepoztlán, Morelos. This Park is made up of six types of vegetation, from the Oyamel forest to the Low Deciduous Forest. As for fauna, there are 237 species of birds, 60 of mammals and 45 of reptiles. During your visit you can appreciate the natural beauty of this Park, which is incorporated into the \"Chichinautzin Biological Corridor\" and ranges from the Lagunas de Zempoala National Park to the northern area of the municipality of Atlatlahucan. The mountainous characteristics of the area have stimulated the isolation of animal and plant species, however, in this area there are 64 at risk. With your help we keep this site.",
             "Inscription has improper spaces between words"
         )
     }
@@ -389,7 +390,7 @@ class ParseMarkerDetailsPageHtmlTest {
 
         // Check that inscription has proper spaces between words
         assertTrue(
-            markerDetails.englishInscription == "In 1820, on September 8, the day on which Tepuztecatl was celebrated, the town of Tepoztlan installed its first town hall. In 1826 the municipality of Tepoztlán, as part of the State of Mexico, was ratified. Honorable City Council of Tepoztlan Rogelio Torres Ortega, Municipal President of Tepoztlan 2019-2021 Government of the State of Morelos Cuauhtemoc Blanco Bravo, Governor of the State of Photographed By J. Makali Bruton, August 6, 2022 2. Additional tablets near the First City Council of Tepotzlán Marker Erected 2020.",
+            markerDetails.englishInscription == "200 Years since the Installation of the First City Council of Tepoztlán, Morelos. (1820-2020) In 1820, on September 8, the day on which Tepuztecatl was celebrated, the town of Tepoztlan installed its first town hall. In 1826 the municipality of Tepoztlán, as part of the State of Mexico, was ratified. Honorable City Council of Tepoztlan Rogelio Torres Ortega, Municipal President of Tepoztlan 2019-2021 Government of the State of Morelos Cuauhtemoc Blanco Bravo, Governor of the State of Photographed By J. Makali Bruton, August 6, 2022 2. Additional tablets near the First City Council of Tepotzlán Marker Erected 2020.",
             "Inscription has improper spaces between words"
         )
     }
@@ -479,6 +480,107 @@ class ParseMarkerDetailsPageHtmlTest {
         // Location
         assertTrue(
             markerDetails.location.contains("35 ° 13.781′ N, 80 ° 50.785′ W. Marker is in Charlotte, North Carolina, in Mecklenburg County."),
+            "Location was not found"
+        )
+    }
+
+    @Test
+    fun `Parse MarkerDetails Page Html for coyulanM245476 is Successful`() {
+        val markerInfoPageHtml = coyulanM245476MarkerDetailsHtml()
+
+        val result = parseMarkerDetailsPageHtml(markerInfoPageHtml)
+        val markerDetails = result.second!!
+
+        // For debugging
+        //println(json.encodeToString(Marker.serializer(), markerDetails))
+
+        // ID
+        assertTrue(
+            markerDetails.id == "M245476",
+            "ID was not found"
+        )
+
+        // Title
+        assertTrue(
+            markerDetails.title.contains("Coyulan"),
+            "Title was not found"
+        )
+
+        // Subtitle
+        assertTrue(
+            markerDetails.subtitle.contains("Coyulan (Place of coyotes)"),
+            "Subtitle was not found"
+        )
+
+        // Inscription // default should be english
+        assertTrue(
+            markerDetails.inscription.contains("Zapatista House-Barracks of General Leobardo Galván González"),
+            "Inscription was not found"
+        )
+
+        // Spanish translation
+        assertTrue(
+            markerDetails.spanishInscription.contains("Casa-cuartel zapatista del Gral․ Leobardo Galván González"),
+            "Spanish Inscription was not found"
+        )
+
+        // English translation
+        assertTrue(
+            markerDetails.englishInscription.contains("Zapatista House-Barracks of General Leobardo Galván González"),
+            "English Inscription was not found"
+        )
+
+        // Main Photo URL
+        assertTrue(
+            markerDetails.mainPhotoUrl.contains("https://www.hmdb.org/Photos7/786/Photo786030.jpg?425202415800PM"),
+            "Marker Photo Url was not found"
+        )
+
+        // Marker Photos
+        assertTrue(
+            markerDetails.markerPhotos.size == 5,
+            "Some Marker Photos are missing"
+        )
+        assertTrue(
+            markerDetails.markerPhotos[1] == "https://www.hmdb.org/Photos7/786/Photo786038.jpg?425202424300PM",
+            "Marker Photo at index 1 was not found"
+        )
+
+        // Photo Attributions
+        assertTrue(
+            markerDetails.photoAttributions.size == 5,
+            "Some Photo Attributions are missing"
+        )
+        assertTrue(
+            markerDetails.photoAttributions[0] == "Photographed By Christopher Athanas, March 31, 2024",
+            "Photo Attribution at index 0 was not found"
+        )
+
+        // Photo Captions
+        assertTrue(
+            markerDetails.photoCaptions.size == 5,
+            "Some Photo Captions are missing"
+        )
+        assertTrue(
+            markerDetails.photoCaptions[0] == "1. Coyulan (Lugar de Coyotes) Marker",
+            "Photo Caption at index 0 was not found"
+        )
+
+        // Erected
+        assertTrue(
+            markerDetails.erected.contains("2014"), // no erected date
+            "Erected was found and should not have been"
+        )
+
+        // Credits
+        assertTrue(
+            markerDetails.credits.contains(""),  // no credits
+            "Credits was found and should not have been"
+        )
+
+        // Location
+        assertTrue(
+            markerDetails.location.contains("18 ° 59.411′ N, 99 ° 5.863′ W. Marker is in Tepoztlán, Morelos."),
             "Location was not found"
         )
     }

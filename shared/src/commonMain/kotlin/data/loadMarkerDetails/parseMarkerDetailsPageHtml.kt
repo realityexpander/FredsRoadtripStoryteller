@@ -39,6 +39,7 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, Marker?> {
 
         var isCapturingLocationTextPhase1 = false
         var isCapturingLocationTextPhase2 = false
+        var isCapturingLocationTextPhase3 = false
         var isCapturingLocationTextComplete = false
 
         var isCapturingSpanishInscription = false
@@ -84,11 +85,17 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, Marker?> {
                 }
 
                 // Multi-language Inscription - START
-                // <lang=es>
+                // <lang=es> // Spanish
                 if(tagName == "lang=es") {
                     isCapturingText = true
-                    isCapturingSpanishInscription = true // spanish starts first, will be set to false when "English translation:" is found
+                    isCapturingSpanishInscription = true // if spanish starts first, will be set to false when "English translation:" is found or <lang=en>
                     isCapturingEnglishInscription = false
+                }
+                // <lang=en> // English
+                if(tagName == "lang=en") {
+                    isCapturingText = true
+                    isCapturingSpanishInscription = false // Stops spanish (if it was first)
+                    isCapturingEnglishInscription = true
                 }
 
                 // Multi-language Inscription - PAUSE text collection for ad copy
@@ -276,15 +283,17 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, Marker?> {
 
                     // Location - Collect & End collecting
                     if(isCapturingLocationTextPhase1) {
-                        // keep collecting until the next `sectionhead` text is found (Other nearby markers.)
-                        if(decodedString.contains("Other nearby markers.", ignoreCase = true)) { isCapturingLocationTextPhase1 = false
+                        // keep collecting until the next `sectionhead` text is found ("Other nearby markers.")
+                        if(decodedString.contains("Other nearby markers.", ignoreCase = true)) {
+                            isCapturingLocationTextPhase1 = false
                             isCapturingLocationTextPhase2 = false
+                            isCapturingLocationTextPhase3 = false
                             isCapturingLocationTextComplete = true
                             return@onText
                         }
 
                         // Start collecting the `location` text after the "Location" text is found
-                        // <span class="sectionhead">Location </span>
+                        // <span class="sectionhead">Location. </span>
                         if(decodedString.startsWith("Location", ignoreCase = true)) {
                             isCapturingLocationTextPhase1 = false
                             isCapturingLocationTextPhase2 = true
@@ -292,7 +301,17 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, Marker?> {
                         }
 
                     }
-                    if(isCapturingLocationTextPhase2) {
+
+                    // Only start capturing location data when a "degree" symbol appears (to skip ad text)
+//                    if(isCapturingLocationTextPhase2 && (decodedString.contains("°"))) {
+                    // Only start capturing location data when a Number appears (this is all to skip ad text)
+                    if(isCapturingLocationTextPhase2 &&
+                        decodedString.stripNewlines().trim().toIntOrNull() != null
+                    ) {
+                        isCapturingLocationTextPhase2 = false
+                        isCapturingLocationTextPhase3 = true
+                    }
+                    if(isCapturingLocationTextPhase3) {
                         markerResult = markerResult.copy(
                             location = markerResult.location + decodedString
                         )
@@ -325,9 +344,18 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, Marker?> {
         if(englishInscriptionLines.size > 0
            || markerResult.inscription.contains("English translation", ignoreCase=true)
         ) {
-            englishInscriptionLines
-                .subList(1, englishInscriptionLines.size) // skip the first line of the inscription (it's the title)
-                .joinToString("")
+            // Use the mutli-line translation
+            if(englishInscriptionLines.size > 0) {
+                englishInscriptionLines
+                    .subList(
+                        1,
+                        englishInscriptionLines.size
+                    ) // skip the first line of the inscription (it's the title)
+                    .joinToString("")
+            } else {
+                // Use the single-line translation
+                markerResult.inscription.stripString("English translation  , ")
+            }
         } else {
             ""
         }
@@ -336,7 +364,7 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, Marker?> {
             || markerResult.inscription.contains("English translation", ignoreCase=true)
         ) {
             spanishInscriptionLines
-                .subList(1, spanishInscriptionLines.size) // skip the first line of the inscription (it's the title)
+                //.subList(1, spanishInscriptionLines.size)
                 .joinToString("")
         } else {
             ""
@@ -345,7 +373,7 @@ fun parseMarkerDetailsPageHtml(rawPageHtml: String): Pair<String?, Marker?> {
     // Prepare final result
     markerResult = markerResult.copy(
         id = rawPageHtml.findFirstMarkerID(),
-        inscription = markerResult.inscription.processInscriptionString(),
+        inscription = markerResult.inscription.processInscriptionString(), // uses native language on sign
         englishInscription = finalEnglishInscription.processInscriptionString(),
         spanishInscription = finalSpanishInscription.processInscriptionString(),
         location = markerResult.location.stripString("Touch for map"),
