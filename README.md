@@ -1,8 +1,7 @@
 [<img width="1024" alt="image" src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/832e34ff-2ac6-4f66-b2df-175096e61215">](https://play.google.com/store/apps/details?id=com.realityexpander.talkinghistoricalmarkers)
 
-[<img src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/df65a271-758f-470d-b3b5-2e71de93b9fe" width="250">](https://play.google.com/store/apps/details?id=com.realityexpander.talkinghistoricalmarkers)
-
-_note: link to iOS version for App store coming soon_
+[<img src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/7e226e7c-30e1-4a27-904a-dbc0646590fa" width="200">](https://play.google.com/store/apps/details?id=com.realityexpander.talkinghistoricalmarkers)
+[<img src="https://github.com/realityexpander/FredsRoadtripStoryteller/assets/5157474/52544e04-3a4d-4e72-8054-915ae0a09985" width="204">](https://apps.apple.com/us/app/freds-roadtrip-storyteller/id6473706460)
 
 # Fred's Roadtrip Storyteller
 Listen to historical markers as you travel - Learn about local history as you drive.
