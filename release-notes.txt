@@ -1,5 +1,8 @@
+1.11 Build 40
+- Fix Speech on Android - For Play Store
+
 1.11 Build 39
-- Fix Speech on Android
+- Fix Speech on Android - Build for App Distribution
 
 1.1 Build 38
 - Fix MarkerDetails parsing problem
