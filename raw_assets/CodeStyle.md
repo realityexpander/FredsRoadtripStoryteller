@@ -14,7 +14,7 @@
 - BOOP is a design pattern that is inspired by:
   - Alan Kay's OO style & lectures, HyperCard, the ideas behind Smalltalk.
   - Yegor Bugayenko's lecture series on OOP and book Elegant Objects.
-  - David West, PhD's book "Object Thinking"
+  - David West, PhD's [book "Object Thinking"](https://www.amazon.com/Object-Thinking-Developer-Reference-David/dp/0735619654/ref=sr_1_1?crid=17TRHC60PCXPA&dib=eyJ2IjoiMSJ9.rsZV7gygeZCZAbMokqizVPMOCDJnbpNb-RbU-uJPzH3vx8NdDK0ESpR_cwyRaDd-S9O6L98by-SvGaMBF0X6nmbRkdQEVK1Y5PsgkxRt9Og.cBxW8NJa3iU-UuNxqETHYRk2J2ppAUq37BpuiYilhu4&dib_tag=se&keywords=david+west+object+thinking&qid=1715960928&sprefix=david+west+object+thinking%2Caps%2C215&sr=8-1)
 
 <i>"The key in making great and growable systems is much more to design how its modules communicate rather than what<br> 
  their internal properties and behaviors should be." –– <b>Alan Kay</b></i>
