@@ -173,13 +173,13 @@ fun AboutBoxDialog(
                                     debugLog.add(
                                         "AboutBoxDialog: Send debug log, debugLog.size=${debugLog.size}, " +
                                                 "${appMetadata.appNameStr} version " +
-                                                "${appMetadata.versionStr} build ${appMetadata.androidBuildNumberStr}"
+                                                "${appMetadata.versionStr} build ${appMetadata.androidBuildNumberStr} / ${appMetadata.iOSBundleVersionStr}"
                                     )
                                     sendEmailAction(body = json.encodeToString(debugLog))
                                 }
                             },
                         ) {
-                            Text("Send debug log")
+                            Text("Send debug log via Email")
                         }
                     }
                 }

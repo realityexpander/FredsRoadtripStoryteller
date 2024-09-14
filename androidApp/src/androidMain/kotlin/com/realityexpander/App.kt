@@ -8,16 +8,8 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import appContext
 import co.touchlab.kermit.ExperimentalKermitApi
-import co.touchlab.kermit.LogWriter
 import co.touchlab.kermit.Logger
-import co.touchlab.kermit.Severity
 import co.touchlab.kermit.crashlytics.CrashlyticsLogWriter
-import debugLog
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import java.time.Clock
-import java.time.ZoneId
 
 class App: Application() {
 
@@ -26,28 +18,6 @@ class App: Application() {
     override fun onCreate() {
         super.onCreate()
 
-        // Setup debugLog for emailing to developer
-        Logger.addLogWriter(
-            object: LogWriter() {
-                override fun log(
-                    severity: Severity,
-                    message: String,
-                    tag: String,
-                    throwable: Throwable?
-                ) {
-                    CoroutineScope(Dispatchers.Main).launch {
-                        //    _debugLogFlow.emit("debug string") // try instead of debugLog.add()
-                        debugLog.add(
-                            "${Clock.system(ZoneId.systemDefault()).instant()}: " +
-                                    "$severity $tag: " + message
-                        )
-                        if (debugLog.size > 1200) { // max line count, must keep under 1mb for Binder limitations
-                            debugLog.removeAt(0)
-                        }
-                    }
-                }
-            }
-        )
         // Add Crashlytics to logger
         Logger.addLogWriter(CrashlyticsLogWriter())
 

@@ -55,6 +55,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import co.touchlab.kermit.LogWriter
+import co.touchlab.kermit.Logger
+import co.touchlab.kermit.Severity
 import data.AppSettings.Companion.kInstallAtEpochMilli
 import data.MarkersRepo
 import data.appSettings
@@ -73,6 +76,7 @@ import data.loadMarkers.loadMarkers
 import data.loadMarkers.sampleData.kUseRealNetwork
 import data.util.LoadingState
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -181,6 +185,32 @@ fun App(
             mutableStateOf(appSettings.isSpeakWhenUnseenMarkerFoundEnabled)
         }
         var isPurchaseProDialogVisible by remember { mutableStateOf(false) }
+
+        // 🔸 Setup Logger
+        LaunchedEffect(Unit) {
+            // Setup debugLog for emailing to developer
+            Logger.addLogWriter(
+                object: LogWriter() {
+                    override fun log(
+                        severity: Severity,
+                        message: String,
+                        tag: String,
+                        throwable: Throwable?
+                    ) {
+                        println("$severity $tag: $message")
+                        CoroutineScope(Dispatchers.Main).launch {
+                            debugLog.add(
+                                "${Clock.System.now()}: " +
+                                "$severity $tag: " + message
+                            )
+                            if (debugLog.size > 1000) { // max line count, must keep under 1mb for Binder limitations
+                                debugLog.removeAt(0)
+                            }
+                        }
+                    }
+                }
+            )
+        }
 
         // 🔸 Error Message state & value
         var errorMessageStr by remember {

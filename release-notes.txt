@@ -1,4 +1,8 @@
-1.11 Build 40
+1.2 Build 41 (iOS)
+- Fix Speech on iOS
+- Fix debug log
+
+1.11 Build 40 (Android)
 - Fix Speech on Android - For Play Store
 
 1.11 Build 39

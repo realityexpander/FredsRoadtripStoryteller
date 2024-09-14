@@ -11,7 +11,7 @@ import NaturalLanguage
 import Foundation
 
 
-// Implementation #2
+// Implementation #2 (Not currently used)
 // Listens to and sends speech state updates to the commonSpeech object using CommonFlow
 // Uses AVSpeechSynthesizer to speak text
 class TextToSpeechManager : NSObject, AVSpeechSynthesizerDelegate {
@@ -40,6 +40,12 @@ class TextToSpeechManager : NSObject, AVSpeechSynthesizerDelegate {
         //let utterance = AVSpeechUtterance(string: text)
         utterance = AVSpeechUtterance(string: text)
         utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
+
+        let englishVoices = AVSpeechSynthesisVoice.speechVoices().filter { $0.language.starts(with: "en") }
+        for voice in englishVoices {
+            let quality = voice.quality == .enhanced ? "Enhanced" : "Default"
+            print("\(voice.identifier): \(quality)")
+        }
         
         // Set voice for language of the text (if possible)
         if let language = self.detectLanguageOf(text: text) {

@@ -772,8 +772,13 @@ private fun ShowDialogForProVersion(
             Text("Pro Version Required")
         },
         text = {
-            Text("This feature is only available in the Pro version of the app.")
-            Text("Please purchase the Pro version to use this feature.")
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text("This feature is only available in the Pro version of the app.")
+                Text("Please purchase the Pro version to use this feature.")
+            }
         },
         confirmButton = {
             Button(
@@ -783,7 +788,12 @@ private fun ShowDialogForProVersion(
             ) {
                 Text("OK")
             }
-        }
+        },
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true,
+            usePlatformDefaultWidth = false,
+        )
     )
 }
 
